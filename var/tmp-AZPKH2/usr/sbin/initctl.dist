@@ -1,3 +1,0 @@
-#!/bin/sh
-echo "/sbin/initctl: Ignoring command: $*" >&2
-exit 0

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-qemu-disk">
-  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
-  <comment>QEMU QCOW disk image</comment>
-  <acronym>QCOW</acronym>
-  <expanded-acronym>QEMU Copy On Write</expanded-acronym>
-  <glob pattern="*.qcow2"/>
-  <glob pattern="*.qcow"/>
-</mime-type>

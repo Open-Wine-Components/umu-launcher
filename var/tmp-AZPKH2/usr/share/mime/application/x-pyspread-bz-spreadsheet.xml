@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-pyspread-bz-spreadsheet">
-  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
-  <comment>Pyspread spreadsheet (bzip-compressed)</comment>
-  <sub-class-of type="application/x-bzip"/>
-  <glob pattern="*.pys"/>
-  <generic-icon name="x-office-spreadsheet"/>
-</mime-type>

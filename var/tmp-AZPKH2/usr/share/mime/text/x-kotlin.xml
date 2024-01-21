@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/x-kotlin">
-  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
-  <comment>Kotlin source code</comment>
-  <sub-class-of type="text/plain"/>
-  <glob pattern="*.kt"/>
-</mime-type>

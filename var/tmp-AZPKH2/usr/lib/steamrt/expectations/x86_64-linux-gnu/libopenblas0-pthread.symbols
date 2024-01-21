@@ -1,6 +1,0 @@
-libblas.so.3 libopenblas0-pthread #MINVER#
-# No symbols listed here yet
-liblapack.so.3 libopenblas0-pthread #MINVER#
-# No symbols listed here yet
-libopenblas.so.0 libopenblas0-pthread #MINVER#
-# No symbols listed here yet

@@ -1,8 +1,0 @@
-{
-  "file_format_version" : "1.0.1",
-  "ICD" : {
-    "library_path" : "/usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu/vulkan/2/libvulkan_lvp.so",
-    "api_version" : "1.1.274",
-    "library_arch" : "64"
-  }
-}

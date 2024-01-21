@@ -1,4 +1,0 @@
-# Scripts in this directory are executed as root when a user log out from
-# a display manager using /etc/X11/Xreset.
-# The username of the user logging out is provided in the $USER environment
-# variable.

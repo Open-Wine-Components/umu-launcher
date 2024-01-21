@@ -1,3 +1,0 @@
-[DEFAULT]
-# how to byte-compile (comma separated: standard, optimize)
-byte-compile = standard
