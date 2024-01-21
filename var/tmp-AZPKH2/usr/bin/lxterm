@@ -1,0 +1,28 @@
+#!/bin/sh
+
+PROGNAME=${0##*/}
+
+die () {
+    echo "$PROGNAME: fatal error: $*" >&2
+    exit 1
+}
+
+if ! which locale >/dev/null 2>&1; then
+    die "required program \"locale\" not available"
+fi
+
+case "$(locale charmap 2>/dev/null)" in
+    KOI8-R)
+        XTERM=koi8rxterm
+        ;;
+    UTF-8)
+        XTERM=uxterm
+        ;;
+    *)
+        XTERM=xterm
+        ;;
+esac
+
+exec "$XTERM" "$@"
+
+# vim:set ai et sw=4 ts=4 tw=80:

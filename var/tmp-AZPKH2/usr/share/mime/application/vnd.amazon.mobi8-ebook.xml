@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/vnd.amazon.mobi8-ebook">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Kindle book document</comment>
+  <sub-class-of type="application/x-mobipocket-ebook"/>
+  <glob pattern="*.azw3"/>
+  <glob pattern="*.kfx"/>
+  <alias type="application/x-mobi8-ebook"/>
+</mime-type>

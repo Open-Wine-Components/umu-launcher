@@ -1,0 +1,235 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: dash
+Upstream-Contact: dash@vger.kernel.org
+Source: http://gondor.apana.org.au/~herbert/dash/
+
+Files: *
+Copyright:
+ 1989-1994 The Regents of the University of California.  All rights reserved.
+ 1997 Christos Zoulas.  All rights reserved.
+ 1997-2018 Herbert Xu <herbert@gondor.apana.org.au>.  All rights reserved.
+Comment:
+ This code is derived from software contributed to Berkeley by Kenneth Almquist.
+License: BSD-3-Clause
+
+Files: Makefile.in
+Copyright: 1994-2011, Free Software Foundation, Inc.
+License: FSFULLR
+
+Files: aclocal.m4
+Copyright: 1996-2011, Free Software Foundation, Inc.
+License: FSFULLR
+
+Files: configure
+Copyright: 1992-1996, 1998-2012, Free Software Foundation, Inc.
+License: FSFUL
+
+Files: debian/*
+Copyright:
+ 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, Herbert Xu <herbert@debian.org>
+ 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2014, Gerrit Pape <pape@smarden.org>
+ 2009, Luk Claes <luk@debian.org>
+ 2010, 2011, Jonathan Nieder <jrnieder@gmail.com>
+ 2010, Adam D. Barratt <adam@adam-barratt.org.uk>
+ 2010, Christian Perrier <bubulle@debian.org>
+ 2013, Michael Gilbert <mgilbert@debian.org>
+ 2016, Helmut Grohne <helmut@subdivi.de>
+ 2016, Mattia Rizzolo <mattia@debian.org>
+ 2016, Niels Thykier <niels@thykier.net>
+ 2017, Adam Borowski <kilobyte@angband.pl>
+ 2017, Ximin Luo <infinity0@debian.org>
+ 2018, 2019, Andrej Shadura <andrewsh@debian.org>
+License: BSD-3-clause
+
+Files: debian/po/bg.po
+Copyright: 2008, 2009, Damyan Ivanov <dmn@debian.org>
+License: BSD-3-clause
+
+Files: debian/po/eu.po
+Copyright:
+ 2008, Xabier Bilbao <xabidu@gmail.com>
+ 2008, 2010, Iñaki Larrañaga Murgoitio <dooteo@euskalgnu.org>
+License: BSD-3-clause
+
+Files: debian/po/tr.po
+Copyright: 2008, 2011, Mert Dirik <mertdirik@gmail.com>
+License: BSD-3-clause
+
+Files: debian/po/da.po
+Copyright:
+ 2004, Claus Hindsgaul <claus_h@image.dk>
+ 2006, Claus Hindsgaul <claus.hindsgaul@gmail.com>
+ 2010, Joe Hansen <joedalton2@yahoo.dk>
+License: BSD-3-clause
+
+Files: debian/po/de.po
+Copyright: 2006-2009, Helge Kreutzmann <debian@helgefjell.de>
+License: BSD-3-clause
+
+Files: debian/po/es.po
+Copyright:
+ 2008, 2009, Software in the Public Interest
+ 2008, Fernando Cerezal López <kryptos21@gmail.com>
+ 2009, Francisco Javier Cuadrado <fcocuadrado@gmail.com>
+License: BSD-3-clause
+
+Files: debian/po/fr.po
+Copyright: 2009, Julien Patriarca <patriarcaj@gmail.com>
+License: BSD-3-clause
+
+Files: debian/po/nl.po
+Copyright:
+ 2008, Thijs Kinkhorst <thijs@debian.org>
+ 2010, Eric Spreen <erispre@gmail.com>
+License: BSD-3-clause
+
+Files: debian/po/pt.po
+Copyright:
+ 2008, André Luís Lopes <andrelop@debian.org>
+ 2008-2010, Adriano Rafael Gomes <adrianorg@gmail.com>
+License: BSD-3-clause
+
+Files: debian/po/pt_BR.po
+Copyright:
+ 2008, André Luís Lopes <andrelop@debian.org>
+ 2008-2010, Adriano Rafael Gomes <adrianorg@gmail.com>
+License: BSD-3-clause
+
+Files: debian/po/sk.po
+Copyright:
+ 2011, Slavko <linux@slavino.sk>
+License: BSD-3-clause
+
+Files: debian/po/ro.po
+Copyright:
+ 2008, Eddy Petrișor <eddy.petrisor@gmail.com>
+ 2012, Andrei Popescu <andreimpopescu@gmail.com
+License: BSD-3-clause
+
+Files: debian/po/sr.po
+Copyright:
+ 2011, Zlatan Todorić <zlatan.todoric@gmail.com>
+License: BSD-3-clause
+
+Files: debian/po/sv.po
+Copyright:
+ 2008, Martin Ågren <martin.agren@gmail.com>
+ 2009, Martin Bagge <brother@bsnet.se>
+License: BSD-3-clause
+
+Files: debian/po/vi.po
+Copyright:
+ 2005-2010, Clytie Siddall <clytie@riverland.net.au>
+ 2010, Free Software Foundation, Inc.
+License: BSD-3-clause
+
+Files: install-sh
+Copyright: 1994, X Consortium
+License: Expat
+
+Files:
+ depcomp
+ missing
+Copyright: 1999, 2000, 2003—2012, Free Software Foundation, Inc.
+License: GPL-2+ or BSD-3-clause
+
+Files: src/bltin/test.c
+Copyright: Erik Baalbergen, Eric Gisin, Arnold Robbins, J.T. Conklin
+License: public-domain
+
+Files: src/*
+Copyright: 1997-2005, 2007, Herbert Xu <herbert@gondor.apana.org.au>.
+ 1989, 1991, 1993, 1995, The Regents of the University of California.
+License: BSD-3-clause
+
+Files: src/Makefile.in
+Copyright: 1994-2011, Free Software
+License: FSFULLR
+
+Files: src/mksignames.c
+Copyright: 1992, 1996, 1997, 1999, 2000, 2002-2012, Free Software Foundation, Inc.
+Comment: This file is not directly linked with dash.  However, its output is.
+License: GPL-2+
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. Neither the name of the University nor the names of its contributors
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+License: FSFUL
+ This configure script is free software; the Free Software Foundation
+ gives unlimited permission to copy, distribute and modify it.
+
+License: FSFULLR
+ This file is free software; the Free Software Foundation
+ gives unlimited permission to copy and/or distribute it,
+ with or without modifications, as long as this notice is preserved.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+ even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ PARTICULAR PURPOSE.
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to
+ deal in the Software without restriction, including without limitation the
+ rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ sell copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNEC-
+ TION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ .
+ Except as contained in this notice, the name of the X Consortium shall not
+ be used in advertising or otherwise to promote the sale, use or other deal-
+ ings in this Software without prior written authorization from the X Consor-
+ tium.
+ .
+ FSF changes to this file are in the public domain.
+
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation,
+ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 2 can be found in ‘/usr/share/common-licenses/GPL-2’.
+

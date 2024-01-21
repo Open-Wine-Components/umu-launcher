@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/x-opencl-src">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>OpenCL source code</comment>
+  <comment xml:lang="af">OpenCL-bronkode</comment>
+  <comment xml:lang="bg">Изходен код — OpenCL</comment>
+  <comment xml:lang="ca">codi font en OpenCL</comment>
+  <comment xml:lang="cs">zdrojový kód v jazyce OpenCL</comment>
+  <comment xml:lang="da">OpenCL-kildekode</comment>
+  <comment xml:lang="de">OpenCL-Quelltext</comment>
+  <comment xml:lang="en-GB">OpenCL source code</comment>
+  <comment xml:lang="es">código fuente en OpenCL</comment>
+  <comment xml:lang="eu">OpenCL iturburu-kodea</comment>
+  <comment xml:lang="fi">OpenCL-lähdekoodi</comment>
+  <comment xml:lang="fr">code source OpenCL</comment>
+  <comment xml:lang="fur">codiç sorzint OpenCL</comment>
+  <comment xml:lang="ga">cód foinseach OpenCL</comment>
+  <comment xml:lang="hr">OpenCL izvorni kôd</comment>
+  <comment xml:lang="hu">OpenCL forráskód</comment>
+  <comment xml:lang="id">Kode sumber OpenCL</comment>
+  <comment xml:lang="it">Codice sorgente OpenCL</comment>
+  <comment xml:lang="kk">OpenCL бастапқы коды</comment>
+  <comment xml:lang="ko">OpenCL 소스 코드</comment>
+  <comment xml:lang="pl">Kod źródłowy OpenCL</comment>
+  <comment xml:lang="pt-BR">Código-fonte do OpenCL</comment>
+  <comment xml:lang="ru">Исходный код OpenGL</comment>
+  <comment xml:lang="sk">Zdrojový kód OpenCL</comment>
+  <comment xml:lang="sv">OpenCL-källkod</comment>
+  <comment xml:lang="tr">OpenCL kaynak kodu</comment>
+  <comment xml:lang="uk">вихідний код мовою OpenCL</comment>
+  <comment xml:lang="zh-CN">OpenCL 源代码</comment>
+  <comment xml:lang="zh-TW">OpenCL 源碼</comment>
+  <acronym>OpenCL</acronym>
+  <expanded-acronym>Open Computing Language</expanded-acronym>
+  <sub-class-of type="text/x-csrc"/>
+  <glob pattern="*.cl"/>
+</mime-type>

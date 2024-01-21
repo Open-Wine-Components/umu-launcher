@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-pak">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>PAK archive</comment>
+  <comment xml:lang="af">PAK-argief</comment>
+  <comment xml:lang="ar">أرشيف PAK</comment>
+  <comment xml:lang="be-Latn">Archiŭ PAK</comment>
+  <comment xml:lang="bg">Архив — PAK</comment>
+  <comment xml:lang="ca">arxiu PAK</comment>
+  <comment xml:lang="cs">archiv PAK</comment>
+  <comment xml:lang="da">PAK-arkiv</comment>
+  <comment xml:lang="de">PAK-Archiv</comment>
+  <comment xml:lang="el">Συμπιεσμένο αρχείο PAK</comment>
+  <comment xml:lang="en-GB">PAK archive</comment>
+  <comment xml:lang="eo">PAK-arkivo</comment>
+  <comment xml:lang="es">archivador PAK</comment>
+  <comment xml:lang="eu">PAK artxiboa</comment>
+  <comment xml:lang="fi">PAK-arkisto</comment>
+  <comment xml:lang="fo">PAK skjalasavn</comment>
+  <comment xml:lang="fr">archive PAK</comment>
+  <comment xml:lang="fur">archivi PAK</comment>
+  <comment xml:lang="ga">cartlann PAK</comment>
+  <comment xml:lang="gl">arquivo PAK</comment>
+  <comment xml:lang="he">ארכיון PAK</comment>
+  <comment xml:lang="hr">PAK arhiva</comment>
+  <comment xml:lang="hu">PAK-archívum</comment>
+  <comment xml:lang="ia">Archivo PAK</comment>
+  <comment xml:lang="id">Arsip PAK</comment>
+  <comment xml:lang="it">Archivio PAK</comment>
+  <comment xml:lang="ja">PAK アーカイブ</comment>
+  <comment xml:lang="ka">PAK არქივი</comment>
+  <comment xml:lang="kk">PAK архиві</comment>
+  <comment xml:lang="ko">PAK 압축 파일</comment>
+  <comment xml:lang="lt">PAK archyvas</comment>
+  <comment xml:lang="lv">PAK arhīvs</comment>
+  <comment xml:lang="nb">PAK-arkiv</comment>
+  <comment xml:lang="nl">PAK-archief</comment>
+  <comment xml:lang="nn">PAK-arkiv</comment>
+  <comment xml:lang="oc">archiu PAK</comment>
+  <comment xml:lang="pl">Archiwum PAK</comment>
+  <comment xml:lang="pt">arquivo PAK</comment>
+  <comment xml:lang="pt-BR">Pacote PAK</comment>
+  <comment xml:lang="ro">Arhivă PAK</comment>
+  <comment xml:lang="ru">Архив PAK</comment>
+  <comment xml:lang="sk">Archív PAK</comment>
+  <comment xml:lang="sl">Datoteka arhiva PAK</comment>
+  <comment xml:lang="sq">Arkiv PAK</comment>
+  <comment xml:lang="sr">ПАК архива</comment>
+  <comment xml:lang="sv">PAK-arkiv</comment>
+  <comment xml:lang="tr">PAK arşivi</comment>
+  <comment xml:lang="uk">архів PAK</comment>
+  <comment xml:lang="vi">Kho nén PAK</comment>
+  <comment xml:lang="zh-CN">PAK 归档文件</comment>
+  <comment xml:lang="zh-TW">PAK 封存檔</comment>
+  <generic-icon name="package-x-generic"/>
+  <glob pattern="*.pak"/>
+</mime-type>

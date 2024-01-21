@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/pkcs7-signature">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>detached S/MIME signature</comment>
+  <comment xml:lang="af">losstaande S/MIME-handtekening</comment>
+  <comment xml:lang="ar">إمضاء S/MIME مفصول</comment>
+  <comment xml:lang="be-Latn">adłučany podpis S/MIME</comment>
+  <comment xml:lang="bg">Отделѐн подпис — S/MIME</comment>
+  <comment xml:lang="ca">signatura S/MIME abstreta</comment>
+  <comment xml:lang="cs">oddělený podpis S/MIME</comment>
+  <comment xml:lang="da">frigjort S/MIME-signatur</comment>
+  <comment xml:lang="de">isolierte S/MIME-Signatur</comment>
+  <comment xml:lang="el">Αποκομμένη υπογραφή S/MIME</comment>
+  <comment xml:lang="en-GB">detached S/MIME signature</comment>
+  <comment xml:lang="eo">dekroĉa S/MIME-subskribo</comment>
+  <comment xml:lang="es">firma S/MIME separada</comment>
+  <comment xml:lang="eu">desuzturtako S/MIME sinadura</comment>
+  <comment xml:lang="fi">erillinen S/MIME-allekirjoitus</comment>
+  <comment xml:lang="fo">skild S/MIME undirskrift</comment>
+  <comment xml:lang="fr">signature S/MIME détachée</comment>
+  <comment xml:lang="fur">firme S/MIME distacade</comment>
+  <comment xml:lang="ga">síniú S/MIME scartha</comment>
+  <comment xml:lang="gl">sinatura S/MIME independente</comment>
+  <comment xml:lang="he">חתימת S/MIME מנותקת</comment>
+  <comment xml:lang="hr">Odvojen S/MIME potpis</comment>
+  <comment xml:lang="hu">leválasztott S/MIME-aláírás</comment>
+  <comment xml:lang="ia">Signatura S/MIME distachate</comment>
+  <comment xml:lang="id">tanda tangan S/MIME yang terlepas</comment>
+  <comment xml:lang="it">Firma staccata S/MIME</comment>
+  <comment xml:lang="ja">分離 S/MIME 署名</comment>
+  <comment xml:lang="kk">бөлінген S/MIME қолтаңбасы</comment>
+  <comment xml:lang="ko">분리된 S/MIME 서명</comment>
+  <comment xml:lang="lt">neprisegtas S/MIME parašas</comment>
+  <comment xml:lang="lv">atvienots S/MIME paraksts</comment>
+  <comment xml:lang="ms">Tandatangan S/MIME terlerai</comment>
+  <comment xml:lang="nb">frakoblet S/MIME-signatur</comment>
+  <comment xml:lang="nl">losse S/MIME-ondertekening</comment>
+  <comment xml:lang="nn">fråkopla S/MIME-signatur</comment>
+  <comment xml:lang="oc">signatura S/MIME destacada</comment>
+  <comment xml:lang="pl">Oddzielony podpis S/MIME</comment>
+  <comment xml:lang="pt">assinatura S/MIME solta</comment>
+  <comment xml:lang="pt-BR">Assinatura S/MIME destacada</comment>
+  <comment xml:lang="ro">semnătură S/MIME detașată</comment>
+  <comment xml:lang="ru">Отсоединённая подпись S/MIME</comment>
+  <comment xml:lang="sk">Oddelený podpis S/MIME</comment>
+  <comment xml:lang="sl">odpet podpis S/MIME</comment>
+  <comment xml:lang="sq">Firmë e shkëputur S/MIME</comment>
+  <comment xml:lang="sr">одвојени С/МИМЕ потпис</comment>
+  <comment xml:lang="sv">frikopplad S/MIME-signatur</comment>
+  <comment xml:lang="tr">müstakil S/MIME imzası</comment>
+  <comment xml:lang="uk">відокремлений S/MIME підпис</comment>
+  <comment xml:lang="vi">chữ ký S/MIME tách rời</comment>
+  <comment xml:lang="zh-CN">分离的 S/MIME 签名</comment>
+  <comment xml:lang="zh-TW">分離的 S/MIME 簽章</comment>
+  <acronym>S/MIME</acronym>
+  <expanded-acronym>Secure/Multipurpose Internet Mail Extensions</expanded-acronym>
+  <sub-class-of type="text/plain"/>
+  <generic-icon name="text-x-generic"/>
+  <glob pattern="*.p7s"/>
+</mime-type>

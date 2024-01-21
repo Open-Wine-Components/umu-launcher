@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="video/annodex">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Annodex video</comment>
+  <comment xml:lang="bg">Видео — Annodex</comment>
+  <comment xml:lang="ca">vídeo Annodex</comment>
+  <comment xml:lang="da">Annodex-video</comment>
+  <comment xml:lang="de">Annodex-Video</comment>
+  <comment xml:lang="en-GB">Annodex video</comment>
+  <comment xml:lang="es">vídeo Annodex</comment>
+  <comment xml:lang="eu">Annodex bideoa</comment>
+  <comment xml:lang="fi">Annodex video</comment>
+  <comment xml:lang="fr">vidéo Annodex</comment>
+  <comment xml:lang="hr">Annodex video snimka</comment>
+  <comment xml:lang="hu">Annodex videó</comment>
+  <comment xml:lang="it">Video Annodex</comment>
+  <comment xml:lang="ko">Annodex 동영상</comment>
+  <comment xml:lang="pl">Plik wideo Annodex</comment>
+  <comment xml:lang="pt-BR">Vídeo Annodex</comment>
+  <comment xml:lang="sv">Annodex-video</comment>
+  <comment xml:lang="tr">Annodex video</comment>
+  <comment xml:lang="uk">відео Annodex</comment>
+  <comment xml:lang="zh-CN">Annodex 视频</comment>
+  <sub-class-of type="application/annodex"/>
+  <glob pattern="*.axv"/>
+  <alias type="video/x-annodex"/>
+</mime-type>

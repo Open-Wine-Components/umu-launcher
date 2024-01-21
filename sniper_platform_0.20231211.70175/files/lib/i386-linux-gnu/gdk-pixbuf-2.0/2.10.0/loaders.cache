@@ -1,0 +1,98 @@
+# GdkPixbuf Image Loader Modules file
+# Automatically generated file, do not edit
+# Created by gdk-pixbuf-query-loaders from gdk-pixbuf-2.42.2
+#
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-ani.so"
+"ani" 4 "gdk-pixbuf" "Windows animated cursor" "LGPL"
+"application/x-navi-animation" ""
+"ani" ""
+"RIFF    ACON" "    xxxx    " 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-bmp.so"
+"bmp" 5 "gdk-pixbuf" "BMP" "LGPL"
+"image/bmp" "image/x-bmp" "image/x-MS-bmp" ""
+"bmp" ""
+"BM" "" 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-gif.so"
+"gif" 4 "gdk-pixbuf" "GIF" "LGPL"
+"image/gif" ""
+"gif" ""
+"GIF8" "" 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-icns.so"
+"icns" 4 "gdk-pixbuf" "MacOS X icon" "GPL"
+"image/x-icns" ""
+"icns" ""
+"icns" "" 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-ico.so"
+"ico" 5 "gdk-pixbuf" "Windows icon" "LGPL"
+"image/x-icon" "image/x-ico" "image/x-win-bitmap" "image/vnd.microsoft.icon" "application/ico" "image/ico" "image/icon" "text/ico" ""
+"ico" "cur" ""
+"  \001   " "zz znz" 100
+"  \002   " "zz znz" 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-jpeg.so"
+"jpeg" 5 "gdk-pixbuf" "JPEG" "LGPL"
+"image/jpeg" ""
+"jpeg" "jpe" "jpg" ""
+"\377\330" "" 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so"
+"png" 5 "gdk-pixbuf" "PNG" "LGPL"
+"image/png" ""
+"png" ""
+"\211PNG\r\n\032\n" "" 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-pnm.so"
+"pnm" 4 "gdk-pixbuf" "PNM/PBM/PGM/PPM" "LGPL"
+"image/x-portable-anymap" "image/x-portable-bitmap" "image/x-portable-graymap" "image/x-portable-pixmap" ""
+"pnm" "pbm" "pgm" "ppm" ""
+"P1" "" 100
+"P2" "" 100
+"P3" "" 100
+"P4" "" 100
+"P5" "" 100
+"P6" "" 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-qtif.so"
+"qtif" 4 "gdk-pixbuf" "QuickTime" "LGPL"
+"image/x-quicktime" "image/qtif" ""
+"qtif" "qif" ""
+"abcdidsc" "xxxx    " 100
+"abcdidat" "xxxx    " 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-tga.so"
+"tga" 4 "gdk-pixbuf" "Targa" "LGPL"
+"image/x-tga" ""
+"tga" "targa" ""
+" \001\001" "x  " 100
+" \001\t" "x  " 100
+"  \002" "xz " 99
+"  \003" "xz " 100
+"  \n" "xz " 100
+"  \v" "xz " 100
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-tiff.so"
+"tiff" 5 "gdk-pixbuf" "TIFF" "LGPL"
+"image/tiff" ""
+"tiff" "tif" ""
+"MM *" "  z " 100
+"II* " "   z" 100
+"II* \020   CR\002 " "   z zzz   z" 0
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-xbm.so"
+"xbm" 4 "gdk-pixbuf" "XBM" "LGPL"
+"image/x-xbitmap" ""
+"xbm" ""
+"#define " "" 100
+"/*" "" 50
+
+"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-xpm.so"
+"xpm" 4 "gdk-pixbuf" "XPM" "LGPL"
+"image/x-xpixmap" ""
+"xpm" ""
+"/* XPM */" "" 100
+
+

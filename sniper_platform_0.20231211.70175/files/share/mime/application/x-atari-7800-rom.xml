@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-atari-7800-rom">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Atari 7800 ROM</comment>
+  <comment xml:lang="bg">ROM — Atari 7800</comment>
+  <comment xml:lang="ca">ROM d'Atari 7800</comment>
+  <comment xml:lang="da">Atari 7800-ROM</comment>
+  <comment xml:lang="de">Atari 7800 ROM</comment>
+  <comment xml:lang="en-GB">Atari 7800 ROM</comment>
+  <comment xml:lang="es">ROM de Atari 7800</comment>
+  <comment xml:lang="eu">Atari 7800 ROMa</comment>
+  <comment xml:lang="fi">Atari 7800 ROM</comment>
+  <comment xml:lang="fr">ROM Atari 7800</comment>
+  <comment xml:lang="hr">Atari 7800 ROM</comment>
+  <comment xml:lang="hu">Atari 7800 ROM</comment>
+  <comment xml:lang="it">ROM Atari 7800</comment>
+  <comment xml:lang="ko">아타리 7800 롬</comment>
+  <comment xml:lang="pl">Plik ROM konsoli Atari 7800</comment>
+  <comment xml:lang="pt-BR">ROM do Atari 7800</comment>
+  <comment xml:lang="sv">Atari 7800-rom</comment>
+  <comment xml:lang="tr">Atari 7800 ROM</comment>
+  <comment xml:lang="uk">Atari 7800 ROM</comment>
+  <comment xml:lang="zh-CN">雅达利 7800 ROM</comment>
+  <generic-icon name="application-x-executable"/>
+  <glob pattern="*.a78"/>
+</mime-type>

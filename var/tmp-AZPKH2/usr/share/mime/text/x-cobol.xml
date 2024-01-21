@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/x-cobol">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>COBOL source code</comment>
+  <comment xml:lang="bg">Изходен код — COBOL</comment>
+  <comment xml:lang="ca">codi font en COBOL</comment>
+  <comment xml:lang="da">COBOL-kildekode</comment>
+  <comment xml:lang="de">COBOL-Quelltext</comment>
+  <comment xml:lang="en-GB">COBOL source code</comment>
+  <comment xml:lang="es">código fuente en COBOL</comment>
+  <comment xml:lang="eu">COBOL iturburu-kodea</comment>
+  <comment xml:lang="fi">COBOL lähdekoodi</comment>
+  <comment xml:lang="fr">code source COBOL</comment>
+  <comment xml:lang="hr">COBOL izvorni kôd</comment>
+  <comment xml:lang="hu">COBOL forráskód</comment>
+  <comment xml:lang="it">Codice sorgente COBOL</comment>
+  <comment xml:lang="ko">코볼 소스 코드</comment>
+  <comment xml:lang="pl">Kod źródłowy COBOL</comment>
+  <comment xml:lang="pt-BR">Código-fonte COBOL</comment>
+  <comment xml:lang="sk">Zdrojový kód COBOL</comment>
+  <comment xml:lang="sv">COBOL-källkod</comment>
+  <comment xml:lang="tr">COBOL kaynak kodu</comment>
+  <comment xml:lang="uk">вихідний код мовою COBOL</comment>
+  <comment xml:lang="zh-CN">COBOL 源代码</comment>
+  <acronym>COBOL</acronym>
+  <expanded-acronym>COmmon Business Oriented Language</expanded-acronym>
+  <sub-class-of type="text/plain"/>
+  <glob pattern="*.cbl"/>
+  <glob pattern="*.cob"/>
+</mime-type>

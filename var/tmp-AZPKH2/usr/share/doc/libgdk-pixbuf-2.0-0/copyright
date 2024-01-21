@@ -1,0 +1,94 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: gdk-pixbuf
+Source: https://download.gnome.org/sources/gdk-pixbuf/
+Files-Excluded: tests/bug753605-atsize.jpg
+Comment: https://gitlab.gnome.org/GNOME/gdk-pixbuf/issues/84
+
+Files: *
+Copyright:
+    Copyright (C) 1999-2016 Red Hat, Inc
+    Copyright (C) 1999-2003 The Free Software Foundation
+    Copyright (C) 1998-2018 Free Software Foundation, Inc.
+    Copyright (C) 1999, 2001 Tim Janik
+    Copyright (C) 2000 Havoc Pennington
+    Copyright (C) 2004 Dom Lachowicz
+    Copyright (C) 2008 Dominic Lachowicz
+    Copyright (C) 2008 Alberto Ruiz
+    Copyright (C) 2007 Google (Evan Stade)
+    Copyright (C) 1999 Mark Crichton
+    Copyright (C) 2007 Lyonel Vincent
+    Copyright (C) 2007 Bastien Nocera
+    Copyright (C) 1999 Michael Zucchi
+    Copyright (C) 2003 Josh. A. Beam
+    Copyright (C) 2008 Kevin Peng
+    Copyright (C) 1999 Nicola Girardi
+    Copyright (C) 1999 Mark Crichton
+    Copyright (C) 2001 Eazel, Inc
+    Copyright (C) 2001-2007 Sun Microsystems, Inc
+    Copyright (C) John Harper
+    Copyright (C) 1999 Michael Zucchi
+    Copyright (C) 2011-2016 Chun-wei Fan
+    Copyright (C) 2015 Kalev Lember
+    Copyright (C) 2003-2006 David Schleef
+    Copyright (C) 2004 Zuza Software Foundation
+    Copyright (C) 2004-2006 GNOME Foundation
+    Copyright (C) 2004 Adam Weinberger
+    Copyright (C) 2004-2007 Rosetta Contributors
+    Copyright (C) 2004-2014 Canonical Ltd.
+    Copyright (C) 2006 Lukas Novotny
+    Copyright (C) 2003-2005 Miloslav Trmac
+    Copyright (C) 2007-2010 The GNOME Project
+    Copyright (C) 2000-2005 Sharif FarsiWeb, Inc.
+    Copyright (C) 1999-2000 Jesus Bravo Alvarez
+    Copyright (C) 2003 OpenMN team
+    Copyright (C) 2005-2007 Free Software Foundation, Andhra Pradesh
+    Copyright (C) Croatiann Team
+    Copyright (C) 2004 Gurban Mühemmet Tewekgeli
+    Copyright (C) 2004 Kakilik - Turkmen free software developers community
+    Copyright (C) 2010 GNOME i18n Project for Vietnamese
+License: LGPL-2+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+    .
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+    .
+    You should have received a copy of the GNU Library General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+    .
+    On Debian systems, the complete text of the GNU Lesser General
+    Public License can be found in `/usr/share/common-licenses/LGPL-2'.
+
+Files:
+    tests/*
+    gdk-pixbuf/test-gdk-pixbuf.c
+    thumbnailer/*
+Copyright:
+    Copyright (C) 2013-2016 Red Hat, Inc
+    Copyright (C) 2001 Søren Sandmann
+    Copyright (C) 2004 Matthias Clasen
+    Copyright (C) 2013-2016 Bastien Nocera
+    Copyright (C) 2014 Canonical Ltd.
+    Copyright (C) 2016 Martin Guy
+License: GPL-2+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+    .
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    .
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    .
+    On Debian systems, the complete text of the GNU General
+    Public License can be found in `/usr/share/common-licenses/GPL-2'.

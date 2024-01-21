@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.app-folders" path="/org/gnome/desktop/app-folders/">
+    <key name="folder-children" type="as">
+      <default>[]</default>
+      <summary>Folder children</summary>
+      <description>List of relative settings paths at which app-folders are
+        stored. Each folder uses the org.gnome.desktop.app-folders.folder
+        schema.</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.desktop.app-folders.folder">
+    <key name="name" type="s">
+      <default>''</default>
+      <summary>Folder name</summary>
+      <description>The name of the application folder.</description>
+    </key>
+    <key name="translate" type="b">
+      <default>false</default>
+      <summary>Translate the name</summary>
+      <description>Whether the name key is a filename to be looked up in
+      /usr/share/desktop-directories.</description>
+    </key>
+    <key name="apps" type="as">
+      <default>[]</default>
+      <summary>Applications</summary>
+      <description>The list of IDs of applications that are explicitly
+      included in this folder.</description>
+    </key>
+    <key name="categories" type="as">
+      <default>[]</default>
+      <summary>Categories</summary>
+      <description>A list of categories for which apps will be placed
+      into this folder by default, in addition to the apps that are
+      listed in the apps key.</description>
+    </key>
+    <key name="excluded-apps" type="as">
+      <default>[]</default>
+      <summary>Excluded applications</summary>
+      <description>A list of IDs of applications that are excluded
+      from this folder. This can be used to remove applications that
+      would otherwise be included by category.</description>
+    </key>
+  </schema>
+</schemalist>

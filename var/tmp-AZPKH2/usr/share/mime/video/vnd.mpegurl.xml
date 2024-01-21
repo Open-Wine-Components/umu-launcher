@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="video/vnd.mpegurl">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>MPEG video (streamed)</comment>
+  <comment xml:lang="af">MPEG-video (gestroom)</comment>
+  <comment xml:lang="ast">Videu en MPEG (tresmitíu)</comment>
+  <comment xml:lang="bg">Видео — MPEG, поточно</comment>
+  <comment xml:lang="ca">vídeo MPEG (flux)</comment>
+  <comment xml:lang="cs">video MPEG (proud)</comment>
+  <comment xml:lang="da">MPEG-video (strøm)</comment>
+  <comment xml:lang="de">MPEG-Video (Datenstrom)</comment>
+  <comment xml:lang="el">Βίντεο MPEG (εκπεμπόμενο)</comment>
+  <comment xml:lang="en-GB">MPEG video (streamed)</comment>
+  <comment xml:lang="es">vídeo MPEG (transmisión)</comment>
+  <comment xml:lang="eu">MPEG bideoa (korronte bidez)</comment>
+  <comment xml:lang="fi">MPEG-video (virtaus)</comment>
+  <comment xml:lang="fr">vidéo MPEG (flux)</comment>
+  <comment xml:lang="fur">video MPEG (trasmission)</comment>
+  <comment xml:lang="ga">físeán MPEG (sruthaithe)</comment>
+  <comment xml:lang="gl">vídeo MPEG (en stream)</comment>
+  <comment xml:lang="he">קובץ MPEG (בהזרמה)</comment>
+  <comment xml:lang="hr">MPEG video snimka (strujanje)</comment>
+  <comment xml:lang="hu">MPEG videó (szórt)</comment>
+  <comment xml:lang="ia">Video MPEG (in fluxo)</comment>
+  <comment xml:lang="id">Video MPEG (di-stream-kan)</comment>
+  <comment xml:lang="it">Video MPEG (streamed)</comment>
+  <comment xml:lang="ja">MPEG ビデオ（ストリーム）</comment>
+  <comment xml:lang="ka">MPEG ვიდეო (ნაკადი)</comment>
+  <comment xml:lang="kk">MPEG видео (ағымдық)</comment>
+  <comment xml:lang="ko">MPEG 동영상(스트리밍)</comment>
+  <comment xml:lang="lv">MPEG video (straumēts)</comment>
+  <comment xml:lang="nl">MPEG video (streamed)</comment>
+  <comment xml:lang="oc">vidèo MPEG (flux)</comment>
+  <comment xml:lang="pl">Plik wideo MPEG (strumień)</comment>
+  <comment xml:lang="pt">vídeo MPEG (em fluxo)</comment>
+  <comment xml:lang="pt-BR">Vídeo MPEG (fluxo)</comment>
+  <comment xml:lang="ru">Видео MPEG (потоковое)</comment>
+  <comment xml:lang="sk">MPEG video (streamované)</comment>
+  <comment xml:lang="sl">MPEG-video (pretočni)</comment>
+  <comment xml:lang="sr">МПЕГ видео (проточни)</comment>
+  <comment xml:lang="sv">MPEG-video (strömmad)</comment>
+  <comment xml:lang="tr">MPEG videosu (akış)</comment>
+  <comment xml:lang="uk">відеокліп MPEG (потоковий)</comment>
+  <comment xml:lang="zh-CN">MPEG 视频流媒体</comment>
+  <comment xml:lang="zh-TW">MPEG 視訊 (串流)</comment>
+  <sub-class-of type="text/plain"/>
+  <alias type="video/x-mpegurl"/>
+  <glob pattern="*.m1u"/>
+  <glob pattern="*.m4u"/>
+  <glob pattern="*.mxu"/>
+</mime-type>

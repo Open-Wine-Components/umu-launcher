@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.privacy" path="/org/gnome/desktop/privacy/">
+    <key name="hide-identity" type="b">
+      <default>false</default>
+      <summary>Controls visibility of personal information</summary>
+      <description>If set to true, the system will make an effort to
+      not divulge the user’s identity on screen or on the network.</description>
+    </key>
+    <key name="show-full-name-in-top-bar" type="b">
+      <default>true</default>
+      <summary>Show full name in the user menu</summary>
+      <description>Whether the users full name is shown in the user menu or not.</description>
+    </key>
+    <key name="remove-old-trash-files" type="b">
+      <default>false</default>
+      <summary>Whether to remove old files from the trash automatically</summary>
+      <description>If TRUE, automatically remove files from the trash
+      when they are older than “old-files-age” days.</description>
+    </key>
+    <key name="remove-old-temp-files" type="b">
+      <default>false</default>
+      <summary>Whether to remove old temporary files automatically</summary>
+      <description>If TRUE, automatically remove temporary files
+      when they are older than “old-files-age” days.</description>
+    </key>
+    <key name="old-files-age" type="u">
+      <default>30</default>
+      <summary>Number of days to keep trash and temporary files</summary>
+      <description>Consider trash and temporary files old after
+      this many days.</description>
+    </key>
+    <key name="remember-recent-files" type="b">
+      <default>true</default>
+      <summary>Whether to remember recently used files</summary>
+      <description>If FALSE, applications will not remember recently
+        used files.</description>
+    </key>
+    <key name="recent-files-max-age" type="i">
+      <default>-1</default>
+      <summary>Number of days to remember recently used files for</summary>
+      <description>Recently used files will be remembered for this many days.
+        If set to 0, recent files will not be remembered; if set to -1, they
+        will be retained indefinitely.</description>
+    </key>
+    <key name="remember-app-usage" type="b">
+      <default>true</default>
+      <summary>Whether to remember application usage</summary>
+      <description>If FALSE, application usage will not be monitored
+        and recorded.</description>
+    </key>
+    <key name="send-software-usage-stats" type="b">
+      <default>false</default>
+      <summary>Send statistics when applications are removed or installed</summary>
+      <description>If FALSE, no anonymous installation or removal information will be sent to the vendor.</description>
+    </key>
+    <key name="report-technical-problems" type="b">
+      <default>false</default>
+      <summary>Send reports of technical problems to the vendor</summary>
+      <description>If TRUE, anonymized reports will be sent automatically to the vendor.</description>
+    </key>
+    <key name="disable-microphone" type="b">
+      <default>false</default>
+      <summary>Don’t allow applications to access the microphone</summary>
+      <description>If TRUE, applications should not use the microphone.</description>
+    </key>
+    <key name="disable-camera" type="b">
+      <default>false</default>
+      <summary>Don’t allow applications to access the camera</summary>
+      <description>If TRUE, applications should not use the camera.</description>
+    </key>
+    <key name="disable-sound-output" type="b">
+      <default>false</default>
+      <summary>Don’t allow applications to output sound</summary>
+      <description>If TRUE, applications should not make sound.</description>
+    </key>
+    <key name="usb-protection" type="b">
+      <default>true</default>
+      <summary>Whether to protect USB devices</summary>
+      <description>If the USBGuard service is present and this setting is
+        enabled, USB devices will be protected as configured in the
+        usb-protection-level setting.
+      </description>
+    </key>
+    <key name="usb-protection-level" enum="org.gnome.desktop.GDesktopUsbProtection">
+      <default>'lockscreen'</default>
+      <summary>When USB devices should be rejected</summary>
+      <description>
+        If set to “lockscreen”, only when the lock screen is present new USB devices will
+        be rejected; if set to “always”, all new USB devices will always be rejected.
+      </description>
+    </key>
+  </schema>
+</schemalist>

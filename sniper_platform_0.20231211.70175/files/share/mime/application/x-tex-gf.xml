@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-tex-gf">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>generic font file</comment>
+  <comment xml:lang="af">generiese skriftipelêer</comment>
+  <comment xml:lang="ar">ملف الخط العام</comment>
+  <comment xml:lang="be-Latn">zvyčajny fajł šryftu</comment>
+  <comment xml:lang="bg">Шрифт</comment>
+  <comment xml:lang="ca">fitxer de lletra genèrica</comment>
+  <comment xml:lang="cs">obecný soubor s fontem</comment>
+  <comment xml:lang="da">general skrifttypefil</comment>
+  <comment xml:lang="de">Allgemeine Schriftdatei</comment>
+  <comment xml:lang="el">Γενικό αρχείο γραμματοσειράς</comment>
+  <comment xml:lang="en-GB">generic font file</comment>
+  <comment xml:lang="eo">genera tipara dosiero</comment>
+  <comment xml:lang="es">tipo de letra genérico</comment>
+  <comment xml:lang="eu">letra-tipo orokorra</comment>
+  <comment xml:lang="fi">yleinen fonttitiedosto</comment>
+  <comment xml:lang="fo">felagsstavasniðsfíla</comment>
+  <comment xml:lang="fr">fichier de polices générique</comment>
+  <comment xml:lang="fur">file di caratar gjeneric</comment>
+  <comment xml:lang="ga">comhad cló ginearálta</comment>
+  <comment xml:lang="gl">ficheiro de tipo de fonte xenérica</comment>
+  <comment xml:lang="he">קובץ גופן גנרי</comment>
+  <comment xml:lang="hr">Izvorna datoteka slova</comment>
+  <comment xml:lang="hu">általános betűkészletfájl</comment>
+  <comment xml:lang="ia">File de typo de litteras generic</comment>
+  <comment xml:lang="id">berkas fonta generik</comment>
+  <comment xml:lang="it">File tipo carattere generico</comment>
+  <comment xml:lang="ja">一般フォントファイル</comment>
+  <comment xml:lang="kk">қаріп файлы</comment>
+  <comment xml:lang="ko">일반 글꼴 파일</comment>
+  <comment xml:lang="lt">bendras šrifto failas</comment>
+  <comment xml:lang="lv">vispārēja fonta datne</comment>
+  <comment xml:lang="ms">Fail font generik</comment>
+  <comment xml:lang="nb">vanlig skriftfil</comment>
+  <comment xml:lang="nl">algemeen lettertypebestand</comment>
+  <comment xml:lang="nn">vanleg skrifttypefil</comment>
+  <comment xml:lang="oc">fichièr de poliças generic</comment>
+  <comment xml:lang="pl">Zwykły plik czcionki</comment>
+  <comment xml:lang="pt">ficheiro genérico de letra</comment>
+  <comment xml:lang="pt-BR">Arquivo de fonte genérico</comment>
+  <comment xml:lang="ro">fișier de font generic</comment>
+  <comment xml:lang="ru">Обычный файл шрифта</comment>
+  <comment xml:lang="sk">Obyčajný súbor písma</comment>
+  <comment xml:lang="sl">izvorna datoteka pisave</comment>
+  <comment xml:lang="sq">File lloj gërme i përgjithshëm</comment>
+  <comment xml:lang="sr">општа датотека слова</comment>
+  <comment xml:lang="sv">allmän typsnittsfil</comment>
+  <comment xml:lang="tr">genel yazı tipi dosyası</comment>
+  <comment xml:lang="uk">загальний файл шрифту</comment>
+  <comment xml:lang="vi">tập tin phông giống loài</comment>
+  <comment xml:lang="zh-CN">通用字体文件</comment>
+  <comment xml:lang="zh-TW">通用字型檔</comment>
+  <generic-icon name="font-x-generic"/>
+  <glob pattern="*.gf"/>
+</mime-type>

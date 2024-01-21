@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/vnd.qt.linguist">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>message catalog</comment>
+  <comment xml:lang="af">boodskaplêer</comment>
+  <comment xml:lang="ar">كتالوج الرسالة</comment>
+  <comment xml:lang="be-Latn">kataloh paviedamleńniaŭ</comment>
+  <comment xml:lang="bg">Каталог със съобщения</comment>
+  <comment xml:lang="ca">catàleg de missatges</comment>
+  <comment xml:lang="cs">katalog zpráv</comment>
+  <comment xml:lang="da">meddelelseskatalog</comment>
+  <comment xml:lang="de">Nachrichtenkatalog</comment>
+  <comment xml:lang="el">Κατάλογος μηνυμάτων</comment>
+  <comment xml:lang="en-GB">message catalogue</comment>
+  <comment xml:lang="eo">katalogo de mesaĝoj</comment>
+  <comment xml:lang="es">catálogo de mensajes</comment>
+  <comment xml:lang="eu">mezuen katalogoa</comment>
+  <comment xml:lang="fi">viestiluettelo</comment>
+  <comment xml:lang="fo">boðskrá</comment>
+  <comment xml:lang="fr">catalogue de messages</comment>
+  <comment xml:lang="fur">catalic di messaçs</comment>
+  <comment xml:lang="ga">catalóg theachtaireachtaí</comment>
+  <comment xml:lang="gl">catálogo de mensaxes</comment>
+  <comment xml:lang="he">קטלוג הודעות</comment>
+  <comment xml:lang="hr">Katalog poruka</comment>
+  <comment xml:lang="hu">üzenetkatalógus</comment>
+  <comment xml:lang="ia">Catalogo de messages</comment>
+  <comment xml:lang="id">katalog pesan</comment>
+  <comment xml:lang="it">Catalogo di messaggi</comment>
+  <comment xml:lang="ja">メッセージカタログ</comment>
+  <comment xml:lang="kk">мәлімдемелер каталогы</comment>
+  <comment xml:lang="ko">메시지 카탈로그</comment>
+  <comment xml:lang="lt">laiškų katalogas</comment>
+  <comment xml:lang="lv">ziņojumu katalogs</comment>
+  <comment xml:lang="ms">Katalog mesej</comment>
+  <comment xml:lang="nb">meldingskatalog</comment>
+  <comment xml:lang="nl">berichtencatalogus</comment>
+  <comment xml:lang="nn">meldingskatalog</comment>
+  <comment xml:lang="oc">catalòg de messatges</comment>
+  <comment xml:lang="pl">Katalog wiadomości</comment>
+  <comment xml:lang="pt">catálogo de mensagens</comment>
+  <comment xml:lang="pt-BR">Catálogo de mensagens</comment>
+  <comment xml:lang="ro">catalog de mesaje</comment>
+  <comment xml:lang="ru">Каталог сообщений</comment>
+  <comment xml:lang="sk">Katalóg správ</comment>
+  <comment xml:lang="sl">katalogov sporočil</comment>
+  <comment xml:lang="sq">Katallog mesazhesh</comment>
+  <comment xml:lang="sr">каталог порука</comment>
+  <comment xml:lang="sv">meddelandekatalog</comment>
+  <comment xml:lang="tr">ileti kataloğu</comment>
+  <comment xml:lang="uk">каталог повідомлень</comment>
+  <comment xml:lang="vi">phân loại thông điệp</comment>
+  <comment xml:lang="zh-CN">消息库</comment>
+  <comment xml:lang="zh-TW">訊息目錄</comment>
+  <sub-class-of type="application/xml"/>
+  <glob pattern="*.ts"/>
+  <alias type="application/x-linguist"/>
+  <alias type="text/vnd.trolltech.linguist"/>
+</mime-type>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/cache-manifest">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Web application cache file</comment>
+  <comment xml:lang="bg">Кеш — уеб приложение</comment>
+  <comment xml:lang="ca">fitxer de memòria cau d'aplicació Web</comment>
+  <comment xml:lang="da">Webprogrammellemlagerfil</comment>
+  <comment xml:lang="de">Webanwendungscache-Datei</comment>
+  <comment xml:lang="en-GB">Web application cache file</comment>
+  <comment xml:lang="es">archivo de antememoria de aplicación web</comment>
+  <comment xml:lang="eu">Web-aplikazio katxe fitxategia</comment>
+  <comment xml:lang="fi">Web-sovelluksen välimuistitiedosto</comment>
+  <comment xml:lang="fr">fichier de cache d'application Web</comment>
+  <comment xml:lang="hr"> Web aplikacija datoteka predmemorije </comment>
+  <comment xml:lang="hu">Webalkalmazás gyorsítótárfájl</comment>
+  <comment xml:lang="it">File cache applicazione Web</comment>
+  <comment xml:lang="ko">웹 어플리케이션 캐시 파일</comment>
+  <comment xml:lang="pl">Plik pamięci podręcznej aplikacji WWW</comment>
+  <comment xml:lang="pt-BR">Arquivo de cache de aplicativo Web</comment>
+  <comment xml:lang="sv">Webbapplikation cachefil</comment>
+  <comment xml:lang="tr">Web uygulama önbellek dosyası</comment>
+  <comment xml:lang="uk">файл кешу вебпрограми</comment>
+  <comment xml:lang="zh-CN">Web 应用缓存文件</comment>
+  <sub-class-of type="text/plain"/>
+  <glob pattern="*.manifest"/>
+</mime-type>

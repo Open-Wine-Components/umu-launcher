@@ -1,0 +1,8 @@
+libform.so.6 libncurses6 #MINVER#
+# No symbols listed here yet
+libmenu.so.6 libncurses6 #MINVER#
+# No symbols listed here yet
+libncurses.so.6 libncurses6 #MINVER#
+# No symbols listed here yet
+libpanel.so.6 libncurses6 #MINVER#
+# No symbols listed here yet

@@ -1,0 +1,58 @@
+# $Id: 20x11-common_process-args 305 2005-07-03 18:51:43Z dnusinow $
+
+# This file is sourced by Xsession(5), not executed.
+
+# Determine how many arguments were provided.
+case $# in
+  0)
+    # No arguments given; use default behavior.
+    ;;
+  1)
+    # One argument given; see what it was.
+    case "$1" in
+      failsafe)
+        # Failsafe session was requested.
+        if has_option allow-failsafe; then
+          if [ -e /usr/bin/x-terminal-emulator ]; then
+            if [ -x /usr/bin/x-terminal-emulator ]; then
+              exec x-terminal-emulator -geometry +1+1
+            else
+              # fatal error
+              errormsg "unable to launch failsafe X session ---" \
+                       "x-terminal-emulator not executable; aborting."
+            fi
+          else
+            # fatal error
+            errormsg "unable to launch failsafe X session ---" \
+                     "x-terminal-emulator not found; aborting."
+          fi
+        fi
+        ;;
+      default)
+        # Default behavior was requested.
+        ;;
+      *)
+        # Specific program was requested.
+        STARTUP_FULL_PATH=$(/usr/bin/which "${1%% *}" || true)
+        if [ -n "$STARTUP_FULL_PATH" ] && [ -e "$STARTUP_FULL_PATH" ]; then
+          if [ -x "$STARTUP_FULL_PATH" ]; then
+            STARTUP="$1"
+          else
+            message "unable to launch \"$1\" X session ---" \
+                    "\"$1\" not executable; falling back to default session."
+          fi
+        else
+          message "unable to launch \"$1\" X session ---" \
+                  "\"$1\" not found; falling back to default session."
+        fi
+        ;;
+    esac
+    ;;
+  *)
+    # More than one argument given; we don't know what to do.
+    message "unsupported number of arguments ($#); falling back to default" \
+            "session."
+    ;;
+esac
+
+# vim:set ai et sts=2 sw=2 tw=80:

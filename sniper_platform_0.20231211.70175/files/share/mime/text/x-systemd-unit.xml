@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/x-systemd-unit">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>systemd unit file</comment>
+  <comment xml:lang="af">systemd-eenheidlêer</comment>
+  <comment xml:lang="ast">ficheru d'unidaes de systemd</comment>
+  <comment xml:lang="bg">Елемент — systemd</comment>
+  <comment xml:lang="ca">fitxer d'unitat de systemd</comment>
+  <comment xml:lang="cs">jednotkový soubor systemd</comment>
+  <comment xml:lang="da">systemd unit-fil</comment>
+  <comment xml:lang="de">systemd-Einheitsdatei</comment>
+  <comment xml:lang="en-GB">systemd unit file</comment>
+  <comment xml:lang="es">archivo de unidad de systemd</comment>
+  <comment xml:lang="eu">systemd unitate fitxategia</comment>
+  <comment xml:lang="fi">systemd-yksikkötiedosto</comment>
+  <comment xml:lang="fr">fichier d'unité systemd</comment>
+  <comment xml:lang="fur">file unitât di systemd</comment>
+  <comment xml:lang="ga">comhad aonaid systemd</comment>
+  <comment xml:lang="hr">Datoteka systemd jedinice</comment>
+  <comment xml:lang="hu">systemd egység fájl</comment>
+  <comment xml:lang="id">berkas unit systemd</comment>
+  <comment xml:lang="it">File unità systemd</comment>
+  <comment xml:lang="kk">systemd юнит файлы</comment>
+  <comment xml:lang="ko">systemd 유닛 파일</comment>
+  <comment xml:lang="pl">Plik jednostki systemd</comment>
+  <comment xml:lang="pt-BR">Arquivo de unit do systemd</comment>
+  <comment xml:lang="ru">Модульный файл Systemd</comment>
+  <comment xml:lang="sk">Súbor jednotky systemd</comment>
+  <comment xml:lang="sr">датотека јединице системд-а</comment>
+  <comment xml:lang="sv">systemd-enhetsfil</comment>
+  <comment xml:lang="tr">systemd birim dosyası</comment>
+  <comment xml:lang="uk">файл модуля systemd</comment>
+  <comment xml:lang="zh-CN">systemd 单元文件</comment>
+  <comment xml:lang="zh-TW">systemd 單位檔</comment>
+  <sub-class-of type="text/plain"/>
+  <glob pattern="*.automount"/>
+  <glob pattern="*.device"/>
+  <glob pattern="*.mount"/>
+  <glob pattern="*.path"/>
+  <glob pattern="*.scope"/>
+  <glob pattern="*.service"/>
+  <glob pattern="*.slice"/>
+  <glob pattern="*.socket"/>
+  <glob pattern="*.swap"/>
+  <glob pattern="*.target"/>
+  <glob pattern="*.timer"/>
+</mime-type>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-appleworks-document">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>AppleWorks document</comment>
+  <generic-icon name="x-office-document"/>
+  <glob pattern="*.cwk"/>
+</mime-type>

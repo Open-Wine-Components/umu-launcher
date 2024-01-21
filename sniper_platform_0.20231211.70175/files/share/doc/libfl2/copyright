@@ -1,0 +1,582 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: flex
+Upstream-Contact: flex-help@lists.sourceforge.net
+Source: git://git.code.sf.net/p/flex/flex
+Comment: This is the Debian prepackaged version of flex, the fast lexical
+         analyzer generator. This package was first put together by
+         Robert Leslie <rob@mars.org>. It is currently maintained by
+         Manoj Srivastava <srivasta@debian.org>, who took over from
+         Santiago Vila <sanvila@debian.org>, and it is built from
+         sources obtained from: https://github.com/westes/flex
+
+Files: *
+Copyright: 2001-2008 The Flex Project.
+           1990, 1993, 1997 The Regents of the University of California.
+           All rights reserved.
+License: FLEX
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: debian/*
+Copyright: 2003-2009, 2014-2016, Manoj Srivastava <srivasta@debian.org>
+License: GPL-3+
+
+Files: m4/*
+Copyright: 1994-2015, Free Software Foundation, Inc.
+License: FLEX
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: m4/ax_prog_cc_for_build.m4
+Copyright: 2008, Paolo Bonzini <bonzini@gnu.org>
+License: FSFAP
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: m4/libtool.m4
+Copyright: 1996-2001, 2003-2015, Free Software Foundation, Inc.
+License: GPL
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: m4/ltoptions.m4
+  m4/ltsugar.m4
+  m4/lt~obsolete.m4
+Copyright: 2004, 2005, 2007-2009, 2011-2015, Free Software
+License: FLEX
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: m4/nls.m4
+Copyright: 1995-2003, 2005, 2006, 2008-2010, Free Software Foundation
+License: FLEX
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: po/Makefile.in.in
+Copyright: 1995-1997, 2000-2007, 2009, 2010, Ulrich Drepper <drepper@gnu.ai.mit.edu>
+License: GPL
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: po/Makevars
+Copyright: for their translations to this person
+License: FLEX
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: src/*
+Copyright: 1990, 1993, The Regents of the University of California.
+License: FLEX
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: src/Makefile.am
+  src/filter.c
+  src/flexint.h
+  src/libfl.pc.in
+  src/libmain.c
+  src/libyywrap.c
+  src/mkskel.sh
+  src/regex.c
+  src/scan.c
+  src/skel.c
+  src/version.h
+Copyright: 2001-2008 The Flex Project.
+           1990, 1993, 1997 The Regents of the University of California.
+           All rights reserved.
+License: FLEX
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: src/gettext.h
+Copyright: 1995-1998, 2000-2002, Free Software Foundation, Inc.
+License: LGPL-2+
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: src/parse.c
+  src/parse.h
+Copyright: 1984, 1989, 1990, 2000-2015, Free Software Foundation, Inc.
+License: GPL-3+
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+Files: tools/git2cl
+Copyright: 2007, Luis Mondesi <lemsx1@gmail.com>
+  2007, 2008, Simon Josefsson <simon@josefsson.org>
+License: GPL-2+
+ Flex carries the copyright used for BSD software, slightly modified
+ because it originated at the Lawrence Berkeley (not Livermore!) Laboratory,
+ which operates under a contract with the Department of Energy:
+ .
+ This code is derived from software contributed to Berkeley by
+ Vern Paxson.
+ .
+ The United States Government has rights in this work pursuant
+ to contract no. DE-AC03-76SF00098 between the United States
+ Department of Energy and the University of California.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ Neither the name of the University nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE.
+ .
+ This basically says "do whatever you please with this software except
+ remove this notice or take advantage of the University's (or the flex
+ authors') name".
+ .
+ Note that the "flex.skl" scanner skeleton carries no copyright notice.
+ You are free to do whatever you please with scanners generated using flex;
+ for them, you are not even bound by the above copyright.
+
+License: GPL-3+
+ This package is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ .
+ This package is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <https://www.gnu.org/licenses/>.
+ .
+ On Debian systems, the complete text of the GNU General
+ Public License can be found in "/usr/share/common-licenses/GPL-3".

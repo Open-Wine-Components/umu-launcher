@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="x-content/blank-bd">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>blank Blu-ray disc</comment>
+  <comment xml:lang="af">skoon Blu-ray-skyf</comment>
+  <comment xml:lang="ar">قرص بلو-راي فارغ</comment>
+  <comment xml:lang="be-Latn">čysty dysk Blu-ray</comment>
+  <comment xml:lang="bg">Blu-ray — празно</comment>
+  <comment xml:lang="ca">disc Blu-Ray en blanc</comment>
+  <comment xml:lang="cs">prázdný disk Blu-ray</comment>
+  <comment xml:lang="da">tom Blu-ray-disk</comment>
+  <comment xml:lang="de">Leere Blu-ray-Scheibe</comment>
+  <comment xml:lang="el">Κενό Blu-ray</comment>
+  <comment xml:lang="en-GB">blank Blu-ray disc</comment>
+  <comment xml:lang="es">disco Blu-ray en blanco</comment>
+  <comment xml:lang="eu">Blu-ray disko hutsa</comment>
+  <comment xml:lang="fi">tyhjä Blu-ray-levy</comment>
+  <comment xml:lang="fo">blankur Blu-ray diskur</comment>
+  <comment xml:lang="fr">disque Blu-Ray vierge</comment>
+  <comment xml:lang="fur">disc Blu-ray vueit</comment>
+  <comment xml:lang="ga">diosca folamh Blu-Ray</comment>
+  <comment xml:lang="gl">disco Blu-ray en branco</comment>
+  <comment xml:lang="he">תקליטור בלו־ריי ריק</comment>
+  <comment xml:lang="hr">Prazni Blu-ray disk</comment>
+  <comment xml:lang="hu">üres Blu-Ray lemez</comment>
+  <comment xml:lang="ia">Disco Bly-ray vacue</comment>
+  <comment xml:lang="id">cakram Blu-ray kosong</comment>
+  <comment xml:lang="it">Disco vuoto Blu-ray</comment>
+  <comment xml:lang="ja">ブランク Blu-ray ディスク</comment>
+  <comment xml:lang="kk">таза Blu-ray дискі</comment>
+  <comment xml:lang="ko">빈 블루레이 디스크</comment>
+  <comment xml:lang="lt">tuščias Blu-ray diskas</comment>
+  <comment xml:lang="lv">tukšs Blu-ray disks</comment>
+  <comment xml:lang="nl">blanco Blu-ray-disk</comment>
+  <comment xml:lang="nn">tom Blu-Ray-plate</comment>
+  <comment xml:lang="oc">disc Blu-Ray verge</comment>
+  <comment xml:lang="pl">Pusta płyta Blu-ray</comment>
+  <comment xml:lang="pt">Blu-Ray vazio</comment>
+  <comment xml:lang="pt-BR">Disco Blu-ray vazio</comment>
+  <comment xml:lang="ro">disc gol Blu-ray</comment>
+  <comment xml:lang="ru">Чистый диск Blu-ray</comment>
+  <comment xml:lang="sk">Prázdny disk Blu-ray</comment>
+  <comment xml:lang="sl">prazen Blu-Ray disk</comment>
+  <comment xml:lang="sq">Disk bosh Blu-ray</comment>
+  <comment xml:lang="sr">празан Блу-реј диск</comment>
+  <comment xml:lang="sv">tom Blu-ray-skiva</comment>
+  <comment xml:lang="tr">boş Blue-ray diski</comment>
+  <comment xml:lang="uk">порожній диск Blu-ray</comment>
+  <comment xml:lang="vi">đĩa Blu-ray trống</comment>
+  <comment xml:lang="zh-CN">空蓝光 DVD</comment>
+  <comment xml:lang="zh-TW">空白 Blu-ray 光碟</comment>
+</mime-type>

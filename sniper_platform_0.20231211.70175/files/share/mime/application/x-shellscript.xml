@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-shellscript">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>shell script</comment>
+  <comment xml:lang="af">shell-skrip</comment>
+  <comment xml:lang="ar">سكربت شِل</comment>
+  <comment xml:lang="az">qabıq skripti</comment>
+  <comment xml:lang="be-Latn">skrypt abałonki</comment>
+  <comment xml:lang="bg">Скрипт на обвивката</comment>
+  <comment xml:lang="ca">script shell</comment>
+  <comment xml:lang="cs">skript shellu</comment>
+  <comment xml:lang="cy">sgript plisgyn</comment>
+  <comment xml:lang="da">skal-program</comment>
+  <comment xml:lang="de">Shell-Skript</comment>
+  <comment xml:lang="el">Δέσμη ενεργειών κελύφους</comment>
+  <comment xml:lang="en-GB">shell script</comment>
+  <comment xml:lang="eo">ŝelskripto</comment>
+  <comment xml:lang="es">secuencia de órdenes en shell</comment>
+  <comment xml:lang="eu">shell script-a</comment>
+  <comment xml:lang="fi">komentotulkin komentotiedosto</comment>
+  <comment xml:lang="fo">skel boðrøð</comment>
+  <comment xml:lang="fr">script shell</comment>
+  <comment xml:lang="fur">script shell</comment>
+  <comment xml:lang="ga">script bhlaoisce</comment>
+  <comment xml:lang="gl">script de shell</comment>
+  <comment xml:lang="he">תסריט מעטפת</comment>
+  <comment xml:lang="hr">Skripta ljuske</comment>
+  <comment xml:lang="hu">héj-parancsfájl</comment>
+  <comment xml:lang="ia">Script de shell</comment>
+  <comment xml:lang="id">skrip shell</comment>
+  <comment xml:lang="it">Script shell</comment>
+  <comment xml:lang="ja">シェルスクリプト</comment>
+  <comment xml:lang="kk">қоршам сценарийі</comment>
+  <comment xml:lang="ko">셸 스크립트</comment>
+  <comment xml:lang="lt">shell scenarijus</comment>
+  <comment xml:lang="lv">čaulas skripts</comment>
+  <comment xml:lang="ms">Skrip shell</comment>
+  <comment xml:lang="nb">skallskript</comment>
+  <comment xml:lang="nl">shellscript</comment>
+  <comment xml:lang="nn">skalskript</comment>
+  <comment xml:lang="oc">escript shell</comment>
+  <comment xml:lang="pl">Skrypt powłoki</comment>
+  <comment xml:lang="pt">script de terminal</comment>
+  <comment xml:lang="pt-BR">Script shell</comment>
+  <comment xml:lang="ro">script shell</comment>
+  <comment xml:lang="ru">Сценарий shell</comment>
+  <comment xml:lang="sk">Skript shellu</comment>
+  <comment xml:lang="sl">lupinski skript</comment>
+  <comment xml:lang="sq">Script shell</comment>
+  <comment xml:lang="sr">скрипта љуске</comment>
+  <comment xml:lang="sv">skalskript</comment>
+  <comment xml:lang="tr">kabuk betiği</comment>
+  <comment xml:lang="uk">скрипт оболонки</comment>
+  <comment xml:lang="vi">văn lệnh trình bao</comment>
+  <comment xml:lang="zh-CN">shell 脚本</comment>
+  <comment xml:lang="zh-TW">shell 指令稿</comment>
+  <sub-class-of type="application/x-executable"/>
+  <sub-class-of type="text/plain"/>
+  <alias type="text/x-sh"/>
+  <generic-icon name="text-x-script"/>
+  <glob pattern="*.sh"/>
+</mime-type>

@@ -1,0 +1,6 @@
+libtbb.so.2 libtbb2 #MINVER#
+# No symbols listed here yet
+libtbbmalloc.so.2 libtbb2 #MINVER#
+# No symbols listed here yet
+libtbbmalloc_proxy.so.2 libtbb2 #MINVER#
+# No symbols listed here yet

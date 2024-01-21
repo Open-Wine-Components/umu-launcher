@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="x-content/audio-player">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>portable audio player</comment>
+  <comment xml:lang="af">draagbare oudiospeler</comment>
+  <comment xml:lang="ar">مشغل الملفات المسموعة المحمولة</comment>
+  <comment xml:lang="be-Latn">pieranosny aŭdyjoplayer</comment>
+  <comment xml:lang="bg">Преносим аудио плеър</comment>
+  <comment xml:lang="ca">reproductor d'àudio portàtil</comment>
+  <comment xml:lang="cs">přenosný zvukový přehrávač</comment>
+  <comment xml:lang="da">bærbar lydafspiller</comment>
+  <comment xml:lang="de">Portables Audio-Wiedergabegerät</comment>
+  <comment xml:lang="el">Φορητός αναπαραγωγέας μουσικής</comment>
+  <comment xml:lang="en-GB">portable audio player</comment>
+  <comment xml:lang="es">reproductor de audio portátil</comment>
+  <comment xml:lang="eu">audio erreproduzigailu eramangarria</comment>
+  <comment xml:lang="fi">siirrettävä äänisoitin</comment>
+  <comment xml:lang="fo">leysur ljóðavspælari</comment>
+  <comment xml:lang="fr">lecteur audio portable</comment>
+  <comment xml:lang="fur">riprodutôr audio portatil</comment>
+  <comment xml:lang="ga">seinnteoir iniompartha fuaime</comment>
+  <comment xml:lang="gl">dispositivo de son portábel</comment>
+  <comment xml:lang="he">נגן מוזיקה נייד</comment>
+  <comment xml:lang="hr">Prenosivi glazbeni svirač</comment>
+  <comment xml:lang="hu">hordozható zenelejátszó</comment>
+  <comment xml:lang="ia">Lector audio portabile</comment>
+  <comment xml:lang="id">pemutar audio portable</comment>
+  <comment xml:lang="it">Lettore audio portabile</comment>
+  <comment xml:lang="ja">ポータブルオーディオプレイヤー</comment>
+  <comment xml:lang="kk">тасымалы аудио плеер</comment>
+  <comment xml:lang="ko">휴대용 오디오 재생기</comment>
+  <comment xml:lang="lt">nešiojamasis garso leistuvas</comment>
+  <comment xml:lang="lv">portatīvais audio atskaņotājs</comment>
+  <comment xml:lang="nl">draagbare audiospeler</comment>
+  <comment xml:lang="nn">portable audio layer</comment>
+  <comment xml:lang="oc">lector àudio portable</comment>
+  <comment xml:lang="pl">Przenośny odtwarzacz dźwięku</comment>
+  <comment xml:lang="pt">reprodutor áudio portátil</comment>
+  <comment xml:lang="pt-BR">Reprodutor de áudio portátil</comment>
+  <comment xml:lang="ro">player audio portabil</comment>
+  <comment xml:lang="ru">Портативный аудиопроигрыватель</comment>
+  <comment xml:lang="sk">Prenosný hudobný prehrávač</comment>
+  <comment xml:lang="sl">prenosni predvajalnik zvoka</comment>
+  <comment xml:lang="sq">Lexues audio portativ</comment>
+  <comment xml:lang="sr">преносна музичка справица</comment>
+  <comment xml:lang="sv">bärbar ljudspelare</comment>
+  <comment xml:lang="tr">taşınabilir ses oynatıcısı</comment>
+  <comment xml:lang="uk">портативний аудіопрогравач</comment>
+  <comment xml:lang="vi">bộ phát nhạc di động</comment>
+  <comment xml:lang="zh-CN">便携式音频播放器</comment>
+  <comment xml:lang="zh-TW">可攜式音訊播放程式</comment>
+</mime-type>

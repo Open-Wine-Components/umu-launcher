@@ -1,0 +1,135 @@
+// Tamazight en caractères latin 
+// Noureddine LOUAHEDJ
+// louahedj@noureddine.me
+
+//
+// ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┲━━━━━━━━━┓
+// │ ³ ¸ │ 1 ̨  │ 2 É │ 3 ˘ │ 4 — │ 5 – │ 6 ‑ │ 7 È │ 8 ™ │ 9 Ç │ 0 À │ ° ≠ │ + ± ┃ ⌫ Retour┃
+// │ ² ¹ │ & ˇ │ é ~ │ " # │ ' { │ ( [ │ - | │ è ` │ _ \ │ ç ^ │ à @ │ ) ] │ = } ┃  arrière┃
+// ┢━━━━━┷━┱───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┺━┳━━━━━━━┫
+// ┃       ┃ A Æ │ Z Â │ E ¢ │ R Ṛ │ T Ṭ │ Y Ÿ │ U Û │ I Î │ O Ɛ │ P Ô │ ¨ ˚ │ £ Ø ┃Entrée ┃
+// ┃Tab ↹  ┃ a æ │ z â │ e € │ r ṛ │ t ṭ │ y ÿ │ u û │ i î │ o ɛ │ p ô │ ^ ~ │ $ ø ┃   ⏎   ┃
+// ┣━━━━━━━┻┱────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┺┓      ┃
+// ┃        ┃ Q Ä │ S Ṣ │ D Ḍ │ F ‚ │ G Ǧ │ H Ḥ │ J Ü │ K Ï │ L Ŀ │ M Ö │ % Ù │ µ ̄  ┃      ┃
+// ┃Maj ⇬   ┃ q ä │ s ṣ │ d ḍ │ f ‘ │ g ǧ │ h ḥ │ j ü │ k ï │ l ŀ │ m ö │ ù ' │ * ` ┃      ┃
+// ┣━━━━━━━┳┹────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┲┷━━━━━┻━━━━━━┫
+// ┃       ┃ > ≥ │ W “ │ X ” │ C Č │ V Ɣ │ B ↑ │ N → │ ? … │ . . │ / ∕ │ § − ┃             ┃
+// ┃Shift ⇧┃ < ≤ │ w « │ x » │ c č │ v ɣ │ b ↓ │ n ¬ │ , ¿ │ ; × │ : ÷ │ ! ¡ ┃Shift ⇧      ┃
+// ┣━━━━━━━╋━━━━━┷━┳━━━┷━━━┱─┴─────┴─────┴─────┴─────┴─────┴───┲━┷━━━━━╈━━━━━┻━┳━━━━━━━┳━━━┛
+// ┃       ┃       ┃       ┃ ␣         Espace fine insécable ⍽ ┃       ┃       ┃       ┃
+// ┃Ctrl   ┃Meta   ┃Alt    ┃ ␣ Espace       Espace insécable ⍽ ┃AltGr ⇮┃Menu   ┃Ctrl   ┃
+// ┗━━━━━━━┻━━━━━━━┻━━━━━━━┹───────────────────────────────────┺━━━━━━━┻━━━━━━━┻━━━━━━━┛
+
+
+default partial alphanumeric_keys
+xkb_symbols "la" {
+
+    include "fr(oss)"
+
+    name[Group1]="Berber (Algeria, Latin)";
+    
+
+    key <AD02>  { [ z,  Z,  0x1001E93,  0x1001E92   ] }; // z Z ẓ Ẓ
+    key <AD04>  { [ r,  R,  0x1001E5B,  0x1001E5A   ] }; // r R ṛ Ṛ
+    key <AD05>  { [ t,  T,  0x1001E6D,  0x1001E6C   ] }; // t T ṭ Ṭ
+    key <AD09>  { [ o,  O,  0x100025B,  0x1000190   ] }; // o O ɛ Ɛ
+    key <AC02>  { [ s,  S,  0x1001E63,  0x1001E62   ] }; // s s ṣ Ṣ
+    key <AC03>  { [ d,  D,  0x1001E0D,  0x1001E0C   ] }; // d D ḍ Ḍ
+    key <AC05>  { [ g,  G,  0x10001E7,  0x10001E6   ] }; // g G ǧ Ǧ
+    key <AC06>  { [ h,  H,  0x1001E25,  0x1001E24   ] }; // h H ḥ Ḥ
+    key <AB03>  { [ c,  C,  0x100010D,  0x100010C   ] }; // c C č Č
+    key <AB04>  { [ v,  V,  0x1000263,  0x1000194   ] }; // v V ɣ Ɣ
+ 
+    include "level3(ralt_switch)"
+};
+
+
+//
+// ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┲━━━━━━━━━┓
+// │     │ 1 ̨  │ 2   │ 3   │ 4   │ 5   │ 6   │ 7   │ 8   │ 9   │ 0   │ °   │ +   ┃ ⌫ Retour┃
+// │ ²   │ &   │   ~ │ " # │ ' { │ ( [ │ - | │     │ _ \ │   ^ │   @ │ ) ] │ = } ┃  arrière┃
+// ┢━━━━━┷━┱───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┴─┬───┺━┳━━━━━━━┫
+// ┃       ┃     │ ⵥ      │ ⵦ      │ ⵕ      │ ⵟ      │     │     │     │ ⵧ       │     │     │ £ Ø ┃Entrée ┃
+// ┃Tab ↹  ┃ ⴰ        │ ⵣ  ⵤ  │ ⴻ       │ ⵔ      │ ⵜ   ⵝ │ ⵢ       │ ⵓ        │ ⵉ      │ ⵄ       │ ⵃ       │ ⵯ       │ $ ø ┃   ⏎   ┃
+// ┣━━━━━━━┻┱────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┺┓      ┃
+// ┃        ┃ ⵈ      │ ⵚ      │ ⴹ  ⴺ │     │ ⴵ  ⴶ  │ ⵁ      │ ⵋ      │ ⴿ      │     │     │ % Ù │ µ ̄¯ ┃      ┃
+// ┃Maj ⇬   ┃ ⵇ      │ ⵙ      │ ⴷ  ⴸ │ ⴼ       │ ⴳ  ⴴ │ ⵀ   ⵂ  │ ⵊ  ⵌ │ ⴽ   ⴾ │ ⵍ      │ ⵎ       │ ù ´ │ * ` ┃      ┃
+// ┣━━━━━━━┳┹────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┬┴────┲┷━━━━━┻━━━━━━┫
+// ┃       ┃ > ¦ │     │ ⵆ       │ ⵞ      │ ⵗ    ⵠ │ ⴲ      │ ⵐ      │ ? … │ . ⋅ │ / ∕ │ § − ┃             ┃
+// ┃Shift ⇧┃ < | │ ⵡ      │ ⵅ       │ ⵛ     │ ⵖ   ⵘ │ ⴱ  ⵒ  │ ⵏ    ⵑ   │ , ¿ │ ; × │ : ÷ │ ! ¡ ┃Shift ⇧      ┃
+// ┣━━━━━━━╋━━━━━┷━┳━━━┷━━━┱─┴─────┴─────┴─────┴─────┴─────┴───┲━┷━━━━━╈━━━━━┻━┳━━━━━━━┳━━━┛
+// ┃       ┃       ┃       ┃ ␣                                 ┃       ┃       ┃       ┃
+// ┃Ctrl   ┃Meta   ┃Alt    ┃ ␣ Espace                          ┃AltGr ⇮┃Menu   ┃Ctrl   ┃
+// ┗━━━━━━━┻━━━━━━━┻━━━━━━━┹───────────────────────────────────┺━━━━━━━┻━━━━━━━┻━━━━━━━┛
+
+partial alphanumeric_keys
+xkb_symbols "ber" {
+
+    name[Group1]="Berber (Algeria, Tifinagh)";
+
+    // First row
+    key <TLDE>  { [ twosuperior,    threesuperior,  onesuperior,    dead_cedilla    ] }; // ² ³ ¹ ¸
+    key <AE01>  { [ ampersand,  1,  dead_caron, dead_ogonek ] }; // & 1 ˇ ̨
+    key <AE02>  { [ eacute, 2,  asciitilde, Eacute  ] }; // é 2 ~ É
+    key <AE03>  { [ quotedbl,   3,  numbersign, dead_breve  ] }; // " 3 # ˘
+    key <AE04>  { [ apostrophe, 4,  braceleft,  0x1002014   ] }; // ' 4 { — (tiret cadratin)
+    key <AE05>  { [ parenleft,  5,  bracketleft,    0x1002013   ] }; // ( 5 [ – (tiret demi-cadratin)
+    key <AE06>  { [ minus,  6,  bar,    0x1002011   ] }; // - 6 | ‑ (tiret insécable)
+    key <AE07>  { [ egrave, 7,  grave,  Egrave  ] }; // è 7 ` È
+    key <AE08>  { [ underscore, 8,  backslash,  trademark   ] }; // _ 8 \ ™
+    key <AE09>  { [ ccedilla,   9,  asciicircum,    Ccedilla    ] }; // ç 9 ^ Ç
+    key <AE10>  { [ agrave, 0,  at, Agrave  ] }; // à 0 @ À
+    key <AE11>  { [ parenright, degree, bracketright,   notequal    ] }; // ) ° ] ≠
+    key <AE12>  { [ equal,  plus,   braceright, plusminus   ] }; // = + } ±
+
+    // Second row
+    key <AD01>  { [ 0x1002D30   ] }; // ⴰ
+    key <AD02>  { [ 0x1002D63,  0x1002D65,  0x1002D64   ] }; // ⵣ ⵥ ⵤ 
+    key <AD03>  { [ 0x1002D3B,  0x1002D66   ] }; // ⴻ ⵦ
+    key <AD04>  { [ 0x1002D54,  0x1002D55 ] }; // ⵔ ⵕ
+    key <AD05>  { [ 0x1002D5C,  0x1002D5F,  0x1002D5D   ] }; // ⵜ ⵟ ⵝ
+    key <AD06>  { [ 0x1002D62   ] }; // ⵢ
+    key <AD07>  { [ 0x1002D53   ] }; // ⵓ 
+    key <AD08>  { [ 0x1002D49   ] }; // ⵉ
+    key <AD09>  { [ 0x1002D44,  0x1002D67   ] }; // ⵄ ⵧ
+    key <AD10>  { [ 0x1002D43   ] }; // ⵃ
+    key <AD11>  { [ 0x1002D6F   ] }; // ⵯ
+    key <AD12>  { [ dollar, sterling,   oslash, Ooblique ] }; // $ £ ø Ø
+
+    // Third row
+    key <AC01>  { [ 0x1002D47,  0x1002D48   ] }; // ⵇ ⵈ 
+    key <AC02>  { [ 0x1002D59,  0x1002D5A   ] }; // ⵙ ⵚ
+    key <AC03>  { [ 0x1002D37,  0x1002D39,  0x1002D38,  0x1002D3A   ] }; // ⴷ ⴹ ⴸ ⴺ
+    key <AC04>  { [ 0x1002D3C   ] }; // ⴼ
+    key <AC05>  { [ 0x1002D33,  0x1002D35, 0x1002D34,   0x1002D36   ] }; // ⴳ ⴵ ⴴ ⴶ
+    key <AC06>  { [ 0x1002D40,  0x1002D41,  0x1002D42   ] }; // ⵀ ⵁ ⵂ 
+    key <AC07>  { [ 0x1002D4A,  0x1002D4B,  0x1002D4C   ] }; // ⵊ ⵋ ⵌ Ü
+    key <AC08>  { [ 0x1002D3D,  0x1002D3F,  0x1002D3E   ] }; // ⴽ ⴿ ⴾ 
+    key <AC09>  { [ 0x1002D4D   ] }; // ⵍ 
+    key <AC10>  { [ 0x1002D4E   ] }; // ⵎ 
+    key <AC11>  { [ ugrave, percent,    dead_acute, Ugrave  ] }; // ù % ' Ù
+    key <BKSL>  { [ asterisk,   mu, dead_grave, dead_macron ] }; // * µ ` ̄
+
+    // Fourth row
+    key <LSGT>  { [ less,   greater,    lessthanequal,  greaterthanequal    ] }; // < > ≤ ≥
+    key <AB01>  { [ 0x1002D61   ] }; // ⵡ
+    key <AB02>  { [ 0x1002D45,  0x1002D46   ] }; // ⵅ ⵆ
+    key <AB03>  { [ 0x1002D5B,  0x1002D5E   ] }; // ⵛ ⵞ
+    key <AB04>  { [ 0x1002D56,  0x1002D57,  0x1002D58,  0x1002D60   ] }; // ⵖ ⵗ ⵘ ⵠ
+    key <AB05>  { [ 0x1002D31,  0x1002D32,  0x1002D52   ] }; // ⴱ ⴲ ⵒ
+    key <AB06>  { [ 0x1002D4F,  0x1002D50,  0x1002D51   ] }; // ⵏ ⵐ ⵑ
+    key <AB07>  { [ comma,  question,   questiondown,   0x1002026   ] }; // , ? ¿ …
+    key <AB08>  { [ semicolon,  period, multiply,   0x10022C5   ] }; // ; . × ⋅
+    key <AB09>  { [ colon,  slash,  division,   0x1002215   ] }; // : / ÷ ∕
+    key <AB10>  { [ exclam, section,    exclamdown, 0x1002212   ] }; // ! § ¡ −
+
+    include "level3(ralt_switch)"
+};
+
+// Arabic AZERTY with modern Latin digits 
+partial alphanumeric_keys
+xkb_symbols "ar" {
+    include "ara(azerty)"
+
+    name[Group1]="Arabic (Algeria)";
+};

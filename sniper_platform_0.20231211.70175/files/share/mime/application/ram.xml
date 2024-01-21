@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/ram">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>RealMedia playlist</comment>
+  <comment xml:lang="bg">Списък за изпълнение — RealMedia</comment>
+  <comment xml:lang="ca">llista de reproducció RealMedia</comment>
+  <comment xml:lang="da">RealMedia-afspilningsliste</comment>
+  <comment xml:lang="de">RealMedia-Wiedergabeliste</comment>
+  <comment xml:lang="en-GB">RealMedia playlist</comment>
+  <comment xml:lang="es">lista de reproducción de RealMedia</comment>
+  <comment xml:lang="eu">RealMedia erreprodukzio-zerrenda</comment>
+  <comment xml:lang="fi">RealMedia soittolista</comment>
+  <comment xml:lang="fr">liste de lecture RealMedia</comment>
+  <comment xml:lang="hr">RealMedia popis izvođenja</comment>
+  <comment xml:lang="hu">RealMedia lejátszólista</comment>
+  <comment xml:lang="it">Playlist RealMedia</comment>
+  <comment xml:lang="ko">리얼미디어 재생 목록</comment>
+  <comment xml:lang="pl">Lista odtwarzania RealMedia</comment>
+  <comment xml:lang="pt-BR">Lista de reprodução do RealMedia</comment>
+  <comment xml:lang="sk">Zoznam skladieb RealMedia</comment>
+  <comment xml:lang="sv">RealMedia-spellista</comment>
+  <comment xml:lang="tr">RealMedia çalma listesi</comment>
+  <comment xml:lang="uk">список відтворення RealMedia</comment>
+  <comment xml:lang="zh-CN">RealMedia 播放列表</comment>
+  <glob pattern="*.ram"/>
+</mime-type>

@@ -1,0 +1,1 @@
+/run/host/usr/share/drirc.d

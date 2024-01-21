@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="inode/mount-point">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>mount point</comment>
+  <comment xml:lang="af">hegpunt</comment>
+  <comment xml:lang="ar">نقطة الوصْل</comment>
+  <comment xml:lang="ast">puntu de montaxe</comment>
+  <comment xml:lang="be-Latn">punkt mantavańnia</comment>
+  <comment xml:lang="bg">Точка на монтиране</comment>
+  <comment xml:lang="ca">punt de muntatge</comment>
+  <comment xml:lang="cs">přípojné místo</comment>
+  <comment xml:lang="da">monteringspunkt</comment>
+  <comment xml:lang="de">Einhängepunkt</comment>
+  <comment xml:lang="el">Σημείο προσάρτησης</comment>
+  <comment xml:lang="en-GB">mount point</comment>
+  <comment xml:lang="eo">surmetingo</comment>
+  <comment xml:lang="es">punto de montaje</comment>
+  <comment xml:lang="eu">muntatze-puntua</comment>
+  <comment xml:lang="fi">liitospiste</comment>
+  <comment xml:lang="fo">ísetingarpunkt</comment>
+  <comment xml:lang="fr">point d'accès</comment>
+  <comment xml:lang="fur">pont di montaç</comment>
+  <comment xml:lang="ga">pointe feistithe</comment>
+  <comment xml:lang="gl">punto de montaxe</comment>
+  <comment xml:lang="he">נקודת עיגון</comment>
+  <comment xml:lang="hr">Točka montiranja</comment>
+  <comment xml:lang="hu">csatolási pont</comment>
+  <comment xml:lang="ia">Puncto de montage</comment>
+  <comment xml:lang="id">titik mount</comment>
+  <comment xml:lang="it">Punto di mount</comment>
+  <comment xml:lang="ja">マウントポイント</comment>
+  <comment xml:lang="kk">тіркеу нүктесі</comment>
+  <comment xml:lang="ko">마운트 위치</comment>
+  <comment xml:lang="lt">prijungimo taškas</comment>
+  <comment xml:lang="lv">montēšanas punkts</comment>
+  <comment xml:lang="ms">Titik lekapan</comment>
+  <comment xml:lang="nb">monteringspunkt</comment>
+  <comment xml:lang="nl">aankoppelingspunt</comment>
+  <comment xml:lang="nn">monteringspunkt</comment>
+  <comment xml:lang="oc">punt d'accès</comment>
+  <comment xml:lang="pl">Punkt montowania</comment>
+  <comment xml:lang="pt">ponto de montagem</comment>
+  <comment xml:lang="pt-BR">Ponto de montagem</comment>
+  <comment xml:lang="ro">loc montare</comment>
+  <comment xml:lang="ru">Точка монтирования</comment>
+  <comment xml:lang="sk">Miesto pripojenia</comment>
+  <comment xml:lang="sl">priklopna točka</comment>
+  <comment xml:lang="sq">Pikë montimi</comment>
+  <comment xml:lang="sr">тачка прикључења</comment>
+  <comment xml:lang="sv">monteringspunkt</comment>
+  <comment xml:lang="tr">bağlama noktası</comment>
+  <comment xml:lang="uk">точка монтування</comment>
+  <comment xml:lang="vi">điểm lắp</comment>
+  <comment xml:lang="zh-CN">挂载点</comment>
+  <comment xml:lang="zh-TW">掛載點</comment>
+  <sub-class-of type="inode/directory"/>
+</mime-type>

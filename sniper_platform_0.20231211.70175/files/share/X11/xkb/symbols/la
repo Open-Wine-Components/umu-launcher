@@ -1,0 +1,135 @@
+// Lao keymap, by Anousak Souphavanh <anousak@muanglao.com>
+
+default  partial alphanumeric_keys
+xkb_symbols "basic" {
+
+    // This keymap describes the Lao keyboard standard,
+    // which is [kind of] widely used in Laos.
+
+    name[Group1]= "Lao";
+
+    key <TLDE> { [ 0x100200D			]};
+    key <AE01> { [ 0x1000ea2,       0x1000ed1	]};
+    key <AE01> { [ 0x1000ea2,       0x1000ed1	]};
+    key <AE02> { [ 0x1000e9f,       0x1000ed2	]};
+    key <AE03> { [ 0x1000ec2,       0x1000ed3	]};
+    key <AE04> { [ 0x1000e96,       0x1000ed4	]};
+    key <AE05> { [ 0x1000eb8,       0x1000ecc	]};
+    key <AE06> { [ 0x1000eb9,       0x1000ebc	]};
+    key <AE07> { [ 0x1000e84,       0x1000ed5	]};
+    key <AE08> { [ 0x1000e95,       0x1000ed6	]};
+    key <AE09> { [ 0x1000e88,       0x1000ed7	]};
+    key <AE10> { [ 0x1000e82,       0x1000ed8	]};
+    key <AE11> { [ 0x1000e8a,       0x1000ed9	]};
+    key <AE12> { [ 0x1000ecd			]};
+
+    key <AD01> { [ 0x1000ebb			]};
+    key <AD02> { [ 0x1000ec4,       0x1000ed0	]};
+    key <AD03> { [ 0x1000eb3			]};
+    key <AD04> { [ 0x1000e9e,       underscore	]};
+    key <AD05> { [ 0x1000eb0,       plus	]};
+    key <AD06> { [ 0x1000eb4			]};
+    key <AD07> { [ 0x1000eb5			]};
+    key <AD08> { [ 0x1000ea3,       0x1000eae	]};
+    key <AD09> { [ 0x1000e99			]};
+    key <AD10> { [ 0x1000e8d,       0x1000ebd	]};
+    key <AD11> { [ 0x1000e9a,       minus	]};
+    key <AD12> { [ 0x1000ea5,       braceright	]};
+    key <BKSL> { [ 0x1000edc,       0x1000edd	]};
+
+    key <AC01> { [ 0x1000eb1			]};
+    key <AC02> { [ 0x1000eab,       semicolon	]};
+    key <AC03> { [ 0x1000e81,       period	]};
+    key <AC04> { [ 0x1000e94,       comma	]};
+    key <AC05> { [ 0x1000ec0,       colon	]};
+    key <AC06> { [ 0x1000ec9,       0x1000eca	]};
+    key <AC07> { [ 0x1000ec8,       0x1000ecb	]};
+    key <AC08> { [ 0x1000eb2,       exclam	]};
+    key <AC09> { [ 0x1000eaa,       question	]};
+    key <AC10> { [ 0x1000ea7,       percent	]};
+    key <AC11> { [ 0x1000e87,       equal	]};
+
+    key <AB01> { [ 0x1000e9c,       0x10020ad	]};
+    key <AB02> { [ 0x1000e9b,       parenleft	]};
+    key <AB03> { [ 0x1000ec1,       0x1000eaf	]};
+    key <AB04> { [ 0x1000ead			]};
+    key <AB05> { [ 0x1000eb6			]};
+    key <AB06> { [ 0x1000eb7			]};
+    key <AB07> { [ 0x1000e97,       0x1000ec6	]};
+    key <AB08> { [ 0x1000ea1,       grave	]};
+    key <AB09> { [ 0x1000ec3,       dollar	]};
+    key <AB10> { [ 0x1000e9d,       parenright	]};
+};
+
+
+partial
+xkb_symbols "stea" {
+
+    // This keymap describes the proposed Lao keyboard standard by
+    // the PAN Localization Project.
+    // Science Technology and Environment Agency of Lao PDR
+    // National University Computer and Emergency Science of Pakistan
+    // International Development Research Center
+    // Caveat: assigning multiple codepoints to a single key does not
+    // work in XKB.  Therefore the combining codepoint assignments
+    // have been omitted.
+
+    name[Group1]= "Lao (STEA proposed standard layout)";
+
+    key <TLDE> { [  quotedbl,      apostrophe			]};
+    key <AE01> { [ 0x1000ea2,               1,       0x1000ed1	]};
+    key <AE02> { [ 0x1000e9f,               2,       0x1000ed2	]};
+    key <AE03> { [ 0x1000ec2,               3,       0x1000ed3	]};
+    key <AE04> { [ 0x1000e96,               4,       0x1000ed4	]};
+    key <AE05> { [ 0x1000eb8,       0x1000ecc,       0x1000ed5	]};
+    key <AE06> { [ 0x1000eb9,       0x1000ebc,       0x1000ed6	]};
+    key <AE07> { [ 0x1000e84,               5,       0x1000ed7	]};
+    key <AE08> { [ 0x1000e95,               6,       0x1000ed8	]};
+    key <AE09> { [ 0x1000e88,               7,       0x1000ed9	]};
+    key <AE10> { [ 0x1000e82,               8,       0x1000ed0	]};
+    key <AE11> { [ 0x1000e8a,               9			]};
+    key <AE12> { [ 0x1000ecd					]};
+
+    key <AD01> { [ 0x1000ebb					]};
+    key <AD02> { [ 0x1000ec4,               0			]};
+    key <AD03> { [ 0x1000eb3,        asterisk			]};
+    key <AD04> { [ 0x1000e9e,      underscore			]};
+    key <AD05> { [ 0x1000eb0,            plus			]};
+    key <AD06> { [ 0x1000eb4					]};
+    key <AD07> { [ 0x1000eb5					]};
+    key <AD08> { [ 0x1000eae,       0x1000ea3			]};
+    key <AD09> { [ 0x1000e99,       0x1000edc			]};
+    key <AD10> { [ 0x1000e8d,       0x1000ebd			]};
+    key <AD11> { [ 0x1000e9a,           minus			]};
+    key <AD12> { [ 0x1000ea5					]};
+    key <BKSL> { [     slash,       backslash			]};
+
+    key <AC01> { [ 0x1000eb1			]};
+    key <AC02> { [ 0x1000eab,       semicolon	]};
+    key <AC03> { [ 0x1000e81,          period	]};
+    key <AC04> { [ 0x1000e94,           comma	]};
+    key <AC05> { [ 0x1000ec0,           colon	]};
+    key <AC06> { [ 0x1000ec9,       0x1000eca	]};
+    key <AC07> { [ 0x1000ec8,       0x1000ecb	]};
+    key <AC08> { [ 0x1000eb2,          exclam	]};
+    key <AC09> { [ 0x1000eaa,        question	]};
+    key <AC10> { [ 0x1000ea7,         percent	]};
+    key <AC11> { [ 0x1000e87,           equal	]};
+
+    key <AB01> { [ 0x1000e9c,       0x10020ad	]};
+    key <AB02> { [ 0x1000e9b,       parenleft	]};
+    key <AB03> { [ 0x1000ec1,       0x1000eaf	]};
+    key <AB04> { [ 0x1000ead,               x	]};
+    key <AB05> { [ 0x1000eb6			]};
+    key <AB06> { [ 0x1000eb7			]};
+    key <AB07> { [ 0x1000e97,       0x1000ec6	]};
+    key <AB08> { [ 0x1000ea1,       0x1000edd	]};
+    key <AB09> { [ 0x1000ec3,          dollar	]};
+    key <AB10> { [ 0x1000e9d,      parenright	]};
+
+    key <SPCE> { [     space,    nobreakspace,    nobreakspace	]};
+
+    key <KPDL> { [     comma,          period 			]};
+
+    include "level3(ralt_switch)"
+};

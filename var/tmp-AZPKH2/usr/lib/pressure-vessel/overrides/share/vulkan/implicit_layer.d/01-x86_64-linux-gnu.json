@@ -1,0 +1,22 @@
+{
+  "file_format_version" : "1.2.1",
+  "layer" : {
+    "name" : "VK_LAYER_VALVE_steam_fossilize_64",
+    "type" : "GLOBAL",
+    "library_path" : "/usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu/vulkan_imp_layer/01/libVkLayer_steam_fossilize.so",
+    "library_arch" : "64",
+    "api_version" : "1.3.207",
+    "implementation_version" : "1",
+    "description" : "Steam Pipeline Caching Layer",
+    "functions" : {
+      "vkGetDeviceProcAddr" : "VK_LAYER_fossilize_GetDeviceProcAddr",
+      "vkGetInstanceProcAddr" : "VK_LAYER_fossilize_GetInstanceProcAddr"
+    },
+    "enable_environment" : {
+      "ENABLE_VK_LAYER_VALVE_steam_fossilize_1" : "1"
+    },
+    "disable_environment" : {
+      "DISABLE_VK_LAYER_VALVE_steam_fossilize_1" : "1"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-apple-systemprofiler+xml">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Apple System Profiler</comment>
+  <sub-class-of type="application/xml"/>
+  <glob pattern="*.spx" weight="40"/>
+</mime-type>

@@ -1,0 +1,589 @@
+#Package[:Architecture]	#Version	#Source	#Installed-Size
+adduser	3.118+deb11u1		849
+apt	2.2.4		4337
+base-files	11.1+steamrt3.1+deb11u8+bsrt3.1		342
+base-passwd	3.5.51		243
+bash	5.1-2+deb11u1		6469
+bsdutils	1:2.36.1-8+deb11u1	util-linux (2.36.1-8+deb11u1)	394
+ca-certificates	20210119+steamrt3.1+bsrt3.1		380
+coreutils	8.32-4+b1	coreutils (8.32-4)	17478
+curl	7.74.0-1.3+steamrt3.2+deb11u10+bsrt3.1		402
+dash	0.5.11+git20200708+dd9ef66-5		221
+dconf-gsettings-backend:amd64	0.38.0-2+steamrt3.1+bsrt3.1	dconf	82
+dconf-gsettings-backend:i386	0.38.0-2+steamrt3.1+bsrt3.1	dconf	86
+debconf	1.5.77		517
+debian-archive-keyring	2021.1.1+deb11u1		253
+debianutils	4.11.2		230
+diffutils	1:3.7-5		1598
+dpkg	1.20.13		6982
+e2fsprogs	1.46.2-2		1511
+file	1:5.39-3+deb11u1		104
+findutils	4.8.0-1		1959
+flatpak-xdg-utils	1.0.4-1		82
+fontconfig	2.13.1-4.2+steamrt3.1+bsrt3.1		576
+fontconfig-config	2.13.1-4.2+steamrt3.1+bsrt3.1	fontconfig	442
+fonts-dejavu-core	2.37-2	fonts-dejavu	2954
+freeglut3:amd64	2.8.1-6	freeglut	368
+freeglut3:i386	2.8.1-6	freeglut	320
+gcc-10-base:amd64	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	264
+gcc-10-base:i386	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	264
+gcc-9-base:amd64	9.3.0-22	gcc-9	262
+gdbserver	10.1-1.7+steamrt3.1+bsrt3.1	gdb	817
+glib-networking-common	2.66.0-2	glib-networking	509
+glib-networking-services	2.66.0-2	glib-networking	47
+glib-networking:amd64	2.66.0-2		199
+glib-networking:i386	2.66.0-2		206
+gpgv	2.2.27-2+deb11u2	gnupg2	882
+grep	3.6-1+deb11u1		1091
+gsettings-desktop-schemas	3.38.0-2		4643
+gzip	1.10-4+deb11u1		242
+hicolor-icon-theme	0.17-2		441
+hostname	3.23		50
+init-system-helpers	1.60		131
+libacl1:amd64	2.2.53-10	acl	71
+libacl1:i386	2.2.53-10	acl	74
+libapt-pkg6.0:amd64	2.2.4	apt	3373
+libasound2-data	1.2.4-1.1	alsa-lib	213
+libasound2-plugins:amd64	1.2.2-2+steamrt3.1+bsrt3.1	alsa-plugins	329
+libasound2-plugins:i386	1.2.2-2+steamrt3.1+bsrt3.1	alsa-plugins	310
+libasound2:amd64	1.2.4-1.1	alsa-lib	1128
+libasound2:i386	1.2.4-1.1	alsa-lib	1227
+libasyncns0:amd64	0.8-6+b2	libasyncns (0.8-6)	44
+libasyncns0:i386	0.8-6+b2	libasyncns (0.8-6)	44
+libatk-bridge2.0-0:amd64	2.38.0-1	at-spi2-atk	242
+libatk-bridge2.0-0:i386	2.38.0-1	at-spi2-atk	248
+libatk1.0-0:amd64	2.36.0-2	atk1.0	195
+libatk1.0-0:i386	2.36.0-2	atk1.0	191
+libatk1.0-data	2.36.0-2	atk1.0	1233
+libatomic1:amd64	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	45
+libatomic1:i386	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	44
+libatspi2.0-0:amd64	2.38.0-4+deb11u1	at-spi2-core	240
+libatspi2.0-0:i386	2.38.0-4+deb11u1	at-spi2-core	247
+libattr1:amd64	1:2.4.48-6	attr	56
+libattr1:i386	1:2.4.48-6	attr	52
+libaudit-common	1:3.0-2	audit	26
+libaudit1:amd64	1:3.0-2	audit	154
+libavahi-client3:amd64	0.8-5+deb11u2	avahi	133
+libavahi-client3:i386	0.8-5+deb11u2	avahi	140
+libavahi-common-data:amd64	0.8-5+deb11u2	avahi	754
+libavahi-common-data:i386	0.8-5+deb11u2	avahi	754
+libavahi-common3:amd64	0.8-5+deb11u2	avahi	110
+libavahi-common3:i386	0.8-5+deb11u2	avahi	117
+libblkid1:amd64	2.36.1-8+deb11u1	util-linux	421
+libblkid1:i386	2.36.1-8+deb11u1	util-linux	460
+libbrotli1:amd64	1.0.9-2+b2	brotli (1.0.9-2)	784
+libbrotli1:i386	1.0.9-2+b2	brotli (1.0.9-2)	793
+libbsd0:amd64	0.11.3-1+deb11u1	libbsd	191
+libbsd0:i386	0.11.3-1+deb11u1	libbsd	198
+libbz2-1.0:amd64	1.0.8-4	bzip2	104
+libbz2-1.0:i386	1.0.8-4	bzip2	104
+libc-bin	2.31-13+deb11u7	glibc	3733
+libc-l10n	2.31-13+deb11u7	glibc	4398
+libc6:amd64	2.31-13+deb11u7	glibc	12834
+libc6:i386	2.31-13+deb11u7	glibc	12225
+libcairo-gobject2:amd64	1.16.0-5	cairo	191
+libcairo-gobject2:i386	1.16.0-5	cairo	183
+libcairo2:amd64	1.16.0-5	cairo	1428
+libcairo2:i386	1.16.0-5	cairo	1615
+libcap-ng0:amd64	0.7.9-2.2+b1	libcap-ng (0.7.9-2.2)	48
+libcap2-bin	1:2.44-1	libcap2	116
+libcap2:amd64	1:2.44-1		65
+libcap2:i386	1:2.44-1		65
+libcapsule-tools-relocatable:amd64	0.20230928.0-0co1+bsrt3.1	libcapsule	212
+libcapsule-tools-relocatable:i386	0.20230928.0-0co1+bsrt3.1	libcapsule	212
+libcg:amd64	3.1.0013-5	nvidia-cg-toolkit	19947
+libcg:i386	3.1.0013-5	nvidia-cg-toolkit	11606
+libcggl:amd64	3.1.0013-5	nvidia-cg-toolkit	558
+libcggl:i386	3.1.0013-5	nvidia-cg-toolkit	486
+libcom-err2:amd64	1.46.2-2	e2fsprogs	97
+libcom-err2:i386	1.46.2-2	e2fsprogs	93
+libcrypt1:amd64	1:4.4.18-4	libxcrypt	226
+libcrypt1:i386	1:4.4.18-4	libxcrypt	250
+libcups2:amd64	2.3.3op2-3+deb11u6	cups	776
+libcups2:i386	2.3.3op2-3+deb11u6	cups	812
+libcurl3-gnutls:amd64	7.74.0-1.3+steamrt3.2+deb11u10+bsrt3.1	curl	689
+libcurl3-gnutls:i386	7.74.0-1.3+steamrt3.2+deb11u10+bsrt3.1	curl	758
+libcurl4:amd64	7.74.0-1.3+steamrt3.2+deb11u10+bsrt3.1	curl	697
+libcurl4:i386	7.74.0-1.3+steamrt3.2+deb11u10+bsrt3.1	curl	770
+libdatrie1:amd64	0.2.13-1	libdatrie	80
+libdatrie1:i386	0.2.13-1	libdatrie	84
+libdb5.3:amd64	5.3.28+dfsg1-0.8	db5.3	1818
+libdbus-1-3:amd64	1.12.28-0+deb11u1	dbus	488
+libdbus-1-3:i386	1.12.28-0+deb11u1	dbus	539
+libdconf1:amd64	0.38.0-2+steamrt3.1+bsrt3.1	dconf	102
+libdconf1:i386	0.38.0-2+steamrt3.1+bsrt3.1	dconf	110
+libdebconfclient0:amd64	0.260	cdebconf	74
+libdecor-0-0:amd64	0.2.0-1~steamrt3.1+bsrt3.1	libdecor-0	58
+libdecor-0-0:i386	0.2.0-1~steamrt3.1+bsrt3.1	libdecor-0	53
+libdecor-0-plugin-1-cairo:amd64	0.2.0-1~steamrt3.1+bsrt3.1	libdecor-0	74
+libdecor-0-plugin-1-cairo:i386	0.2.0-1~steamrt3.1+bsrt3.1	libdecor-0	69
+libdeflate0:amd64	1.7-1	libdeflate	121
+libdeflate0:i386	1.7-1	libdeflate	113
+libdrm-amdgpu1:amd64	2.4.104-1	libdrm	83
+libdrm-amdgpu1:i386	2.4.104-1	libdrm	86
+libdrm-common	2.4.104-1	libdrm	43
+libdrm-intel1:amd64	2.4.104-1	libdrm	185
+libdrm-intel1:i386	2.4.104-1	libdrm	200
+libdrm-nouveau2:amd64	2.4.104-1	libdrm	81
+libdrm-nouveau2:i386	2.4.104-1	libdrm	76
+libdrm-radeon1:amd64	2.4.104-1	libdrm	94
+libdrm-radeon1:i386	2.4.104-1	libdrm	93
+libdrm2:amd64	2.4.104-1	libdrm	119
+libdrm2:i386	2.4.104-1	libdrm	126
+libedit2:amd64	3.1-20191231-2+b1	libedit (3.1-20191231-2)	259
+libedit2:i386	3.1-20191231-2+b1	libedit (3.1-20191231-2)	262
+libelf1:amd64	0.183-1	elfutils	946
+libelf1:i386	0.183-1	elfutils	957
+libepoxy0:amd64	1.5.5-1	libepoxy	1356
+libepoxy0:i386	1.5.5-1	libepoxy	1234
+libexif12:amd64	0.6.22-3	libexif	2472
+libexif12:i386	0.6.22-3	libexif	2424
+libexpat1:amd64	2.2.10-2+deb11u5	expat	411
+libexpat1:i386	2.2.10-2+deb11u5	expat	401
+libext2fs2:amd64	1.46.2-2	e2fsprogs	578
+libffi7:amd64	3.3-6	libffi	66
+libffi7:i386	3.3-6	libffi	56
+libfl2:amd64	2.6.4-8	flex	148
+libfl2:i386	2.6.4-8	flex	148
+libflac8:amd64	1.3.3-2+deb11u2	flac	293
+libflac8:i386	1.3.3-2+deb11u2	flac	277
+libfltk1.1:amd64	1.1.10-29	fltk1.1	1074
+libfltk1.1:i386	1.1.10-29	fltk1.1	1097
+libfontconfig1:amd64	2.13.1-4.2+steamrt3.1+bsrt3.1	fontconfig	534
+libfontconfig1:i386	2.13.1-4.2+steamrt3.1+bsrt3.1	fontconfig	561
+libfreetype6:amd64	2.10.4+dfsg-1+deb11u1	freetype	896
+libfreetype6:i386	2.10.4+dfsg-1+deb11u1	freetype	912
+libfribidi0:amd64	1.0.8-2+deb11u1	fribidi	172
+libfribidi0:i386	1.0.8-2+deb11u1	fribidi	171
+libgcc-s1:amd64	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	116
+libgcc-s1:i386	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	134
+libgcrypt20:amd64	1.8.7-6		1355
+libgcrypt20:i386	1.8.7-6		1124
+libgdk-pixbuf-2.0-0:amd64	2.42.2+dfsg-1+deb11u1	gdk-pixbuf	516
+libgdk-pixbuf-2.0-0:i386	2.42.2+dfsg-1+deb11u1	gdk-pixbuf	513
+libgdk-pixbuf2.0-common	2.42.2+dfsg-1+deb11u1	gdk-pixbuf	2571
+libgfortran5:amd64	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	2839
+libgfortran5:i386	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	2718
+libgl1-mesa-dri:amd64	20.3.5-1+steamrt3.1+bsrt3.1	mesa	68064
+libgl1-mesa-dri:i386	20.3.5-1+steamrt3.1+bsrt3.1	mesa	67816
+libgl1:amd64	1.3.2-1	libglvnd	653
+libgl1:i386	1.3.2-1	libglvnd	552
+libglapi-mesa:amd64	20.3.5-1+steamrt3.1+bsrt3.1	mesa	300
+libglapi-mesa:i386	20.3.5-1+steamrt3.1+bsrt3.1	mesa	234
+libglew2.1:amd64	2.1.0-4+b1	glew (2.1.0-4)	829
+libglew2.1:i386	2.1.0-4+b1	glew (2.1.0-4)	728
+libglib2.0-0:amd64	2.66.8-1	glib2.0	3997
+libglib2.0-0:i386	2.66.8-1	glib2.0	4443
+libglu1-mesa:amd64	9.0.1-1	libglu	463
+libglu1-mesa:i386	9.0.1-1	libglu	502
+libglvnd0:amd64	1.3.2-1	libglvnd	725
+libglvnd0:i386	1.3.2-1	libglvnd	504
+libglx-mesa0:amd64	20.3.5-1+steamrt3.1+bsrt3.1	mesa	566
+libglx-mesa0:i386	20.3.5-1+steamrt3.1+bsrt3.1	mesa	604
+libglx0:amd64	1.3.2-1	libglvnd	163
+libglx0:i386	1.3.2-1	libglvnd	226
+libgmp10:amd64	2:6.2.1+dfsg-1+deb11u1	gmp	863
+libgmp10:i386	2:6.2.1+dfsg-1+deb11u1	gmp	922
+libgnutls30:amd64	3.7.1-5+deb11u3	gnutls28	3143
+libgnutls30:i386	3.7.1-5+deb11u3	gnutls28	3297
+libgomp1:amd64	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	278
+libgomp1:i386	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	285
+libgpg-error0:amd64	1.38-2	libgpg-error	188
+libgpg-error0:i386	1.38-2	libgpg-error	195
+libgraphite2-3:amd64	1.3.14-1	graphite2	203
+libgraphite2-3:i386	1.3.14-1	graphite2	206
+libgssapi-krb5-2:amd64	1.18.3-6+deb11u4	krb5	451
+libgssapi-krb5-2:i386	1.18.3-6+deb11u4	krb5	480
+libgtk-3-0:amd64	3.24.24-4+steamrt3.2+deb11u3+bsrt3.1	gtk+3.0	9612
+libgtk-3-0:i386	3.24.24-4+steamrt3.2+deb11u3+bsrt3.1	gtk+3.0	10717
+libgtk-3-common	3.24.24-4+steamrt3.2+deb11u3+bsrt3.1	gtk+3.0	25588
+libgudev-1.0-0:amd64	234-1	libgudev	64
+libgudev-1.0-0:i386	234-1	libgudev	68
+libharfbuzz0b:amd64	2.7.4-1	harfbuzz	2051
+libharfbuzz0b:i386	2.7.4-1	harfbuzz	2145
+libhogweed6:amd64	3.7.3-1	nettle	455
+libhogweed6:i386	3.7.3-1	nettle	453
+libibus-1.0-5:amd64	1.5.23-2	ibus	784
+libibus-1.0-5:i386	1.5.23-2	ibus	828
+libice6:amd64	2:1.0.10-1	libice	133
+libice6:i386	2:1.0.10-1	libice	136
+libicu67:amd64	67.1-7	icu	33152
+libicu67:i386	67.1-7	icu	33340
+libidn2-0:amd64	2.3.0-5	libidn2	300
+libidn2-0:i386	2.3.0-5	libidn2	304
+libitm1:amd64	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	111
+libitm1:i386	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	110
+libjack-jackd2-0:amd64	1.9.17~dfsg-1	jackd2	1154
+libjack-jackd2-0:i386	1.9.17~dfsg-1	jackd2	1209
+libjpeg62-turbo:amd64	1:2.0.6-4	libjpeg-turbo	586
+libjpeg62-turbo:i386	1:2.0.6-4	libjpeg-turbo	622
+libjson-glib-1.0-0:amd64	1.6.2-1	json-glib	204
+libjson-glib-1.0-0:i386	1.6.2-1	json-glib	224
+libjson-glib-1.0-common	1.6.2-1	json-glib	464
+libk5crypto3:amd64	1.18.3-6+deb11u4	krb5	296
+libk5crypto3:i386	1.18.3-6+deb11u4	krb5	307
+libkeyutils1:amd64	1.6.1-2	keyutils	46
+libkeyutils1:i386	1.6.1-2	keyutils	50
+libkmod2:amd64	28-1	kmod	135
+libkrb5-3:amd64	1.18.3-6+deb11u4	krb5	1108
+libkrb5-3:i386	1.18.3-6+deb11u4	krb5	1126
+libkrb5support0:amd64	1.18.3-6+deb11u4	krb5	169
+libkrb5support0:i386	1.18.3-6+deb11u4	krb5	171
+liblcms2-2:amd64	2.12~rc1-2	lcms2	421
+liblcms2-2:i386	2.12~rc1-2	lcms2	451
+liblz4-1:amd64	1.9.3-2	lz4	157
+liblz4-1:i386	1.9.3-2	lz4	160
+liblzma5:amd64	5.2.5-2.1~deb11u1	xz-utils	277
+liblzma5:i386	5.2.5-2.1~deb11u1	xz-utils	292
+libmagic-mgc	1:5.39-3+deb11u1	file	6555
+libmagic1:amd64	1:5.39-3+deb11u1	file	266
+libmd0:amd64	1.0.3-3	libmd	77
+libmd0:i386	1.0.3-3	libmd	84
+libmount1:amd64	2.36.1-8+deb11u1	util-linux	477
+libmount1:i386	2.36.1-8+deb11u1	util-linux	528
+libmpdec3:amd64	2.5.1-1	mpdecimal	278
+libmpg123-0:amd64	1.26.4-1	mpg123	358
+libmpg123-0:i386	1.26.4-1	mpg123	398
+libncurses6:amd64	6.2+20201114-2+deb11u2	ncurses	335
+libncurses6:i386	6.2+20201114-2+deb11u2	ncurses	345
+libncursesw6:amd64	6.2+20201114-2+deb11u2	ncurses	420
+libncursesw6:i386	6.2+20201114-2+deb11u2	ncurses	450
+libnettle8:amd64	3.7.3-1	nettle	480
+libnettle8:i386	3.7.3-1	nettle	491
+libnghttp2-14:amd64	1.43.0-1+deb11u1	nghttp2	221
+libnghttp2-14:i386	1.43.0-1+deb11u1	nghttp2	236
+libnotify-bin	0.7.9-3	libnotify	40
+libnotify4:amd64	0.7.9-3	libnotify	62
+libnotify4:i386	0.7.9-3	libnotify	62
+libnsl2:amd64	1.3.0-2	libnsl	127
+libnsl2:i386	1.3.0-2	libnsl	126
+libnspr4:amd64	2:4.29-1	nspr	319
+libnspr4:i386	2:4.29-1	nspr	338
+libnss-myhostname:amd64	247.3-7+deb11u4	systemd	235
+libnss-myhostname:i386	247.3-7+deb11u4	systemd	222
+libnss3:amd64	2:3.61-1+deb11u3	nss	4053
+libnss3:i386	2:3.61-1+deb11u3	nss	4295
+libogg0:amd64	1.3.4-0.1	libogg	70
+libogg0:i386	1.3.4-0.1	libogg	66
+libopenal-data	1:1.19.1-2+steamrt3.2+bsrt3.1	openal-soft	207
+libopenal1:amd64	1:1.19.1-2+steamrt3.2+bsrt3.1	openal-soft	955
+libopenal1:i386	1:1.19.1-2+steamrt3.2+bsrt3.1	openal-soft	1010
+libopenblas0-pthread:amd64	0.3.13+ds-3+deb11u1	openblas	42860
+libopenblas0-pthread:i386	0.3.13+ds-3+deb11u1	openblas	26601
+libopus0:amd64	1.3.1-0.1	opus	379
+libopus0:i386	1.3.1-0.1	opus	387
+libopusfile0:amd64	0.12-4~steamrt3.1+bsrt3.1	opusfile	119
+libopusfile0:i386	0.12-4~steamrt3.1+bsrt3.1	opusfile	129
+libosmesa6:amd64	20.3.5-1+steamrt3.1+bsrt3.1	mesa	33611
+libosmesa6:i386	20.3.5-1+steamrt3.1+bsrt3.1	mesa	32883
+libp11-kit0:amd64	0.23.22-1	p11-kit	1401
+libp11-kit0:i386	0.23.22-1	p11-kit	1530
+libpam-modules-bin	1.4.0-9+deb11u1	pam	227
+libpam-modules:amd64	1.4.0-9+deb11u1	pam	1048
+libpam-runtime	1.4.0-9+deb11u1	pam	965
+libpam0g:amd64	1.4.0-9+deb11u1	pam	244
+libpango-1.0-0:amd64	1.46.2-3	pango1.0	431
+libpango-1.0-0:i386	1.46.2-3	pango1.0	447
+libpangocairo-1.0-0:amd64	1.46.2-3	pango1.0	112
+libpangocairo-1.0-0:i386	1.46.2-3	pango1.0	108
+libpangoft2-1.0-0:amd64	1.46.2-3	pango1.0	146
+libpangoft2-1.0-0:i386	1.46.2-3	pango1.0	150
+libpangoxft-1.0-0:amd64	1.46.2-3	pango1.0	87
+libpangoxft-1.0-0:i386	1.46.2-3	pango1.0	87
+libpci3:amd64	1:3.7.0-5	pciutils	119
+libpci3:i386	1:3.7.0-5	pciutils	118
+libpciaccess0:amd64	0.16-1	libpciaccess	94
+libpciaccess0:i386	0.16-1	libpciaccess	101
+libpcre2-8-0:amd64	10.36-2+deb11u1	pcre2	664
+libpcre2-8-0:i386	10.36-2+deb11u1	pcre2	687
+libpcre3:amd64	2:8.39-13	pcre3	669
+libpcre3:i386	2:8.39-13	pcre3	685
+libpipewire-0.3-0:amd64	0.3.65-2~steamrt3.1+bsrt3.1	pipewire	990
+libpipewire-0.3-0:i386	0.3.65-2~steamrt3.1+bsrt3.1	pipewire	869
+libpipewire-0.3-modules:amd64	0.3.65-2~steamrt3.1+bsrt3.1	pipewire	2814
+libpipewire-0.3-modules:i386	0.3.65-2~steamrt3.1+bsrt3.1	pipewire	2568
+libpixman-1-0:amd64	0.40.0-1.1~deb11u1	pixman	1003
+libpixman-1-0:i386	0.40.0-1.1~deb11u1	pixman	1018
+libpng16-16:amd64	1.6.37-3	libpng1.6	444
+libpng16-16:i386	1.6.37-3	libpng1.6	468
+libproxy1v5:amd64	0.4.17-1	libproxy	172
+libproxy1v5:i386	0.4.17-1	libproxy	167
+libpsl5:amd64	0.21.0-1.2	libpsl	95
+libpsl5:i386	0.21.0-1.2	libpsl	91
+libpulse0:amd64	14.2-2	pulseaudio	971
+libpulse0:i386	14.2-2	pulseaudio	1044
+libpython3-stdlib:amd64	3.9.2-3	python3-defaults	38
+libpython3.9-minimal:amd64	3.9.2-1	python3.9	4955
+libpython3.9-stdlib:amd64	3.9.2-1	python3.9	7894
+libquadmath0:amd64	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	300
+libquadmath0:i386	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	691
+libreadline8:amd64	8.1-1	readline	471
+libsamplerate0:amd64	0.2.1+ds0-1	libsamplerate	1494
+libsamplerate0:i386	0.2.1+ds0-1	libsamplerate	1493
+libsdl2-2.0-0:amd64	2.28.5+dfsg-2+steamrt3.1+bsrt3.1	libsdl2	1976
+libsdl2-2.0-0:i386	2.28.5+dfsg-2+steamrt3.1+bsrt3.1	libsdl2	2090
+libsdl2-image-2.0-0:amd64	2.8.0+dfsg-1~steamrt3.1+bsrt3.1	libsdl2-image	154
+libsdl2-image-2.0-0:i386	2.8.0+dfsg-1~steamrt3.1+bsrt3.1	libsdl2-image	170
+libsdl2-mixer-2.0-0:amd64	2.6.2+dfsg-1+steamrt3.1+bsrt3.1	libsdl2-mixer	191
+libsdl2-mixer-2.0-0:i386	2.6.2+dfsg-1+steamrt3.1+bsrt3.1	libsdl2-mixer	210
+libsdl2-net-2.0-0:amd64	2.0.1+dfsg1-4+b1	libsdl2-net (2.0.1+dfsg1-4)	41
+libsdl2-net-2.0-0:i386	2.0.1+dfsg1-4+b1	libsdl2-net (2.0.1+dfsg1-4)	40
+libsdl2-ttf-2.0-0:amd64	2.20.1+dfsg-1~steamrt3.1+bsrt3.1	libsdl2-ttf	92
+libsdl2-ttf-2.0-0:i386	2.20.1+dfsg-1~steamrt3.1+bsrt3.1	libsdl2-ttf	84
+libseccomp2:amd64	2.5.1-1+deb11u1	libseccomp	158
+libselinux1:amd64	3.1-3	libselinux	207
+libselinux1:i386	3.1-3	libselinux	226
+libsemanage-common	3.1-1	libsemanage	36
+libsemanage1:amd64	3.1-1+b2	libsemanage (3.1-1)	307
+libsensors-config	1:3.6.0-7	lm-sensors	51
+libsensors5:amd64	1:3.6.0-7	lm-sensors	105
+libsensors5:i386	1:3.6.0-7	lm-sensors	108
+libsepol1:amd64	3.1-1	libsepol	743
+libsm6:amd64	2:1.2.3-1	libsm	73
+libsm6:i386	2:1.2.3-1	libsm	72
+libsmartcols1:amd64	2.36.1-8+deb11u1	util-linux	328
+libsndfile1:amd64	1.0.31-2	libsndfile	541
+libsndfile1:i386	1.0.31-2	libsndfile	627
+libsoup2.4-1:amd64	2.72.0-2	libsoup2.4	742
+libsoup2.4-1:i386	2.72.0-2	libsoup2.4	801
+libspa-0.2-modules:amd64	0.3.65-2~steamrt3.1+bsrt3.1	pipewire	1420
+libspa-0.2-modules:i386	0.3.65-2~steamrt3.1+bsrt3.1	pipewire	1375
+libspeex1:amd64	1.2~rc1.2-1.1	speex	120
+libspeex1:i386	1.2~rc1.2-1.1	speex	248
+libspeexdsp1:amd64	1.2~rc1.2-1.1	speex	98
+libspeexdsp1:i386	1.2~rc1.2-1.1	speex	210
+libsqlite3-0:amd64	3.34.1-3	sqlite3	1517
+libsqlite3-0:i386	3.34.1-3	sqlite3	1608
+libss2:amd64	1.46.2-2	e2fsprogs	113
+libssh2-1:amd64	1.9.0-2	libssh2	298
+libssh2-1:i386	1.9.0-2	libssh2	325
+libssl1.1:amd64	1.1.1w-0+deb11u1	openssl	4128
+libssl1.1:i386	1.1.1w-0+deb11u1	openssl	3971
+libstdc++6:amd64	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	2352
+libstdc++6:i386	10.3.0-3+steamrt3.1+bsrt3.1	gcc-10	2345
+libsteam-runtime-tools-0-0:amd64	0.20231208.0+bsrt3.1	steam-runtime-tools	560
+libsteam-runtime-tools-0-0:i386	0.20231208.0+bsrt3.1	steam-runtime-tools	625
+libsteam-runtime-tools-0-helpers:amd64	0.20231208.0+bsrt3.1	steam-runtime-tools	692
+libsteam-runtime-tools-0-helpers:i386	0.20231208.0+bsrt3.1	steam-runtime-tools	710
+libsystemd0:amd64	247.3-7+deb11u4	systemd	865
+libsystemd0:i386	247.3-7+deb11u4	systemd	911
+libtasn1-6:amd64	4.16.0-2+deb11u1		124
+libtasn1-6:i386	4.16.0-2+deb11u1		128
+libtbb2:amd64	2020.3-1	tbb	483
+libtbb2:i386	2020.3-1	tbb	448
+libthai-data	0.1.28-3	libthai	614
+libthai0:amd64	0.1.28-3	libthai	96
+libthai0:i386	0.1.28-3	libthai	99
+libtheora0:amd64	1.1.1+dfsg.1-15+steamrt2.1+bsrt3.1	libtheora	627
+libtheora0:i386	1.1.1+dfsg.1-15+steamrt2.1+bsrt3.1	libtheora	636
+libtiff5:amd64	4.2.0-1+steamrt3.3+deb11u5+bsrt3.1	tiff	677
+libtiff5:i386	4.2.0-1+steamrt3.3+deb11u5+bsrt3.1	tiff	707
+libtinfo6:amd64	6.2+20201114-2+deb11u2	ncurses	537
+libtinfo6:i386	6.2+20201114-2+deb11u2	ncurses	519
+libtirpc-common	1.3.1-1+deb11u1	libtirpc	34
+libtirpc3:amd64	1.3.1-1+deb11u1	libtirpc	229
+libtirpc3:i386	1.3.1-1+deb11u1	libtirpc	248
+libudev1:amd64	247.3-7+deb11u4	systemd	282
+libudev1:i386	247.3-7+deb11u4	systemd	289
+libunistring2:amd64	0.9.10-4	libunistring	1592
+libunistring2:i386	0.9.10-4	libunistring	1591
+libusb-1.0-0:amd64	2:1.0.24-3	libusb-1.0	150
+libusb-1.0-0:i386	2:1.0.24-3	libusb-1.0	156
+libutempter0:amd64	1.2.1-2	libutempter	49
+libuuid1:amd64	2.36.1-8+deb11u1	util-linux	129
+libuuid1:i386	2.36.1-8+deb11u1	util-linux	132
+libv4l-0:amd64	1.20.0-2	v4l-utils	233
+libv4l-0:i386	1.20.0-2	v4l-utils	231
+libv4lconvert0:amd64	1.20.0-2	v4l-utils	299
+libv4lconvert0:i386	1.20.0-2	v4l-utils	304
+libva-drm2:amd64	2.10.0-1	libva	45
+libva-drm2:i386	2.10.0-1	libva	44
+libva-glx2:amd64	2.10.0-1	libva	53
+libva-glx2:i386	2.10.0-1	libva	52
+libva-wayland2:amd64	2.10.0-1	libva	53
+libva-wayland2:i386	2.10.0-1	libva	48
+libva-x11-2:amd64	2.10.0-1	libva	57
+libva-x11-2:i386	2.10.0-1	libva	56
+libva2:amd64	2.10.0-1	libva	207
+libva2:i386	2.10.0-1	libva	234
+libvdpau1:amd64	1.4-3	libvdpau	106
+libvdpau1:i386	1.4-3	libvdpau	113
+libvorbis0a:amd64	1.3.7-1	libvorbis	205
+libvorbis0a:i386	1.3.7-1	libvorbis	201
+libvorbisenc2:amd64	1.3.7-1	libvorbis	703
+libvorbisenc2:i386	1.3.7-1	libvorbis	583
+libvorbisfile3:amd64	1.3.7-1	libvorbis	63
+libvorbisfile3:i386	1.3.7-1	libvorbis	67
+libvpx6:amd64	1.9.0-1+deb11u2	libvpx	2182
+libvpx6:i386	1.9.0-1+deb11u2	libvpx	2233
+libvulkan1:amd64	1.3.239.0-1~steamrt3.1+bsrt3.1	vulkan-loader	484
+libvulkan1:i386	1.3.239.0-1~steamrt3.1+bsrt3.1	vulkan-loader	547
+libwaffle-1-0:amd64	1.6.3-3+steamrt3.2+bsrt3.1	waffle	103
+libwaffle-1-0:i386	1.6.3-3+steamrt3.2+bsrt3.1	waffle	107
+libwayland-client0:amd64	1.18.0-2~exp1.1	wayland	85
+libwayland-client0:i386	1.18.0-2~exp1.1	wayland	80
+libwayland-cursor0:amd64	1.18.0-2~exp1.1	wayland	50
+libwayland-cursor0:i386	1.18.0-2~exp1.1	wayland	53
+libwayland-egl1:amd64	1.18.0-2~exp1.1	wayland	33
+libwayland-egl1:i386	1.18.0-2~exp1.1	wayland	33
+libwebp6:amd64	0.6.1-2.1+deb11u2	libwebp	503
+libwebp6:i386	0.6.1-2.1+deb11u2	libwebp	538
+libwebpdemux2:amd64	0.6.1-2.1+deb11u2	libwebp	109
+libwebpdemux2:i386	0.6.1-2.1+deb11u2	libwebp	112
+libwrap0:amd64	7.6.q-31	tcp-wrappers	109
+libwrap0:i386	7.6.q-31	tcp-wrappers	108
+libx11-6:amd64	2:1.7.2-1+deb11u2	libx11	1576
+libx11-6:i386	2:1.7.2-1+deb11u2	libx11	1635
+libx11-data	2:1.7.2-1+deb11u2	libx11	1665
+libx11-xcb1:amd64	2:1.7.2-1+deb11u2	libx11	262
+libx11-xcb1:i386	2:1.7.2-1+deb11u2	libx11	262
+libxau6:amd64	1:1.0.9-1	libxau	42
+libxau6:i386	1:1.0.9-1	libxau	41
+libxaw7:amd64	2:1.0.13-1.1	libxaw	519
+libxaw7:i386	2:1.0.13-1.1	libxaw	507
+libxcb-composite0:amd64	1.14-3	libxcb	122
+libxcb-composite0:i386	1.14-3	libxcb	121
+libxcb-damage0:amd64	1.14-3	libxcb	122
+libxcb-damage0:i386	1.14-3	libxcb	121
+libxcb-dpms0:amd64	1.14-3	libxcb	122
+libxcb-dpms0:i386	1.14-3	libxcb	121
+libxcb-dri2-0:amd64	1.14-3	libxcb	132
+libxcb-dri2-0:i386	1.14-3	libxcb	131
+libxcb-dri3-0:amd64	1.14-3	libxcb	128
+libxcb-dri3-0:i386	1.14-3	libxcb	127
+libxcb-glx0:amd64	1.14-3	libxcb	240
+libxcb-glx0:i386	1.14-3	libxcb	243
+libxcb-present0:amd64	1.14-3	libxcb	122
+libxcb-present0:i386	1.14-3	libxcb	121
+libxcb-randr0:amd64	1.14-3	libxcb	188
+libxcb-randr0:i386	1.14-3	libxcb	195
+libxcb-record0:amd64	1.14-3	libxcb	128
+libxcb-record0:i386	1.14-3	libxcb	131
+libxcb-render0:amd64	1.14-3	libxcb	172
+libxcb-render0:i386	1.14-3	libxcb	171
+libxcb-res0:amd64	1.14-3	libxcb	128
+libxcb-res0:i386	1.14-3	libxcb	127
+libxcb-screensaver0:amd64	1.14-3	libxcb	123
+libxcb-screensaver0:i386	1.14-3	libxcb	126
+libxcb-shape0:amd64	1.14-3	libxcb	123
+libxcb-shape0:i386	1.14-3	libxcb	122
+libxcb-shm0:amd64	1.14-3	libxcb	122
+libxcb-shm0:i386	1.14-3	libxcb	121
+libxcb-sync1:amd64	1.14-3	libxcb	145
+libxcb-sync1:i386	1.14-3	libxcb	140
+libxcb-xf86dri0:amd64	1.14-3	libxcb	128
+libxcb-xf86dri0:i386	1.14-3	libxcb	131
+libxcb-xfixes0:amd64	1.14-3	libxcb	146
+libxcb-xfixes0:i386	1.14-3	libxcb	145
+libxcb-xinerama0:amd64	1.14-3	libxcb	123
+libxcb-xinerama0:i386	1.14-3	libxcb	122
+libxcb-xkb1:amd64	1.14-3	libxcb	243
+libxcb-xkb1:i386	1.14-3	libxcb	250
+libxcb-xtest0:amd64	1.14-3	libxcb	122
+libxcb-xtest0:i386	1.14-3	libxcb	121
+libxcb-xv0:amd64	1.14-3	libxcb	146
+libxcb-xv0:i386	1.14-3	libxcb	141
+libxcb-xvmc0:amd64	1.14-3	libxcb	128
+libxcb-xvmc0:i386	1.14-3	libxcb	127
+libxcb1:amd64	1.14-3	libxcb	296
+libxcb1:i386	1.14-3	libxcb	307
+libxcomposite1:amd64	1:0.4.5-1	libxcomposite	40
+libxcomposite1:i386	1:0.4.5-1	libxcomposite	39
+libxcursor1:amd64	1:1.2.0-2	libxcursor	80
+libxcursor1:i386	1:1.2.0-2	libxcursor	79
+libxdamage1:amd64	1:1.1.5-2	libxdamage	39
+libxdamage1:i386	1:1.1.5-2	libxdamage	38
+libxdmcp6:amd64	1:1.1.2-3	libxdmcp	53
+libxdmcp6:i386	1:1.1.2-3	libxdmcp	52
+libxext6:amd64	2:1.3.3-1.1	libxext	131
+libxext6:i386	2:1.3.3-1.1	libxext	134
+libxfixes3:amd64	1:5.0.3-2	libxfixes	57
+libxfixes3:i386	1:5.0.3-2	libxfixes	56
+libxft2:amd64	2.3.2-2	xft	122
+libxft2:i386	2.3.2-2	xft	129
+libxi6:amd64	2:1.7.10-1	libxi	140
+libxi6:i386	2:1.7.10-1	libxi	147
+libxinerama1:amd64	2:1.1.4-2	libxinerama	43
+libxinerama1:i386	2:1.1.4-2	libxinerama	42
+libxkbcommon0:amd64	1.0.3-2	libxkbcommon	285
+libxkbcommon0:i386	1.0.3-2	libxkbcommon	300
+libxml2:amd64	2.9.10+dfsg-6.7+deb11u4		1876
+libxml2:i386	2.9.10+dfsg-6.7+deb11u4		2006
+libxmu6:amd64	2:1.1.2-2+b3	libxmu (2:1.1.2-2)	141
+libxmu6:i386	2:1.1.2-2+b3	libxmu (2:1.1.2-2)	143
+libxnvctrl0:amd64	470.141.03-1~deb11u1	nvidia-settings	66
+libxnvctrl0:i386	470.141.03-1~deb11u1	nvidia-settings	62
+libxpm4:amd64	1:3.5.12-1.1+deb11u1	libxpm	113
+libxpm4:i386	1:3.5.12-1.1+deb11u1	libxpm	115
+libxpresent1:amd64	1.0.0-2+b10	libxpresent (1.0.0-2)	32
+libxpresent1:i386	1.0.0-2+b10	libxpresent (1.0.0-2)	31
+libxrandr2:amd64	2:1.5.1-1	libxrandr	82
+libxrandr2:i386	2:1.5.1-1	libxrandr	85
+libxrender1:amd64	1:0.9.10-1	libxrender	70
+libxrender1:i386	1:0.9.10-1	libxrender	73
+libxshmfence1:amd64	1.3-1	libxshmfence	26
+libxshmfence1:i386	1.3-1	libxshmfence	25
+libxslt1.1:amd64	1.1.34-4+deb11u1	libxslt	502
+libxslt1.1:i386	1.1.34-4+deb11u1	libxslt	533
+libxss1:amd64	1:1.2.3-1	libxss	42
+libxss1:i386	1:1.2.3-1	libxss	41
+libxt6:amd64	1:1.2.0-1	libxt	477
+libxt6:i386	1:1.2.0-1	libxt	477
+libxtst6:amd64	2:1.2.3-1	libxtst	57
+libxtst6:i386	2:1.2.3-1	libxtst	60
+libxxf86vm1:amd64	1:1.1.4-1+b2	libxxf86vm (1:1.1.4-1)	50
+libxxf86vm1:i386	1:1.1.4-1+b2	libxxf86vm (1:1.1.4-1)	49
+libxxhash0:amd64	0.8.0-2	xxhash	114
+libzstd1:amd64	1.4.8+dfsg-2.1	libzstd	904
+libzstd1:i386	1.4.8+dfsg-2.1	libzstd	864
+locales	2.31-13+deb11u7	glibc	16015
+login	1:4.8.1-1	shadow	2335
+logsave	1.46.2-2	e2fsprogs	93
+lsb-base	11.1.0	lsb	49
+mawk	1.3.4.20200120-2		242
+media-types	4.0.0		92
+mount	2.36.1-8+deb11u1	util-linux	438
+ncurses-base	6.2+20201114-2+deb11u2	ncurses	386
+ncurses-bin	6.2+20201114-2+deb11u2	ncurses	646
+netbase	6.3		41
+openssl	1.1.1w-0+deb11u1		1471
+passwd	1:4.8.1-1	shadow	2736
+pci.ids	0.0~2021.02.08-1		1237
+pciutils	1:3.7.0-5		196
+perl-base	5.32.1-4+deb11u2	perl	7664
+pipewire-bin	0.3.65-2~steamrt3.1+bsrt3.1	pipewire	1007
+pipewire:amd64	0.3.65-2~steamrt3.1+bsrt3.1		91
+pipewire:i386	0.3.65-2~steamrt3.1+bsrt3.1		91
+python-is-python3	3.9.2-1	what-is-python (9)	13
+python3	3.9.2-3	python3-defaults	89
+python3-minimal	3.9.2-3	python3-defaults	121
+python3.9	3.9.2-1		541
+python3.9-minimal	3.9.2-1	python3.9	5476
+readline-common	8.1-1	readline	92
+sed	4.7-1		883
+shared-mime-info	2.0-1		4880
+steam-runtime-tools-bin	0.20231208.0+bsrt3.1	steam-runtime-tools	1060
+steam-runtime-tools-minimal	0.20231208.0+bsrt3.1	steam-runtime-tools	338
+steamrt-container	3.20230928.0+bsrt3.1	steamrt	27
+steamrt-container-host-compat:amd64	3.20230928.0+bsrt3.1	steamrt	58
+steamrt-container-host-compat:i386	3.20230928.0+bsrt3.1	steamrt	58
+steamrt-customizations	3.20230928.0+bsrt3.1	steamrt	32
+steamrt-libs:amd64	3.20230928.0+bsrt3.1	steamrt	978
+steamrt-libs:i386	3.20230928.0+bsrt3.1	steamrt	978
+sudo	1.9.5p2-3+deb11u1		4589
+sysvinit-utils	2.96-7+deb11u1	sysvinit	79
+tar	1.34+dfsg-1		3152
+tzdata	2021a-1+deb11u10		3413
+util-linux	2.36.1-8+deb11u1		4615
+vainfo	2.10.0+ds1-1+steamrt3.2+bsrt3.1	libva-utils	53
+vulkan-tools	1.3.239.0+dfsg1-1~steamrt3.1+bsrt3.1		1446
+waffle-utils	1.6.3-3+steamrt3.2+bsrt3.1	waffle	45
+x11-common	1:7.7+22	xorg	308
+xbitmaps	1.1.1-2.1		242
+xkb-data	2.29-2	xkeyboard-config	5872
+xterm	366-1+deb11u1		2359
+xz-utils	5.2.5-2.1~deb11u1		612
+zenity	3.32.0-6+steamrt3.1+bsrt3.1		369
+zenity-common	3.32.0-6+steamrt3.1+bsrt3.1	zenity	1890
+zlib1g:amd64	1:1.2.11.dfsg-2+deb11u2	zlib	167
+zlib1g:i386	1:1.2.11.dfsg-2+deb11u2	zlib	170

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="image/x-dcraw">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>digital raw image</comment>
+  <comment xml:lang="af">digitale rou beeld</comment>
+  <comment xml:lang="ar">صورة رقمية خامة</comment>
+  <comment xml:lang="be-Latn">suvoraja ličbavaja vyjava</comment>
+  <comment xml:lang="bg">Изображение — digital raw</comment>
+  <comment xml:lang="ca">imatge digital en cru</comment>
+  <comment xml:lang="cs">digitální surový obrázek</comment>
+  <comment xml:lang="da">digitalt raw-billede</comment>
+  <comment xml:lang="de">Digitales Rohbild</comment>
+  <comment xml:lang="el">Ανεπεξέργαστη ψηφιακή εικόνα</comment>
+  <comment xml:lang="en-GB">digital raw image</comment>
+  <comment xml:lang="es">imagen digital en bruto</comment>
+  <comment xml:lang="eu">irudi gordin digitala</comment>
+  <comment xml:lang="fi">digitaalinen raakakuva</comment>
+  <comment xml:lang="fo">talgild rámynd</comment>
+  <comment xml:lang="fr">image brute numérique</comment>
+  <comment xml:lang="fur">imagjin grese digjitâl</comment>
+  <comment xml:lang="ga">amhíomhá dhigiteach</comment>
+  <comment xml:lang="gl">imaxe en bruto dixital</comment>
+  <comment xml:lang="he">תמונה דיגטלית גולמית</comment>
+  <comment xml:lang="hr">Digitalna osnovna slika</comment>
+  <comment xml:lang="hu">digitális nyers kép</comment>
+  <comment xml:lang="ia">Imagine brute digital</comment>
+  <comment xml:lang="id">citra mentah digital</comment>
+  <comment xml:lang="it">Immagine raw digitale</comment>
+  <comment xml:lang="ja">デジタル raw 画像</comment>
+  <comment xml:lang="kk">өңделмеген сандық суреттер</comment>
+  <comment xml:lang="ko">디지털 원본 사진</comment>
+  <comment xml:lang="lt">skaitmeninis neapdorotas paveikslėlis</comment>
+  <comment xml:lang="lv">digitāls jēlattēls</comment>
+  <comment xml:lang="nb">digitalt raw-bilde</comment>
+  <comment xml:lang="nl">onbewerkt digitaal beeld</comment>
+  <comment xml:lang="nn">digitalt råbilete</comment>
+  <comment xml:lang="oc">imatge brut numeric</comment>
+  <comment xml:lang="pl">Surowy obraz cyfrowy</comment>
+  <comment xml:lang="pt">imagem digital em bruto</comment>
+  <comment xml:lang="pt-BR">Imagem digital bruta</comment>
+  <comment xml:lang="ro">imagine digitală brută</comment>
+  <comment xml:lang="ru">Необработанное цифровое изображение</comment>
+  <comment xml:lang="sk">Digitálny surový obrázok</comment>
+  <comment xml:lang="sl">surova digitalna slika</comment>
+  <comment xml:lang="sq">Figurë raw dixhitale</comment>
+  <comment xml:lang="sr">дигитална сирова слика</comment>
+  <comment xml:lang="sv">digital råbild</comment>
+  <comment xml:lang="tr">sayısal ham görüntü</comment>
+  <comment xml:lang="uk">зображення цифрового негатива</comment>
+  <comment xml:lang="vi">ảnh thô số</comment>
+  <comment xml:lang="zh-CN">数字化原始图像</comment>
+  <comment xml:lang="zh-TW">數位原生影像</comment>
+</mime-type>

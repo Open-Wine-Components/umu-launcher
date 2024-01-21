@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.input-sources"
+          path="/org/gnome/desktop/input-sources/">
+    <key name="current" type="u">
+      <default>0</default>
+      <summary>Current input source</summary>
+      <description>
+        The zero-based index into the input sources list specifying
+        the current one in effect. The value is automatically capped
+        to remain in the range [0, sources_length) as long as the
+        sources list isn’t empty.
+
+        DEPRECATED: This key is deprecated and ignored.
+      </description>
+    </key>
+    <key name="sources" type="a(ss)">
+      <default>[]</default>
+      <summary>List of input sources</summary>
+      <description>
+        List of input source identifiers available. Each source is
+        specified as a tuple of 2 strings. The first string is the
+        type and can be one of “xkb” or “ibus”. For “xkb” sources the
+        second string is “xkb_layout+xkb_variant” or just “xkb_layout”
+        if a XKB variant isn’t needed. For “ibus” sources the second
+        string is the IBus engine name. An empty list means that the X
+        server’s current XKB layout and variant won’t be touched and
+        IBus won’t be used.
+      </description>
+    </key>
+    <key name="mru-sources" type="a(ss)">
+      <default>[]</default>
+      <summary>List of most recently used input sources</summary>
+      <description>
+        List of most recently used input sources. The value is in the
+        same format as the available sources list.
+      </description>
+    </key>
+    <key name="xkb-options" type="as">
+      <default>[]</default>
+      <summary>List of XKB options</summary>
+      <description>
+        List of XKB options. Each option is an XKB option string as
+        defined by xkeyboard-config’s rules files.
+      </description>
+    </key>
+    <key name="show-all-sources" type="b">
+      <default>false</default>
+      <summary>Show all installed input sources</summary>
+      <description>
+        Makes all installed input sources available for choosing in
+        System Settings.
+      </description>
+    </key>
+    <key name="per-window" type="b">
+      <default>false</default>
+      <summary>Use different input sources for each window</summary>
+      <description>
+        When enabled, input sources get attached to the currently
+        focused window when activated.
+      </description>
+    </key>
+  </schema>
+</schemalist>

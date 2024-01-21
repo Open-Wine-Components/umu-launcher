@@ -1,0 +1,18 @@
+default  partial alphanumeric_keys
+xkb_symbols "tswana" {
+
+    include "us"
+
+    name[Group1]= "Tswana";
+
+    key <AC10> { [ semicolon,	    colon,  0x01000324,  0x01000324 ] };	//COMBINING DIAERESIS BELOW	
+    key <AC11> { [apostrophe,    quotedbl,  0x01000301,  0x01000308 ] };	//COMBINING ACUTE ACCENT, COMBINING DIAERESIS
+    key <TLDE> { [     grave,  asciitilde,  0x01000300,  0x01000303 ] };	//COMBINING GRAVE ACCENT, COMBINING TILDE
+    key <AE06> { [   	   6, asciicircum,  0x01000302 	       	    ] };	//COMBINING CIRCUMFLEX ACCENT
+    key <AE08> { [	   8,    asterisk,  0x01000307,  0x01000323 ] };	//COMBINING DOT ABOVE, COMBINING DOT BELOW
+    key <AE09> { [	   9,   parenleft,  0x01000306	            ] };	//COMBINING BREVE
+    key <AE10> { [	   0,  parenright,  0x0100030c 	            ] };	//COMBINING CARON
+    key <AE11> { [     minus,  underscore,  0x01000304,  0x01000331 ] };	//COMBINING MACRON,COMBINING MACRON BELOW  
+  	
+    include "level3(ralt_switch)"
+};

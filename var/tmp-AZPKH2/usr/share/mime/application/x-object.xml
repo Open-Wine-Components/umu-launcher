@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-object">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>object code</comment>
+  <comment xml:lang="af">objekkode</comment>
+  <comment xml:lang="ar">رمز الكائن</comment>
+  <comment xml:lang="be-Latn">abjektny kod</comment>
+  <comment xml:lang="bg">Обектен код</comment>
+  <comment xml:lang="ca">codi objecte</comment>
+  <comment xml:lang="cs">objektový kód</comment>
+  <comment xml:lang="da">objektkode</comment>
+  <comment xml:lang="de">Objektcode</comment>
+  <comment xml:lang="el">Μεταφρασμένος κώδικας</comment>
+  <comment xml:lang="en-GB">object code</comment>
+  <comment xml:lang="eo">celkodo</comment>
+  <comment xml:lang="es">código objeto</comment>
+  <comment xml:lang="eu">objektu kodea</comment>
+  <comment xml:lang="fi">objektikoodi</comment>
+  <comment xml:lang="fr">code objet</comment>
+  <comment xml:lang="fur">codiç ogjet</comment>
+  <comment xml:lang="ga">cód réada</comment>
+  <comment xml:lang="gl">código obxecto</comment>
+  <comment xml:lang="he">קוד אובייקט</comment>
+  <comment xml:lang="hr">Object kôd</comment>
+  <comment xml:lang="hu">tárgykód</comment>
+  <comment xml:lang="ia">Codice objecto</comment>
+  <comment xml:lang="id">kode objek</comment>
+  <comment xml:lang="it">Codice oggetto</comment>
+  <comment xml:lang="ja">オブジェクトコード</comment>
+  <comment xml:lang="kk">объектті коды</comment>
+  <comment xml:lang="ko">개체 코드</comment>
+  <comment xml:lang="lt">objektinis kodas</comment>
+  <comment xml:lang="lv">objekta kods</comment>
+  <comment xml:lang="ms">Kod objek</comment>
+  <comment xml:lang="nb">objektkode</comment>
+  <comment xml:lang="nl">objectcode</comment>
+  <comment xml:lang="nn">objektkode</comment>
+  <comment xml:lang="oc">còde objet</comment>
+  <comment xml:lang="pl">Kod obiektowy</comment>
+  <comment xml:lang="pt">código de objeto</comment>
+  <comment xml:lang="pt-BR">Código-objeto</comment>
+  <comment xml:lang="ro">cod sursă obiect</comment>
+  <comment xml:lang="ru">Объектный код</comment>
+  <comment xml:lang="sk">Objektový kód</comment>
+  <comment xml:lang="sl">predmetna koda</comment>
+  <comment xml:lang="sq">Kod objekti</comment>
+  <comment xml:lang="sr">објектни ко̂д</comment>
+  <comment xml:lang="sv">objektkod</comment>
+  <comment xml:lang="tr">nesne kodu</comment>
+  <comment xml:lang="uk">об'єктний код</comment>
+  <comment xml:lang="vi">mã đối tượng</comment>
+  <comment xml:lang="zh-CN">目标代码</comment>
+  <comment xml:lang="zh-TW">目的碼</comment>
+  <generic-icon name="x-office-document"/>
+  <glob pattern="*.o"/>
+</mime-type>

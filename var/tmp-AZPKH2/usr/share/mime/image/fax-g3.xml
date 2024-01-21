@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="image/fax-g3">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>CCITT G3 fax image</comment>
+  <comment xml:lang="bg">Изображение — CCITT G3, факс</comment>
+  <comment xml:lang="ca">imatge de fax CCITT G3</comment>
+  <comment xml:lang="da">CCITT G3-faxbillede</comment>
+  <comment xml:lang="de">CCITT-G3-Faxbild</comment>
+  <comment xml:lang="en-GB">CCITT G3 fax image</comment>
+  <comment xml:lang="es">imagen de fax CCITT G3</comment>
+  <comment xml:lang="eu">CCITT G3 fax irudia</comment>
+  <comment xml:lang="fi">CCITT G3 faksikuva</comment>
+  <comment xml:lang="fr">image de télécopie CCITT G3</comment>
+  <comment xml:lang="hr">CCITT G3 slika faksa</comment>
+  <comment xml:lang="hu">CCITT G3-faxkép</comment>
+  <comment xml:lang="it">Immagine fax CCIT G3</comment>
+  <comment xml:lang="ko">CCITT G3 팩스 이미지</comment>
+  <comment xml:lang="pl">Obraz faksowy G3 CCITT</comment>
+  <comment xml:lang="pt-BR">Imagem de fax CCITT G3</comment>
+  <comment xml:lang="sv">CCITT G3 faxbild</comment>
+  <comment xml:lang="tr">CCITT G3 faks görüntüsü</comment>
+  <comment xml:lang="uk">зображення факсу G3 CCITT</comment>
+  <comment xml:lang="zh-CN">CCITT G3 传真图像</comment>
+  <glob pattern="*.g3"/>
+  <alias type="image/g3fax"/>
+</mime-type>

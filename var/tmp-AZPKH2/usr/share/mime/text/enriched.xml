@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/enriched">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>enriched text document</comment>
+  <comment xml:lang="af">verrykte teksdokument</comment>
+  <comment xml:lang="ar">مستند نصي مغنى</comment>
+  <comment xml:lang="ast">documentu de testu arriquecíu</comment>
+  <comment xml:lang="az">zəngin mətn sənədi</comment>
+  <comment xml:lang="be-Latn">azdobleny tekstavy dakument</comment>
+  <comment xml:lang="bg">Документ с обогатен текст</comment>
+  <comment xml:lang="ca">document de text enriquit</comment>
+  <comment xml:lang="cs">rozšířený textový dokument</comment>
+  <comment xml:lang="cy">Dogfen testun wedi ei gyfoethogi</comment>
+  <comment xml:lang="da">beriget tekstdokument</comment>
+  <comment xml:lang="de">Angereichertes Textdokument</comment>
+  <comment xml:lang="el">Έγγραφο εμπλουτισμένου κειμένου</comment>
+  <comment xml:lang="en-GB">enriched text document</comment>
+  <comment xml:lang="eo">riĉigita teksta dokumento</comment>
+  <comment xml:lang="es">documento de texto enriquecido</comment>
+  <comment xml:lang="eu">aberastutako testu dokumentua</comment>
+  <comment xml:lang="fi">rikastettu tekstiasiakirja</comment>
+  <comment xml:lang="fo">ríkað tekstskjal</comment>
+  <comment xml:lang="fr">document texte enrichi</comment>
+  <comment xml:lang="fur">document di test inricjît</comment>
+  <comment xml:lang="ga">cáipéis téacs saibhrithe</comment>
+  <comment xml:lang="gl">documento de texto enriquecido</comment>
+  <comment xml:lang="he">מסמך טקסט מועשר</comment>
+  <comment xml:lang="hr">Obogaćeni tekstovni dokument</comment>
+  <comment xml:lang="hu">enriched text dokumentum</comment>
+  <comment xml:lang="ia">Documento de texto inricchite</comment>
+  <comment xml:lang="id">dokumen teks diperkaya</comment>
+  <comment xml:lang="it">Documento testo arricchito</comment>
+  <comment xml:lang="ja">リッチテキストドキュメント</comment>
+  <comment xml:lang="kk">пішімделген мәтіндік құжаты</comment>
+  <comment xml:lang="ko">확장된 텍스트 문서</comment>
+  <comment xml:lang="lt">praturtinto teksto dokumentas</comment>
+  <comment xml:lang="lv">bagātināta teksta formāts</comment>
+  <comment xml:lang="ms">Dokumen teks diperkaya</comment>
+  <comment xml:lang="nb">riktekst-dokument</comment>
+  <comment xml:lang="nl">verrijkt tekstdocument</comment>
+  <comment xml:lang="nn">rik tekst tekstdokument</comment>
+  <comment xml:lang="oc">document tèxte enriquit</comment>
+  <comment xml:lang="pl">Wzbogacony dokument tekstowy</comment>
+  <comment xml:lang="pt">documento de texto rico</comment>
+  <comment xml:lang="pt-BR">Documento de texto enriquecido</comment>
+  <comment xml:lang="ro">document text îmbogățit</comment>
+  <comment xml:lang="ru">Форматированный текстовый документ</comment>
+  <comment xml:lang="sk">Rozšírený textový dokument</comment>
+  <comment xml:lang="sl">dokument z obogatenim besedilom</comment>
+  <comment xml:lang="sq">Dokument teksti i pasuruar</comment>
+  <comment xml:lang="sr">обогаћени текстуални документ</comment>
+  <comment xml:lang="sv">berikat textdokument</comment>
+  <comment xml:lang="tr">zenginleştirilmiş metin belgesi</comment>
+  <comment xml:lang="uk">форматований текстовий документ</comment>
+  <comment xml:lang="vi">tài liệu văn bản có kiểu dáng</comment>
+  <comment xml:lang="zh-CN">浓缩文本文档 (ETF)</comment>
+  <comment xml:lang="zh-TW">豐富化文字文件</comment>
+  <sub-class-of type="text/plain"/>
+</mime-type>

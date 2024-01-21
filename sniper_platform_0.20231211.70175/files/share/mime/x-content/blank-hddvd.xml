@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="x-content/blank-hddvd">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>blank HD DVD disc</comment>
+  <comment xml:lang="af">skoon HD-DVD-skyf</comment>
+  <comment xml:lang="ar">قرص HD DVD فارغ</comment>
+  <comment xml:lang="be-Latn">čysty dysk HD DVD</comment>
+  <comment xml:lang="bg">HD DVD — празно</comment>
+  <comment xml:lang="ca">disc HD-DVD en blanc</comment>
+  <comment xml:lang="cs">prázdný disk HD DVD</comment>
+  <comment xml:lang="da">tom HD dvd-disk</comment>
+  <comment xml:lang="de">Leere HD-DVD</comment>
+  <comment xml:lang="el">Κενό HD DVD</comment>
+  <comment xml:lang="en-GB">blank HD DVD disc</comment>
+  <comment xml:lang="es">disco HD DVD en blanco</comment>
+  <comment xml:lang="eu">HD DVD disko hutsa</comment>
+  <comment xml:lang="fi">tyhjä HD DVD -levy</comment>
+  <comment xml:lang="fo">blankur HD DVD diskur</comment>
+  <comment xml:lang="fr">disque HD-DVD vierge</comment>
+  <comment xml:lang="fur">disc HD DVD vueit</comment>
+  <comment xml:lang="ga">HD DVD folamh</comment>
+  <comment xml:lang="gl">disco de HD DVD en branco</comment>
+  <comment xml:lang="he">דיסק HD DVD ריק</comment>
+  <comment xml:lang="hr">Prazni HD DVD disk</comment>
+  <comment xml:lang="hu">üres HD DVD-lemez</comment>
+  <comment xml:lang="ia">Disco HD DVD vacue</comment>
+  <comment xml:lang="id">cakram HD DVD kosong</comment>
+  <comment xml:lang="it">Disco vuoto DVD HD</comment>
+  <comment xml:lang="ja">ブランク HD DVD ディスク</comment>
+  <comment xml:lang="kk">таза HD DVD дискі</comment>
+  <comment xml:lang="ko">빈 HD DVD 디스크</comment>
+  <comment xml:lang="lt">tuščias HD DVD diskas</comment>
+  <comment xml:lang="lv">tukšs HD DVD disks</comment>
+  <comment xml:lang="nl">blanco HD-DVD</comment>
+  <comment xml:lang="nn">tom HD-DVD-plate</comment>
+  <comment xml:lang="oc">disc HD-DVD verge</comment>
+  <comment xml:lang="pl">Pusta płyta HD DVD</comment>
+  <comment xml:lang="pt">HD DVD vazio</comment>
+  <comment xml:lang="pt-BR">Disco HD DVD vazio</comment>
+  <comment xml:lang="ro">disc gol HD DVD</comment>
+  <comment xml:lang="ru">Чистый диск HD DVD</comment>
+  <comment xml:lang="sk">Prázdny disk HD DVD</comment>
+  <comment xml:lang="sl">prazen HD DVD disk</comment>
+  <comment xml:lang="sq">Disk bosh DVD HD</comment>
+  <comment xml:lang="sr">празан ХД ДВД диск</comment>
+  <comment xml:lang="sv">tom HD DVD-skiva</comment>
+  <comment xml:lang="tr">boş HD DVD diski</comment>
+  <comment xml:lang="uk">порожній диск HD DVD</comment>
+  <comment xml:lang="vi">đĩa DVD HD trống</comment>
+  <comment xml:lang="zh-CN">空 HD DVD 光盘</comment>
+  <comment xml:lang="zh-TW">空白 HD DVD 光碟</comment>
+</mime-type>

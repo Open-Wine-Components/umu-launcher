@@ -1,0 +1,4 @@
+
+Name: shared-mime-info
+Description: Freedesktop common MIME database
+Version: 2.0

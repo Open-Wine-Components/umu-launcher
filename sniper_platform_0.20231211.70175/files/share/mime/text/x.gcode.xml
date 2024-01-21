@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/x.gcode">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>G-code file</comment>
+  <comment xml:lang="bg">Модел — G-code</comment>
+  <comment xml:lang="ca">fitxer G-code</comment>
+  <comment xml:lang="cs">soubor G-code</comment>
+  <comment xml:lang="da">G-code-fil</comment>
+  <comment xml:lang="de">G-Code-Datei</comment>
+  <comment xml:lang="en-GB">G-code file</comment>
+  <comment xml:lang="es">archivo G-code</comment>
+  <comment xml:lang="eu">G-code fitxategia</comment>
+  <comment xml:lang="fi">G-code-tiedosto</comment>
+  <comment xml:lang="fr">fichier G-code</comment>
+  <comment xml:lang="fur">file G-code</comment>
+  <comment xml:lang="ga">comhad G-code</comment>
+  <comment xml:lang="hr">G-kôd datoteka</comment>
+  <comment xml:lang="hu">G-code fájl</comment>
+  <comment xml:lang="id">berkas G-code</comment>
+  <comment xml:lang="it">File G-code</comment>
+  <comment xml:lang="kk">G-code файлы</comment>
+  <comment xml:lang="ko">G-code 파일</comment>
+  <comment xml:lang="pl">Plik G-code</comment>
+  <comment xml:lang="pt-BR">Arquivo G-code</comment>
+  <comment xml:lang="ru">Файл G-code</comment>
+  <comment xml:lang="sk">Súbor G-code</comment>
+  <comment xml:lang="sr">датотека Г-ко̂да</comment>
+  <comment xml:lang="sv">G-code-fil</comment>
+  <comment xml:lang="tr">G-code dosyası</comment>
+  <comment xml:lang="uk">файл G-code</comment>
+  <comment xml:lang="zh-CN">G-code 文件</comment>
+  <comment xml:lang="zh-TW">G-code 檔案</comment>
+  <sub-class-of type="text/plain"/>
+  <generic-icon name="text-x-generic"/>
+  <glob pattern="*.gcode"/>
+</mime-type>

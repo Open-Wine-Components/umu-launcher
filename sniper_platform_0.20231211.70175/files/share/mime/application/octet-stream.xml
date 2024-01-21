@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/octet-stream">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>unknown</comment>
+  <comment xml:lang="af">onbekend</comment>
+  <comment xml:lang="ar">مجهول</comment>
+  <comment xml:lang="ast">desconozse</comment>
+  <comment xml:lang="be-Latn">nieviadomy</comment>
+  <comment xml:lang="bg">Неизвестен тип</comment>
+  <comment xml:lang="ca">desconegut</comment>
+  <comment xml:lang="cs">neznámý</comment>
+  <comment xml:lang="da">ukendt</comment>
+  <comment xml:lang="de">unbekannt</comment>
+  <comment xml:lang="el">Άγνωστο</comment>
+  <comment xml:lang="en-GB">unknown</comment>
+  <comment xml:lang="eo">nekonate</comment>
+  <comment xml:lang="es">desconocido</comment>
+  <comment xml:lang="eu">ezezaguna</comment>
+  <comment xml:lang="fi">tuntematon</comment>
+  <comment xml:lang="fo">ókent</comment>
+  <comment xml:lang="fr">inconnu</comment>
+  <comment xml:lang="fur">no cognossût</comment>
+  <comment xml:lang="ga">anaithnid</comment>
+  <comment xml:lang="gl">descoñecido</comment>
+  <comment xml:lang="he">לא ידוע</comment>
+  <comment xml:lang="hr">Nepoznato</comment>
+  <comment xml:lang="hu">ismeretlen</comment>
+  <comment xml:lang="ia">incognite</comment>
+  <comment xml:lang="id">tak diketahui</comment>
+  <comment xml:lang="it">Sconosciuto</comment>
+  <comment xml:lang="ja">不明</comment>
+  <comment xml:lang="ka">უცნობი</comment>
+  <comment xml:lang="kk">белгісіз</comment>
+  <comment xml:lang="ko">알 수 없음</comment>
+  <comment xml:lang="lt">nežinoma</comment>
+  <comment xml:lang="lv">nezināms</comment>
+  <comment xml:lang="ms">Entah</comment>
+  <comment xml:lang="nb">ukjent</comment>
+  <comment xml:lang="nl">onbekend</comment>
+  <comment xml:lang="nn">ukjend</comment>
+  <comment xml:lang="oc">desconegut</comment>
+  <comment xml:lang="pl">Nieznany typ</comment>
+  <comment xml:lang="pt">desconhecido</comment>
+  <comment xml:lang="pt-BR">Desconhecido</comment>
+  <comment xml:lang="ro">necunoscut</comment>
+  <comment xml:lang="ru">Неизвестно</comment>
+  <comment xml:lang="sk">Neznámy</comment>
+  <comment xml:lang="sl">neznano</comment>
+  <comment xml:lang="sq">Nuk njihet</comment>
+  <comment xml:lang="sr">непознато</comment>
+  <comment xml:lang="sv">okänd</comment>
+  <comment xml:lang="tr">bilinmeyen</comment>
+  <comment xml:lang="uk">невідомо</comment>
+  <comment xml:lang="vi">không rõ</comment>
+  <comment xml:lang="zh-CN">未知</comment>
+  <comment xml:lang="zh-TW">不明</comment>
+</mime-type>

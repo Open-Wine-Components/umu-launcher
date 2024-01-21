@@ -1,0 +1,93 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: flatpak-xdg-utils
+Source: https://github.com/flatpak/flatpak-xdg-utils/releases
+License: LGPL-2.1+
+
+Files:
+ *
+Copyright:
+ © 2017-2018 Red Hat, Inc
+ © 2018-2019 Collabora Ltd.
+License: LGPL-2.1+
+
+Files:
+ src/backport-autoptr.h
+ src/xdg-email.c
+ src/xdg-open.c
+Copyright:
+ © 1995-1997 Peter Mattis
+ © 1995-1997 Spencer Kimball
+ © 1995-1997 Josh MacDonald
+ © 2015 Colin Walters
+ © 2017 Red Hat, Inc.
+License: LGPL-2+
+
+Files:
+ .travis.yml
+ tests/ci-build.sh
+ tests/ci-install.sh
+Copyright:
+ © 2015-2019 Collabora Ltd.
+License: Expat
+
+Files:
+ debian/*
+Copyright:
+ © 2016-2018 Simon McVittie
+ © 2016-2019 Collabora Ltd.
+License: LGPL-2+
+
+License: LGPL-2+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+ .
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library. If not, see <http://www.gnu.org/licenses/>.
+Comment:
+ On Debian systems, the full text of the GNU Lesser General Public License
+ version 2.1 can be found in the file '/usr/share/common-licenses/LGPL-2.1'.
+
+License: LGPL-2.1+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+ .
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library. If not, see <http://www.gnu.org/licenses/>.
+Comment:
+ On Debian systems, the full text of the GNU Lesser General Public License
+ version 2.1 can be found in the file '/usr/share/common-licenses/LGPL-2.1'.
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation files
+ (the "Software"), to deal in the Software without restriction,
+ including without limitation the rights to use, copy, modify, merge,
+ publish, distribute, sublicense, and/or sell copies of the Software,
+ and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.

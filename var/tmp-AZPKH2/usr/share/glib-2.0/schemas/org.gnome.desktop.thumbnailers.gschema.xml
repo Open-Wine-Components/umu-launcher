@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.thumbnailers" path="/org/gnome/desktop/thumbnailers/">
+    <key name="disable-all" type="b">
+      <default>false</default>
+      <summary>Disable all external thumbnailers</summary>
+      <description>
+        Set to true to disable all external thumbnailer programs,
+        independent on whether they are independently disabled/enabled.
+      </description>
+    </key>
+
+    <key name="disable" type="as">
+      <default>[]</default>
+      <summary>
+        List of mime-types for which external thumbnailer
+        programs will be disabled
+      </summary>
+      <description>
+        Thumbnails will not be created for files whose mime-type is
+        contained in the list.
+      </description>
+    </key>
+  </schema>
+</schemalist>

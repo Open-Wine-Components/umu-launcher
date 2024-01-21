@@ -1,0 +1,8 @@
+libnss3.so libnss3 #MINVER#
+# No symbols listed here yet
+libnssutil3.so libnss3 #MINVER#
+# No symbols listed here yet
+libsmime3.so libnss3 #MINVER#
+# No symbols listed here yet
+libssl3.so libnss3 #MINVER#
+# No symbols listed here yet

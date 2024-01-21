@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.gtk.GLib.PACRunner
+Exec=/usr/libexec/glib-pacrunner
+SystemdService=glib-pacrunner.service

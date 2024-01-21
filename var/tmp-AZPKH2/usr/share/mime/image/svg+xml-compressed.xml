@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="image/svg+xml-compressed">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>compressed SVG image</comment>
+  <comment xml:lang="af">saamgepersde SVG-beeld</comment>
+  <comment xml:lang="ar">صورة SVG مضغوطة</comment>
+  <comment xml:lang="be-Latn">skampresavanaja vyjava SVG</comment>
+  <comment xml:lang="bg">Изображение — SVG, компресирано</comment>
+  <comment xml:lang="ca">imatge SVG amb compressió</comment>
+  <comment xml:lang="cs">komprimovaný obrázek SVG</comment>
+  <comment xml:lang="da">SVG-komprimeret billede</comment>
+  <comment xml:lang="de">Komprimiertes SVG-Bild</comment>
+  <comment xml:lang="el">Συμπιεσμένη εικόνα SVG</comment>
+  <comment xml:lang="en-GB">compressed SVG image</comment>
+  <comment xml:lang="es">imagen SVG comprimida</comment>
+  <comment xml:lang="eu">konprimitutako SVG irudia</comment>
+  <comment xml:lang="fi">pakattu SVG-kuva</comment>
+  <comment xml:lang="fo">stappað SVG mynd</comment>
+  <comment xml:lang="fr">image SVG compressée</comment>
+  <comment xml:lang="fur">imagjin SVG comprimude</comment>
+  <comment xml:lang="ga">íomhá SVG comhbhrúite</comment>
+  <comment xml:lang="gl">imaxe SVG comprimida</comment>
+  <comment xml:lang="he">תמונת SVG מכווצת</comment>
+  <comment xml:lang="hr">Sažeta SVG slika</comment>
+  <comment xml:lang="hu">tömörített SVG kép</comment>
+  <comment xml:lang="ia">Imagine SVG comprimite</comment>
+  <comment xml:lang="id">Citra SVG terkompresi</comment>
+  <comment xml:lang="it">Immagine SVG compressa</comment>
+  <comment xml:lang="ja">圧縮 SVG 画像</comment>
+  <comment xml:lang="kk">сығылған SVG суреті</comment>
+  <comment xml:lang="ko">압축된 SVG 그림</comment>
+  <comment xml:lang="lt">suglaudintas SVG paveikslėlis</comment>
+  <comment xml:lang="lv">saspiests SVG attēls</comment>
+  <comment xml:lang="nb">komprimert SVG-bilde</comment>
+  <comment xml:lang="nl">ingepakte SVG-afbeelding</comment>
+  <comment xml:lang="nn">komprimert SVG-bilete</comment>
+  <comment xml:lang="oc">imatge SVG compressat</comment>
+  <comment xml:lang="pl">Skompresowany obraz SVG</comment>
+  <comment xml:lang="pt">imagem SVG comprimida</comment>
+  <comment xml:lang="pt-BR">Imagem SVG compactada</comment>
+  <comment xml:lang="ro">imagine comprimată SVG</comment>
+  <comment xml:lang="ru">Сжатое изображение SVG</comment>
+  <comment xml:lang="sk">Komprimovaný obrázok SVG</comment>
+  <comment xml:lang="sl">Slikovna datoteka SVG (stisnjena)</comment>
+  <comment xml:lang="sq">Figurë SVG e kompresuar</comment>
+  <comment xml:lang="sr">запакована СВГ слика</comment>
+  <comment xml:lang="sv">komprimerad SVG-bild</comment>
+  <comment xml:lang="tr">sıkıştırılmış SVG görüntüsü</comment>
+  <comment xml:lang="uk">стиснене зображення SVG</comment>
+  <comment xml:lang="vi">ảnh SVG đã nén</comment>
+  <comment xml:lang="zh-CN">压缩的 SVG 图像</comment>
+  <comment xml:lang="zh-TW">壓縮版 SVG 影像</comment>
+  <acronym>SVG</acronym>
+  <expanded-acronym>Scalable Vector Graphics</expanded-acronym>
+  <sub-class-of type="application/gzip"/>
+  <glob pattern="*.svgz"/>
+</mime-type>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/vcard">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>electronic business card</comment>
+  <comment xml:lang="af">elektroniese beskigheidskaartjie</comment>
+  <comment xml:lang="ar">بطاقة أعمال إلكترونية</comment>
+  <comment xml:lang="be-Latn">elektronnaja biznes-kartka</comment>
+  <comment xml:lang="bg">Електронна визитна картичка</comment>
+  <comment xml:lang="ca">targeta de visita electrònica</comment>
+  <comment xml:lang="cs">elektronická navštívenka</comment>
+  <comment xml:lang="da">elektronisk visitkort</comment>
+  <comment xml:lang="de">Elektronische Visitenkarte</comment>
+  <comment xml:lang="el">Ηλεκτρονική επαγγελματική κάρτα</comment>
+  <comment xml:lang="en-GB">electronic business card</comment>
+  <comment xml:lang="eo">elektronika vizitkarto</comment>
+  <comment xml:lang="es">tarjeta de visita electrónica</comment>
+  <comment xml:lang="eu">enpresako txartel elektronikoa</comment>
+  <comment xml:lang="fi">sähköinen käyntikortti</comment>
+  <comment xml:lang="fo">elektroniskt handilskort</comment>
+  <comment xml:lang="fr">carte de visite électronique</comment>
+  <comment xml:lang="fur">biliet di visite eletronic</comment>
+  <comment xml:lang="ga">cárta gnó leictreonach</comment>
+  <comment xml:lang="gl">tarxeta de negocio electrónica</comment>
+  <comment xml:lang="he">כרטיס ביקור אלקטרוני</comment>
+  <comment xml:lang="hr">Elektronička posjetnica</comment>
+  <comment xml:lang="hu">elektronikus névjegykártya</comment>
+  <comment xml:lang="ia">Carta de visita electronic</comment>
+  <comment xml:lang="id">kartu bisnis elektronik</comment>
+  <comment xml:lang="it">Biglietto da visita elettronico</comment>
+  <comment xml:lang="ja">電子名刺</comment>
+  <comment xml:lang="kk">электронды визит карточкасы</comment>
+  <comment xml:lang="ko">전자 명함</comment>
+  <comment xml:lang="lt">elektroninė vizitinė kortelė</comment>
+  <comment xml:lang="lv">elektroniskā biznesa kartiņa</comment>
+  <comment xml:lang="nl">elektronisch visitekaartje</comment>
+  <comment xml:lang="nn">elektronisk visittkort</comment>
+  <comment xml:lang="oc">carta de visita electronica</comment>
+  <comment xml:lang="pl">Wizytówka elektroniczna</comment>
+  <comment xml:lang="pt">cartão de visita eletrónico</comment>
+  <comment xml:lang="pt-BR">Cartão de visitas eletrônico</comment>
+  <comment xml:lang="ro">carte de vizită electronică</comment>
+  <comment xml:lang="ru">Электронная визитная карточка</comment>
+  <comment xml:lang="sk">Elektronická vizitka</comment>
+  <comment xml:lang="sl">elektronska poslovna vizitka</comment>
+  <comment xml:lang="sq">Skedë elektronike biznesi</comment>
+  <comment xml:lang="sr">електронска пословна картица</comment>
+  <comment xml:lang="sv">elektroniskt visitkort</comment>
+  <comment xml:lang="tr">elektronik iş kartı</comment>
+  <comment xml:lang="uk">електронна бізнес-картка</comment>
+  <comment xml:lang="vi">danh thiếp điện tử</comment>
+  <comment xml:lang="zh-CN">电子商务卡</comment>
+  <comment xml:lang="zh-TW">電子商務名片</comment>
+  <alias type="text/directory"/>
+  <alias type="text/x-vcard"/>
+  <sub-class-of type="text/plain"/>
+  <glob pattern="*.vcard"/>
+  <glob pattern="*.vcf"/>
+  <glob pattern="*.vct"/>
+  <glob pattern="*.gcrd"/>
+</mime-type>

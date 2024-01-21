@@ -1,0 +1,253 @@
+#!/bin/sh
+# See init-d-script(5) for instructions on how to use this library.
+#=============================================================================
+
+# Shift arguments early to fix #826214
+__init_d_script_name="$1"
+shift
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh
+# script.  Scripts running before mountnfs.sh should remove the /usr/*
+# entries.
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+export PATH
+
+is_call_implemented() {
+	command -V $1 > /dev/null 2>&1
+}
+
+do_usage() {
+	if is_call_implemented do_reload ; then
+		echo "Usage: $SCRIPTNAME {start|stop|status|reload|restart|try-restart|force-reload}" >&2
+	else
+		echo "Usage: $SCRIPTNAME {start|stop|status|restart|try-restart|force-reload}" >&2
+	fi
+}
+
+call() {
+	cmd="$1"
+	shift
+	if is_call_implemented ${cmd}_override ; then
+	    ${cmd}_override "$@"
+	else
+            ${cmd} "$@"
+        fi
+}
+
+#
+# Function that starts the daemon/service
+#
+
+do_start_cmd() {
+	start-stop-daemon --start --quiet --oknodo \
+	    ${PIDFILE:+--pidfile ${PIDFILE}} $START_ARGS \
+	    --startas $DAEMON --name ${COMMAND_NAME} --exec $DAEMON -- $DAEMON_ARGS
+}
+
+do_start()
+{
+	if is_call_implemented do_start_prepare ; then
+		call do_start_prepare
+	fi
+	log_daemon_msg "Starting $DESC" "$NAME"
+	call do_start_cmd
+	retval=$?
+	case ${retval} in
+		0|1) vlog_end_msg 0 ;;
+		2)   vlog_end_msg 1 ;;
+	esac
+	if is_call_implemented do_start_cleanup ; then
+		call do_start_cleanup
+	else
+		return ${retval}
+	fi
+}
+
+#
+# Function that stops the daemon/service
+#
+
+do_stop_cmd() {
+	start-stop-daemon --stop --quiet --oknodo --retry=TERM/30/KILL/5 \
+	    $STOP_ARGS \
+	    ${PIDFILE:+--pidfile ${PIDFILE}} --name ${COMMAND_NAME} --exec $DAEMON
+	RETVAL="$?"
+	[ "$RETVAL" = 2 ] && return 2
+	# Wait for children to finish too if this is a daemon that forks
+	# and if the daemon is only ever run from this initscript.
+	# If the above conditions are not satisfied then add some other code
+	# that waits for the process to drop all resources that could be
+	# needed by services started subsequently.  A last resort is to
+	# sleep for some time.
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 \
+	    $STOP_ARGS \
+	    --exec $DAEMON
+	[ "$?" = 2 ] && return 2
+	# Many daemons don't delete their pidfiles when they exit.
+	rm -f $PIDFILE
+	return $RETVAL
+}
+
+do_stop()
+{
+	if is_call_implemented do_stop_prepare ; then
+		call do_stop_prepare
+	fi
+	vlog_daemon_msg "Stopping $DESC" "$NAME"
+	call do_stop_cmd
+	retval=$?
+	case ${retval} in
+		0|1) vlog_end_msg 0 ;;
+		2)   vlog_end_msg 1 ;;
+	esac
+	if is_call_implemented do_stop_cleanup ; then
+		call do_stop_cleanup
+	else
+		return ${retval}
+	fi
+}
+
+do_restart() {
+	if is_call_implemented do_restart_prepare ; then
+		call do_restart_prepare
+	fi
+	vlog_daemon_msg "Restarting $DESC" "$NAME"
+	call do_stop_cmd
+	call do_start_cmd
+	retval=$?
+	case ${retval} in
+		0|1) vlog_end_msg 0 ;;
+		2)   vlog_end_msg 1 ;;
+	esac
+	if is_call_implemented do_restart_cleanup ; then
+		call do_restart_cleanup
+	else
+		return ${retval}
+	fi
+}
+
+do_force_reload() {
+	if is_call_implemented do_reload ; then
+		call do_reload
+	else
+		call do_restart
+	fi
+}
+
+# Enable this using
+# alias do_reload=do_reload_sigusr1
+do_reload_sigusr1() {
+        if is_call_implemented do_reload_prepare ; then
+            call do_reload_prepare
+        fi
+        log_daemon_msg "Reloading $DESC configuration files" "$NAME"
+        start-stop-daemon --oknodo --stop --signal 1 --quiet \
+          --pidfile "$PIDFILE" --exec "$DAEMON"
+        log_end_msg $?
+        if is_call_implemented do_reload_cleanup ; then
+            call do_reload_cleanup
+        fi
+}
+
+do_status() {
+	# FIXME: Does it make sense to call `status_of_proc' if PIDFILE is
+	# empty?
+	status_of_proc "$DAEMON" "$NAME" ${PIDFILE:="-p ${PIDFILE}"}
+}
+
+if [ "$DEBUG" = "true" ] ; then
+    set -x
+fi
+
+# Unset configuration variables to make sure that if variable is not assigned a
+# value in init script, it does not use one from environment. See #822918.
+unset DAEMON DAEMON_ARGS NAME COMMAND_NAME PIDFILE
+
+SCRIPTNAME="$__init_d_script_name"
+scriptbasename="$(basename "$__init_d_script_name")"
+if [ "$scriptbasename" != "init-d-script" ] ; then
+    . "$__init_d_script_name"
+else
+    exit 0
+fi
+
+NAME=${NAME:=$(basename $DAEMON)}
+DESC=${DESC:=$NAME}
+: ${COMMAND_NAME:=${NAME}}
+
+# Do not use pid file if $PIDFILE is 'none'.  Otherwise, generate from
+# $NAME or use the value provided by the init.d script.
+if [ none = "$PIDFILE" ] ; then
+    PIDFILE=
+elif [ -z "$PIDFILE" ] ; then
+    PIDFILE=/var/run/$NAME.pid
+fi
+
+# Read configuration variable file if it is present
+[ -r "/etc/default/${NAME}" ] && . "/etc/default/${NAME}"
+
+# Exit if the package is not installed
+if [ none != "$DAEMON" ] && [ ! -x "$DAEMON" ] ; then
+	exit 0
+fi
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+if [ -t 0 ] ; then # Be verbose when called from a terminal
+    VERBOSE=yes
+fi
+
+case "$1" in
+  start)
+	call do_start
+	;;
+  stop)
+	call do_stop
+	;;
+  status)
+	call do_status
+	;;
+  reload)
+	if is_call_implemented do_reload ; then
+		do_reload
+	else
+		call do_usage
+		exit 3
+	fi
+	;;
+  force-reload)
+	call do_force_reload
+	;;
+  restart)
+	call do_restart
+	;;
+  try-restart)
+        log_daemon_msg "Trying to restart $DESC" "$NAME"
+	if call do_status > /dev/null 2>&1 ; then
+	    call do_restart
+            log_end_msg $?
+	else
+	    log_progress_msg "is not running."
+            log_end_msg 1
+    	fi
+	;;
+  '')
+	call do_usage
+	exit 3
+	;;
+  *)
+	if is_call_implemented do_unknown ; then
+	    call do_unknown "$1"
+	    exit 3
+	else
+	    call do_usage
+	    exit 3
+	fi
+	;;
+esac
+exit $? # See https://bugs.debian.org/822753#53

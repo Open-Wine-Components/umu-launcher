@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="multipart/encrypted">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>encrypted message</comment>
+  <comment xml:lang="af">geënkripteerde boodskap</comment>
+  <comment xml:lang="ar">رسالة مشفرة</comment>
+  <comment xml:lang="az">şifrələnmiş ismarış</comment>
+  <comment xml:lang="be-Latn">zašyfravanaje paviedamleńnie</comment>
+  <comment xml:lang="bg">Шифрирано съобщение</comment>
+  <comment xml:lang="ca">missatge xifrat</comment>
+  <comment xml:lang="cs">zašifrovaná zpráva</comment>
+  <comment xml:lang="cy">Neges wedi ei hamgryptio</comment>
+  <comment xml:lang="da">krypteret meddelelse</comment>
+  <comment xml:lang="de">Verschlüsselte Nachricht</comment>
+  <comment xml:lang="el">Κρυπτογραφημένο μήνυμα</comment>
+  <comment xml:lang="en-GB">encrypted message</comment>
+  <comment xml:lang="eo">ĉifrita mesaĝo</comment>
+  <comment xml:lang="es">mensaje cifrado</comment>
+  <comment xml:lang="eu">zifratutako mezua</comment>
+  <comment xml:lang="fi">salattu viesti</comment>
+  <comment xml:lang="fo">bronglað boð</comment>
+  <comment xml:lang="fr">message chiffré</comment>
+  <comment xml:lang="fur">messaç cifrât</comment>
+  <comment xml:lang="ga">teachtaireacht chriptithe</comment>
+  <comment xml:lang="gl">mensaxe cifrado</comment>
+  <comment xml:lang="he">הודעה מוצפנת</comment>
+  <comment xml:lang="hr">Šifrirana poruka</comment>
+  <comment xml:lang="hu">titkosított üzenet</comment>
+  <comment xml:lang="ia">Message cryptate</comment>
+  <comment xml:lang="id">pesan terenkripsi</comment>
+  <comment xml:lang="it">Messaggio cifrato</comment>
+  <comment xml:lang="ja">暗号化メッセージ</comment>
+  <comment xml:lang="kk">шифрленген мәлімдеме</comment>
+  <comment xml:lang="ko">암호화된 메시지</comment>
+  <comment xml:lang="lt">užšifruotas laiškas</comment>
+  <comment xml:lang="lv">šifrēta vēstule</comment>
+  <comment xml:lang="ms">Mesej terenkripsi</comment>
+  <comment xml:lang="nb">kryptert melding</comment>
+  <comment xml:lang="nl">versleuteld bericht</comment>
+  <comment xml:lang="nn">kryptert melding</comment>
+  <comment xml:lang="oc">messatge chifrat</comment>
+  <comment xml:lang="pl">Wiadomość zaszyfrowana</comment>
+  <comment xml:lang="pt">mensagem encriptada</comment>
+  <comment xml:lang="pt-BR">Mensagem criptografada</comment>
+  <comment xml:lang="ro">mesaj criptat</comment>
+  <comment xml:lang="ru">Зашифрованное сообщение</comment>
+  <comment xml:lang="sk">Zašifrovaná správa</comment>
+  <comment xml:lang="sl">šifrirano sporočilo</comment>
+  <comment xml:lang="sq">Mesazh i kriptuar</comment>
+  <comment xml:lang="sr">шифрована порука</comment>
+  <comment xml:lang="sv">krypterat meddelande</comment>
+  <comment xml:lang="tr">şifrelenmiş mesaj</comment>
+  <comment xml:lang="uk">шифроване повідомлення</comment>
+  <comment xml:lang="vi">thông điệp đã mật mã</comment>
+  <comment xml:lang="zh-CN">加密信件</comment>
+  <comment xml:lang="zh-TW">加密訊息</comment>
+</mime-type>

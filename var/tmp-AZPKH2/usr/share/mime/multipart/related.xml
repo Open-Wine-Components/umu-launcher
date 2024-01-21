@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="multipart/related">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>compound document</comment>
+  <comment xml:lang="af">saamgestelde dokument</comment>
+  <comment xml:lang="ar">مستند مركب</comment>
+  <comment xml:lang="ast">documentu compuestu</comment>
+  <comment xml:lang="az">birləşik sənəd</comment>
+  <comment xml:lang="be-Latn">składany dakument</comment>
+  <comment xml:lang="bg">Съставен документ</comment>
+  <comment xml:lang="ca">document compost</comment>
+  <comment xml:lang="cs">složený dokument</comment>
+  <comment xml:lang="cy">dogfen gyfansawdd</comment>
+  <comment xml:lang="da">sammensat dokument</comment>
+  <comment xml:lang="de">Verbunddokument</comment>
+  <comment xml:lang="el">Σύνθετο έγγραφο</comment>
+  <comment xml:lang="en-GB">compound document</comment>
+  <comment xml:lang="eo">parenteza dokumento</comment>
+  <comment xml:lang="es">documento compuesto</comment>
+  <comment xml:lang="eu">konposatutako dokumentua</comment>
+  <comment xml:lang="fi">yhdisteasiakirja</comment>
+  <comment xml:lang="fo">samansett skjal</comment>
+  <comment xml:lang="fr">document composé</comment>
+  <comment xml:lang="fur">document compost</comment>
+  <comment xml:lang="ga">cáipéis comhshuite</comment>
+  <comment xml:lang="gl">documento composto</comment>
+  <comment xml:lang="he">מסמך מורכב</comment>
+  <comment xml:lang="hr">Složeni dokument</comment>
+  <comment xml:lang="hu">összetett dokumentum</comment>
+  <comment xml:lang="ia">Documento composite</comment>
+  <comment xml:lang="id">dokumen kompon</comment>
+  <comment xml:lang="it">Documento composto</comment>
+  <comment xml:lang="ja">複合ドキュメント</comment>
+  <comment xml:lang="kk">құрама құжаты</comment>
+  <comment xml:lang="ko">복합 문서</comment>
+  <comment xml:lang="lt">sudurtinis dokumentas</comment>
+  <comment xml:lang="lv">salikts dokuments</comment>
+  <comment xml:lang="ms">Dokumen halaman</comment>
+  <comment xml:lang="nb">sammensatt dokument</comment>
+  <comment xml:lang="nl">samengesteld document</comment>
+  <comment xml:lang="nn">samansett dokument</comment>
+  <comment xml:lang="oc">document compausat</comment>
+  <comment xml:lang="pl">Dokument złożony</comment>
+  <comment xml:lang="pt">documento composto</comment>
+  <comment xml:lang="pt-BR">Documento composto</comment>
+  <comment xml:lang="ro">document compus</comment>
+  <comment xml:lang="ru">Составной документ</comment>
+  <comment xml:lang="sk">Zložený dokument</comment>
+  <comment xml:lang="sl">združeni dokument</comment>
+  <comment xml:lang="sq">dokumet i përbërë</comment>
+  <comment xml:lang="sr">сједињени документ</comment>
+  <comment xml:lang="sv">sammansatt dokument</comment>
+  <comment xml:lang="tr">bileşik belge</comment>
+  <comment xml:lang="uk">складний документ</comment>
+  <comment xml:lang="vi">tài liệu ghép</comment>
+  <comment xml:lang="zh-CN">组合文档</comment>
+  <comment xml:lang="zh-TW">複合文件</comment>
+</mime-type>

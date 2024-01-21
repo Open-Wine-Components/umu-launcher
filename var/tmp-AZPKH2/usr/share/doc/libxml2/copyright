@@ -1,0 +1,75 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: libxml2
+Source: ftp://xmlsoft.org/libxml2/
+Files-Excluded:
+ result
+ test
+Comment:
+ Bug about the removal of the above directories: https://bugs.debian.org/331534
+
+Files: *
+Copyright: 1998-2017 Daniel Veillard <daniel@veillard.com>
+License: MIT-1
+
+Files: debian/*
+Copyright: 1998-1999 Vincent Renardias <vincent@waw.com>
+           1999-2000 Fredrik Hallenberg <hallon@debian.org>
+           2003-2011 Mike Hommey <glandium@debian.org>
+           2012-2016 Aron Xu <aron@debian.org>
+           2017-2018 Mattia Rizzolo <mattia@debian.org>
+License: MIT-1
+
+Files: trio.c trio.h triop.h triostr.c triostr.h triodef.h trionan.c trionan.h
+Copyright: 1998-2001 Bjorn Reese <breese@users.sourceforge.net>
+           1998-2001 Daniel Stenberg
+License: ISC
+
+Files: hash.c
+Copyright: 2000 Bjorn Reese <breese@users.sourceforge.net>
+           2000 Daniel Veillard <daniel@veillard.com>
+License: ISC
+
+Files: list.c
+Copyright: 2000 Gary Pennington <Gary.Pennington@uk.sun.com>
+           2000 Daniel Veillard <daniel@veillard.com>
+License: ISC
+
+Files: timsort.h
+Copyright: 2010-2017 Christopher Swenson
+           2012 Vojtech Fried
+           2012 Google Inc.
+License: MIT-1
+
+License: MIT-1
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is fur-
+ nished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FIT-
+ NESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ DANIEL VEILLARD BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CON-
+ NECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ .
+ Except as contained in this notice, the name of Daniel Veillard shall not
+ be used in advertising or otherwise to promote the sale, use or other deal-
+ ings in this Software without prior written authorization from him.
+Comment:
+ No, this is not Expat.
+
+License: ISC
+ Permission to use, copy, modify, and distribute this software for any
+ purpose with or without fee is hereby granted, provided that the above
+ copyright notice and this permission notice appear in all copies.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
+ WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+ MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
+ CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.

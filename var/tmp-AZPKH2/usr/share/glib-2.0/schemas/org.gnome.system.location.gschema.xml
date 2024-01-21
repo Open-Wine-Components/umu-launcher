@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.system.location"
+          path="/org/gnome/system/location/">
+    <key type="b" name="enabled">
+      <default>false</default>
+      <summary>Geolocation services are enabled.</summary>
+      <description>
+	If true, applications are allowed to access location information.
+      </description>
+    </key>
+    <key name="max-accuracy-level" enum="org.gnome.desktop.GDesktopLocationAccuracyLevel">
+      <default>'exact'</default>
+      <summary>The maximum accuracy level of location.</summary>
+      <description>
+        Configures the maximum level of location accuracy applications are
+        allowed to see. Valid options are “country”, “city”, “neighborhood”,
+        “street”, and “exact” (typically requires GPS receiver). Please keep in
+        mind that this only controls what GeoClue will allow applications to see
+        and they can find user’s location on their own using network resources
+        (albeit with street-level accuracy at best).
+      </description>
+    </key>
+  </schema>
+</schemalist>

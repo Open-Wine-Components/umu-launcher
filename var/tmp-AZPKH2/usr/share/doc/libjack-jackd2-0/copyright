@@ -1,0 +1,912 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: jack2
+Upstream-Contact: JACK developers <jack-devel@jackaudio.org>
+Source: https://github.com/jackaudio/jack2
+ Repackaged, excluding non-DFSG files
+Files-Excluded:
+ windows/*.rc
+
+Files: *
+Copyright: 2004-2012, Grame <grame@grame.fr>
+License: LGPL-2.1+
+
+Files: dbus/reserve.*
+Copyright: 2009, Lennart Poettering
+License: Expat
+
+Files: windows/getopt*
+Copyright: 1987-1999, Free Software Foundation, Inc
+License: LGPL-2+
+
+Files: common/JackAudioAdapter.cpp
+ common/JackAudioAdapter.h
+ common/JackAudioAdapterFactory.cpp
+ common/JackAudioAdapterInterface.cpp
+ common/JackAudioAdapterInterface.h
+ common/JackCompilerDeps.h
+ common/JackConstants.h
+ common/JackEngine.cpp
+ common/JackEngine.h
+ common/JackException.cpp
+ common/JackException.h
+ common/JackFilters.h
+ common/JackInternalClientChannel.h
+ common/JackLibSampleRateResampler.cpp
+ common/JackLibSampleRateResampler.h
+ common/JackLockedEngine.h
+ common/JackMidiDriver.h
+ common/JackProfiler.cpp
+ common/JackProfiler.h
+ common/JackResampler.cpp
+ common/JackResampler.h
+ common/JackServerGlobals.cpp
+ common/JackServerGlobals.h
+ common/JackSystemDeps.h
+ example-clients/netmaster.c
+ example-clients/netslave.c
+ example-clients/server_control.cpp
+ linux/alsa/JackAlsaAdapter.cpp
+ linux/alsa/JackAlsaAdapter.h
+ macosx/JackCompilerDeps_os.h
+ macosx/coreaudio/JackCoreAudioAdapter.cpp
+ macosx/coreaudio/JackCoreAudioAdapter.h
+ macosx/coreaudio/JackCoreAudioDriver.cpp
+ macosx/coreaudio/JackCoreAudioDriver.h
+ macosx/coreaudio/TiPhoneCoreAudioRenderer.cpp
+ macosx/coreaudio/TiPhoneCoreAudioRenderer.h
+ posix/JackCompilerDeps_os.h
+ posix/JackSystemDeps_os.h
+ solaris/oss/JackBoomerDriver.cpp
+ solaris/oss/JackBoomerDriver.h
+ tests/testAtomic.cpp
+ tests/testMutex.cpp
+ tests/testSem.cpp
+ tests/testSynchroClient.cpp
+ tests/testSynchroServer.cpp
+ tests/testSynchroServerClient.cpp
+ tests/testThread.cpp
+ windows/JackWinNamedPipeServerNotifyChannel.cpp
+ windows/portaudio/JackPortAudioAdapter.cpp
+ windows/portaudio/JackPortAudioAdapter.h
+ windows/portaudio/JackPortAudioDriver.cpp
+ windows/portaudio/JackPortAudioDriver.h
+Copyright: 2004-2012, Grame <grame@grame.fr>
+License: GPL-2+
+
+Files: linux/alsarawmidi/JackALSARawMidiDriver.cpp
+ linux/alsarawmidi/JackALSARawMidiDriver.h
+ linux/alsarawmidi/JackALSARawMidiInputPort.cpp
+ linux/alsarawmidi/JackALSARawMidiInputPort.h
+ linux/alsarawmidi/JackALSARawMidiOutputPort.cpp
+ linux/alsarawmidi/JackALSARawMidiOutputPort.h
+ linux/alsarawmidi/JackALSARawMidiPort.cpp
+ linux/alsarawmidi/JackALSARawMidiPort.h
+ linux/alsarawmidi/JackALSARawMidiReceiveQueue.cpp
+ linux/alsarawmidi/JackALSARawMidiReceiveQueue.h
+ linux/alsarawmidi/JackALSARawMidiSendQueue.cpp
+ linux/alsarawmidi/JackALSARawMidiSendQueue.h
+ linux/alsarawmidi/JackALSARawMidiUtil.h
+ macosx/coremidi/JackCoreMidiInputPort.cpp
+ macosx/coremidi/JackCoreMidiInputPort.h
+ macosx/coremidi/JackCoreMidiOutputPort.cpp
+ macosx/coremidi/JackCoreMidiOutputPort.h
+ macosx/coremidi/JackCoreMidiPhysicalInputPort.cpp
+ macosx/coremidi/JackCoreMidiPhysicalInputPort.h
+ macosx/coremidi/JackCoreMidiPhysicalOutputPort.cpp
+ macosx/coremidi/JackCoreMidiPhysicalOutputPort.h
+ macosx/coremidi/JackCoreMidiPort.cpp
+ macosx/coremidi/JackCoreMidiPort.h
+ macosx/coremidi/JackCoreMidiUtil.cpp
+ macosx/coremidi/JackCoreMidiUtil.h
+ macosx/coremidi/JackCoreMidiVirtualInputPort.cpp
+ macosx/coremidi/JackCoreMidiVirtualInputPort.h
+ macosx/coremidi/JackCoreMidiVirtualOutputPort.cpp
+ macosx/coremidi/JackCoreMidiVirtualOutputPort.h
+ windows/winmme/JackWinMMEInputPort.cpp
+ windows/winmme/JackWinMMEInputPort.h
+ windows/winmme/JackWinMMEOutputPort.cpp
+ windows/winmme/JackWinMMEOutputPort.h
+ windows/winmme/JackWinMMEPort.cpp
+ windows/winmme/JackWinMMEPort.h
+Copyright: 2011, Devin Anderson
+License: GPL-2+
+
+Files: common/JackMidiAsyncQueue.cpp
+ common/JackMidiAsyncQueue.h
+ common/JackMidiAsyncWaitQueue.cpp
+ common/JackMidiAsyncWaitQueue.h
+ common/JackMidiBufferReadQueue.cpp
+ common/JackMidiBufferReadQueue.h
+ common/JackMidiBufferWriteQueue.cpp
+ common/JackMidiBufferWriteQueue.h
+ common/JackMidiRawInputWriteQueue.cpp
+ common/JackMidiRawInputWriteQueue.h
+ common/JackMidiRawOutputWriteQueue.cpp
+ common/JackMidiRawOutputWriteQueue.h
+ common/JackMidiReadQueue.cpp
+ common/JackMidiReadQueue.h
+ common/JackMidiReceiveQueue.cpp
+ common/JackMidiReceiveQueue.h
+ common/JackMidiSendQueue.cpp
+ common/JackMidiSendQueue.h
+ common/JackMidiUtil.cpp
+ common/JackMidiUtil.h
+ common/JackMidiWriteQueue.cpp
+ common/JackMidiWriteQueue.h
+ example-clients/midi_latency_test.c
+ linux/firewire/JackFFADOMidiInputPort.cpp
+ linux/firewire/JackFFADOMidiInputPort.h
+ linux/firewire/JackFFADOMidiOutputPort.cpp
+ linux/firewire/JackFFADOMidiOutputPort.h
+ linux/firewire/JackFFADOMidiReceiveQueue.cpp
+ linux/firewire/JackFFADOMidiReceiveQueue.h
+ linux/firewire/JackFFADOMidiSendQueue.cpp
+ linux/firewire/JackFFADOMidiSendQueue.h
+Copyright: 2010, Devin Anderson
+License: LGPL-2.1+
+
+Files: common/JackAudioDriver.h
+ common/JackDriver.cpp
+ common/JackDriver.h
+ common/JackDriverInfo.h
+ common/JackDriverLoader.cpp
+ common/JackDriverLoader.h
+ common/JackDummyDriver.cpp
+ common/JackDummyDriver.h
+ common/JackExternalClient.cpp
+ common/JackExternalClient.h
+ common/JackFreewheelDriver.cpp
+ common/JackFreewheelDriver.h
+ common/JackInternalClient.cpp
+ common/JackInternalClient.h
+ common/JackLoopbackDriver.cpp
+ common/JackLoopbackDriver.h
+ common/JackRestartThreadedDriver.cpp
+ common/JackRestartThreadedDriver.h
+ common/JackServer.cpp
+ common/JackServer.h
+ common/JackServerAPI.cpp
+ common/JackThreadedDriver.cpp
+ common/JackThreadedDriver.h
+ common/JackTimedDriver.cpp
+ common/JackTimedDriver.h
+ common/JackWaitThreadedDriver.cpp
+ common/JackWaitThreadedDriver.h
+ linux/alsa/JackAlsaDriver.cpp
+ linux/alsa/JackAlsaDriver.h
+ posix/JackShmMem_os.h
+Copyright: 2001-2005, Paul Davis
+  2004-2008, Grame <grame@grame.fr>
+License: GPL-2+
+
+Files: common/JackAPI.cpp
+ common/JackAudioPort.cpp
+ common/JackClient.cpp
+ common/JackClient.h
+ common/JackClientControl.h
+ common/JackClientInterface.h
+ common/JackEngineControl.cpp
+ common/JackEngineControl.h
+ common/JackFrameTimer.cpp
+ common/JackFrameTimer.h
+ common/JackGraphManager.cpp
+ common/JackGraphManager.h
+ common/JackLibAPI.cpp
+ common/JackPort.cpp
+ common/JackPort.h
+ common/JackRequest.h
+ common/JackServerLaunch.h
+ common/JackThread.h
+ common/JackTime.h
+ common/JackTransportEngine.cpp
+ common/JackTransportEngine.h
+ common/shm.c
+ common/shm.h
+ macosx/JackMachThread.cpp
+ macosx/JackMachTime.c
+ posix/JackPosixServerLaunch.cpp
+ posix/JackPosixThread.cpp
+ posix/JackPosixThread.h
+ solaris/JackSolarisTime.c
+Copyright: 2001-2003, Paul Davis
+  2004-2012, Grame <grame@grame.fr>
+License: LGPL-2.1+
+
+Files: common/memops.c
+ common/memops.h
+ tools/evmon.c
+ tools/freewheel.c
+ linux/alsa/alsa_driver.c
+ linux/alsa/alsa_driver.h
+ linux/alsa/generic.h
+ linux/alsa/generic_hw.c
+ linux/alsa/hammerfall.c
+ linux/alsa/hammerfall.h
+ linux/alsa/hardware.h
+ linux/alsa/hdsp.h
+ linux/cycles.h
+ linux/driver.h
+Copyright: 1999-2001, 2003, 2007, Paul Davis
+License: GPL-2+
+
+Files: dbus/controller.h
+ dbus/controller_iface_session_manager.c
+ dbus/params.c
+ dbus/params.h
+ dbus/xml.c
+ dbus/xml.h
+ dbus/xml_expat.c
+ dbus/xml_nop.c
+ dbus/xml_write_raw.c
+Copyright: 2007-2008,,2011 Nedko Arnaudov
+License: GPL-2~either
+
+Files: common/JackNetAdapter.cpp
+ common/JackNetAdapter.h
+ common/JackNetDriver.cpp
+ common/JackNetDriver.h
+ common/JackNetInterface.cpp
+ common/JackNetInterface.h
+ common/JackNetManager.cpp
+ common/JackNetManager.h
+ common/JackNetSocket.h
+ common/JackNetTool.cpp
+ common/JackNetTool.h
+ posix/JackNetUnixSocket.cpp
+ posix/JackNetUnixSocket.h
+ windows/portaudio/JackPortAudioDevices.cpp
+ windows/portaudio/JackPortAudioDevices.h
+Copyright: 2008-2011, Romain Moret at Grame
+License: GPL-2+
+
+Files: common/JackTypes.h
+ common/jack/thread.h
+ common/jack/weakjack.h
+ common/jack/weakmacros.h
+ common/timestamps.c
+ common/timestamps.h
+ example-clients/internal_metro.h
+ posix/JackTypes_os.h
+ tests/external_metro.h
+Copyright: 2001-2004, 2010, Paul Davis
+License: LGPL-2.1+
+
+Files: dbus/controller.c
+ dbus/controller_iface_configure.c
+ dbus/controller_iface_control.c
+ dbus/controller_iface_introspectable.c
+ dbus/controller_iface_patchbay.c
+ dbus/controller_iface_transport.c
+ dbus/controller_internal.h
+Copyright: 2007-2008, Juuso Alasuutari
+  2007-2008, 2011, Nedko Arnaudov
+License: GPL-2~either
+
+Files: linux/alsa/alsa_midi.h
+ linux/alsa/alsa_midi_impl.h
+ linux/alsa/alsa_rawmidi.c
+ linux/alsa/midi_pack.h
+ linux/alsa/midi_unpack.h
+Copyright: 2006-2007, Dmitry S. Baikov
+License: GPL-2+
+
+Files: macosx/coremidi/JackCoreMidiDriver.cpp
+ macosx/coremidi/JackCoreMidiDriver.h
+ windows/winmme/JackWinMMEDriver.cpp
+ windows/winmme/JackWinMMEDriver.h
+Copyright: 2009, Grame
+  2011, Devin Anderson
+License: GPL-2+
+
+Files: tools/bufsize.c
+ tools/samplerate.c
+ tools/transport.c
+ linux/alsa/bitset.h
+Copyright: 2003, 2005, Jack O'Quin
+License: GPL-2+
+
+Files: macosx/iphone/freeverb.mm
+ macosx/iphone/iPhoneNetAppDelegate.h
+ macosx/iphone/iPhoneNetAppDelegate.m
+ macosx/iphone/iphone-faust.mm
+ macosx/iphone/main_master.mm
+ macosx/iphone/main_slave.mm
+Copyright: 2009, Grame <grame@grame.fr>
+License: None
+ FIXME
+
+Files: common/JackMidiDriver.cpp
+Copyright: 2009, Grame <grame@grame.fr>
+License: GPL-2~or
+
+Files: dbus/audio_reserve.c
+ dbus/audio_reserve.h
+Copyright: 2009, Grame <grame@grame.fr>
+License: GPL-2~either
+
+Files: linux/freebob/JackFreebobDriver.cpp
+ linux/freebob/JackFreebobDriver.h
+Copyright: 2001, Paul Davis
+  2004, Grame <grame@grame.fr>
+  2007, Pieter Palmers
+License: GPL-2+
+
+Files: common/JackMidiAPI.cpp
+ common/JackMidiPort.cpp
+ common/JackMidiPort.h
+Copyright: 2004, Ian Esten
+  2007, Dmitry Baikov
+License: LGPL-2.1+
+
+Files: common/jack/jack.h
+ common/jack/transport.h
+ common/jack/types.h
+Copyright: 2001, Paul Davis
+  2002, Paul Davis
+  2003-2004, Jack O'Quin
+License: LGPL-2.1+
+
+Files: debian/patches/waf.patch
+Copyright: 2005-2011, Thomas Nagy
+License: BSD-3-clause
+
+Files: windows/JackRouter/JackRouter.cpp
+ windows/JackRouter/JackRouter.h
+Copyright: 2006-2011, Grame <grame@grame.fr>
+License: Expat
+
+Files: windows/portaudio/pa_asio.h
+ windows/portaudio/portaudio.h
+Copyright: 1999-2002, Ross Bencina and Phil Burk
+License: Expat~modrequest
+
+Files: dbus/jackdbus.c
+ dbus/jackdbus.h
+Copyright: 2007-2008, Juuso Alasuutari
+  2007-2008, 2010, Nedko Arnaudov
+  2008, Marc-Olivier Barre
+License: GPL-2~either
+
+Files: common/JackControlAPI.cpp
+ common/JackControlAPI.h
+Copyright: 2008, Grame <grame@grame.fr>
+  2008, Nedko Arnaudov
+License: GPL-2
+
+Files: example-clients/metro.c
+ tests/external_metro.cpp
+Copyright: 2002, Anthony Van Groningen
+License: GPL-2+
+
+Files: linux/alsa/ice1712.c
+ linux/alsa/ice1712.h
+Copyright: 2000, Jaroslav Kysela <perex@suse.cz>
+  2002, Anthony Van Groningen
+License: GPL-2+
+
+Files: linux/alsa/alsa_midi_jackmp.cpp
+ linux/alsa/alsa_seqmidi.c
+Copyright: 2006-2007, Dmitry S. Baikov <c0ff@konstruktiv.org>
+License: GPL-2+
+
+Files: common/JackAC3Encoder.cpp
+ common/JackAC3Encoder.h
+Copyright: 2006, Jesse Chappell (AC3Jack) <jesse@essej.net>
+  2012, Grame <grame@grame.fr>
+License: GPL-2+
+
+Files: solaris/oss/JackOSSAdapter.cpp
+ solaris/oss/JackOSSAdapter.h
+Copyright: 2008, Grame <grame@grame.fr>
+  2008, RTL
+License: GPL-2+
+
+Files: solaris/oss/JackOSSDriver.cpp
+ solaris/oss/JackOSSDriver.h
+Copyright: 2003-2007, Jussi Laako <jussi@sonarnerd.net>
+  2008, Grame <grame@grame.fr>
+  2008, RTL
+License: GPL-2+
+
+Files: example-clients/midiseq.c
+ example-clients/midisine.c
+Copyright: 2004, Ian Esten
+License: GPL-2+
+
+Files: tools/connect.c
+ example-clients/zombie.c
+Copyright: 2002, Jeremy Hall
+License: GPL-2+
+
+Files: linux/alsa/usx2y.c
+ linux/alsa/usx2y.h
+Copyright: 2001, Paul Davis
+  2004-2005, Karsten Wiese
+  2004-2005, Rui Nuno Capela
+License: GPL-2+
+
+Files: common/netjack_packet.c
+ tools/netsource.c
+Copyright: 2006, Torben Hohn <torbenh@gmx.de>
+  2008, Marc-Olivier Barre <marco@marcochapeau.org>
+  2008, Pieter Palmers <pieterpalmers@users.sourceforge.net>
+License: GPL-2+
+
+Files: common/JackNetOneDriver.cpp
+ common/JackNetOneDriver.h
+Copyright: 2008-2011, Torben Horn
+License: GPL-2+
+
+Files: common/JackPortType.cpp
+ common/JackPortType.h
+Copyright: 2007, Dmitry Baikov
+License: LGPL-2.1+
+
+Files: common/JackError.cpp
+ common/JackError.h
+Copyright: 2001, Paul Davis
+  2004-2008, Grame <grame@grame.fr>
+  2008, Nedko Arnaudov
+License: LGPL-2.1+
+
+Files: common/JackMessageBuffer.cpp
+ common/JackMessageBuffer.h
+Copyright: 2004, Rui Nuno Capela
+  2004, Steve Harris
+  2008, Grame <grame@grame.fr>
+  2008, Nedko Arnaudov
+License: LGPL-2.1+
+
+Files: common/JackEngineProfiling.cpp
+ common/JackEngineProfiling.h
+Copyright: 2008, Grame <grame@grame.fr>
+  2008, RTL
+License: LGPL-2.1+
+
+Files: common/jack/intclient.h
+ common/varargs.h
+Copyright: 2004, Jack O'Quin
+License: LGPL-2.1+
+
+Files: common/JackSession.h
+ common/jack/session.h
+Copyright: 2001, Paul Davis
+  2004, Jack O'Quin
+  2010, Torben Hohn <torbenh@gmx.de>
+License: LGPL-2.1+
+
+Files: common/jack/jslist.h
+ linux/alsa/jslist.h
+Copyright: 2002, Kai Vehmanen
+License: LGPL-2.1+
+
+Files: common/jack/ringbuffer.h
+ common/ringbuffer.c
+Copyright: 2000, Paul Davis
+  2003, Rohan Drape
+License: LGPL-2.1+
+
+Files: debian/po/fi.po
+ debian/po/sv.po
+Copyright: 2009
+License: GPL-2~jack-audio-connection-kit
+Comment:
+ FIXME: No copyright holder.
+
+Files: common/JackAudioDriver.cpp
+Copyright: 2001, Paul Davis
+  2004-2008, Grame <grame@grame.fr>
+License: GPL-2~or
+
+Files: windows/Setup/src/gpl_installer.rtf
+Copyright: 2001, Paul Davis
+  2004-2011, Grame <grame@grame.fr>
+License: GPL-3+
+
+Files: common/jack/control.h
+Copyright: 2008, Grame <grame@grame.fr>
+  2008, Nedko Arnaudov
+License: GPL-2
+
+Files: dbus/list.h
+Copyright: unknown
+License: GPL-2
+Comment:
+ Licensing header contains the following explanation for copyright
+ holder being unknown:
+ .
+ Linux kernel header adapted for user-mode
+ The 2.6.17-rt1 version was used.
+ .
+ Original copyright holders of this code are unknown, they were not
+ mentioned in the original file.
+
+Files: linux/firewire/JackFFADODriver.h
+Copyright: 2001, Paul Davis
+  2004, Grame <grame@grame.fr>
+  2007, Pieter Palmers
+  2012, Adrian Knoth
+License: GPL-2+
+
+Files: example-clients/internal_metro.cpp
+Copyright: 2002, Anthony Van Groningen
+  2005, Grame <grame@grame.fr>
+License: GPL-2+
+
+Files: linux/alsa/hdsp.c
+Copyright: 2001, Paul Davis
+  2002, Dave LaRose
+License: GPL-2+
+
+Files: linux/firewire/JackFFADODriver.cpp
+Copyright: 2001, Paul Davis
+  2004, Grame <grame@grame.fr>
+  2007, Pieter Palmers
+  2009, Devin Anderson
+  2012, Adrian Knoth
+  2012, Jonathan Woithe
+License: GPL-2+
+
+Files: linux/firewire/ffado_driver.h
+Copyright: 2005-2007, Pieter Palmers
+  2009, Devin Anderson
+License: GPL-2+
+
+Files: windows/samplerate.h
+Copyright: 2002-2008, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: GPL-2+
+
+Files: debian/patches/alsa-portnames.patch
+Copyright: 2010, Florian Faber <faber@faberman.de>
+License: GPL-2+
+
+Files: tests/iodelay.cpp
+Copyright: 2003-2008, Fons Adriaensen <fons@kokkinizita.net>
+License: GPL-2+
+
+Files: common/Jackdmp.cpp
+Copyright: 2001-2005, Paul Davis
+  2004-2012, Grame <grame@grame.fr>
+License: GPL-2+
+
+Files: tests/cpu.c
+Copyright: 2005, Samuel TRACOL
+  2008, Grame <grame@grame.fr>
+License: GPL-2+
+
+Files: example-clients/capture_client.c
+Copyright: 2001, Paul Davis
+  2003, Jack O'Quin
+License: GPL-2+
+
+Files: common/netjack.c
+Copyright: 2001, Paul Davis
+  2003, Robert Ham <rah@bash.sh>
+  2006, Torben Hohn <torbenh@gmx.de>
+  2008, Pieter Palmers <pieterpalmers@users.sourceforge.net>
+License: GPL-2+
+
+Files: linux/freebob/freebob_driver.h
+Copyright: 2005-2007, Pieter Palmers
+ <pieterpalmers@users.sourceforge.net>
+License: GPL-2+
+
+Files: common/netjack.h
+Copyright: 2003, Robert Ham <rah@bash.sh>
+  2005, Torben Hohn <torbenh@gmx.de>
+License: GPL-2+
+
+Files: tests/test.cpp
+Copyright: 2005, Samuel TRACOL
+License: GPL-2+
+
+Files: example-clients/impulse_grabber.c
+Copyright: 2001, Steve Harris
+License: GPL-2+
+
+Files: common/netjack_packet.h
+ tools/session_notify.c
+Copyright: 2006, Torben Hohn <torbenh@gmx.de>
+License: GPL-2+
+
+Files: macosx/JackMachThread.h
+Copyright: 2001, Paul Davis
+  2002, Apple Computer, Inc.
+  2004-2008, Grame <grame@grame.fr>
+License: LGPL-2.1+
+
+Files: common/driver_interface.h
+Copyright: 2003, Bob Ham <rah@bash.sh>
+  2008, Nedko Arnaudov <nedko@arnaudov.name>
+License: LGPL-2.1+
+
+Files: windows/JackWinServerLaunch.cpp
+Copyright: 2001-2003, Paul Davis
+  2004-2008, Grame
+  2011, John Emmas
+License: LGPL-2.1+
+
+Files: linux/JackLinuxTime.c
+Copyright: 2001-2003, Paul Davis
+  2004-2008, Grame <grame@grame.fr>
+  2005, Jussi Laako
+License: LGPL-2.1+
+
+Files: common/JackWeakAPI.c
+Copyright: 2002-2007, Werner Schweer and others
+  2009, Grame <grame@grame.fr>
+License: LGPL-2.1+
+Comment:
+ FIXME: List explicitly who those others are.
+
+Files: common/jack/midiport.h
+Copyright: 2004, Ian Esten
+License: LGPL-2.1+
+
+Files: common/jack/statistics.h
+Copyright: 2004, Lee Revell
+  2004, Rui Nuno Capela
+License: LGPL-2.1+
+
+Files: dbus/sigsegv.c
+Copyright: 2005-2008, Jaco Kroon
+License: public-domain~Kroon
+ This code is in the public domain.  Use it as you see fit, some credit
+ would be appreciated, but is not a prerequisite for usage.  Feedback on
+ it's use would encourage further development and maintenance.
+Comment:
+ FIXME: Public domain statement and copyright claim are arguably
+ incompatible.
+
+Files: debian/po/gl.po
+Copyright: 2009, Debian
+License: GPL-2~jack-audio-connection-kit
+Comment:
+ FIXME: Debian cannot legally be copyright holder.
+
+Files: debian/po/fr.po
+Copyright: 2009, Debian French l10n team
+ <debian-l10n-french@lists.debian.org>
+License: GPL-2~jack-audio-connection-kit
+
+Files: debian/po/ja.po
+Copyright: 2009, Debian Multimedia Maintainers
+ <pkg-multimedia-maintainers@lists.alioth.debian.org>
+License: GPL-2~jack-audio-connection-kit
+
+Files: debian/po/vi.po
+Copyright: 2009, Free Software Foundation, Inc
+License: None
+ FIXME
+
+Files: debian/po/de.po
+Copyright: 2009, Helge Kreutzmann <debian@helgefjell.de>
+License: GPL-2~jack-audio-connection-kit
+
+Files: debian/po/es.po
+Copyright: 2009, Software in the Public Interest
+License: GPL-2~jack-audio-connection-kit
+
+Files: debian/po/it.po
+Copyright: 2009, THE JACK-AUDIO-CONNECTION-KIT'S HOLDER
+License: GPL-2~jack-audio-connection-kit
+Comment:
+ FIXME: Bogus copyright holder.
+
+Files: debian/po/nl.po
+Copyright: 2011, THE PACKAGE'S HOLDER
+License: GPL-2~jackd2
+Comment:
+ FIXME: Bogus copyright holder.
+
+Files: debian/po/pt_BR.po
+Copyright: 2010, THE jackd2'S HOLDER
+License: GPL-2~jackd2
+Comment:
+ FIXME: Bogus copyright holder.
+
+Files: debian/po/pt.po
+Copyright: 2009, the jack-audio-connection-kit's holder
+License: GPL-2~jack-audio-connection-kit
+Comment:
+ FIXME: Bogus copyright holder.
+
+Files: debian/po/da.po
+Copyright: 2011, jackd2
+ 2011, Joe Hansen <joedalton2@yahoo.dk>
+License: GPL-2~jackd2
+Comment:
+ FIXME: jackd2 cannot legally be copyright holder.
+
+License: LGPL-2.1+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published
+ by the Free Software Foundation; either version 2.1 of the License, or
+ (at your option) any later version.
+ .
+ This library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ Lesser General Public License for more details.
+ .
+ Comment:
+ .
+ On Debian systems the 'GNU Lesser General Public License' version 2.1
+ is located in '/usr/share/common-licenses/LGPL-2.1'.
+ .
+ You should have received a copy of the 'GNU Lesser General Public
+ License' along with this program.  If not, see
+ <https//www.gnu.org/licenses/>.
+
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation; either version 2, or (at
+ your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+ .
+ Comment:
+ .
+ On Debian systems the 'GNU General Public License' version 2 is located
+ in '/usr/share/common-licenses/GPL-2'.
+ .
+ You should have received a copy of the 'GNU General Public License'
+ along with this program.  If not, see <https//www.gnu.org/licenses/>.
+
+License: GPL-2
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation; version 2 of the License.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+
+License: GPL-2~either
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation; either version 2 of the License.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+
+License: GPL-2~or
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation; either version 2 of the License, or
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ (at your option) any later version.
+ .
+ GNU General Public License for more details.
+
+License: GPL-3+
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation, either version 3 of the License, or (at your
+ option) any later version.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+ .
+ Comment:
+ .
+ On Debian systems the 'GNU General Public License version 3 is located
+ in '/usr/share/common-licenses/GPL-3'.
+
+License: GPL-2~jackd2
+ This file is distributed under the same license as the jackd2 package.
+Comment:
+ jackd2 has multiple differently licensed parts, only the most
+ restrictive being listed here.
+
+License: GPL-2~jack-audio-connection-kit
+ This file is distributed under the same license as the
+ jack-audio-connection-kit package.
+Comment:
+ jack-audio-connection-kit has multiple differently licensed parts, only
+ the most restrictive being listed here.
+ .
+ TODO: Request relicensing to be tied to this package.
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License: Expat~modrequest
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Software.
+ .
+ Any person wishing to distribute modifications to the Software is
+ requested to send the modifications to the original developer so that
+ they can be incorporated into the canonical version.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are
+ met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ 3. The name of the author may not be used to endorse or promote
+    products derived from this software without specific prior written
+    permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+ INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+
+License: LGPL-2+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Library General Public License as published
+ by the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ .
+ This library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Library General Public License for more details.
+ .
+ On Debian GNU systems, the complete text of the GNU Library General
+ Public License (LGPL - later renamed GNU Lesser General Public License)
+ version 2 or later can be found in '/usr/share/common-licenses/LGPL-2'.
+ .
+ You should have received a copy of the GNU Library General Public
+ License along with this program.  If not, see
+ <https//www.gnu.org/licenses/>.

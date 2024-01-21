@@ -1,0 +1,6 @@
+libnspr4.so libnspr4 #MINVER#
+# No symbols listed here yet
+libplc4.so libnspr4 #MINVER#
+# No symbols listed here yet
+libplds4.so libnspr4 #MINVER#
+# No symbols listed here yet

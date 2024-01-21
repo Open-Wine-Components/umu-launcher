@@ -1,0 +1,288 @@
+#!/bin/sh
+# Copyright 2020-2022 Collabora Ltd.
+# SPDX-License-Identifier: MIT
+
+set -eu
+me="$(readlink -f "$0")"
+here="${me%/*}"
+me="${me##*/}"
+
+# This is a prototype and will probably not survive in its current form.
+# Don't rely on it.
+
+is_main=yes
+suite=
+verbose=
+log_to_file=
+log_dir=${STEAM_LINUX_RUNTIME_LOG_DIR-"${PRESSURE_VESSEL_VARIABLE_DIR-"${here}/var"}"}
+keep_logs=
+use_timestamp=
+
+ld_preload="${LD_PRELOAD-}"
+unset LD_PRELOAD
+
+
+if [ "${STEAM_LINUX_RUNTIME_VERBOSE-}" = 1 ]; then
+    verbose=yes
+    # Propagate it to pressure-vessel too
+    export PRESSURE_VESSEL_VERBOSE=1
+fi
+
+if [ "${STEAM_LINUX_RUNTIME_LOG-}" = 1 ]; then
+    log_to_file=yes
+    use_timestamp=yes
+fi
+
+if [ "${STEAM_LINUX_RUNTIME_KEEP_LOGS-}" = 1 ]; then
+    keep_logs=yes
+fi
+
+log () {
+    if [ -n "$use_timestamp" ]; then
+        timestamp=$(date +'%H:%M:%S.%6N')
+        printf '%s\n' "${timestamp}: ${me}[$$]: $*" >&2 || :
+    else
+        printf '%s\n' "${me}[$$]: $*" >&2 || :
+    fi
+}
+
+info () {
+    if [ -n "${log_to_file}${verbose}" ]; then
+        log "$@"
+    fi
+}
+
+usage () {
+    code="$1"
+    shift
+
+    if [ "$code" -ne 0 ]; then
+        exec >&2
+    fi
+
+    echo "Usage:"
+    echo "$me [OPTIONS] COMMAND [ARGS...]"
+    echo
+    echo "Run a command in a container that is shared with other"
+    echo "invocations of the same Steam game."
+    echo
+    echo "Required arguments"
+    echo "COMMAND [ARGS...] Run this."
+    echo
+    echo "Options"
+    echo "--deploy=DIR      Ignored for backwards compatibility."
+    echo "--keep-logs       Do not remove the older logs of this same app id."
+    echo "--log-to-file     Log to a file instead of the default stderr."
+    echo "--suite=SUITE     Run in this runtime [default=choose automatically]."
+    echo "--use-timestamp   Prepend the timestamp to the log entries [default with --log-to-file]."
+    echo "--verb=%verb%     Mode to operate in [default=waitforexitandrun]."
+    echo "--verbose         Be more verbose."
+
+    exit "${code}"
+}
+
+getopt_temp="help"
+getopt_temp="${getopt_temp},deploy:"
+getopt_temp="${getopt_temp},log-to-file:"
+getopt_temp="${getopt_temp},keep-logs:"
+getopt_temp="${getopt_temp},suite:"
+getopt_temp="${getopt_temp},use-timestamp:"
+getopt_temp="${getopt_temp},verb:"
+getopt_temp="${getopt_temp},verbose"
+
+getopt_temp="$(getopt -o '' --long "$getopt_temp" -n "$me" -- "$@")"
+eval "set -- $getopt_temp"
+unset getopt_temp
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        (--help)
+            usage 0
+            # not reached
+            ;;
+
+        (--deploy)
+            shift 2
+            ;;
+
+        (--log-to-file)
+            log_to_file=yes
+            use_timestamp=yes
+            shift
+            ;;
+
+        (--keep-logs)
+            keep_logs=yes
+            shift
+            ;;
+
+        (--suite)
+            suite="$2"
+            shift 2
+            ;;
+
+        (--verb)
+            case "$2" in
+                (waitforexitandrun)
+                    is_main=yes
+                    ;;
+                (run)
+                    export PRESSURE_VESSEL_BATCH=1
+                    is_main=
+                    ;;
+                (*)
+                    is_main=
+                    ;;
+            esac
+            shift 2
+            ;;
+
+        (--use-timestamp)
+            use_timestamp=yes
+            shift
+            ;;
+
+        (--verbose)
+            verbose=yes
+            # Propagate it to pressure-vessel too
+            export PRESSURE_VESSEL_VERBOSE=1
+            shift
+            ;;
+
+        (--)
+            shift
+            break
+            ;;
+
+        (-*)
+            log "Unknown option: $1"
+            usage 125   # EX_USAGE from sysexits.h
+            # not reached
+            ;;
+
+        (*)
+            break
+            ;;
+    esac
+done
+
+if [ -h "${here}/var" ]; then
+    log "Warning: ${here}/var should not be a symbolic link. Removing it"
+    rm -f "${here}/var" || true
+fi
+
+if [ -n "$log_to_file" ]; then
+    app=
+    log_filename=
+    if [ -z "${STEAM_COMPAT_APP_ID-}" ] && [ -z "${SteamAppId-}" ]; then
+        app="non-steam-game"
+    else
+        app="app${STEAM_COMPAT_APP_ID-${SteamAppId}}"
+    fi
+
+    log_filename="slr-${app}-t$(date +'%Y%m%dT%H%M%S').log"
+
+    mkdir -p "${log_dir}"
+
+    # Remove older logs of the same app
+    if [ -z "${keep_logs}" ]; then
+        find "${log_dir}" -maxdepth 1 -name "slr-${app}-*.log" '!' -name "${log_filename}" -type f -delete
+    fi
+
+    ln -fns "${log_filename}" "${log_dir}/slr-latest.log" || :
+
+    if [ -z "$is_main" ] || [ -n "${PRESSURE_VESSEL_BATCH-}" ]; then
+        # If we are running setup commands, or if we are gathering a system
+        # information report, we only redirect stderr to the log, on the
+        # assumption that stderr is for human-readable diagnostics but
+        # stdout could be for machine-readable output.
+        exec 2>> "${log_dir}/${log_filename}"
+    else
+        exec >> "${log_dir}/${log_filename}" 2>&1
+    fi
+
+    export PRESSURE_VESSEL_LOG_INFO=1
+    export PRESSURE_VESSEL_LOG_WITH_TIMESTAMP=1
+fi
+
+info "argv (unescaped): $*"
+
+if [ "$#" -eq 0 ] || [ "$1" = -- ]; then
+    log "Error: A command to run is required"
+    usage 125
+fi
+
+# At this point $LD_LIBRARY_PATH might
+# 1. be equal to $STEAM_RUNTIME_LIBRARY_PATH (e.g. a game without
+#    any special launch options).
+# 2. contain all the entries of $STEAM_RUNTIME_LIBRARY_PATH, plus eventually
+#    any additional paths from the game launch options (e.g. a game launched
+#    with "LD_LIBRARY_PATH=/my_game_path:${LD_LIBRARY_PATH} %command%")
+# 3. contain just new entries from the game launch options (e.g. a game
+#    launched with "LD_LIBRARY_PATH=/my_game_path %command%")
+# 4. being unset or empty (e.g. a game launched with
+#    "LD_LIBRARY_PATH="" %command%")
+#
+# We extract all the entries from $LD_LIBRARY_PATH that are not under the
+# $STEAM_RUNTIME paths. In this way we should end up with a list of paths
+# that are from the system $LD_LIBRARY_PATH, the system "ldconfig" and the
+# manually set $LD_LIBRARY_PATH paths from the game launch options.
+case "${STEAM_RUNTIME-}" in
+    (/*)
+        oldIFS="$IFS"
+        IFS=:
+        paths=
+
+        for path in ${LD_LIBRARY_PATH-}; do
+            if [ "${path}" = "${STEAM_RUNTIME}" ]; then
+                # path is exactly the ${STEAM_RUNTIME}; ignore
+                continue
+            elif [ "${path#"${STEAM_RUNTIME}/"}" != "${path}" ]; then
+                # path is ${STEAM_RUNTIME}/...; ignore
+                continue
+            else
+                # keep it (note that we discard the extra leading ":" later)
+                paths="${paths}:${path}"
+            fi
+        done
+
+        IFS="$oldIFS"
+        export PRESSURE_VESSEL_APP_LD_LIBRARY_PATH="${paths#:}"
+        ;;
+    (*)
+        # use LD_LIBRARY_PATH as-is
+        export PRESSURE_VESSEL_APP_LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}"
+        ;;
+esac
+
+set -- \
+    "$here/pressure-vessel/bin/steam-runtime-launcher-interface-0" \
+    container-runtime \
+    "$@"
+
+unset LD_LIBRARY_PATH
+unset STEAM_RUNTIME
+
+if [ -z "${suite}" ]; then
+    run=run
+else
+    run="run-in-${suite}"
+fi
+
+# Before this point, "$@" contains the wrapped program and its arguments.
+# After this point, it contains arguments for ./run (or equivalently for
+# pv-wrap).
+set -- -- "$@"
+
+# We prepend options to "$@" because that's the only array available
+# in generic POSIX /bin/sh, and bash is not always practical to use.
+
+if [ -n "${ld_preload}" ]; then
+    set -- "--env-if-host=LD_PRELOAD=$ld_preload" "$@"
+    set -- "--ld-preloads=$ld_preload" "$@"
+fi
+
+exec "${here}/${run}" "$@"
+exit 125
+
+# vim:set sw=4 sts=4 et:

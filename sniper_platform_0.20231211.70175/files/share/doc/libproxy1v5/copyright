@@ -1,0 +1,71 @@
+This package was debianized by Emilio Pozuelo Monfort <pochu@ubuntu.com> on
+Wed, 17 Dec 2008 23:25:40 +0100.
+
+It was downloaded from https://github.com/libproxy/libproxy/releases
+
+Upstream Authors:
+
+    Nathaniel McCallum    <nathaniel@natemccallum.com>
+    Alex Panait           <kippled@gmail.com>
+    Dominique Leuenberger <dominique@leuenberger.net>
+
+Copyright:
+
+    Copyright (C) 2006-2010 Nathaniel McCallum <nathaniel@natemccallum.com>
+
+    The file pacutils.js is:
+    Copyright (c) Netscape Communications Corporation. 1998
+
+    The file libproxy/Findlibproxy.cmake.in is:
+    Copyright (c) 2010, Dominique Leuenberger
+
+    The file libproxy/modules/pxgsettings.cpp is additionally: 
+    Copyright (C) 2011 Dominique Leuenberger <dominique@leuenberger.net>
+
+    The file libproxy/url.cpp is based on work which is:
+    Copyright (C) 2006-2007 Red Hat, Inc.
+
+    The file libproxy/modules/config_sysconfig.cpp is:
+    Copyright (C) 2010 Novell Inc
+
+License:
+
+    This package is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This package is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this package; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
+On Debian systems, the complete text of the GNU Lesser General
+Public License can be found in `/usr/share/common-licenses/LGPL-2.1'.
+
+The Debian packaging is copyright 2008, Emilio Pozuelo Monfort <pochu@ubuntu.com> and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+
+For cmake/CMakeCSharpInformation.cmake and
+cmake/CMakeDetermineCSharpCompiler.cmake the following applies:
+
+  copyright (c) 2007, 2009 Arno Rehn <arno@arnorehn.de>
+  copyright (c) 2008 Helio castro    <helio@kde.org>
+
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; either version 2
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 

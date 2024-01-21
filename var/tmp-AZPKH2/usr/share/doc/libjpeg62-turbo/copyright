@@ -1,0 +1,292 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: libjpeg-turbo
+Source: https://github.com/libjpeg-turbo/libjpeg-turbo
+
+Files: *
+Copyright: 1991-2010, Thomas G. Lane
+           1991-2011, Guido Vollbeding
+           1999-2006, MIYASAKA Masaru
+           2009-2020, D. R. Commander
+           2009, Pierre Ossman <ossman@cendio.se> for Cendio AB
+           2015-2016, 2018, Matthieu Darbois
+License: BSD-BY-LC-NE
+
+Files: djpeg.c
+ jdapistd.c
+ jdinput.c
+ jpegint.h
+ jpeglib.h
+Copyright: 1991-1997, Thomas G. Lane
+  1991-1998, Thomas G. Lane
+  1994-1996, Thomas G. Lane
+  2009-2011, 2013-2014, 2016-2017, 2020, D. R. Commander
+  2010, 2015-2018, 2020, D. R. Commander
+  2010, 2016, 2018, D. R. Commander
+  2010-2011, 2013-2017, 2020, D. R. Commander
+  2015, Google, Inc.
+  2015-2016, D. R. Commander
+License: BSD-BY-LC-NE
+Comment:
+ Assuming main license, no license specified.
+
+Files: rdppm.c
+Copyright:
+ 1988, Jef Poskanzer
+ 1991-1997, Thomas G. Lane
+ 2009, Bill Allombert
+ 2009, Guido Vollbeding
+ 2015-2017, 2020, D. R. Commander
+License: NTP
+
+Files: simd/loongson/jccolor-mmi.c
+ simd/loongson/jcsample-mmi.c
+ simd/loongson/jdcolor-mmi.c
+ simd/loongson/jdsample-mmi.c
+ simd/loongson/jfdctint-mmi.c
+ simd/loongson/jidctint-mmi.c
+ simd/loongson/loongson-mmintrin.h
+Copyright: 2011, 2014, D. R. Commander.
+  2011, 2015, D. R. Commander.
+  2014, 2018, 2020, D. R. Commander.
+  2014-2015, 2018, 2020, D. R. Commander.
+  2015, 2018, D. R. Commander.
+  2016-2017, Loongson Technology Corporation Limited, BeiJing.
+  2016-2018, Loongson Technology Corporation Limited, BeiJing.
+  2019, D. R. Commander.
+License: zlib
+
+Files: simd/powerpc/jccolext-altivec.c
+ simd/powerpc/jcgryext-altivec.c
+Copyright: 2014, Jay Foad
+  2014-2015, D. R. Commander
+License: zlib
+
+Files: simd/arm/jsimd_neon.S
+ simd/arm64/jsimd_neon.S
+Copyright: 2009-2011, Nokia Corporation and/or its subsidiary(-ies)
+  2013-2014, Linaro Limited
+  2014, Linaro Limited
+  2014, Siarhei Siamashka
+  2014-2016, 2020, D. R. Commander
+  2015, D. R. Commander
+  2015-2016, 2018, Matthieu Darbois
+  2016, Siarhei Siamashka
+License: zlib
+
+Files: simd/loongson/jccolext-mmi.c
+ simd/loongson/jdcolext-mmi.c
+Copyright: 2009, Pierre Ossman <ossman@cendio.se> for Cendio AB
+  2014-2015, 2019, D. R. Commander
+  2015, D. R. Commander
+  2016-2017, Loongson Technology Corporation Limited, BeiJing
+  2016-2018, Loongson Technology Corporation Limited, BeiJing
+License: zlib
+
+Files: doc/html/dynsections.js
+ doc/html/menu.js
+ doc/html/menudata.js
+ doc/html/search/search.js
+Copyright: 1997-2020, Dimitri van Heesch
+License: Expat
+
+Files: debian/*
+Copyright:
+ 2020-2021, Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+ 2014,      Ondřej Surý <ondrej@debian.org>
+ 2012-2013, Debian TigerVNC Packaging Team <pkg-tigervnc-devel@lists.alioth.debian.org>
+ 2011-2012, Canonical Ltd.
+ 2011-2012, Linaro Inc.
+License: BSD-3
+
+Files: debian/extra/*
+Copyright:
+ 2005, Guido Vollbeding <guido@jpegclub.org>
+License: BSD-BY-LC-NE
+Comment:
+ No license information present in file headers.
+ .
+ Assume same license as for Files: * as author of these files
+ has also been involved in development of the rest of the
+ project files.
+
+Files: debian/missing-sources/jquery* doc/html/jquery.js
+Copyright: Copyright 2011, John Resig
+           Copyright 2011, The Dojo Foundation
+License: Expat
+
+License: BSD-BY-LC-NE
+ In plain English:
+ .
+ 1. We don't promise that this software works.  (But if you find any bugs,
+    please let us know!)
+ 2. You can use this software for whatever you want.  You don't have to pay us.
+ 3. You may not pretend that you wrote this software.  If you use it in a
+    program, you must acknowledge somewhere in your documentation that
+    you've used the IJG code.
+ .
+ In legalese:
+ .
+ The authors make NO WARRANTY or representation, either express or implied,
+ with respect to this software, its quality, accuracy, merchantability, or
+ fitness for a particular purpose.  This software is provided "AS IS", and you,
+ its user, assume the entire risk as to its quality and accuracy.
+ .
+ This software is copyright (C) 1991-2010, Thomas G. Lane, Guido Vollbeding.
+ All Rights Reserved except as specified below.
+ .
+ Permission is hereby granted to use, copy, modify, and distribute this
+ software (or portions thereof) for any purpose, without fee, subject to these
+ conditions:
+ (1) If any part of the source code for this software is distributed, then this
+ README file must be included, with this copyright and no-warranty notice
+ unaltered; and any additions, deletions, or changes to the original files
+ must be clearly indicated in accompanying documentation.
+ (2) If only executable code is distributed, then the accompanying
+ documentation must state that "this software is based in part on the work of
+ the Independent JPEG Group".
+ (3) Permission for use of this software is granted only if the user accepts
+ full responsibility for any undesirable consequences; the authors accept
+ NO LIABILITY for damages of any kind.
+ .
+ These conditions apply to any software derived from or based on the IJG code,
+ not just to the unmodified library.  If you use our work, you ought to
+ acknowledge us.
+ .
+ Permission is NOT granted for the use of any IJG author's name or company name
+ in advertising or publicity relating to this software or products derived from
+ it.  This software may be referred to only as "the Independent JPEG Group's
+ software".
+ .
+ We specifically permit and encourage the use of this software as the basis of
+ commercial products, provided that all warranty or liability claims are
+ assumed by the product vendor.
+ .
+ ansi2knr.c is included in this distribution by permission of L. Peter Deutsch,
+ sole proprietor of its copyright holder, Aladdin Enterprises of Menlo Park, CA.
+ ansi2knr.c is NOT covered by the above copyright and conditions, but instead
+ by the usual distribution terms of the Free Software Foundation; principally,
+ that you must include source code if you redistribute it.  (See the file
+ ansi2knr.c for full details.)  However, since ansi2knr.c is not needed as part
+ of any program generated from the IJG code, this does not limit you more than
+ the foregoing paragraphs do.
+ .
+ The Unix configuration script "configure" was produced with GNU Autoconf.
+ It is copyright by the Free Software Foundation but is freely distributable.
+ The same holds for its supporting scripts (config.guess, config.sub,
+ ltmain.sh).  Another support script, install-sh, is copyright by X Consortium
+ but is also freely distributable.
+ .
+ The IJG distribution formerly included code to read and write GIF files.
+ To avoid entanglement with the Unisys LZW patent, GIF reading support has
+ been removed altogether, and the GIF writer has been simplified to produce
+ "uncompressed GIFs".  This technique does not use the LZW algorithm; the
+ resulting GIF files are larger than usual, but are readable by all standard
+ GIF decoders.
+ .
+ We are required to state that
+     "The Graphics Interchange Format(c) is the Copyright property of
+     CompuServe Incorporated.  GIF(sm) is a Service Mark property of
+     CompuServe Incorporated."
+ .
+ The complete text can be found in README, supplied with the source.
+ .
+ libjpeg-turbo is licensed under a non-restrictive, BSD-style license
+ (see README.) The TurboJPEG/OSS wrapper (both C and Java versions) and
+ associated test programs bear a similar license, which is reproduced below:
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ .
+ - Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+ - Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+ - Neither the name of the libjpeg-turbo Project nor the names of its
+   contributors may be used to endorse or promote products derived from this
+   software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS",
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+ .
+ The complete text can be found in README-turbo.txt, supplied with the source.
+
+License: BSD-3
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ .
+ - Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+ - Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+ - Neither the name of the libjpeg-turbo Project nor the names of its
+   contributors may be used to endorse or promote products derived from this
+   software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS",
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+License: NTP
+ Permission to use, copy, modify, and distribute this software and its
+ documentation for any purpose and without fee is hereby granted, provided
+ that the above copyright notice appear in all copies and that both that
+ copyright notice and this permission notice appear in supporting
+ documentation.  This software is provided "as is" without express or
+ implied warranty.
+
+License: zlib
+ This software is provided 'as-is', without any express or implied
+ warranty.  In no event will the authors be held liable for any damages
+ arising from the use of this software.
+ . 
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
+ . 
+ 1. The origin of this software must not be misrepresented; you must not
+    claim that you wrote the original software. If you use this software
+    in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+ 2. Altered source versions must be plainly marked as such, and must not be
+    misrepresented as being the original software.
+ 3. This notice may not be removed or altered from any source distribution.

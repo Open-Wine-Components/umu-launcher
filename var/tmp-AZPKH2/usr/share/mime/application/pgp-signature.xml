@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/pgp-signature">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>detached OpenPGP signature</comment>
+  <comment xml:lang="af">losstaande OpenPGP-handtekening</comment>
+  <comment xml:lang="ar">إمضاء OpenPGP مفصول</comment>
+  <comment xml:lang="be-Latn">adłučany podpis OpenPGP</comment>
+  <comment xml:lang="bg">Отделѐн подпис — OpenPGP</comment>
+  <comment xml:lang="ca">signatura OpenPGP abstreta</comment>
+  <comment xml:lang="cs">oddělený podpis OpenPGP</comment>
+  <comment xml:lang="da">frigjort OpenPGP-signatur</comment>
+  <comment xml:lang="de">isolierte OpenPGP-Signatur</comment>
+  <comment xml:lang="el">Αποκομμένη υπογραφή OpenPGP</comment>
+  <comment xml:lang="en-GB">detached OpenPGP signature</comment>
+  <comment xml:lang="eo">dekroĉa OpenPGP-subskribo</comment>
+  <comment xml:lang="es">firma OpenPGP separada</comment>
+  <comment xml:lang="eu">desuzturtako OpenPGP sinadura</comment>
+  <comment xml:lang="fi">erillinen OpenPGP-allekirjoitus</comment>
+  <comment xml:lang="fo">skild OpenPGP undirskrift</comment>
+  <comment xml:lang="fr">signature OpenPGP détachée</comment>
+  <comment xml:lang="fur">firme OpenPGP distacade</comment>
+  <comment xml:lang="ga">síniú OpenPGP scartha</comment>
+  <comment xml:lang="gl">sinatura de OpenPGP independente</comment>
+  <comment xml:lang="he">חתימת OpenPGP מנותקת</comment>
+  <comment xml:lang="hr">Odvojen OpenPGP potpis</comment>
+  <comment xml:lang="hu">leválasztott OpenPGP-aláírás</comment>
+  <comment xml:lang="ia">Signatura OpenPGP distachate</comment>
+  <comment xml:lang="id">tanda tangan OpenPGP yang terlepas</comment>
+  <comment xml:lang="it">Firma staccata OpenPGP</comment>
+  <comment xml:lang="ja">分離 OpenPGP 署名</comment>
+  <comment xml:lang="kk">бөлінген OpenPGP қолтаңбасы</comment>
+  <comment xml:lang="ko">분리된 OpenPGP 서명</comment>
+  <comment xml:lang="lt">neprisegtas OpenPGP parašas</comment>
+  <comment xml:lang="lv">atvienots OpenPGP paraksts</comment>
+  <comment xml:lang="ms">Tandatangan OpenPGP terlerai</comment>
+  <comment xml:lang="nb">frakoblet OpenPGP-signatur</comment>
+  <comment xml:lang="nl">losse OpenPGP-ondertekening</comment>
+  <comment xml:lang="nn">fråkopla OpenPGP-signatur</comment>
+  <comment xml:lang="oc">signatura OpenPGP destacada</comment>
+  <comment xml:lang="pl">Oddzielony podpis OpenPGP</comment>
+  <comment xml:lang="pt">assinatura OpenPGP solta</comment>
+  <comment xml:lang="pt-BR">Assinatura OpenPGP destacada</comment>
+  <comment xml:lang="ro">semnătură OpenPGP detașată</comment>
+  <comment xml:lang="ru">Отсоединённая подпись OpenPGP</comment>
+  <comment xml:lang="sk">Oddelený podpis OpenPGP</comment>
+  <comment xml:lang="sl">odpet podpis OpenPGP</comment>
+  <comment xml:lang="sq">Firmë e shkëputur OpenPGP</comment>
+  <comment xml:lang="sr">одвојени ОпенПГП потпис</comment>
+  <comment xml:lang="sv">frikopplad OpenPGP-signatur</comment>
+  <comment xml:lang="tr">müstakil OpenPGP imzası</comment>
+  <comment xml:lang="uk">відокремлений OpenPGP підпис</comment>
+  <comment xml:lang="vi">chữ ký OpenPGP tách rời</comment>
+  <comment xml:lang="zh-CN">分离的 OpenPGP 签名</comment>
+  <comment xml:lang="zh-TW">分離的 OpenPGP 簽章</comment>
+  <sub-class-of type="text/plain"/>
+  <generic-icon name="text-x-generic"/>
+  <glob pattern="*.asc" weight="10"/>
+  <glob pattern="*.sig"/>
+  <glob pattern="*.pgp"/>
+  <glob pattern="*.gpg"/>
+</mime-type>

@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://salsa.debian.org/debian/media-types
+
+Files: *
+Copyright: public-domain
+License: ad-hoc
+ This package contains public information compiled from around the 'net and
+ many people.

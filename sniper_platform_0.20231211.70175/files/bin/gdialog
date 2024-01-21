@@ -1,0 +1,353 @@
+#!/usr/bin/perl
+
+# gdialog -> zenity conversion wrapper
+#
+# by Mike Newman <mikegtn@gnome.org>
+#
+# This is all, of course, horrible - but it should translate
+# most commond gdialog types to zenity equivalents. It will mostly drop
+# the pointless and unused (even by gdialog!) size arguments
+# but hopefully will translate all the others.
+#
+# For testing purposes, I've used a couple of the nautilus scripts
+# available at http://g-scripts.sourceforge.net - what is sometimes
+# unclear is what is a gdialog/zenity translation problem, and what is
+# a problem with the original script
+
+my @command = ("zenity");	# the command line we build up to execute
+my $element = "";		# current bit of command line
+my $argn = 0;			# counter for walking args
+my $args = $#ARGV + 1;		# total number of command line arguments
+my $separator = 0;		# set if --separate-output is in use
+
+
+# Additon by: Kevin C. Krinke (kck) <kckrinke@opendoorsoftware.com>
+#
+# gdialog itself supports both the X-Windows interface as well as a console
+# interface. Here's a fix to use regular dialog when appropriate.
+# This should probably be a more advanced test of some sort, but I don't know
+# of any other easy way of detecting and X-Windows environment. If someone does
+# know better, please let me know. So for now this works: "no DISPLAY; no X".
+
+unless (defined $ENV{'DISPLAY'} && length($ENV{'DISPLAY'})) {
+
+        # reset the command string
+
+        @command = ();
+
+        # examine all the available/default paths
+
+        my $PATHS = ($ENV{'PATH'}||'/bin:/usr/bin:/usr/local/bin:/opt/bin');
+
+      BIN: foreach my $PATH (split(/\:/,$PATHS)) {
+
+                if (-x $PATH."/gdialog.real") {
+
+			# Some GNU/Linux distributions divert binaries when
+			# other packages are installed. If this exists, chances
+			# are it's the real gdialog and not the Zenity wrapper.
+			# gdialog has full support for the Console medium and
+			# as such is the preference over using the "regular"
+			# dialog interface.
+
+                        @command = ($PATH."/gdialog.real");
+                        last BIN;
+
+                } elsif (-x $PATH."/dialog") {
+
+                        # change the command and skip ahead!
+
+                        @command = ($PATH."/dialog");
+                        last BIN;
+
+                }
+
+
+        }
+
+        unless (@command) {
+
+		# we didn't find the dialog binary, exit(254) with a message
+		# to STDERR.
+
+                print STDERR "missing DISPLAY and a console dialog could".
+                             " not be found.\n";
+
+		# exit code 254 is used because 255, 1, 2, 3 are used by Zenity
+		# and cDialog. This error, is a very _bad_ error so it's semi-
+		# non-standard at 254.
+
+                exit(254);
+
+        }
+
+	# all is well if we've made it this far
+
+	# so join the arguments double-quoting things so that proper shell
+	# notation is saved.
+
+        push @command, @ARGV;
+
+	# and fork the process
+
+        exec(@command);
+
+}
+
+# Got DISPLAY, has X continue as normal...
+# End Addtition by: KCK
+
+# this just loads the current arg into $element
+
+sub get_arg () { 
+	$element = $ARGV[$argn];
+}
+
+# walk the command line
+
+ARG: while ($argn < $args) {
+
+	get_arg;
+	
+# Informational stuff
+
+	if ($element eq "--help" || $element eq "--about") {
+	print ( "gdialog is a compatibility wrapper around zenity, " .
+		"provided to hopefully\nallow older scripts to run. " .
+		"If you are reading this message, you should\n" .
+		"probably be using zenity directly\n\n" .
+		"type: 'zenity --help' or 'man zenity' for more information\n");
+	exit (1);
+	}
+
+# Section 1 : Args which gdialog expects BEFORE box options
+# --clear, --backtitle have no obvious effect - ignored
+
+	if ($element eq "--title") {
+	
+		# --title argument is almost analogous in gdialog and
+		# zenity - so pass it almost entirely as is
+		
+		$argn++;
+		get_arg;
+		push @command, "--title=$element";
+		
+		# keep processing args
+		$argn++;
+		next ARG;
+	}
+
+	if ($element eq "--separate-output") {
+
+		# set the flag to pring list output line by line
+		$separator = 1;
+
+		# keep processing args
+		$argn++;
+		next ARG;
+	}
+
+# Section 2 : Box Options and subsequent args
+	
+	if ($element eq "--msgbox" || $element eq "--infobox") {
+	
+		# This bit is common to almost all of the dialogs
+		# the arg following the dialog type in gdialog is usually
+		# equivalent to zenity's --text arg.
+		
+		$argn++;
+		get_arg;
+		push @command, "--info", "--text=$element";
+		
+		# this also happens a lot - gdialog accepted size args
+		# for dialog compatability - which it pretty much ignored
+		# and we will do the same
+ 
+		$argn+=2;
+		last ARG;
+	}
+	
+	if ($element eq "--yesno") {
+
+		# this will silently ignore the gdialog option to set
+		# the default button in question dialogs - which is
+		# highly hig-norant anyway!
+		
+		$argn++;
+		get_arg;
+		push @command, "--question", "--text=$element";
+		last ARG;
+	}
+	
+	if ($element eq "--inputbox") {
+		$argn++;
+		get_arg;
+		push @command, "--entry", "--text=$element";
+		
+		# ignore size elements and maybe there is some
+		# default text to initialize the entry with?
+		
+		$argn+=3;
+		get_arg;
+		push @command, "--entry-text=$element";
+		last ARG;
+	}
+	
+	if ($element eq "--textbox") {
+		push @command, "--text-info";
+		
+		# the arg immediately following the dialog type in
+		# gdialog is the filename, so pass this to zenity
+		
+		$argn++;
+		get_arg;
+		push @command, "--filename=$element";
+
+		# width and height matter for this one, so get them
+		# and apply the same multipliers as used in gdialog
+
+		$argn++;
+		get_arg;
+		$element = $element * 7;
+		push @command, "--height=$element";
+		$argn++;
+		get_arg;
+		$element = $element * 8;
+		push @command, "--width=$element";
+		last ARG;
+	}
+	
+	if ($element eq "--checklist" || $element eq "--radiolist") {
+		$list=$element;
+		$argn++;
+		get_arg;
+		
+		# Conveniently, zenity and gdialog use the same names
+		# for list types, so pass this to zenity intact along with
+		# an untitled column for the check or radio buttons
+		# and the 'text' arg as a second column header
+		
+		push @command, "--list", $list, "--column=''", "--column=''", "--column", $element;
+
+		# should output be line by line?
+		if ($separator) {
+			push @command, "--separator=\n";
+		}
+
+		# Skip to the first 'item' arg of the list content
+		# bypassing height, width and list-height
+		# from here args run [tag] [item] [status] ...
+
+		$argn += 4; 
+		
+		# Loop over the remainder of the commandline
+		# discarding the 'status' args of each item
+		# and using the 'item' for display in our second column
+		# also pass a fake NULL argument since zenity can't set
+		# the status of a row like gdialog can
+		
+		while ($argn < $args) {
+			get_arg;
+			push @command, "NULL", $element;
+			$argn += 1;
+			get_arg;
+			push @command, $element;
+			$argn += 2;
+		}
+		last ARG;
+	} 
+	
+	if ($element eq "--menu") {
+		$list=$element;
+		$argn++;
+		get_arg;
+		
+		# a gdialog --menu is just a two column zenity --list
+		# Leave the first column blank (not provided)
+		# Use the 'text' arg as a second column header
+		# FIXME: or should it be the dialog text, or both?
+		
+		push @command, "--list", "--column", "", "--column", $element;
+			
+		# Skip to the first 'item' arg of the list content
+		# after using height, width and bypassing list-height
+		# from here args run [tag] [item] ...
+
+		$argn += 1;
+		
+		get_arg;
+		# Height and width in characters to be displayed, so adjust
+		# cdialog uses 6 height for non-list, zenity uses ~24 pixels
+		# per list entry (default font), and 103 pixels for non-list
+		# This appears to be almost exact
+		$element = $element*24 - 35;
+		push @command, "--height", $element;
+		
+		$argn += 1;
+		get_arg;
+		# cdialog uses 6 width for non-list, zenity uses ~7 pixels
+		# per character (default font), and 22 pixels for non-list
+		# This is not exact, but close enough
+		$element = $element*7 - 20;
+		push @command, "--width", $element;
+		
+		$argn += 2; 
+		
+		# Loop over the remainder of the commandline
+		# keeping 'tag' args of each item (required to return)
+		# and using the 'item' for display in our second column
+		
+		while ($argn < $args) {
+			get_arg;
+			push @command, $element;
+			$argn += 1;
+		}
+		last ARG;
+	} 
+	
+	if ($element eq "--gauge") {
+		$argn++;
+		get_arg;
+		push @command, "--progress", "--text=$element";
+		
+		# discard the size args as usually, and see if
+		# a percentage value was supplied to initialize the
+		# dialog
+		
+		$argn += 3;
+		get_arg;
+		if ($element) {
+			push @command, "--percentage=$element";
+		}
+		last ARG;
+	}
+	
+	$argn++;
+}
+
+# save STDOUT and STDERR
+open(ORG_STDOUT, ">&STDOUT");
+open(ORG_STDERR, ">&STDERR");
+
+# redirect STDERR to /dev/null (GTK messages ie: 
+#  (zenity:637): Gtk-WARNING **: Unable to locate theme engine in module_path: "mist",)
+open(STDERR, ">/dev/null");
+
+# redirect STDOUT to STDERR (gdialog direct output to STDERR by default)
+open(STDOUT, ">&ORG_STDERR");
+
+# execute the constructed zenity command line
+
+# perl doc: The return value of system() is the exit status of the
+#program as returned by the wait() call. To get the actual exit value
+# divide by 256.
+
+my $return = system(@command)/256;
+
+# restore STDOUT and STDERR
+open(STDOUT, ">&ORG_STDOUT");
+open(STDERR, ">&ORG_STDERR");
+close(ORG_STDOUT);
+close(ORG_STDERR);
+
+exit $return;

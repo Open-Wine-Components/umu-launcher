@@ -1,0 +1,9 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: NSPR
+Source: http://ftp.mozilla.org/pub/nspr/releases/
+
+Files: *
+Copyright: 1998-2000 Netscape Communications Corporation.
+License: MPL-2.0
+ On Debian systems the full text of the MPL-2.0 can be found in
+ /usr/share/common-licenses/MPL-2.0.

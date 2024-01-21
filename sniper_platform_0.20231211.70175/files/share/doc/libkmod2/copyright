@@ -1,0 +1,17 @@
+This is the Debian GNU/Linux prepackaged version of kmod.
+
+It has been packaged by Marco d'Itri <md@linux.it>.
+
+Original sources were obtained from:
+http://www.kernel.org/pub/linux/utils/kernel/kmod/
+
+
+Copyright (C) 2011 ProFUSION embedded systems.
+
+The kmod tools are licensed under the GNU GPL version 2 or newer.
+
+libkmod is licensed under the GNU LGPL version 2.1 or newer.
+
+On Debian systems the complete text of the licenses can be found in
+/usr/share/common-licenses/GPL-2 and /usr/share/common-licenses/LGPL-2.1 .
+

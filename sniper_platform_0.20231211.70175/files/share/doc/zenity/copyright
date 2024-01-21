@@ -1,0 +1,39 @@
+This package was debianized by Ross Burton <ross@debian.org> on
+Sat,  1 Feb 2003 15:46:03 +0000.
+
+It was downloaded from https://download.gnome.org/sources/zenity/
+
+Upstream Authors:
+    Glynn Foster  <glynn.foster@sun.com>
+    Mike Newman  <mikegtn@gnome.org>
+    Lucas Rocha  <lucasr@cvs.gnome.org>
+
+Copyright:
+    Copyright (C) 2002-2005 Sun Microsystems, Inc.
+    Copyright (C) 2003 Mike Newman
+    Copyright (C) 2005-2009 Lucas Rocha
+    Copyright (C) 1999, 2000 Red Hat Inc 
+    Copyright (C) 1998 James Henstridge
+    Copyright (C) 2006 Christian Persch
+    Copyright (C) 2001 CodeFactory AB 
+    Copyright (C) 2001, 2002 Anders Carlsson
+
+License:
+
+    This package is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This package is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this package; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
+    USA
+
+On Debian systems, the complete text of the GNU Lesser General
+Public License can be found in `/usr/share/common-licenses/LGPL-2'.

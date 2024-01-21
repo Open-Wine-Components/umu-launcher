@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/vnd.sun.xml.calc">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>OpenOffice Calc spreadsheet</comment>
+  <comment xml:lang="af">OpenOffice Calc-sigblad</comment>
+  <comment xml:lang="ar">جدول Calc المكتب المفتوح</comment>
+  <comment xml:lang="be-Latn">Raźlikovy arkuš OpenOffice Calc</comment>
+  <comment xml:lang="bg">Таблица — OpenOffice Calc</comment>
+  <comment xml:lang="ca">full de càlcul d'OpenOffice Calc</comment>
+  <comment xml:lang="cs">sešit OpenOffice Calc</comment>
+  <comment xml:lang="da">OpenOffice Calc-regneark</comment>
+  <comment xml:lang="de">OpenOffice-Calc-Tabelle</comment>
+  <comment xml:lang="el">Λογιστικό φύλλο OpenOffice Calc</comment>
+  <comment xml:lang="en-GB">OpenOffice Calc spreadsheet</comment>
+  <comment xml:lang="es">hoja de cálculo de LibreOffice Calc</comment>
+  <comment xml:lang="eu">OpenOffice.org Calc kalkulu-orria</comment>
+  <comment xml:lang="fi">OpenOffice Calc -taulukko</comment>
+  <comment xml:lang="fo">OpenOffice Calc rokniark</comment>
+  <comment xml:lang="fr">feuille de calcul OpenOffice Calc</comment>
+  <comment xml:lang="fur">sfuei di calcul OpenOffice Calc</comment>
+  <comment xml:lang="ga">scarbhileog OpenOffice Calc</comment>
+  <comment xml:lang="gl">folla de cálculo de OpenOffice Calc</comment>
+  <comment xml:lang="he">גליון נתונים של OpenOffice Calc</comment>
+  <comment xml:lang="hr">OpenOffice Calc proračunska tablica</comment>
+  <comment xml:lang="hu">OpenOffice Calc táblázat</comment>
+  <comment xml:lang="ia">Folio de calculo OpenOffice Calc</comment>
+  <comment xml:lang="id">Lembar sebar OpenOffice Calc</comment>
+  <comment xml:lang="it">Foglio di calcolo OpenOffice Calc</comment>
+  <comment xml:lang="ja">OpenOffice Calc スプレッドシート</comment>
+  <comment xml:lang="ka">OpenOffice Calc-ის ცხრილი</comment>
+  <comment xml:lang="kk">OpenOffice Calc электрондық кестесі</comment>
+  <comment xml:lang="ko">OpenOffice Calc 스프레드시트</comment>
+  <comment xml:lang="lt">OpenOffice Calc skaičialentė</comment>
+  <comment xml:lang="lv">OpenOffice Calc izklājlapa</comment>
+  <comment xml:lang="nb">OpenOffice Calc-regneark</comment>
+  <comment xml:lang="nl">OpenOffice.org Calc-rekenblad</comment>
+  <comment xml:lang="nn">OpenOffice Calc-rekneark</comment>
+  <comment xml:lang="oc">fuèlh de calcul OpenOffice Calc</comment>
+  <comment xml:lang="pl">Arkusz kalkulacyjny OpenOffice.org Calc</comment>
+  <comment xml:lang="pt">folha de cálculo OpenOffice Calc</comment>
+  <comment xml:lang="pt-BR">Planilha do OpenOffice Calc</comment>
+  <comment xml:lang="ro">Foaie de calcul OpenOffice Calc</comment>
+  <comment xml:lang="ru">Электронная таблица OpenOffice Calc</comment>
+  <comment xml:lang="sk">Zošit OpenOffice Calc</comment>
+  <comment xml:lang="sl">Razpredelnica OpenOffice.org Calc</comment>
+  <comment xml:lang="sq">Fletë llogaritjesh OpenOffice Calc</comment>
+  <comment xml:lang="sr">Табела Опен Офис Рачуна</comment>
+  <comment xml:lang="sv">OpenOffice Calc-kalkylblad</comment>
+  <comment xml:lang="tr">OpenOffice Calc çalışma sayfası</comment>
+  <comment xml:lang="uk">ел. таблиця OpenOffice Calc</comment>
+  <comment xml:lang="vi">Bảng tính Calc của OpenOffice.org</comment>
+  <comment xml:lang="zh-CN">OpenOffice Calc 电子表格</comment>
+  <comment xml:lang="zh-TW">OpenOffice Calc 試算表</comment>
+  <sub-class-of type="application/zip"/>
+  <generic-icon name="x-office-spreadsheet"/>
+  <glob pattern="*.sxc"/>
+</mime-type>

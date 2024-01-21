@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/x-copying">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>license terms</comment>
+  <comment xml:lang="af">lisensievoorwaardes</comment>
+  <comment xml:lang="ar">شروط الترخيص</comment>
+  <comment xml:lang="ast">términos de llicencia</comment>
+  <comment xml:lang="be-Latn">licenzijnyja ŭmovy</comment>
+  <comment xml:lang="bg">Лицензни условия</comment>
+  <comment xml:lang="ca">condicions de llicència</comment>
+  <comment xml:lang="cs">licenční podmínky</comment>
+  <comment xml:lang="da">licensbetingelser</comment>
+  <comment xml:lang="de">Lizenzbedingungen</comment>
+  <comment xml:lang="el">Όροι άδειας</comment>
+  <comment xml:lang="en-GB">licence terms</comment>
+  <comment xml:lang="es">términos de licencia</comment>
+  <comment xml:lang="eu">lizentzia baldintzak</comment>
+  <comment xml:lang="fi">lisenssiehdot</comment>
+  <comment xml:lang="fo">loyvistreytir</comment>
+  <comment xml:lang="fr">termes de licence</comment>
+  <comment xml:lang="fur">tiermins di licence</comment>
+  <comment xml:lang="ga">téarmaí ceadúnais</comment>
+  <comment xml:lang="gl">termos de licenza</comment>
+  <comment xml:lang="he">תנאי רישיון</comment>
+  <comment xml:lang="hr">Uvjeti licence</comment>
+  <comment xml:lang="hu">licencfeltételek</comment>
+  <comment xml:lang="ia">Conditiones de licentia</comment>
+  <comment xml:lang="id">persyaratan lisensi</comment>
+  <comment xml:lang="it">Termini di licenza</comment>
+  <comment xml:lang="ja">ソフトウェアライセンス条項</comment>
+  <comment xml:lang="kk">лицензиялық келісімі</comment>
+  <comment xml:lang="ko">라이선스 조항</comment>
+  <comment xml:lang="lt">licencijos sąlygos</comment>
+  <comment xml:lang="lv">licences nosacījumi</comment>
+  <comment xml:lang="nb">lisensbestemmelser</comment>
+  <comment xml:lang="nl">licentievoorwaarden</comment>
+  <comment xml:lang="nn">lisensvilkår</comment>
+  <comment xml:lang="oc">tèrmes de licéncia</comment>
+  <comment xml:lang="pl">Warunki licencji</comment>
+  <comment xml:lang="pt">termos de licença</comment>
+  <comment xml:lang="pt-BR">Termos de licença</comment>
+  <comment xml:lang="ro">termeni de licență</comment>
+  <comment xml:lang="ru">Лицензионное соглашение</comment>
+  <comment xml:lang="sk">Licenčné podmienky</comment>
+  <comment xml:lang="sl">pogoji in dovoljenja uporabe</comment>
+  <comment xml:lang="sq">Kushte liçence</comment>
+  <comment xml:lang="sr">услови коришћења</comment>
+  <comment xml:lang="sv">licensvillkor</comment>
+  <comment xml:lang="tr">lisans koşulları</comment>
+  <comment xml:lang="uk">ліцензійні умови</comment>
+  <comment xml:lang="vi">điều kiện giấy phép</comment>
+  <comment xml:lang="zh-CN">软件许可条款</comment>
+  <comment xml:lang="zh-TW">授權條款</comment>
+  <sub-class-of type="text/plain"/>
+  <glob pattern="COPYING"/>
+</mime-type>

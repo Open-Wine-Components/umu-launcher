@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-troff-man-compressed">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>manual page (compressed)</comment>
+  <comment xml:lang="af">handleiding (saamgepers)</comment>
+  <comment xml:lang="ar">صفحة المساعدة (مضغوطة)</comment>
+  <comment xml:lang="az">man səhifəsi (sıxışdırılmış)</comment>
+  <comment xml:lang="be-Latn">staronka dapamohi (skampresavanaja)</comment>
+  <comment xml:lang="bg">Страница от ръководството — компресирана</comment>
+  <comment xml:lang="ca">pàgina de manual (amb compressió)</comment>
+  <comment xml:lang="cs">manuálová stránka (komprimovaná)</comment>
+  <comment xml:lang="cy">tudalen llawlyfr (wedi ei gywasgu)</comment>
+  <comment xml:lang="da">manualside (komprimeret)</comment>
+  <comment xml:lang="de">Handbuchseite (komprimiert)</comment>
+  <comment xml:lang="el">Σελίδα οδηγιών (συμπιεσμένη)</comment>
+  <comment xml:lang="en-GB">manual page (compressed)</comment>
+  <comment xml:lang="eo">manpaĝo (kunpremita)</comment>
+  <comment xml:lang="es">página de manual (comprimida)</comment>
+  <comment xml:lang="eu">eskuliburu orria (konprimitua)</comment>
+  <comment xml:lang="fi">manuaalisivu (pakattu)</comment>
+  <comment xml:lang="fo">handbókasíða (stappað)</comment>
+  <comment xml:lang="fr">page de manuel (compressée)</comment>
+  <comment xml:lang="fur">pagjine di manuâl (comprimude)</comment>
+  <comment xml:lang="ga">leathanach lámhleabhair (comhbhrúite)</comment>
+  <comment xml:lang="gl">páxina de manual (comprimida)</comment>
+  <comment xml:lang="he">דף עזר (מכווץ)</comment>
+  <comment xml:lang="hr">Stranica priručnika (sažeta)</comment>
+  <comment xml:lang="hu">kézikönyvoldal (tömörített)</comment>
+  <comment xml:lang="ia">Pagina de manual (comprimite)</comment>
+  <comment xml:lang="id">halaman manual (terkompresi)</comment>
+  <comment xml:lang="it">Pagina di manuale (compressa)</comment>
+  <comment xml:lang="ja">(圧縮) man ページ</comment>
+  <comment xml:lang="kk">әдістемелік парағы (сығылған)</comment>
+  <comment xml:lang="ko">man 페이지(압축)</comment>
+  <comment xml:lang="lt">žinyno puslapis (suglaudintas)</comment>
+  <comment xml:lang="lv">rokasgrāmatas lapa (saspiesta)</comment>
+  <comment xml:lang="ms">Halaman manual (termampat)</comment>
+  <comment xml:lang="nb">manualside (komprimert)</comment>
+  <comment xml:lang="nl">handleidingspagina (ingepakt)</comment>
+  <comment xml:lang="nn">manualside (pakka)</comment>
+  <comment xml:lang="oc">pagina de manual (compressat)</comment>
+  <comment xml:lang="pl">Strona podręcznika (skompresowana)</comment>
+  <comment xml:lang="pt">página de manual (comprimida)</comment>
+  <comment xml:lang="pt-BR">Página de manual (compactada)</comment>
+  <comment xml:lang="ro">pagină de manual (comprimată)</comment>
+  <comment xml:lang="ru">Страница руководства (сжатая)</comment>
+  <comment xml:lang="sk">Manuálová stránka (komprimovaná)</comment>
+  <comment xml:lang="sl">stran priročnika (stisnjena)</comment>
+  <comment xml:lang="sq">Faqe manuali (e kompresuar)</comment>
+  <comment xml:lang="sr">страница упутства (запакована)</comment>
+  <comment xml:lang="sv">manualsida (komprimerad)</comment>
+  <comment xml:lang="tr">kılavuz dosyası (sıkıştırılmış)</comment>
+  <comment xml:lang="uk">сторінка посібника (стиснена)</comment>
+  <comment xml:lang="vi">trang hướng dẫn (đã nén)</comment>
+  <comment xml:lang="zh-CN">手册页（压缩）</comment>
+  <comment xml:lang="zh-TW">手冊頁面 (壓縮版)</comment>
+  <generic-icon name="text-x-generic"/>
+</mime-type>

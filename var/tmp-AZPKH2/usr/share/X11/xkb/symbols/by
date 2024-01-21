@@ -1,0 +1,51 @@
+// based on
+// belarusian standard keyboard 
+// Alexander Mikhailian <mikhailian@altern.org>
+// Reworked to use winkeys by default and russian keymap as base by Paul Lubetsky <vegeek@gmail.com>
+// Added third level with russian symbols
+// See freedesktop.org bug #23604
+
+default  partial alphanumeric_keys
+xkb_symbols "basic" {
+	include "ru(winkeys)"
+	name[Group1]= "Belarusian";
+
+	key	<AD09> {	[	Byelorussian_shortu,	Byelorussian_SHORTU	]	};
+	key	<AD12> {	[	apostrophe,	apostrophe	]	};
+	key	<AB05> {	[	Ukrainian_i,	Ukrainian_I	]	};
+};
+
+partial alphanumeric_keys
+xkb_symbols "legacy" {
+	include "by(basic)"
+	name[Group1]= "Belarusian (legacy)";
+
+	key <AE03> {        [               3,      numbersign      ]       };
+	key <AE04> {        [               4,        asterisk      ]       };
+	key <AE05> {        [               5,           colon      ]       };
+	key <AE06> {        [               6,           comma      ]       };
+	key <AE07> {        [               7,          period      ]       };
+	key <AE08> {        [               8,       semicolon      ]       };
+	key <AB10> {        [           slash,        question      ]       };
+	key <BKSL> {        [       backslash,             bar      ]       };
+};
+
+// based on a keyboard map from an 'xkb/symbols/iso3335-3' file
+
+partial alphanumeric_keys
+xkb_symbols "latin" {
+	include "latin"
+	name[Group1]= "Belarusian (Latin)";
+
+	key <AD02> {        [    w,    W,    scaron,    Scaron    ]       };
+	key <AD07> {        [    u,    U,    ubreve,    Ubreve    ]       };
+	key <AC02> {        [    s,    S,    sacute,    Sacute    ]       };
+	key <AC09> {        [    l,    L,    lstroke,   Lstroke   ]       };
+	key <AB01> {        [    z,    Z,    zacute,    Zacute    ]       };
+	key <AB02> {        [    x,    X,    zcaron,    Zcaron    ]       };
+	key <AB03> {        [    c,    C,    cacute,    Cacute    ]       };
+	key <AB04> {        [    v,    V,    ccaron,    Ccaron    ]       };
+	key <AB06> {        [    n,    N,    nacute,    Nacute    ]       };
+
+	include "level3(ralt_switch)"
+};

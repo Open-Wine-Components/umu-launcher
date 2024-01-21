@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-shared-library-la">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>libtool shared library</comment>
+  <comment xml:lang="af">libtool- gedeelde biblioteek</comment>
+  <comment xml:lang="ar">مكتبة libtool المشتركة</comment>
+  <comment xml:lang="be-Latn">supolnaja biblijateka libtool</comment>
+  <comment xml:lang="bg">Споделена библиотека — libtool</comment>
+  <comment xml:lang="ca">biblioteca compartida libtool</comment>
+  <comment xml:lang="cs">sdílená knihovna libtool</comment>
+  <comment xml:lang="da">libtool delt bibliotek</comment>
+  <comment xml:lang="de">Gemeinsame libtool-Bibliothek</comment>
+  <comment xml:lang="el">Κοινόχρηστη βιβλιοθήκη libtool</comment>
+  <comment xml:lang="en-GB">libtool shared library</comment>
+  <comment xml:lang="es">biblioteca compartida de libtool</comment>
+  <comment xml:lang="eu">libtool partekatutako liburutegia</comment>
+  <comment xml:lang="fi">jaettu libtool-kirjasto</comment>
+  <comment xml:lang="fo">libtool felagssavn</comment>
+  <comment xml:lang="fr">bibliothèque partagée libtool</comment>
+  <comment xml:lang="fur">librarie condividude libtool</comment>
+  <comment xml:lang="ga">comhleabharlann libtool</comment>
+  <comment xml:lang="gl">biblioteca compartida de libtool</comment>
+  <comment xml:lang="he">ספרייה משותפת של libtool</comment>
+  <comment xml:lang="hr">libtool dijeljena biblioteka</comment>
+  <comment xml:lang="hu">libtool osztott programkönyvtár</comment>
+  <comment xml:lang="ia">Bibliotheca commun Libtool</comment>
+  <comment xml:lang="id">pustaka bersama libtool</comment>
+  <comment xml:lang="it">Libreria condivisa libtool</comment>
+  <comment xml:lang="ja">libtool 共有ライブラリ</comment>
+  <comment xml:lang="kk">libtool ортақ жинағы</comment>
+  <comment xml:lang="ko">libtool 공유 라이브러리</comment>
+  <comment xml:lang="lt">libtool bendroji biblioteka</comment>
+  <comment xml:lang="lv">libtool koplietotā bibliotēka</comment>
+  <comment xml:lang="nb">libtool delt bibliotek</comment>
+  <comment xml:lang="nl">gedeelde libtool-bibliotheek</comment>
+  <comment xml:lang="nn">libtool delt bibliotek</comment>
+  <comment xml:lang="oc">bibliotèca partejada libtool</comment>
+  <comment xml:lang="pl">Biblioteka współdzielona libtool</comment>
+  <comment xml:lang="pt">biblioteca partilhada libtool</comment>
+  <comment xml:lang="pt-BR">Biblioteca compartilhada libtool</comment>
+  <comment xml:lang="ro">bibliotecă partajată libtool</comment>
+  <comment xml:lang="ru">Разделяемая библиотека libtool</comment>
+  <comment xml:lang="sk">Zdieľaná knižnica libtool</comment>
+  <comment xml:lang="sl">Souporabna knjižnica libtool</comment>
+  <comment xml:lang="sq">Librari e përbashkët libtool</comment>
+  <comment xml:lang="sr">дељена библиотека библ-алата</comment>
+  <comment xml:lang="sv">delat libtool-bibliotek</comment>
+  <comment xml:lang="tr">libtool paylaşımlı kitaplığı</comment>
+  <comment xml:lang="uk">спільна бібліотека libtool</comment>
+  <comment xml:lang="vi">thư viện dùng chung libtool</comment>
+  <comment xml:lang="zh-CN">libtool 共享库</comment>
+  <comment xml:lang="zh-TW">libtool 共享函式庫</comment>
+  <sub-class-of type="text/plain"/>
+  <generic-icon name="text-x-script"/>
+  <glob pattern="*.la"/>
+</mime-type>

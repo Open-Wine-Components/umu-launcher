@@ -1,0 +1,165 @@
+# From org.gnome.desktop.background.gschema.xml.in
+# [org.gnome.desktop.background]
+# Disabled as we don't want to migrate the default background
+# settings as we can't convert the picture filename
+
+# From org.gnome.desktop-media-handling.gschema.xml.in
+[org.gnome.desktop.media-handling]
+automount = /apps/nautilus/preferences/media_automount
+automount-open = /apps/nautilus/preferences/media_automount_open
+autorun-never = /apps/nautilus/preferences/media_autorun_never
+autorun-x-content-start-app = /apps/nautilus/preferences/media_autorun_x_content_start_app
+autorun-x-content-ignore = /apps/nautilus/preferences/media_autorun_x_content_ignore
+autorun-x-content-open-folder = /apps/nautilus/preferences/media_autorun_x_content_open_folder
+
+# From org.gnome.desktop.default-applications.gschema.xml
+[org.gnome.desktop.default-applications.office.calendar]
+exec = /desktop/gnome/applications/calendar/exec
+needs-term = /desktop/gnome/applications/calendar/needs_term
+
+[org.gnome.desktop.default-applications.office.tasks]
+exec = /desktop/gnome/applications/tasks/exec
+needs-term = /desktop/gnome/applications/tasks/needs_term
+
+[org.gnome.desktop.default-applications.terminal]
+exec = /desktop/gnome/applications/terminal/exec
+exec-arg = /desktop/gnome/applications/terminal/exec_arg
+
+# From org.gnome.desktop.interface.gschema.xml
+[org.gnome.desktop.interface]
+toolkit-accessibility = /desktop/gnome/interface/accessibility
+enable-animations = /desktop/gnome/interface/enable_animations
+# Disabled, as we want users to use the new default:
+# https://bugzilla.gnome.org/show_bug.cgi?id=647039
+#menus-have-tearoff = /desktop/gnome/interface/menus_have_tearoff
+#can-change-accels = /desktop/gnome/interface/can_change_accels
+#toolbar-style = /desktop/gnome/interface/toolbar_style
+#menubar-detachable = /desktop/gnome/interface/menubar_detachable
+#toolbar-detachable = /desktop/gnome/interface/toolbar_detachable
+#toolbar-icons-size = /desktop/gnome/interface/toolbar_icons_size
+# Disabled, as we want users to use the new default:
+# https://bugzilla.gnome.org/show_bug.cgi?id=634639
+# cursor-blink = /desktop/gnome/interface/cursor_blink
+cursor-blink-time = /desktop/gnome/interface/cursor_blink_time
+# Disabled as we want users to use the new theme by default
+#icon-theme = /desktop/gnome/interface/icon_theme
+#gtk-theme = /desktop/gnome/interface/gtk_theme
+#cursor-theme = /desktop/gnome/peripherals/mouse/cursor_theme
+gtk-key-theme = /desktop/gnome/interface/gtk_key_theme
+# Disabled as we want users to use the new theme by default
+#font-name = /desktop/gnome/interface/font_name
+gtk-im-preedit-style = /desktop/gnome/interface/gtk-im-preedit-style
+gtk-im-status-style = /desktop/gnome/interface/gtk-im-status-style
+gtk-im-module = /desktop/gnome/interface/gtk-im-module
+document-font-name = /desktop/gnome/interface/document_font_name
+monospace-font-name = /desktop/gnome/interface/monospace_font_name
+menubar-accel = /desktop/gnome/interface/menubar_accel
+cursor-size = /desktop/gnome/peripherals/mouse/cursor_size
+gtk-color-palette = /desktop/gnome/gtk-color-palette
+# Disabled as we want users to use the default new theme colors
+#gtk-color-scheme = /desktop/gnome/interface/gtk_color_scheme
+
+# From org.gnome.desktop.lockdown.gschema.xml
+[org.gnome.desktop.lockdown]
+disable-command-line = /desktop/gnome/lockdown/disable_command_line
+disable-save-to-disk = /desktop/gnome/lockdown/disable_save_to_disk
+disable-printing = /desktop/gnome/lockdown/disable_printing
+disable-print-setup = /desktop/gnome/lockdown/disable_print_setup
+disable-user-switching = /desktop/gnome/lockdown/disable_user_switching
+disable-lock-screen = /desktop/gnome/lockdown/disable_lock_screen
+disable-application-handlers = /desktop/gnome/lockdown/disable_application_handlers
+disable-log-out = /apps/panel/global/disable_log_out
+
+# From org.gnome.system.proxy.gschema.xml
+[org.gnome.system.proxy]
+mode = /system/proxy/mode
+autoconfig-url = /system/proxy/autoconfig_url
+ignore-hosts = /system/http_proxy/ignore_hosts
+use-same-proxy = /system/http_proxy/use_same_proxy
+
+[org.gnome.system.proxy.http]
+enabled = /system/http_proxy/use_http_proxy
+host = /system/http_proxy/host
+port = /system/http_proxy/port
+use-authentication = /system/http_proxy/use_authentication
+authentication-user = /system/http_proxy/authentication_user
+authentication-password = /system/http_proxy/authentication_password
+
+[org.gnome.system.proxy.https]
+host = /system/proxy/secure_host
+port = /system/proxy/secure_port
+
+[org.gnome.system.proxy.ftp]
+host = /system/proxy/ftp_host
+port = /system/proxy/ftp_port
+
+[org.gnome.system.proxy.socks]
+host = /system/proxy/socks_host
+port = /system/proxy/socks_port
+
+# From org.gnome.desktop.thumbnail-cache.gschema.xml
+[org.gnome.desktop.thumbnail-cache]
+maximum-age = /desktop/gnome/thumbnail_cache/maximum_age
+maximum-size = /desktop/gnome/thumbnail_cache/maximum_size
+
+# From org.gnome.desktop.sound.gschema.xml
+[org.gnome.desktop.sound]
+event-sounds = /desktop/gnome/sound/event_sounds
+theme-name = /desktop/gnome/sound/theme_name
+input-feedback-sounds = /desktop/gnome/sound/input_feedback_sounds
+
+# From org.gnome.desktop.a11y.keyboard.gschema.xml
+[org.gnome.desktop.a11y.keyboard]
+enable = /desktop/gnome/accessibility/keyboard/enable
+feature-state-change-beep = /desktop/gnome/accessibility/keyboard/feature_state_change_beep
+timeout-enable = /desktop/gnome/accessibility/keyboard/timeout_enable
+disable-timeout = /desktop/gnome/accessibility/keyboard/timeout
+bouncekeys-enable = /desktop/gnome/accessibility/keyboard/bouncekeys_enable
+bouncekeys-delay = /desktop/gnome/accessibility/keyboard/bouncekeys_delay
+bouncekeys-beep-reject = /desktop/gnome/accessibility/keyboard/bouncekeys_beep_reject
+mousekeys-enable = /desktop/gnome/accessibility/keyboard/mousekeys_enable
+mousekeys-max-speed = /desktop/gnome/accessibility/keyboard/mousekeys_max_speed
+mousekeys-accel-time = /desktop/gnome/accessibility/keyboard/mousekeys_accel_time
+mousekeys-init-delay = /desktop/gnome/accessibility/keyboard/mousekeys_init_delay
+slowkeys-enable = /desktop/gnome/accessibility/keyboard/slowkeys_enable
+slowkeys-delay = /desktop/gnome/accessibility/keyboard/slowkeys_delay
+slowkeys-beep-press = /desktop/gnome/accessibility/keyboard/slowkeys_beep_press
+slowkeys-beep-accept = /desktop/gnome/accessibility/keyboard/slowkeys_beep_accept
+slowkeys-beep-reject = /desktop/gnome/accessibility/keyboard/slowkeys_beep_reject
+stickykeys-enable = /desktop/gnome/accessibility/keyboard/stickykeys_enable
+stickykeys-two-key-off = /desktop/gnome/accessibility/keyboard/stickykeys_two_key_off
+stickykeys-modifier-beep = /desktop/gnome/accessibility/keyboard/stickykeys_modifier_beep
+togglekeys-enable = /desktop/gnome/accessibility/keyboard/togglekeys_enable
+
+# From org.gnome.desktop.a11y.applications.gschema.xml
+[org.gnome.desktop.a11y.applications]
+screen-keyboard-enabled = /desktop/gnome/applications/at/screen_keyboard_enabled
+screen-magnifier-enabled = /desktop/gnome/applications/at/screen_magnifier_enabled
+screen-reader-enabled = /desktop/gnome/applications/at/screen_reader_enabled
+
+# From org.gnome.desktop.a11y.mouse
+[org.gnome.desktop.a11y.mouse]
+dwell-gesture-single = /desktop/gnome/accessibility/mouse/dwell_gesture_single
+dwell-gesture-double = /desktop/gnome/accessibility/mouse/dwell_gesture_double
+dwell-gesture-drag = /desktop/gnome/accessibility/mouse/dwell_gesture_drag
+dwell-gesture-secondary = /desktop/gnome/accessibility/mouse/dwell_gesture_secondary
+dwell-mode = /desktop/gnome/accessibility/mouse/dwell_mode
+dwell-time = /desktop/gnome/accessibility/mouse/dwell_time
+dwell-threshold = /desktop/gnome/accessibility/mouse/threshold
+click-type-window-visible = /desktop/gnome/accessibility/mouse/dwell_show_ctw
+dwell-click-enabled = /desktop/gnome/accessibility/mouse/dwell_enable
+secondary-click-enabled = /desktop/gnome/accessibility/mouse/delay_enable
+secondary-click-time = /desktop/gnome/accessibility/mouse/delay_time
+
+# From org.gnome.desktop.thumbnailers
+[org.gnome.desktop.thumbnailers]
+disable-all = /desktop/gnome/thumbnailers/disable_all
+
+# From org.gnome.desktop.peripherals.gschema.xml
+[org.gnome.desktop.peripherals.touchpad]
+tap-to-click = /desktop/gnome/peripherals/touchpad/tap_to_click
+speed = /desktop/gnome/peripherals/mouse/motion_acceleration
+
+[org.gnome.desktop.peripherals.mouse]
+left-handed = /desktop/gnome/peripherals/mouse/left_handed
+speed = /desktop/gnome/peripherals/mouse/motion_acceleration

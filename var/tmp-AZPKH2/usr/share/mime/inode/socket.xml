@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="inode/socket">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>socket</comment>
+  <comment xml:lang="af">sok</comment>
+  <comment xml:lang="ar">مقبس</comment>
+  <comment xml:lang="be-Latn">sokiet</comment>
+  <comment xml:lang="bg">Гнездо</comment>
+  <comment xml:lang="ca">sòcol</comment>
+  <comment xml:lang="cs">socket</comment>
+  <comment xml:lang="da">sokkel</comment>
+  <comment xml:lang="de">Socket</comment>
+  <comment xml:lang="el">Υποδοχή</comment>
+  <comment xml:lang="en-GB">socket</comment>
+  <comment xml:lang="eo">kontaktoskatolo</comment>
+  <comment xml:lang="es">socket</comment>
+  <comment xml:lang="eu">socketa</comment>
+  <comment xml:lang="fi">pistoke</comment>
+  <comment xml:lang="fo">sokkul</comment>
+  <comment xml:lang="fr">connecteur réseau</comment>
+  <comment xml:lang="fur">socket</comment>
+  <comment xml:lang="ga">soicéad</comment>
+  <comment xml:lang="gl">socket</comment>
+  <comment xml:lang="he">נקודת חיבור</comment>
+  <comment xml:lang="hr">Priključnica</comment>
+  <comment xml:lang="hu">illesztőpont</comment>
+  <comment xml:lang="ia">Socket</comment>
+  <comment xml:lang="id">soket</comment>
+  <comment xml:lang="it">Socket</comment>
+  <comment xml:lang="ja">ソケット</comment>
+  <comment xml:lang="kk">сокет</comment>
+  <comment xml:lang="ko">소켓</comment>
+  <comment xml:lang="lt">lizdas</comment>
+  <comment xml:lang="lv">sokets</comment>
+  <comment xml:lang="ms">Soket</comment>
+  <comment xml:lang="nb">plugg</comment>
+  <comment xml:lang="nl">socket</comment>
+  <comment xml:lang="nn">sokkel</comment>
+  <comment xml:lang="oc">connector ret</comment>
+  <comment xml:lang="pl">Gniazdo</comment>
+  <comment xml:lang="pt">tomada</comment>
+  <comment xml:lang="pt-BR">Socket</comment>
+  <comment xml:lang="ro">socket</comment>
+  <comment xml:lang="ru">Сокет</comment>
+  <comment xml:lang="sk">Soket</comment>
+  <comment xml:lang="sl">vtič</comment>
+  <comment xml:lang="sq">Socket</comment>
+  <comment xml:lang="sr">прикључница</comment>
+  <comment xml:lang="sv">uttag</comment>
+  <comment xml:lang="tr">soket</comment>
+  <comment xml:lang="uk">сокет</comment>
+  <comment xml:lang="vi">ổ cắm</comment>
+  <comment xml:lang="zh-CN">套接字</comment>
+  <comment xml:lang="zh-TW">socket</comment>
+</mime-type>

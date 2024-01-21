@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.calendar" path="/org/gnome/desktop/calendar/">
+    <key name="show-weekdate" type="b">
+      <default>false</default>
+      <summary>Show the week date in the calendar</summary>
+      <description>If true, display the ISO week date in the calendar.</description>
+    </key>
+  </schema>
+</schemalist>

@@ -1,0 +1,34 @@
+// based on a keyboard map from an 'xkb/symbols/de' file
+
+default
+xkb_symbols "basic" {
+
+    include "de(basic)"
+
+    name[Group1]="German (Austria)";
+};
+
+partial alphanumeric_keys
+xkb_symbols "nodeadkeys" {
+
+    include "de(nodeadkeys)"
+
+    name[Group1]="German (Austria, no dead keys)";
+};
+
+partial alphanumeric_keys
+xkb_symbols "mac" {
+
+    include "de(mac)"
+
+    name[Group1]= "German (Austria, Macintosh)";
+};
+
+partial alphanumeric_keys
+xkb_symbols "sundeadkeys" {
+
+    include "de(Sundeadkeys)"
+
+    name[Group1]="German (Austria, with Sun dead keys)";
+};
+

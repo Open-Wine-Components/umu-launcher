@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/htmlh">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>help page</comment>
+  <comment xml:lang="af">hulpbladsy</comment>
+  <comment xml:lang="ar">صفحة المساعدة</comment>
+  <comment xml:lang="az">yardım səhifəsi</comment>
+  <comment xml:lang="be-Latn">staronka dapamohi</comment>
+  <comment xml:lang="bg">Страница от помощта</comment>
+  <comment xml:lang="ca">pàgina d'ajuda</comment>
+  <comment xml:lang="cs">stránka nápovědy</comment>
+  <comment xml:lang="cy">tudalen gymorth</comment>
+  <comment xml:lang="da">hjælpeside</comment>
+  <comment xml:lang="de">Hilfeseite</comment>
+  <comment xml:lang="el">Σελίδα βοήθειας</comment>
+  <comment xml:lang="en-GB">help page</comment>
+  <comment xml:lang="eo">help-paĝo</comment>
+  <comment xml:lang="es">página de ayuda</comment>
+  <comment xml:lang="eu">laguntzako orria</comment>
+  <comment xml:lang="fi">ohjesivu</comment>
+  <comment xml:lang="fo">hjálparsíða</comment>
+  <comment xml:lang="fr">page d'aide</comment>
+  <comment xml:lang="fur">pagjine di jutori</comment>
+  <comment xml:lang="ga">leathanach cabhrach</comment>
+  <comment xml:lang="gl">páxina de axuda</comment>
+  <comment xml:lang="he">דף עזרה</comment>
+  <comment xml:lang="hr">Stranica pomoći</comment>
+  <comment xml:lang="hu">súgóoldal</comment>
+  <comment xml:lang="ia">Pagina de adjuta</comment>
+  <comment xml:lang="id">halaman bantuan</comment>
+  <comment xml:lang="it">Pagina di aiuto</comment>
+  <comment xml:lang="ja">ヘルプページ</comment>
+  <comment xml:lang="kk">анықтама парағы</comment>
+  <comment xml:lang="ko">도움말 페이지</comment>
+  <comment xml:lang="lt">žinyno puslapis</comment>
+  <comment xml:lang="lv">palīdzības lapa</comment>
+  <comment xml:lang="ms">Halaman bantuan</comment>
+  <comment xml:lang="nb">hjelpside</comment>
+  <comment xml:lang="nl">hulppagina</comment>
+  <comment xml:lang="nn">hjelpeside</comment>
+  <comment xml:lang="oc">pagina d'ajuda</comment>
+  <comment xml:lang="pl">Strona pomocy</comment>
+  <comment xml:lang="pt">página de ajuda</comment>
+  <comment xml:lang="pt-BR">Página de ajuda</comment>
+  <comment xml:lang="ro">pagină de ajutor</comment>
+  <comment xml:lang="ru">Страница справки</comment>
+  <comment xml:lang="sk">Stránka Pomocníka</comment>
+  <comment xml:lang="sl">stran pomoči</comment>
+  <comment xml:lang="sq">Faqe ndihme</comment>
+  <comment xml:lang="sr">страница помоћи</comment>
+  <comment xml:lang="sv">hjälpsida</comment>
+  <comment xml:lang="tr">yardım sayfası</comment>
+  <comment xml:lang="uk">сторінка довідки</comment>
+  <comment xml:lang="vi">trang trợ giúp</comment>
+  <comment xml:lang="zh-CN">帮助页面</comment>
+  <comment xml:lang="zh-TW">求助頁面</comment>
+  <sub-class-of type="text/plain"/>
+</mime-type>

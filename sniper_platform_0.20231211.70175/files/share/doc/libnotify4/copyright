@@ -1,0 +1,33 @@
+This package was debianized by Sebastien Bacher <seb128@debian.org> on
+Thu, 28 Jul 2005 15:26:46 +0200.
+
+It was downloaded from https://download.gnome.org/sources/libnotify/
+
+The libnotify library is under the following conditions:
+
+Copyright:
+    Copyright 2004-2006 Christian Hammond
+    Copyright 2006 John Palmieri
+    Copyright 2010 Christian Persch
+    Copyright 2004-2006 Mike Hearn <mike@navi.cx>
+    Copyright 2010 Red Hat, Inc
+
+License:
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+   MA  02110-1301  USA
+
+On Debian systems, the complete text of the GNU Lesser General
+Public License can be found in `/usr/share/common-licenses/LGPL-2.1'.

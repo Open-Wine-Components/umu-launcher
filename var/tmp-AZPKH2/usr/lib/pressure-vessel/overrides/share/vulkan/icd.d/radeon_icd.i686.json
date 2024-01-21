@@ -1,0 +1,8 @@
+{
+  "file_format_version" : "1.0.1",
+  "ICD" : {
+    "library_path" : "/usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu/vulkan/7/libvulkan_radeon.so",
+    "api_version" : "1.3.274",
+    "library_arch" : "32"
+  }
+}

@@ -1,0 +1,151 @@
+default  partial alphanumeric_keys
+xkb_symbols "basic" {
+    include "ara(basic)"
+    name[Group1]= "Arabic (Syria)";
+};
+
+partial alphanumeric_keys
+xkb_symbols "syc" {
+    name[Group1]= "Syriac";
+
+    key <TLDE> {  [  	0x100070F,	0x100032E,	Arabic_shadda		]     };
+    key <AE01> {  [  	1,		exclam,		0x1000701		]     };
+    key <AE02> {  [  	2,		0x100030A,	0x1000702		]     };
+    key <AE03> {  [  	3,		0x1000325,	0x1000703		]     };
+    key <AE04> {  [  	4,		0x1000749,	0x1000704		]     };
+    key <AE05> {  [  	5,		0x1002670,	0x1000705		]     };
+    key <AE06> {  [  	6,		0x1002671,	0x1000708		]     };
+    key <AE07> {  [  	7,		0x100070A,	0x1000709		]     };
+    key <AE08> {  [  	8,		0x10000BB,	0x100070B		]     };
+    key <AE09> {  [  	9,		parenright,	0x100070C		]     };
+    key <AE10> {  [  	0,		parenleft,	0x100070D		]     };
+    key <AE11> {  [  	minus,		0x10000AB,	0x100250C		]     };
+    key <AE12> {  [  	equal,		plus,		0x1002510		]     };
+
+    key <AD01> {  [  	0x1000714,	0x1000730,	Arabic_fatha		]     };
+    key <AD02> {  [  	0x1000728,	0x1000733,	Arabic_fathatan		]     };
+    key <AD03> {  [  	0x1000716,	0x1000736,	Arabic_damma		]     };
+    key <AD04> {  [  	0x1000729,	0x100073A,	Arabic_dammatan		]     };
+    key <AD05> {  [  	0x1000726,	0x100073D,	Arabic_madda_above	]     };
+    key <AD06> {  [  	0x100071C,	0x1000740,	Arabic_hamza_above	]     };
+    key <AD07> {  [  	0x1000725,	0x1000741,	0x1000747		]     };
+    key <AD08> {  [  	0x1000717,	0x1000308,	0x1000743		]     };
+    key <AD09> {  [  	0x100071E,	0x1000304,	0x1000745		]     };
+    key <AD10> {  [  	0x100071A,	0x1000307,	0x100032D		]     };
+    key <AD11> {  [  	0x1000713,	0x1000303				]     };
+    key <AD12> {  [  	0x1000715,	0x100074A				]     };
+    key <BKSL> {  [  	0x1000706,	colon					]     };
+
+    key <AC01> {  [  	0x100072B,	0x1000731,	Arabic_kasra		]     };
+    key <AC02> {  [  	0x1000723,	0x1000734,	Arabic_kasratan		]     };
+    key <AC03> {  [  	0x100071D,	0x1000737				]     };
+    key <AC04> {  [  	0x1000712,	0x100073B,	Arabic_hamza		]     };
+    key <AC05> {  [  	0x1000720,	0x100073E,	Arabic_hamza_below	]     };
+    key <AC06> {  [  	0x1000710,	0x1000711,	Arabic_superscript_alef	]     };
+    key <AC07> {  [  	0x100072C,	Arabic_tatweel,	0x1000748		]     };
+    key <AC08> {  [  	0x1000722,	0x1000324,	0x1000744		]     };
+    key <AC09> {  [  	0x1000721,	0x1000331,	0x1000746		]     };
+    key <AC10> {  [  	0x100071F,	0x1000323				]     };
+    key <AC11> {  [  	0x100071B,	0x1000330				]     };
+
+    key <AB01> {  [  	bracketright,	0x1000732,	Arabic_sukun		]     };
+    key <AB02> {  [  	bracketleft,	0x1000735				]     };
+    key <AB03> {  [  	0x1000724,	0x1000738,	0x100200D		]     };
+    key <AB04> {  [  	0x100072A,	0x100073C,	0x100200C		]     };
+    key <AB05> {  [  	0x1000727,	0x100073F,	0x100200E		]     };
+    key <AB06> {  [  	0x1000700,	0x1000739,	0x100200F		]     };
+    key <AB07> {  [  	0x100002E,	0x1000742				]     };
+    key <AB08> {  [  	0x1000718,	Arabic_comma				]     };
+    key <AB09> {  [  	0x1000719,	Arabic_semicolon			]     };
+    key <AB10> {  [  	0x1000707,	Arabic_question_mark			]     };
+
+    // Space plus zero-width non-joiner:
+    include "nbsp(zwnj2)"
+
+    modifier_map Shift  { Shift_L, Shift_R };
+    modifier_map Lock   { Caps_Lock };
+    modifier_map Control{ Control_L, Control_R };
+    modifier_map Mod1   { Alt_L, Alt_R };
+    modifier_map Mod2   { Mode_switch };
+};
+
+partial alphanumeric_keys
+xkb_symbols "syc_phonetic" {
+    name[Group1]= "Syriac (phonetic)";
+
+    key <TLDE> {  [  	0x100070F,	0x100032E,	Arabic_shadda		]     };
+    key <AE01> {  [  	1,		exclam,		0x1000701		]     };
+    key <AE02> {  [  	2,		0x100030A,	0x1000702		]     };
+    key <AE03> {  [  	3,		0x1000325,	0x1000703		]     };
+    key <AE04> {  [  	4,		0x1000749,	0x1000704		]     };
+    key <AE05> {  [  	5,		0x1002670,	0x1000705		]     };
+    key <AE06> {  [  	6,		0x1002671,	0x1000708		]     };
+    key <AE07> {  [  	7,		0x100070A,	0x1000709		]     };
+    key <AE08> {  [  	8,		0x10000BB,	0x100070B		]     };
+    key <AE09> {  [  	9,		parenright,	0x100070C		]     };
+    key <AE10> {  [  	0,		parenleft,	0x100070D		]     };
+    key <AE11> {  [  	minus,		0x10000AB,	0x100250C		]     };
+    key <AE12> {  [  	equal,		plus,		0x1002510		]     };
+
+    key <AD01> {  [  	0x1000729,	0x1000730,	Arabic_fatha		]     };
+    key <AD02> {  [  	0x1000718,	0x1000733,	Arabic_fathatan		]     };
+    key <AD03> {  [  	0x1000716,	0x1000736,	Arabic_damma		]     };
+    key <AD04> {  [  	0x100072A,	0x100073A,	Arabic_dammatan		]     };
+    key <AD05> {  [  	0x100072C,	0x100073D,	Arabic_madda_above	]     };
+    key <AD06> {  [  	0x100071D,	0x1000740,	Arabic_hamza_above	]     };
+    key <AD07> {  [  	0x100071C,	0x1000741,	0x1000747		]     };
+    key <AD08> {  [  	0x1000725,	0x1000308,	0x1000743		]     };
+    key <AD09> {  [  	0x1000727,	0x1000304,	0x1000745		]     };
+    key <AD10> {  [  	0x1000726,	0x1000307,	0x100032D		]     };
+    key <AD11> {  [  	bracketright,	0x1000303				]     };
+    key <AD12> {  [  	bracketleft,	0x100074A				]     };
+    key <BKSL> {  [  	0x1000706,	colon					]     };
+
+    key <AC01> {  [  	0x1000710,	0x1000731,	Arabic_kasra		]     };
+    key <AC02> {  [  	0x1000723,	0x1000734,	Arabic_kasratan		]     };
+    key <AC03> {  [  	0x1000715,	0x1000737				]     };
+    key <AC04> {  [  	0x1000714,	0x100073B,	Arabic_hamza		]     };
+    key <AC05> {  [  	0x1000713,	0x100073E,	Arabic_hamza_below	]     };
+    key <AC06> {  [  	0x1000717,	0x1000711,	Arabic_superscript_alef	]     };
+    key <AC07> {  [  	0x100071B,	Arabic_tatweel,	0x1000748		]     };
+    key <AC08> {  [  	0x100071F,	0x1000324,	0x1000744		]     };
+    key <AC09> {  [  	0x1000720,	0x1000331,	0x1000746		]     };
+    key <AC10> {  [  	0x100071A,	0x1000323				]     };
+    key <AC11> {  [  	0x100071E,	0x1000330				]     };
+
+    key <SPCE> {  [  	space,		0x100200c				]     };
+    key <AB01> {  [  	0x1000719,	0x1000732,	Arabic_sukun		]     };
+    key <AB02> {  [  	0x1000728,	0x1000735				]     };
+    key <AB03> {  [  	0x1000724,	0x1000738,	0x100200D		]     };
+    key <AB04> {  [  	0x100072B,	0x100073C,	0x100200C		]     };
+    key <AB05> {  [  	0x1000712,	0x100073F,	0x100200E		]     };
+    key <AB06> {  [  	0x1000722,	0x1000739,	0x100200F		]     };
+    key <AB07> {  [  	0x1000721,	0x1000742				]     };
+    key <AB08> {  [  	0x1000700,	Arabic_comma				]     };
+    key <AB09> {  [  	0x100002E,	Arabic_semicolon			]     };
+    key <AB10> {  [  	0x1000707,	Arabic_question_mark			]     };
+
+    modifier_map Shift  { Shift_L, Shift_R };
+    modifier_map Lock   { Caps_Lock };
+    modifier_map Control{ Control_L, Control_R };
+    modifier_map Mod1   { Alt_L, Alt_R };
+    modifier_map Mod2   { Mode_switch };
+};
+
+partial alphanumeric_keys
+xkb_symbols "ku" {
+    include "tr(ku)"
+    name[Group1]= "Kurdish (Syria, Latin Q)";
+};
+
+partial alphanumeric_keys
+xkb_symbols "ku_f" {
+    include "tr(ku_f)"
+    name[Group1]= "Kurdish (Syria, F)";
+};
+
+partial alphanumeric_keys
+xkb_symbols "ku_alt" {
+    include "tr(ku_alt)"
+    name[Group1]= "Kurdish (Syria, Latin Alt-Q)";
+};

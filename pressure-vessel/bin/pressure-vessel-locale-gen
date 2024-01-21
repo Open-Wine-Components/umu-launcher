@@ -1,0 +1,381 @@
+#!/bin/sh
+
+# Copyright © 2019 Collabora Ltd.
+#
+# SPDX-License-Identifier: MIT
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+set -e
+set -u
+
+me="$0"
+me="$(readlink -f "$0")"
+here="${me%/*}"
+me="${me##*/}"
+
+opt_output_dir=.
+opt_verbose=
+
+# Look for try-setlocale helper executable next to this script
+PATH="${here}:${PATH}"
+
+LOCALE_ALIAS="/usr/share/locale/locale.alias"
+
+if ! [ -f "$LOCALE_ALIAS" ]; then
+    LOCALE_ALIAS=
+fi
+
+# We currently only look for I18NDIR data in /usr/share/i18n, the
+# glibc default path.
+#
+# Instead of just /usr/share/i18n/SUPPORTED, we also try to parse
+# /etc/locale.gen because in some distributions, e.g. Arch Linux,
+# /usr/share/i18n/SUPPORTED might not be present.
+#
+# If we discover that some distros use a different default, then we
+# should enhance this script to iterate through a search path.
+#
+# Please keep this in sync with srt_system_info_get_locale_issues().
+SUPPORTED="/etc/locale.gen /usr/share/i18n/SUPPORTED"
+
+log () {
+    printf '%s\n' "$me: $*" >&2
+}
+
+verbose () {
+    if [ -n "$opt_verbose" ]; then
+        log "$@"
+    fi
+}
+
+# Return nonzero if the given locale cannot be generated normally.
+can_generate () {
+    local locale="$1"
+
+    case "$locale" in
+        (C|C.UTF-8|C.utf8|POSIX|"")
+            return 1
+            ;;
+
+        (*..*|*/*)
+            log "Avoiding potential path traversal in '$locale'"
+            return_ex_config=1
+            return 1
+            ;;
+
+        (*)
+            return 0
+            ;;
+    esac
+}
+
+generate_locale () {
+    local at_modifier=
+    local codeset=
+    local language=
+    local list=
+    local locale="$1"
+    local modifier=
+    local supported_codeset=
+    local territory=
+    local underscore_territory=
+    local without_codeset=
+    local status=
+
+    language="$locale"
+
+    case "$language" in
+        (*@*)
+            modifier="${language##*@}"
+            at_modifier="@${modifier}"
+            language="${language%@*}"
+            ;;
+    esac
+
+    case "$language" in
+        (*.*)
+            codeset="${language##*.}"
+            language="${language%.*}"
+            ;;
+    esac
+
+    case "$language" in
+        (*_*)
+            territory="${language##*_}"
+            underscore_territory="_${territory}"
+            language="${language%_*}"
+            ;;
+    esac
+
+    # Speed up locale generation a bit by making e.g. en_GB.utf8 a
+    # symlink to en_GB.UTF-8
+    if [ "${codeset}" = 'utf8' ]; then
+        codeset="UTF-8"
+        locale="${language}${underscore_territory}.UTF-8${at_modifier}"
+        ln -fns "$locale" \
+            "${opt_output_dir}/${language}${underscore_territory}.utf8${at_modifier}"
+
+        if [ -d "$opt_output_dir/$locale" ]; then
+            return 0
+        fi
+    fi
+
+    if [ -n "$codeset" ]; then
+        # We don't really need to parse $SUPPORTED to find out that
+        # en_US.UTF-8 is a UTF-8 locale. Do nothing. In particular,
+        # this works on distributions like Arch Linux that do not
+        # normally install $SUPPORTED.
+        :
+    else
+        for list in $SUPPORTED; do
+            if supported_codeset="$(
+                while read -r supported codeset; do
+                    case "$supported" in
+                        (\#*)
+                            continue
+                            ;;
+                    esac
+
+                    if [ "$supported" = "$locale" ]; then
+                        printf '%s' "$codeset"
+                    fi
+                done < "$list"
+            )"; then
+                if [ -n "$supported_codeset" ]; then
+                    break
+                fi
+            else
+                supported_codeset=
+                verbose "Unable to read $list"
+            fi
+        done
+
+        if [ -n "$supported_codeset" ]; then
+            codeset="$supported_codeset"
+        else
+            log "Unable to find $locale in $SUPPORTED"
+            log "Assuming UTF-8 and hoping that works..."
+            codeset="UTF-8"
+        fi
+    fi
+
+    without_codeset="${language}${underscore_territory}${at_modifier}"
+
+    if localedef \
+        ${LOCALE_ALIAS+-A "${LOCALE_ALIAS}"} \
+        --no-archive \
+        -c \
+        -f "$codeset" \
+        -i "$without_codeset" \
+        "${opt_output_dir}/${locale}" \
+    ; then
+        log "Generated locale $locale successfully"
+    else
+        status="$?"
+
+        if [ "$status" = 1 ]; then
+            log "Generated locale $locale, with warnings"
+        else
+            log "Unable to generate locale $locale: $status"
+        fi
+    fi
+
+    if ! LOCPATH="${opt_output_dir}" pressure-vessel-try-setlocale "$locale"; then
+        log "Warning: $locale was generated but does not appear to work!"
+    fi
+}
+
+usage () {
+    local code="$1"
+    shift
+
+    if [ "$code" -ne 0 ]; then
+        exec >&2
+    fi
+
+    echo "Usage: $me [OPTIONS] [LOCALE...]"
+    echo
+    echo "Generate the locales required by the locale environment"
+    echo "variables, and any extra locales from the command line,"
+    echo "in the current working directory."
+    echo
+    echo "Options:"
+    echo "--output-dir DIR, -o DIR"
+    echo "              Create locales in the given directory [default: .]"
+    echo "--verbose     Be more verbose"
+    echo
+    echo "Arguments:"
+    echo "LOCALE        Zero or more locales in POSIX format,"
+    echo "              such as en_US.UTF-8, be_BY@latin"
+    exit "$code"
+}
+
+getopt_temp="help"
+getopt_temp="${getopt_temp},output-dir:,output-directory:"
+getopt_temp="${getopt_temp},verbose"
+
+getopt_temp="$(getopt -o 'o:' --long "$getopt_temp" -n "$me" -- "$@")"
+eval "set -- $getopt_temp"
+unset getopt_temp
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        (-o | --output-dir | --output-directory)
+            opt_output_dir="$2"
+            shift 2
+            ;;
+
+        (--help)
+            usage 0
+            # not reached
+            ;;
+
+        (--verbose)
+            opt_verbose=yes
+            shift
+            ;;
+
+        (--)
+            shift
+            break
+            ;;
+
+        (-*)
+            log "Unknown option: $1"
+            usage 64    # EX_USAGE from sysexits.h
+            # not reached
+            ;;
+
+        (*)
+            break
+            ;;
+    esac
+done
+
+one_missing=
+
+for var in \
+    LC_ADDRESS \
+    LC_CTYPE \
+    LC_COLLATE \
+    LC_IDENTIFICATION \
+    LC_MEASUREMENT \
+    LC_MESSAGES \
+    LC_MONETARY \
+    LC_NUMERIC \
+    LC_NAME \
+    LC_PAPER \
+    LC_TELEPHONE \
+    LC_TIME \
+    \
+    HOST_LC_ALL \
+    LANG \
+    LC_ALL \
+; do
+    locale="$(eval "printf '%s' \${${var}-}")"
+
+    if [ -z "$locale" ] || ! can_generate "$locale"; then
+        continue
+    fi
+
+    if ! pressure-vessel-try-setlocale "$locale"; then
+        verbose "Missing locale $locale (found in \$$var)"
+        one_missing=yes
+        break
+    fi
+done
+
+if [ -z "$one_missing" ]; then
+    for locale in en_US.UTF-8 "$@"; do
+        if ! can_generate "$locale" ; then
+            continue
+        fi
+
+        if ! pressure-vessel-try-setlocale "$locale"; then
+            verbose "Missing locale $locale"
+            one_missing=yes
+            break
+        fi
+    done
+fi
+
+if [ -z "$one_missing" ]; then
+    verbose "No locales need to be generated"
+    exit 0
+fi
+
+# We have to generate all the locales we want, not just the ones that
+# were missing, because they might have been in a locale archive,
+# and setting LOCPATH disables use of the locale archive.
+
+return_ex_cantcreat=
+return_ex_config=
+
+for var in \
+    LC_ADDRESS \
+    LC_CTYPE \
+    LC_COLLATE \
+    LC_IDENTIFICATION \
+    LC_MEASUREMENT \
+    LC_MESSAGES \
+    LC_MONETARY \
+    LC_NUMERIC \
+    LC_NAME \
+    LC_PAPER \
+    LC_TELEPHONE \
+    LC_TIME \
+    \
+    HOST_LC_ALL \
+    LANG \
+    LC_ALL \
+; do
+    locale="$(eval "printf '%s' \${${var}-}")"
+
+    if [ -z "$locale" ] || ! can_generate "$locale" ; then
+        continue
+    fi
+
+    if ! [ -d "$opt_output_dir/$locale" ]; then
+        verbose "Generating locale $locale..."
+        generate_locale "$locale" || return_ex_cantcreat=yes
+    fi
+done
+
+for locale in en_US.UTF-8 "$@"; do
+    if ! can_generate "$locale" ; then
+        continue
+    fi
+
+    if ! [ -d "$opt_output_dir/$locale" ]; then
+        verbose "Generating locale $locale..."
+        generate_locale "$locale" || return_ex_cantcreat=yes
+    fi
+done
+
+if [ -n "$return_ex_config" ]; then
+    exit 78     # EX_CONFIG, "configuration error", from sysexits.h
+elif [ -n "$return_ex_cantcreat" ]; then
+    exit 73     # EX_CANTCREATE, "can't create (user) output file"
+else
+    exit 72     # EX_OSFILE, "OS file missing"
+fi
+
+# vim:set sw=4 sts=4 et:

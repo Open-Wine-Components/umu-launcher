@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="message/delivery-status">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>mail delivery report</comment>
+  <comment xml:lang="af">posafleweringverslag</comment>
+  <comment xml:lang="ar">تقرير تسليم البريد</comment>
+  <comment xml:lang="az">poçt yollama raportu</comment>
+  <comment xml:lang="be-Latn">rapart ab dastaŭcy pošty</comment>
+  <comment xml:lang="bg">Отчет за пристигналата поща</comment>
+  <comment xml:lang="ca">informe de lliurament de correu</comment>
+  <comment xml:lang="cs">zpráva o doručení pošty</comment>
+  <comment xml:lang="cy">Adroddiad trosgludo post</comment>
+  <comment xml:lang="da">postleveringsrapport</comment>
+  <comment xml:lang="de">E-Mail-Zustellungsbericht</comment>
+  <comment xml:lang="el">Αναφορά παράδοσης μηνύματος</comment>
+  <comment xml:lang="en-GB">mail delivery report</comment>
+  <comment xml:lang="eo">raporto pri transdono de retpoŝto</comment>
+  <comment xml:lang="es">informe de entrega de correo</comment>
+  <comment xml:lang="eu">posta banaketako txostena</comment>
+  <comment xml:lang="fi">viestin jakeluilmoitus</comment>
+  <comment xml:lang="fo">post útberingarfrásøgn</comment>
+  <comment xml:lang="fr">rapport de livraison de courriels</comment>
+  <comment xml:lang="fur">rapuart di consegne pueste</comment>
+  <comment xml:lang="ga">tuairisc sheachadta r-phoist</comment>
+  <comment xml:lang="gl">informe de entrega de correo</comment>
+  <comment xml:lang="he">דוח העברת דואר</comment>
+  <comment xml:lang="hr">Izvještaj dostave pošte</comment>
+  <comment xml:lang="hu">jelentés levélkézbesítésről</comment>
+  <comment xml:lang="ia">Reporto de livration de e-mail</comment>
+  <comment xml:lang="id">laporan pengantaran surat</comment>
+  <comment xml:lang="it">Rapporto di consegna posta</comment>
+  <comment xml:lang="ja">メール配送ポート</comment>
+  <comment xml:lang="kk">пошта жеткізілгені туралы отчет</comment>
+  <comment xml:lang="ko">메일 배달 보고서</comment>
+  <comment xml:lang="lt">pašto pristatymo ataskaita</comment>
+  <comment xml:lang="lv">pasta piegādes atskaite</comment>
+  <comment xml:lang="ms">Laporan penghantaran mel</comment>
+  <comment xml:lang="nb">e-postleveranserapport</comment>
+  <comment xml:lang="nl">e-mail-bezorgingsbericht</comment>
+  <comment xml:lang="nn">e-post-leveringsrapport</comment>
+  <comment xml:lang="oc">rapòrt de liurason de corrièrs electronics</comment>
+  <comment xml:lang="pl">Raport z dostarczenia poczty</comment>
+  <comment xml:lang="pt">relatório de entrega de email</comment>
+  <comment xml:lang="pt-BR">Relatório de entrega de correspondência</comment>
+  <comment xml:lang="ro">raport de trimitere email</comment>
+  <comment xml:lang="ru">Отчёт о доставке сообщения</comment>
+  <comment xml:lang="sk">Správa o doručení pošty</comment>
+  <comment xml:lang="sl">poročilo dostave pošte</comment>
+  <comment xml:lang="sq">Raport mbi dorëzimin e mesazhit</comment>
+  <comment xml:lang="sr">извештај доставе поруке</comment>
+  <comment xml:lang="sv">e-postleveransrapport</comment>
+  <comment xml:lang="tr">posta iletim raporu</comment>
+  <comment xml:lang="uk">звіт про доставку пошти</comment>
+  <comment xml:lang="vi">thông báo phát thư</comment>
+  <comment xml:lang="zh-CN">邮件投递报告</comment>
+  <comment xml:lang="zh-TW">郵件寄送回報</comment>
+  <generic-icon name="text-x-generic"/>
+  <sub-class-of type="text/plain"/>
+</mime-type>

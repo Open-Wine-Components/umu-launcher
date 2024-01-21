@@ -1,0 +1,72 @@
+#!/bin/sh
+# Copyright 2021 Collabora Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+# (See debian/copyright)
+
+set -eu
+me="$(readlink -f "$0")"
+here="${me%/*}"
+me="${me##*/}"
+
+usage () {
+    local code="$1"
+    shift
+
+    if [ "$code" -ne 0 ]; then
+        exec >&2
+    fi
+
+    echo "$me [options]"
+    echo
+    echo "Stub version of the canonical pulseaudio executable."
+    echo
+    echo "COMMANDS:"
+    echo "  --help        Show this help"
+    echo "  --check       Check for a running daemon (only returns exit code)"
+    exit "$code"
+}
+
+getopt_temp="help"
+getopt_temp="${getopt_temp},check"
+
+getopt_temp="$(getopt -o '' --long "$getopt_temp" -n "$me" -- "$@")"
+eval "set -- $getopt_temp"
+unset getopt_temp
+
+check=
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        (--help)
+            usage 0
+            # not reached
+            ;;
+
+        (--check)
+            check=yes
+            shift
+            ;;
+
+        (--)
+            shift
+            break
+            ;;
+
+        (-*)
+            usage 1
+            # not reached
+            ;;
+
+        (*)
+            break
+            ;;
+    esac
+done
+
+# This is a simplified check. If the PULSE_SERVER environment variable
+# is set, we assume that a pulseaudio daemon is available and running
+if [ -n "$check" ] && [ -n "${PULSE_SERVER-}" ]; then
+    exit 0
+fi
+
+usage 1

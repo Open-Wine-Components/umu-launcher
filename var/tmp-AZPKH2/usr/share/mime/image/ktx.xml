@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="image/ktx">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Khronos texture image</comment>
+  <comment xml:lang="af">Khronos-tekstuurbeeld</comment>
+  <comment xml:lang="bg">Изображение — текстура за Khronos</comment>
+  <comment xml:lang="ca">imatge de textura de Khronos</comment>
+  <comment xml:lang="cs">obrázek s texturou Khronos</comment>
+  <comment xml:lang="da">Khronos-strukturbillede</comment>
+  <comment xml:lang="de">Khronos-Texturbild</comment>
+  <comment xml:lang="en-GB">Khronos texture image</comment>
+  <comment xml:lang="es">imagen de textura de Khronos</comment>
+  <comment xml:lang="eu">Khronos testura irudia</comment>
+  <comment xml:lang="fi">Khronos tekstuurikuva</comment>
+  <comment xml:lang="fr">image de texture Khronos</comment>
+  <comment xml:lang="fur">imagjin di struture/texture Khronos</comment>
+  <comment xml:lang="ga">íomhá uigeachta Khronos</comment>
+  <comment xml:lang="hr">Khronos tekstura slika</comment>
+  <comment xml:lang="hu">Khronos textúra kép</comment>
+  <comment xml:lang="id">citra tekstur Khronos</comment>
+  <comment xml:lang="it">Immagine texture Khronos</comment>
+  <comment xml:lang="kk">Khronos текстура суреті</comment>
+  <comment xml:lang="ko">크로노스 텍스처 파일</comment>
+  <comment xml:lang="pl">Obraz tekstury Khronos</comment>
+  <comment xml:lang="pt-BR">Imagem de textura do Khronos</comment>
+  <comment xml:lang="ru">Изображение текстуры Khronos</comment>
+  <comment xml:lang="sk">Obrázok textúry Khronos</comment>
+  <comment xml:lang="sr">слика Кронос текстуре</comment>
+  <comment xml:lang="sv">Khronos-texturbild</comment>
+  <comment xml:lang="tr">Khronos kaplama görüntüsü</comment>
+  <comment xml:lang="uk">зображення текстури Khronos</comment>
+  <comment xml:lang="zh-CN">Khronos 纹理图像</comment>
+  <comment xml:lang="zh-TW">Khronos 紋理影像</comment>
+  <glob pattern="*.ktx"/>
+</mime-type>

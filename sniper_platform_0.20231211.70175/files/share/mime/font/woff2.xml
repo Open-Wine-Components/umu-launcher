@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="font/woff2">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>WOFF2 font</comment>
+  <comment xml:lang="af">WOFF2-skriftipe</comment>
+  <comment xml:lang="ast">Fonte WOFF2</comment>
+  <comment xml:lang="bg">Шрифт — WOFF2</comment>
+  <comment xml:lang="ca">lletra WOFF2</comment>
+  <comment xml:lang="cs">font WOFF2</comment>
+  <comment xml:lang="da">WOFF2-skrifttype</comment>
+  <comment xml:lang="de">WOFF2-Schrift</comment>
+  <comment xml:lang="en-GB">WOFF2 font</comment>
+  <comment xml:lang="es">tipo de letra WOFF2</comment>
+  <comment xml:lang="eu">WOFF2 letra-tipoa</comment>
+  <comment xml:lang="fi">WOFF2-fontti</comment>
+  <comment xml:lang="fr">police WOFF2</comment>
+  <comment xml:lang="fur">caratar WOFF2</comment>
+  <comment xml:lang="ga">cló WOFF2</comment>
+  <comment xml:lang="hr">WOFF2 slovo</comment>
+  <comment xml:lang="hu">WOFF2 betűkészlet</comment>
+  <comment xml:lang="id">Fonta WOFF2</comment>
+  <comment xml:lang="it">Carattere WOFF2</comment>
+  <comment xml:lang="kk">WOFF2 қарібі</comment>
+  <comment xml:lang="ko">WOFF2 글꼴</comment>
+  <comment xml:lang="pl">Czcionka WOFF2</comment>
+  <comment xml:lang="pt-BR">Fonte WOFF2</comment>
+  <comment xml:lang="ru">Шрифт WOFF2</comment>
+  <comment xml:lang="sk">Písmo WOFF2</comment>
+  <comment xml:lang="sv">WOFF2-typsnitt</comment>
+  <comment xml:lang="tr">WOFF2 yazı tipi</comment>
+  <comment xml:lang="uk">шрифт WOFF2</comment>
+  <comment xml:lang="zh-CN">WOFF2 字体</comment>
+  <comment xml:lang="zh-TW">WOFF2 字型</comment>
+  <acronym>WOFF2</acronym>
+  <expanded-acronym>Web Open Font Format 2.0</expanded-acronym>
+  <generic-icon name="font-x-generic"/>
+  <glob pattern="*.woff2"/>
+</mime-type>

@@ -1,0 +1,151 @@
+default  partial alphanumeric_keys
+xkb_symbols "basic" {
+
+    include "us"
+
+    name[Group1]= "English (Ghana)";
+
+    key <AE04> { [          4, 0x010020B5,     dollar,       cent ] };
+    include "level3(ralt_switch)"
+};
+
+partial alphanumeric_keys
+xkb_symbols "akan" {
+    include "gh(basic)"
+
+    name[Group1]= "Akan";
+
+    key <AD01> { [ 0x0100025B, 0x01000190,          q,          Q ] };
+    key <AB02> { [ 0x01000254, 0x01000186,          x,          X ] };
+};
+
+partial alphanumeric_keys
+xkb_symbols "ga" {
+    include "gh(basic)"
+
+    name[Group1]= "Ga";
+
+    key <AD01> { [ 0x0100025B, 0x01000190,          q,          Q ] };
+    key <AB02> { [ 0x01000254, 0x01000186,          x,          X ] };
+    key <AB03> { [ 0x0100014B, 0x0100014A,          c,          C ] };
+};
+
+partial alphanumeric_keys
+xkb_symbols "ewe" {
+    include "gh(basic)"
+
+    name[Group1]= "Ewe";
+
+    key <AD01> { [ 0x0100025B, 0x01000190,          q,          Q ] };
+    key <AB03> { [ 0x0100014B, 0x0100014A,          c,          C ] };
+    key <AD11> { [ 0x01000254, 0x01000186,  braceleft,  braceleft ] };
+    key <AD12> { [ 0x0100028B, 0x010001B2, braceright, braceright ] };
+    key <BKSL> { [ 0x01000256, 0x01000189,  backslash,  backslash ] };
+    key <AC07> { [ 0x01000192, 0x01000191,          j,          J ] };
+    key <AC05> { [          g,          G, 0x01000263, 0x01000194 ] };
+
+};
+
+partial alphanumeric_keys
+xkb_symbols "fula" {
+    include "gh(basic)"
+
+    name[Group1]= "Fula";
+
+    key <AD01> { [ 0x01000071, 0x01000051,          q,          Q ] };
+    key <AD02> { [ udiaeresis, Udiaeresis,          w,          W ] };
+    key <AD03> { [          e,          E,   EuroSign,	     cent ] };
+    key <AD11> { [ 0x010001B4, 0x010001B3,bracketleft,  braceleft ] };
+    key <AD12> { [     gcaron,     Gcaron,bracketright, braceright] };
+    key <AC03> { [ 0x01000257, 0x0100018A,         d,           D ] };
+    key <AC10> { [ 0x01000131, 0x01000130, semicolon,       colon ] };
+    key <AC11> { [ 0x010001DD, 0x0100018E,apostrophe,    quotedbl ] };
+    key <AB01> { [ 0x01000272, 0x0100019D,         z,           Z ] };
+    key <AB07> { [     ntilde,     Ntilde,         m,           M ] };
+    key <AB09> { [   ccedilla,   Ccedilla,    period,     greater ] };
+    key <AB10> { [   scedilla,   Scedilla,     slash,    question ] };
+
+};
+
+partial alphanumeric_keys
+xkb_symbols "hausa" {
+    include "gh(fula)"
+
+    name[Group1]= "Hausa (Ghana)";
+};
+
+partial alphanumeric_keys
+xkb_symbols "generic" {
+    include "gh(basic)"
+
+    name[Group1]= "English (Ghana, multilingual)";
+
+    key <AD03> { [          e,	        E, 0x0100025b, 0x01000190 ] };
+    key <AB03> { [          c,          C, 0x01000254, 0x01000186 ] };
+    key <AC03> { [          d,          D, 0x01000256, 0x01000189 ] };
+    key <AC04> { [          f,          F, 0x01000192, 0x01000191 ] };
+    key <AC05> { [          g,          G, 0x01000263, 0x01000194 ] };
+    key <AB06> { [          n,          N, 0x0100014b, 0x0100014a ] };
+    key <AB01> { [          z,          Z, 0x010001B6, 0x010001B5 ] };
+    key <AB04> { [          v,          V, 0x0100028B, 0x010001B2 ] };
+	key <AE04> { [          4,     dollar, 0x010020B5,       cent ] };
+    include "level3(ralt_switch)"
+
+};
+
+partial alphanumeric_keys
+xkb_symbols "avn" {
+    include "gh(basic)"
+
+    name[Group1]= "Avatime";
+
+    key <TLDE> { [      grave,     asciitilde,   0x01000300,  0x01000303 ] }; // combining grave; combining tilde
+    key <AE04> { [          4,         dollar,         cent,  0x010020B5 ] }; // ¢, ₵
+    key <AE11> { [      minus,     underscore,   0x01000304,  0x01000304 ] }; // combining macron
+    key <AD01> { [ 0x0100028B,      0x010001B2                           ] }; // ʋ, Ʋ
+    key <AD07> { [          u,              U,   0x0100028A,  0x010001B1 ] }; // ʊ, Ʊ
+    key <AD08> { [          i,              I,   0x01000269,  0x01000196 ] }; // ɩ, Ɩ
+    key <AD11> { [ 0x0100025B,      0x01000190, bracketleft,  braceleft  ] }; // ɛ, Ɛ
+    key <AC03> { [          d,              D,   0x01000256,  0x01000189 ] }; // ɖ, Ɖ
+    key <AC04> { [          f,              F,   0x01000192,  0x01000191 ] }; // ƒ, Ƒ
+    key <AC07> { [ 0x0100014B,      0x0100014A                           ] }; // ŋ, Ŋ
+    key <AC11> { [ apostrophe,       quotedbl,   0x01000301,  0x01000301 ] }; // combining acute
+    key <AB03> { [ 0x01000254,      0x01000186                           ] }; // ɔ, Ɔ
+
+    include "level3(ralt_switch)"
+
+};
+
+// This keyboard layout fully imitates the 'Ghana Unicode' layout which is used in GILLBT on Windows with Keyman.
+// However, in this layout a 3rd level key (R ALT) is used rather than dead keys.
+// Also it has three additional features:
+// 1) combining macron above: <R ALT> + <SHIFT> + <->
+// 2) cent: <R ALT> + <4> or <R ALT> + <SHIFT> + <4>
+// 3) ʊ/Ʊ: <R ALT> + <u>/<U>
+
+partial alphanumeric_keys
+xkb_symbols "gillbt" {
+    include "gh(basic)"
+
+    name[Group1]= "English (Ghana, GILLBT)";
+
+    key <TLDE> { [ grave,      asciitilde,  0x01000300,   0x01000303  ] }; // combining grave; combining tilde
+    key <AE04> { [ 4,          dollar,      cent,         0x010020B5  ] }; // ¢, ₵
+    key <AE06> { [ 6,          asciicircum, 0x01000302,   0x01000302  ] }; // combining circumflex accent
+    key <AE11> { [ minus,      underscore,  0x01000331,   0x01000304  ] }; // combining macron below; combining macron above
+    key <AE12> { [ 0x0100014B, 0x0100014A,  equal,        plus        ] }; // ŋ, Ŋ
+    key <AD01> { [ 0x0100028B, 0x010001B2,  q,            Q           ] }; // ʋ, Ʋ
+    key <AD03> { [ e,          E,           0x010001DD,   0x0100018E  ] }; // ǝ, Ǝ
+    key <AD07> { [ u,          U,           0x0100028A,   0x010001B1  ] }; // ʊ, Ʊ
+    key <AD11> { [ 0x0100025B, 0x01000190,  bracketleft,  braceleft   ] }; // ɛ, Ɛ
+    key <AD12> { [ 0x01000254, 0x01000186,  bracketright, braceright  ] }; // ɔ, Ɔ
+    key <AC03> { [ d,          D,           0x01000256,   0x01000189  ] }; // ɖ, Ɖ
+    key <AC04> { [ f,          F,           0x01000192,   0x01000191  ] }; // ƒ, Ƒ
+    key <AC05> { [ g,          G,           0x01000263,   0x01000194  ] }; // ɣ, Ɣ
+    key <AC11> { [ apostrophe, quotedbl,    0x01000301,   0x01000301  ] }; // combining acute
+    key <AB01> { [ z,          Z,           0x01000292,   0x010001B7  ] }; // ʒ, Ʒ
+    key <AB02> { [ 0x01000269, 0x01000196,  x,            X           ] }; // ɩ, Ɩ
+    key <AB03> { [ c,          C,           0x010000E7,   0x010000C7  ] }; // ç, Ç
+
+    include "level3(ralt_switch)"
+};

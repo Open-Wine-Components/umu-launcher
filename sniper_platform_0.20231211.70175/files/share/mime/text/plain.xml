@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/plain">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>plain text document</comment>
+  <comment xml:lang="af">skoonteksdokument</comment>
+  <comment xml:lang="ar">مستند نصي مجرد</comment>
+  <comment xml:lang="ast">documentu de testu planu</comment>
+  <comment xml:lang="be-Latn">prosty tekstavy dakument</comment>
+  <comment xml:lang="bg">Документ с неформатиран текст</comment>
+  <comment xml:lang="ca">document de text pla</comment>
+  <comment xml:lang="cs">prostý textový dokument</comment>
+  <comment xml:lang="da">rent tekstdokument</comment>
+  <comment xml:lang="de">Einfaches Textdokument</comment>
+  <comment xml:lang="el">Έγγραφο απλού κειμένου</comment>
+  <comment xml:lang="en-GB">plain text document</comment>
+  <comment xml:lang="eo">plata teksta dokumento</comment>
+  <comment xml:lang="es">documento de texto sencillo</comment>
+  <comment xml:lang="eu">testu soileko dokumentua</comment>
+  <comment xml:lang="fi">perustekstiasiakirja</comment>
+  <comment xml:lang="fr">document texte brut</comment>
+  <comment xml:lang="fur">document di test sempliç</comment>
+  <comment xml:lang="ga">cáipéis ghnáth-théacs</comment>
+  <comment xml:lang="gl">documento de texto sinxelo</comment>
+  <comment xml:lang="he">מסמך טקסט פשוט</comment>
+  <comment xml:lang="hr">Običan tekstovni dokument</comment>
+  <comment xml:lang="hu">egyszerű szöveg</comment>
+  <comment xml:lang="ia">Documento de texto simple</comment>
+  <comment xml:lang="id">dokumen teks polos</comment>
+  <comment xml:lang="it">Documento in testo semplice</comment>
+  <comment xml:lang="ja">平文テキストドキュメント</comment>
+  <comment xml:lang="kk">мәтіндік құжаты</comment>
+  <comment xml:lang="ko">일반 텍스트 문서</comment>
+  <comment xml:lang="lt">paprastas tekstinis dokumentas</comment>
+  <comment xml:lang="lv">vienkāršs teksta dokuments</comment>
+  <comment xml:lang="ms">Dokumen teks jernih</comment>
+  <comment xml:lang="nb">vanlig tekstdokument</comment>
+  <comment xml:lang="nl">plattetekst-document</comment>
+  <comment xml:lang="nn">vanleg tekstdokument</comment>
+  <comment xml:lang="oc">document tèxte brut</comment>
+  <comment xml:lang="pl">Zwykły dokument tekstowy</comment>
+  <comment xml:lang="pt">documento em texto simples</comment>
+  <comment xml:lang="pt-BR">Documento de Texto</comment>
+  <comment xml:lang="ro">document text simplu</comment>
+  <comment xml:lang="ru">Текстовый документ</comment>
+  <comment xml:lang="sk">Obyčajný textový dokument</comment>
+  <comment xml:lang="sl">običajna besedilna datoteka</comment>
+  <comment xml:lang="sq">Dokument në tekst të thjeshtë</comment>
+  <comment xml:lang="sr">обичан текстуални документ</comment>
+  <comment xml:lang="sv">vanligt textdokument</comment>
+  <comment xml:lang="tr">düz metin belgesi</comment>
+  <comment xml:lang="uk">звичайний текстовий документ</comment>
+  <comment xml:lang="vi">tài liệu nhập thô</comment>
+  <comment xml:lang="zh-CN">纯文本文档</comment>
+  <comment xml:lang="zh-TW">純文字文件</comment>
+  <glob pattern="*.txt"/>
+  <glob pattern="*.asc"/>
+  <glob pattern="*,v"/>
+</mime-type>

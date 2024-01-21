@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="audio/ogg">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Ogg audio</comment>
+  <comment xml:lang="bg">Аудио — Ogg</comment>
+  <comment xml:lang="ca">àudio Ogg</comment>
+  <comment xml:lang="da">Ogg-lyd</comment>
+  <comment xml:lang="de">Ogg-Audio</comment>
+  <comment xml:lang="en-GB">Ogg audio</comment>
+  <comment xml:lang="es">audio Ogg</comment>
+  <comment xml:lang="eu">Ogg audioa</comment>
+  <comment xml:lang="fi">Ogg ääni</comment>
+  <comment xml:lang="fr">audio Ogg</comment>
+  <comment xml:lang="hr">Ogg zvučni zapis</comment>
+  <comment xml:lang="hu">Ogg hang</comment>
+  <comment xml:lang="it">Audio Ogg</comment>
+  <comment xml:lang="ko">Ogg 오디오</comment>
+  <comment xml:lang="pl">Plik dźwiękowy Ogg</comment>
+  <comment xml:lang="pt-BR">Áudio Ogg</comment>
+  <comment xml:lang="sk">Zvuk Ogg</comment>
+  <comment xml:lang="sv">Ogg-ljud</comment>
+  <comment xml:lang="tr">Ogg sesi</comment>
+  <comment xml:lang="uk">звук ogg</comment>
+  <comment xml:lang="zh-CN">Ogg 音频</comment>
+  <sub-class-of type="application/ogg"/>
+  <glob pattern="*.oga"/>
+  <glob pattern="*.ogg"/>
+  <glob pattern="*.opus"/>
+  <alias type="audio/x-ogg"/>
+</mime-type>

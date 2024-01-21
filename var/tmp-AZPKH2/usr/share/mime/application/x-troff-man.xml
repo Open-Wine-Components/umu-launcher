@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-troff-man">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Manpage manual document</comment>
+  <comment xml:lang="af">Manpage-handleiding</comment>
+  <comment xml:lang="bg">Страница от ръководството</comment>
+  <comment xml:lang="ca">document de pàgina man</comment>
+  <comment xml:lang="cs">manuálová stránka</comment>
+  <comment xml:lang="da">Manpage-manualdokument</comment>
+  <comment xml:lang="de">Manpage-Handbuchdokument</comment>
+  <comment xml:lang="el">Έγγραφο βοήθειας manpage</comment>
+  <comment xml:lang="en-GB">Manpage manual document</comment>
+  <comment xml:lang="es">documento de manual de Manpage</comment>
+  <comment xml:lang="eu">Manpage eskuliburu dokumentua</comment>
+  <comment xml:lang="fi">Manpage manuaali dokumentit</comment>
+  <comment xml:lang="fr">document manuel Manpage</comment>
+  <comment xml:lang="fur">document manuâl Manpage</comment>
+  <comment xml:lang="ga">cáipéis lámhleabhair Man</comment>
+  <comment xml:lang="he">מסמך תיעוד man</comment>
+  <comment xml:lang="hr">Manpage dokument priručnika</comment>
+  <comment xml:lang="hu">Manpage kézikönyv-dokumentum</comment>
+  <comment xml:lang="ia">Pagina de manual "man"</comment>
+  <comment xml:lang="id">Dokumen manual manpage</comment>
+  <comment xml:lang="it">Documento di manuale manpage</comment>
+  <comment xml:lang="kk">Manpage нұсқаулық құжаты</comment>
+  <comment xml:lang="ko">man 페이지 설명서 문서</comment>
+  <comment xml:lang="oc">document de manual Manpage</comment>
+  <comment xml:lang="pl">Dokument podręcznika stron pomocy</comment>
+  <comment xml:lang="pt">documento de ajuda Manpage</comment>
+  <comment xml:lang="pt-BR">Documento Manpage</comment>
+  <comment xml:lang="ru">Документ справочной системы Manpage</comment>
+  <comment xml:lang="sk">Dokument manuálu Manpage</comment>
+  <comment xml:lang="sr">документ упутства странице упутства</comment>
+  <comment xml:lang="sv">Manpage-manualdokument</comment>
+  <comment xml:lang="tr">Man sayfası el kitabı belgesi</comment>
+  <comment xml:lang="uk">документ підручника man</comment>
+  <comment xml:lang="zh-CN">Manpage 手册文档</comment>
+  <comment xml:lang="zh-TW">Manpage 手冊說明文件</comment>
+  <sub-class-of type="text/plain"/>
+  <generic-icon name="text-x-generic"/>
+  <glob pattern="*.man"/>
+</mime-type>

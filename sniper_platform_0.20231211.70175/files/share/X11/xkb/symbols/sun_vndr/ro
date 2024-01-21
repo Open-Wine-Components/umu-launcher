@@ -1,0 +1,125 @@
+//
+// Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, and/or sell copies of the Software, and to permit persons
+// to whom the Software is furnished to do so, provided that the above
+// copyright notice(s) and this permission notice appear in all copies of
+// the Software and that both the above copyright notice(s) and this
+// permission notice appear in supporting documentation.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+// OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+// HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL
+// INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING
+// FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+// NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+// WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+// 
+// Except as contained in this notice, the name of a copyright holder
+// shall not be used in advertising or otherwise to promote the sale, use
+// or other dealings in this Software without prior written authorization
+// of the copyright holder.
+//
+
+partial default alphanumeric_keys
+xkb_symbols "sun_type6" {
+
+    name[Group1]="Romanian (Sun Type 6/7)";
+
+	include "sun_vndr/us(sun_type6)"
+
+   key <TLDE> { [          grave,    asciitilde,	grave,    asciitilde ] };
+   key <AE01> { [              1,        exclam,	dead_tilde                ] };
+   key <AE02> { [              2,            at,	dead_caron                ] };
+   key <AE03> { [              3,    numbersign,	dead_circumflex                ] };
+   key <AE04> { [              4,        dollar,	dead_breve                ] };
+   key <AE05> { [              5,       percent,	dead_abovering                ] };
+   key <AE06> { [              6,   asciicircum,	dead_ogonek                ] };
+   key <AE07> { [              7,     ampersand,	dead_grave                ] };
+   key <AE08> { [              8,      asterisk,	dead_abovedot                ] };
+   key <AE09> { [              9,     parenleft,	dead_acute                ] };
+   key <AE10> { [              0,    parenright,	dead_doubleacute                ] };
+   key <AE11> { [          minus,    underscore,	dead_diaeresis,        endash ] };
+   key <AE12> { [          equal,          plus,	dead_cedilla,     plusminus ] };
+
+   key <AD01> { [              q,             Q,	acircumflex,   Acircumflex ] };
+   key <AD02> { [              w,             W,	ssharp,        0x1001e9e   ] };
+   key <AD03> { [              e,             E,	EuroSign                ] };
+   key <AD04> { [              r,             R,	r,             R ] };
+   key <AD05> { [              t,             T,	0x100021b,     0x100021a ] };
+   key <AD06> { [              y,             Y,	y,             Y ] };
+   key <AD07> { [              u,             U,	u,             U ] };
+   key <AD08> { [              i,             I,	icircumflex,   Icircumflex ] };
+   key <AD09> { [              o,             O,	o,             O ] };
+   key <AD10> { [              p,             P,	section                ] };
+   key <AD11> { [    bracketleft,     braceleft,	doublelowquotemark              ] };
+   key <AD12> { [   bracketright,    braceright,	rightdoublequotemark            ] };
+
+   key <AC01> { [              a,             A,	abreve,        Abreve ] };
+   key <AC02> { [              s,             S,	0x1000219,     0x1000218 ] };
+   key <AC03> { [              d,             D,	dstroke,       Dstroke ] };
+   key <AC04> { [              f,             F,	f,             F ] };
+   key <AC05> { [              g,             G,	g,             G ] };
+   key <AC06> { [              h,             H,	h,             H ] };
+   key <AC07> { [              j,             J,	j,             J ] };
+   key <AC08> { [              k,             K,	k,             K ] };
+   key <AC09> { [              l,             L,	lstroke,       Lstroke ] };
+   key <AC10> { [      semicolon,         colon,	semicolon,         colon ] };
+   key <AC11> { [     apostrophe,      quotedbl,	apostrophe,      quotedbl ] };
+   key <LSGT> { [      backslash,           bar,	backslash,     brokenbar ] };
+
+   key <BKSL> { [      backslash,           bar,	backslash,     brokenbar ] };
+   key <AB01> { [              z,             Z,	z,             Z ] };
+   key <AB02> { [              x,             X,	x,             X ] };
+   key <AB03> { [              c,             C,	copyright                ] };
+   key <AB04> { [              v,             V,	v,             V ] };
+   key <AB05> { [              b,             B,	b,             B ] };
+   key <AB06> { [              n,             N,	n,             N ] };
+   key <AB07> { [              m,             M,	m,             M ] };
+   key <AB08> { [          comma,          less,	guillemotleft,      multiply ] };
+   key <AB09> { [         period,       greater,	guillemotright,      division ] };
+   key <AB10> { [          slash,      question,	slash,      question ] };
+
+	include "level3(ralt_switch)"
+};
+
+partial alphanumeric_keys
+	xkb_symbols "basic" {
+	include "sun_vndr/ro(sun_type6)"
+};
+
+partial alphanumeric_keys
+	xkb_symbols "cedilla" {
+	include "ro(cedilla)"
+};
+
+partial alphanumeric_keys
+	xkb_symbols "std" {
+	include "ro(std)"
+};
+
+partial alphanumeric_keys
+	xkb_symbols "std_cedilla" {
+	include "ro(std_cedilla)"
+};
+
+partial alphanumeric_keys
+	xkb_symbols "winkeys" {
+	include "ro(winkeys)"
+};
+
+partial alphanumeric_keys
+	xkb_symbols "crh_dobruja" {
+	include "ro(crh_dobruja)"
+};
+
+partial alphanumeric_keys
+	xkb_symbols "ergonomic" {
+	include "ro(ergonomic)"
+};

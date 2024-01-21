@@ -1,0 +1,4 @@
+libpcre.so.3 libpcre3 #MINVER#
+# No symbols listed here yet
+libpcreposix.so.3 libpcre3 #MINVER#
+# No symbols listed here yet

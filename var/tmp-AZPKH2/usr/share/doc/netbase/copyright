@@ -1,0 +1,11 @@
+This package was created by Peter Tobias tobias@et-inf.fho-emden.de on
+Wed, 24 Aug 1994 21:33:28 +0200 and maintained by Anthony Towns
+<ajt@debian.org> until 2001.
+It is currently maintained by Marco d'Itri <md@linux.it>.
+
+Copyright 1994-2010 Peter Tobias, Anthony Towns and Marco d'Itri
+
+The programs in this package are distributed under the terms of the GNU
+General Public License, version 2 as distributed by the Free Software
+Foundation. On Debian systems, a copy of this license may be found in
+/usr/share/common-licenses/GPL-2.

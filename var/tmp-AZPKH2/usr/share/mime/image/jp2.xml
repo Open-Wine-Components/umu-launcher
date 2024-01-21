@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="image/jp2">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>JPEG-2000 JP2 image</comment>
+  <comment xml:lang="af">JPEG-2000 JP2-beeld</comment>
+  <comment xml:lang="bg">Изображение — JPEG-2000 JP2</comment>
+  <comment xml:lang="ca">imatge JPEG-2000 JP2</comment>
+  <comment xml:lang="cs">obrázek JPEG-2000 JP2</comment>
+  <comment xml:lang="da">JPEG-2000 JP2-billede</comment>
+  <comment xml:lang="de">JPEG-2000 JP2-Bild</comment>
+  <comment xml:lang="en-GB">JPEG-2000 JP2 image</comment>
+  <comment xml:lang="es">imagen JPEG-2000 JP2</comment>
+  <comment xml:lang="eu">JPEG-2000 JP2 irudia</comment>
+  <comment xml:lang="fi">JPEG-2000 JP2 -kuva</comment>
+  <comment xml:lang="fr">image JPEG-2000 JP2</comment>
+  <comment xml:lang="fur">imagjin JPEG-2000 JP2</comment>
+  <comment xml:lang="ga">íomhá JPEG-2000 JP2</comment>
+  <comment xml:lang="hr">JPEG-2000 JP2 slika</comment>
+  <comment xml:lang="hu">JPEG-2000 JP2 kép</comment>
+  <comment xml:lang="id">Citra JPEG-2000 JP2</comment>
+  <comment xml:lang="it">Immagine JPEG-2000 JP2</comment>
+  <comment xml:lang="kk">JPEG-2000 JP2 суреті</comment>
+  <comment xml:lang="ko">JPEG-2000 JP2 그림</comment>
+  <comment xml:lang="pl">Obraz JP2 JPEG-2000</comment>
+  <comment xml:lang="pt-BR">Imagem JP2 de JPEG-2000</comment>
+  <comment xml:lang="ru">Изоражение JPEG-2000 JP2</comment>
+  <comment xml:lang="sk">Obrázok JPEG-2000 JP2</comment>
+  <comment xml:lang="sv">JPEG-2000 JP2-bild</comment>
+  <comment xml:lang="tr">JPEG-2000 JP2 görüntüsü</comment>
+  <comment xml:lang="uk">зображення JP2 JPEG-2000</comment>
+  <comment xml:lang="zh-CN">JPEG-2000 JP2 图像</comment>
+  <comment xml:lang="zh-TW">JPEG-2000 JP2 影像</comment>
+  <acronym>JP2</acronym>
+  <expanded-acronym>JPEG-2000</expanded-acronym>
+  <alias type="image/jpeg2000"/>
+  <alias type="image/jpeg2000-image"/>
+  <alias type="image/x-jpeg2000-image"/>
+  <glob pattern="*.jp2"/>
+  <glob pattern="*.jpg2"/>
+</mime-type>

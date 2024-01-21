@@ -1,0 +1,164 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: at-spi2-atk
+Source: https://download.gnome.org/sources/at-spi2-atk/
+
+Files: *
+Copyright: 2001-2003 Sun Microsystems Inc.
+  2001-2003 Ximian, Inc.
+  2007 IBM Corp.
+  2008 Novell, Inc.
+  2008-2010 Codethink Ltd.
+License: LGPL-2+
+
+Files: atk-adaptor/accessible-cache.c
+  atk-adaptor/accessible-cache.h
+  atk-adaptor/accessible-leasing.c
+Copyright: 2008-2010, Codethink Ltd.
+License: LGPL-2+
+
+Files: atk-adaptor/accessible-leasing.h
+  atk-adaptor/accessible-register.h
+Copyright: 2008, Novell, Inc.
+  2008, 2009, Codethink Ltd.
+License: LGPL-2+
+
+Files: atk-adaptor/accessible-register.c
+  atk-adaptor/object.c
+  atk-adaptor/object.h
+Copyright: 2008-2010, Codethink Ltd.
+  2008, Novell, Inc.
+License: LGPL-2+
+
+Files: atk-adaptor/accessible-stateset.c
+  atk-adaptor/accessible-stateset.h
+  atk-adaptor/spi-dbus.h
+Copyright: 2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: atk-adaptor/adaptors/*
+Copyright: 2008, Novell, Inc.
+  2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: atk-adaptor/adaptors/adaptors.h
+Copyright: 2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: atk-adaptor/adaptors/cache-adaptor.c
+Copyright: 2008, Novell, Inc.
+  2008, 2009, Codethink Ltd.
+  2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: atk-adaptor/adaptors/collection-adaptor.c
+Copyright: 2007, IBM Corp.
+License: LGPL-2+
+
+Files: atk-adaptor/adaptors/table-cell-adaptor.c
+Copyright: 2013, SUSE LLC.
+  2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: atk-adaptor/atk-bridge.h
+  atk-adaptor/bridge.c
+  atk-adaptor/bridge.h
+  atk-adaptor/event.h
+Copyright: 2008-2010, Codethink Ltd.
+  2001-2003, Ximian, Inc.
+  2001-2003, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: atk-adaptor/bitarray.h
+  atk-adaptor/spi-dbus.c
+Copyright: 2008, Novell, Inc.
+License: LGPL-2+
+
+Files: atk-adaptor/event.c
+Copyright: 2011, F123 Consulting & Mais Diferenças
+  2008, 2009, Codethink Ltd.
+  2001-2003, Ximian, Inc.
+  2001-2003, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: atk-adaptor/gtk-2.0/module.c
+Copyright: 2008-2010, Codethink Ltd.
+  2001-2003, Ximian, Inc.
+  2001-2003, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: debian/*
+Copyright: 2009, Mario Lang <mlang@debian.org>
+License: GPL-2
+
+Files: droute/droute-pairhash.c
+  droute/droute-pairhash.h
+Copyright: 2008-2010, Codethink Ltd.
+License: LGPL-2+
+
+Files: droute/droute-variant.c
+  droute/droute-variant.h
+Copyright: 2008, Novell, Inc.
+License: LGPL-2+
+
+Files: droute/droute.c
+  droute/droute.h
+Copyright: 2008, Novell, Inc.
+  2008, 2009, Codethink Ltd.
+License: LGPL-2+
+
+Files: tests/*
+Copyright: 2014, 2015, Samsung Electronics Co., Ltd.
+License: LGPL-2+
+
+Files: tests/atk_test_hyperlink.c
+  tests/atk_test_hypertext.c
+  tests/atk_test_table.c
+  tests/atk_test_table_cell.c
+  tests/atk_test_value.c
+Copyright: 2015, Samsung Electronics Co., Ltd.
+  2008, Codethink Ltd.
+License: LGPL-2+
+
+Files: tests/data/*
+Copyright: 2001-2003 Sun Microsystems Inc.
+  2001-2003 Ximian, Inc.
+  2007 IBM Corp.
+  2008 Novell, Inc.
+  2008-2010 Codethink Ltd.
+License: LGPL-2+
+
+Files: tests/dummyatk/my-atk-hyperlink.c
+  tests/dummyatk/my-atk-hyperlink.h
+  tests/dummyatk/my-atk-hypertext.c
+  tests/dummyatk/my-atk-hypertext.h
+  tests/dummyatk/my-atk-table-cell.c
+  tests/dummyatk/my-atk-table-cell.h
+  tests/dummyatk/my-atk-table.c
+  tests/dummyatk/my-atk-table.h
+  tests/dummyatk/my-atk-value.c
+  tests/dummyatk/my-atk-value.h
+Copyright: 2015, Samsung Electronics Co., Ltd.
+  2008, Codethink Ltd.
+License: LGPL-2+
+
+License: GPL-2
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; version 2 dated June, 1991.
+ .
+ On Debian systems, the complete text of version 2 of the GNU General
+ Public License can be found in '/usr/share/common-licenses/GPL-2'.
+
+License: LGPL-2+
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Library General Public License as published by the
+ Free Software Foundation; version 2 of the License, or (at
+ your option) any later version.
+ .
+ On Debian systems, the complete text of version 2 of the GNU Library
+ General Public License can be found in `/usr/share/common-licenses/LGPL-2'.

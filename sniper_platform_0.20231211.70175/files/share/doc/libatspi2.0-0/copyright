@@ -1,0 +1,220 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: at-spi2-core
+Source: https://download.gnome.org/sources/at-spi2-core/
+
+Files: *
+Copyright: 2001-2003 Sun Microsystems Inc.
+  2001-2003 Ximian, Inc.
+  2007 IBM Corp.
+  2008 Novell, Inc.
+  2008-2010 Codethink Ltd.
+License: LGPL-2+
+
+Files: atspi/*
+Copyright: 2010, 2011, Novell, Inc.
+  2002, Ximian, Inc.
+License: LGPL-2+
+
+Files: atspi/atspi-accessible.c
+  atspi/atspi-hyperlink.c
+  atspi/atspi-hypertext.c
+  atspi/atspi-image.c
+  atspi/atspi-matchrule.c
+  atspi/atspi-misc.c
+  atspi/atspi-relation.c
+  atspi/atspi-selection.c
+  atspi/atspi-stateset.c
+  atspi/atspi-stateset.h
+  atspi/atspi-table.c
+  atspi/atspi-text.c
+  atspi/atspi-value.c
+Copyright: 2010, 2011, Novell, Inc.
+  2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: atspi/atspi-action.c
+  atspi/atspi-application.c
+  atspi/atspi-component.c
+  atspi/atspi-document.c
+  atspi/atspi-editabletext.c
+  atspi/atspi-object.c
+  atspi/atspi-registry.c
+  atspi/atspi.h
+Copyright: 2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: atspi/atspi-action.h
+  atspi/atspi-application.h
+  atspi/atspi-component.h
+  atspi/atspi-device-listener-private.h
+  atspi/atspi-document.h
+  atspi/atspi-editabletext.h
+  atspi/atspi-object.h
+  atspi/atspi-private.h
+  atspi/atspi-registry.h
+  atspi/atspi-types.h
+Copyright: 2002, Ximian, Inc.
+License: LGPL-2+
+
+Files: atspi/atspi-collection.c
+Copyright: 2010, 2011, Novell, Inc.
+  2007, IBM Corp.
+License: LGPL-2+
+
+Files: atspi/atspi-constants.h
+Copyright: 2012, SUSE LINUX Products GmbH, Nuernberg, Germany.
+  2010, 2011, Novell, Inc.
+License: LGPL-2+
+
+Files: atspi/atspi-device-listener.c
+  atspi/atspi-event-listener.c
+Copyright: 2010, 2011, Novell, Inc.
+  2002, Ximian Inc.
+  2002, Sun Microsystems, Inc.
+License: LGPL-2+
+
+Files: atspi/atspi-gmain.c
+Copyright: 2005, Red Hat, Inc.
+  2002, 2003, CodeFactory AB
+License: AFL-2.1 or GPL-2+
+
+Files: atspi/atspi-gmain.h
+Copyright: Copyright 2002, 2003 CodeFactory AB
+           Copyright 2005 Red Hat, Inc.
+License: AFL-2.1 or GPL-2+
+
+Files: atspi/atspi-table-cell.c
+Copyright: 2013, SUSE LLC.
+  2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: bus/at-spi-bus-launcher.c
+Copyright: 2011, Red Hat, Inc.
+License: LGPL-2+
+
+Files: dbind/*
+Copyright: 2008-2011, Novell, Inc.
+License: LGPL-2+
+
+Files: debian/*
+Copyright: Copyright 2009, Mario Lang <mlang@debian.org>
+License: GPL-2
+
+Files: po/bg.po
+Copyright: 2004, 2005, 2007-2009, 2011, 2015, Free Software Foundation
+License: LGPL-2+
+
+Files: po/bs.po
+Copyright: 2013, Rosetta Contributors and Canonical Ltd 2013
+License: LGPL-2+
+
+Files: po/eo.po
+  po/ga.po
+  po/it.po
+  po/sq.po
+  po/sv.po
+Copyright: 1991, 1994-2014, Free Software Foundation, Inc.
+License: LGPL-2+
+
+Files: po/fa.po
+Copyright: 2011, Iranian Free Software Users Group (IFSUG.org)translation team.
+License: LGPL-2+
+
+Files: po/fi.po
+Copyright: 2011, Tommi Vainikainen
+License: LGPL-2+
+
+Files: po/fr.po
+  po/oc.po
+Copyright: 2011, Listed translators
+License: LGPL-2+
+
+Files: po/sk.po
+Copyright: 2012, Free Software Foundation, Inc
+License: LGPL-2+
+
+Files: po/tr.po
+Copyright: 2011, the Free Software Foundation, Inc.
+License: LGPL-2+
+
+Files: registryd/*
+Copyright: 2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: registryd/introspection.c
+  registryd/introspection.h
+  registryd/org.a11y.atspi.Registry.service.in
+Copyright: 2001-2003 Sun Microsystems Inc.
+  2001-2003 Ximian, Inc.
+  2007 IBM Corp.
+  2008 Novell, Inc.
+  2008-2010 Codethink Ltd.
+License: LGPL-2+
+
+Files: registryd/de-marshaller.c
+Copyright: 2008-2011, Novell, Inc.
+License: LGPL-2+
+
+Files: registryd/de-marshaller.h
+  registryd/de-types.h
+Copyright: 2009, Codethink Ltd
+  2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: registryd/deviceeventcontroller-x11.c
+  registryd/deviceeventcontroller.c
+Copyright: 2001, 2003, Sun Microsystems Inc.
+  2001, 2002, Ximian, Inc.
+License: LGPL-2+
+
+Files: registryd/display.c
+  registryd/display.h
+  registryd/event-source.c
+  registryd/event-source.h
+Copyright: 2009, Nokia.
+License: LGPL-2+
+
+Files: registryd/registry.c
+Copyright: 2008, 2010, Codethink Ltd.
+  2001, 2002, Ximian, Inc.
+  2001, 2002, Sun Microsystems Inc.
+License: LGPL-2+
+
+Files: registryd/ucs2keysym.c
+Copyright: NA
+License: public-domain
+ This software is in the public domain. Share and enjoy!
+
+License: AFL-2.1
+ Licensed under the Academic Free License version 2.1
+
+License: GPL-2
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; version 2 dated June, 1991.
+ .
+ On Debian systems, the complete text of version 2 of the GNU General
+ Public License can be found in '/usr/share/common-licenses/GPL-2'.
+
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; version 2 dated June, 1991, or (at
+ your option) any later version.
+ .
+ On Debian systems, the complete text of version 2 of the GNU General
+ Public License can be found in '/usr/share/common-licenses/GPL-2'.
+
+License: LGPL-2+
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Library General Public License as published by the
+ Free Software Foundation; version 2 of the License, or (at
+ your option) any later version.
+ .
+ On Debian systems, the complete text of version 2 of the GNU Library
+ General Public License can be found in `/usr/share/common-licenses/LGPL-2'.

@@ -1,0 +1,47 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: LibTIFF
+Upstream-Contact: tiff@lists.maptools.org
+Source: https://gitlab.com/libtiff/libtiff
+
+Files: *
+Copyright: 1988-1997 Sam Leffler
+	   1991-1997 Silicon Graphics, Inc.
+	   1985-1987, 1990 Regents of the University of California
+	   1990, 1991 Digital Equipment Corporation
+	   1990 Sun Microsystems, Inc.
+	   1990, 1995 Frank D. Cringle
+	   1996 BancTec AB
+	   1996 Mike Johnson
+	   1996 Pixar
+	   1997 Greg Ward Larson
+	   2000 Frank Warmerdam
+License: Hylafax
+
+Files: debian/*
+Copyright: 1997-1999 Guy Maor
+	   1999-2004 Josip Rodin
+	   2004-2015 Jay Berkenbilt
+	   2015	     Ondřej Surý
+	   2015-     Laszlo Boszormenyi (GCS)
+License: Hylafax
+
+License: Hylafax
+ Permission to use, copy, modify, distribute, and sell this software
+ and its documentation for any purpose is hereby granted without fee,
+ provided that (i) the above copyright notices and this permission
+ notice appear in all copies of the software and related
+ documentation, and (ii) the names of Sam Leffler and Silicon Graphics
+ may not be used in any advertising or publicity relating to the
+ software without the specific, prior written permission of Sam
+ Leffler and Silicon Graphics.
+ .
+ THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ .
+ IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR ANY
+ SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+ OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON
+ ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE
+ OR PERFORMANCE OF THIS SOFTWARE.

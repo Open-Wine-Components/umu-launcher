@@ -1,0 +1,1 @@
+/run/host/usr/local/share/steam/compatibilitytools.d

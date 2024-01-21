@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-pagemaker">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Adobe PageMaker document</comment>
+  <comment xml:lang="bg">Документ — Adobe PageMaker</comment>
+  <comment xml:lang="ca">document d'Adobe PageMaker</comment>
+  <comment xml:lang="da">Adobe PageMaker-dokument</comment>
+  <comment xml:lang="de">Adobe-PageMaker-Dokument</comment>
+  <comment xml:lang="en-GB">Adobe PageMaker document</comment>
+  <comment xml:lang="es">documento de Adobe PageMaker</comment>
+  <comment xml:lang="eu">Adobe PageMaker dokumentua</comment>
+  <comment xml:lang="fi">Adobe PageMaker asiakirja</comment>
+  <comment xml:lang="fr">document Adobe PageMaker</comment>
+  <comment xml:lang="hr">Adobe PageMaker dokument</comment>
+  <comment xml:lang="hu">Adobe PageMaker dokumentum</comment>
+  <comment xml:lang="it">Documento Adobe PageMaker</comment>
+  <comment xml:lang="ko">어도비 페이지메이커 문서</comment>
+  <comment xml:lang="pl">Dokument Adobe PageMaker</comment>
+  <comment xml:lang="pt-BR">Documento do Adobe PageMaker</comment>
+  <comment xml:lang="sk">Dokument Adobe PageMaker</comment>
+  <comment xml:lang="sv">Adobe PageMaker-dokument</comment>
+  <comment xml:lang="tr">Adobe PageMaker belgesi</comment>
+  <comment xml:lang="uk">документ Adobe PageMaker</comment>
+  <comment xml:lang="zh-CN">Adobe PageMaker 文档</comment>
+  <sub-class-of type="application/x-ole-storage"/>
+  <generic-icon name="x-office-document"/>
+  <glob pattern="*.p65"/>
+  <glob pattern="*.pm"/>
+  <glob pattern="*.pm6"/>
+  <glob pattern="*.pmd"/>
+</mime-type>

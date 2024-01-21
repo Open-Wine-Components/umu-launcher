@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="inode/fifo">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>pipe</comment>
+  <comment xml:lang="af">pyp</comment>
+  <comment xml:lang="ar">إنبوب</comment>
+  <comment xml:lang="be-Latn">kanvejer</comment>
+  <comment xml:lang="bg">Конвейер</comment>
+  <comment xml:lang="ca">conducte</comment>
+  <comment xml:lang="cs">roura</comment>
+  <comment xml:lang="da">datakanal</comment>
+  <comment xml:lang="de">Pipe</comment>
+  <comment xml:lang="el">Διοχέτευση</comment>
+  <comment xml:lang="en-GB">pipe</comment>
+  <comment xml:lang="eo">dukto</comment>
+  <comment xml:lang="es">tubería</comment>
+  <comment xml:lang="eu">kanalizazioa</comment>
+  <comment xml:lang="fi">putki</comment>
+  <comment xml:lang="fo">rør</comment>
+  <comment xml:lang="fr">tube</comment>
+  <comment xml:lang="fur">condot</comment>
+  <comment xml:lang="ga">píopa</comment>
+  <comment xml:lang="gl">tubería</comment>
+  <comment xml:lang="he">צינור</comment>
+  <comment xml:lang="hr">Slivnik</comment>
+  <comment xml:lang="hu">adatcsatorna</comment>
+  <comment xml:lang="ia">Tubo</comment>
+  <comment xml:lang="id">pipa</comment>
+  <comment xml:lang="it">Pipe</comment>
+  <comment xml:lang="ja">パイプ</comment>
+  <comment xml:lang="kk">арна</comment>
+  <comment xml:lang="ko">파이프</comment>
+  <comment xml:lang="lt">konvejeris</comment>
+  <comment xml:lang="lv">programmkanāls</comment>
+  <comment xml:lang="ms">Paip</comment>
+  <comment xml:lang="nb">rør</comment>
+  <comment xml:lang="nl">pijp</comment>
+  <comment xml:lang="nn">røyr</comment>
+  <comment xml:lang="oc">tub</comment>
+  <comment xml:lang="pl">Potok</comment>
+  <comment xml:lang="pt">canal</comment>
+  <comment xml:lang="pt-BR">Pipe</comment>
+  <comment xml:lang="ro">canal pipe</comment>
+  <comment xml:lang="ru">Канал</comment>
+  <comment xml:lang="sk">Rúra</comment>
+  <comment xml:lang="sl">cev</comment>
+  <comment xml:lang="sq">Pipe</comment>
+  <comment xml:lang="sr">спојка</comment>
+  <comment xml:lang="sv">rör</comment>
+  <comment xml:lang="tr">boru</comment>
+  <comment xml:lang="uk">канал</comment>
+  <comment xml:lang="vi">ống dẫn</comment>
+  <comment xml:lang="zh-CN">管道</comment>
+  <comment xml:lang="zh-TW">管線</comment>
+</mime-type>

@@ -1,0 +1,108 @@
+// based on
+// Estonian XKB-keymap by Ville Hallik <ville@linux.ee>
+//
+
+default  partial alphanumeric_keys
+xkb_symbols "basic" {
+
+    // Describes the differences between a very simple en_US
+    // keyboard and a very simple Estonian keyboard
+    // This layout conforms to both EVS8:1993 and EVS8:2000 standards
+
+    include "latin(type4)"
+
+    name[Group1]="Estonian";
+
+    key <AE03>	{ [         3, numbersign,     sterling,     sterling ]	};
+    key <AE04>	{ [         4,   currency,       dollar,       dollar ]	};
+    key <AE11>	{ [      plus,   question,    backslash, questiondown ]	};
+    key <AE12>	{ [dead_acute, dead_grave,        grave,   apostrophe ]	};
+
+    key <AD11>	{ [udiaeresis, Udiaeresis, dead_diaeresis, dead_abovering ] };
+    key <AD12>	{ [    otilde,     Otilde,      section,  dead_macron ]	};
+
+    key <AC02>	{ [         s,          S,       scaron,       Scaron ]	};
+    key <AC10>	{ [odiaeresis, Odiaeresis,   dead_acute, dead_doubleacute ] };
+    key <AC11>	{ [adiaeresis, Adiaeresis,  asciicircum,   dead_caron ]	};
+    key <TLDE>	{ [dead_caron, dead_tilde,      notsign,      notsign ]	};
+
+    key <BKSL>	{ [apostrophe,   asterisk,      onehalf,   dead_breve ]	};
+    key <AB01>	{ [         z,          Z,       zcaron,       Zcaron ]	};
+    key <AB08>	{ [     comma,  semicolon,         less,     multiply ]	};
+    key <AB09>	{ [    period,      colon,      greater,     division ]	};
+    key <AB10>	{ [     minus, underscore,          bar,     abovedot ] };
+
+    include "level3(ralt_switch)"
+    include "eurosign(e)"
+};
+
+partial alphanumeric_keys
+xkb_symbols "nodeadkeys" {
+
+    // Modifies the basic Estonian layout to eliminate all dead keys
+
+    include "ee(basic)"
+    name[Group1]="Estonian (no dead keys)";
+
+    key <TLDE>	{ [asciicircum,asciitilde ]	};
+    key <AE12>	{ [apostrophe,      grave ]	};
+    key <AD11>	{ [udiaeresis, Udiaeresis,    diaeresis,       degree ]	};
+    key <AD12>	{ [    otilde,     Otilde,      section,       macron ]	};
+    key <AC10>	{ [odiaeresis, Odiaeresis,        acute,  doubleacute ]	};
+    key <AC11>	{ [adiaeresis, Adiaeresis,  asciicircum,        caron ]	};
+    key <BKSL>	{ [apostrophe,   asterisk,      onehalf,        breve ]	};
+    key <AB10>	{ [     minus, underscore, dead_belowdot,    abovedot ]	};
+};
+
+// Dvorak with Estonian characters
+partial alphanumeric_keys
+xkb_symbols "dvorak" {
+   include "us(dvorak)"
+   name[Group1]= "Estonian (Dvorak)";
+
+    key <AE03>	{ [         3, numbersign,   sterling ]	};
+    key <AE04>	{ [         4,     dollar,    section,   currency ]	};
+    key <AE08>	{ [         8,   asterisk,    onehalf ]	};
+
+    key <AC01>	{ [         a,          A, adiaeresis, Adiaeresis ]	};
+    key <AC02>	{ [         o,          O,     otilde,     Otilde ]	};
+    key <AC03>	{ [         e,          E, odiaeresis, Odiaeresis ]	};
+    key <AC04>	{ [         u,          U, udiaeresis, Udiaeresis ]	};
+    key <AC10>	{ [         s,          S,     scaron,     Scaron ]	};
+    key <AB10>	{ [         z,          Z,     zcaron,     Zcaron ]	};
+
+    include "level3(ralt_switch)"
+    include "kpdl(comma)"
+    include "eurosign(5)"
+};
+
+// Estonian few characters on basic US keymap.
+// by Elan Ruusamäe <glen@delfi.ee>
+partial alphanumeric_keys
+xkb_symbols "us" {
+    include "us(euro)"
+    name[Group1] = "Estonian (US, with Estonian letters)";
+
+    // ž, Ž
+    key <AB01>	{ [           z,  Z,          zcaron,     Zcaron     ]	};
+    // ¢
+    key <AB03>	{ [           c,  C,          cent,       cent       ]	};
+    // š, Š
+    key <AC02>	{ [           s,  S,          scaron,     Scaron     ]	};
+    key <AC10>	{ [ semicolon,    colon,      odiaeresis, Odiaeresis ]	};
+    key <AC11>	{ [ apostrophe,   quotedbl,   adiaeresis, Adiaeresis ]	};
+    key <AD11>	{ [ bracketleft,  braceleft,  udiaeresis, Udiaeresis ]	};
+    key <AD12>	{ [ bracketright, braceright, otilde,     Otilde     ]	};
+    // £
+    key <AE03>	{ [           3,  numbersign, sterling,   sterling   ]	};
+
+    include "level3(ralt_switch)"
+    include "eurosign(e)"
+};
+
+// EXTRAS:
+
+partial alphanumeric_keys
+	xkb_symbols "sun_type6" {
+	include "sun_vndr/ee(sun_type6)"
+};

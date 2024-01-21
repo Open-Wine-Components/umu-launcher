@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="audio/x-mpegurl">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>MP3 audio (streamed)</comment>
+  <comment xml:lang="af">MP3-oudio (gestroom)</comment>
+  <comment xml:lang="ar">MP3 سمعي (تدفق)</comment>
+  <comment xml:lang="be-Latn">Aŭdyjo MP3 (płyń)</comment>
+  <comment xml:lang="bg">Аудио — MP3, поточно</comment>
+  <comment xml:lang="ca">àudio MP3 (flux)</comment>
+  <comment xml:lang="cs">zvuk MP3 (proud)</comment>
+  <comment xml:lang="da">MP3-lyd (strøm)</comment>
+  <comment xml:lang="de">MP3-Audio (Stream)</comment>
+  <comment xml:lang="el">Ήχος MP3 (εκπεμπόμενος)</comment>
+  <comment xml:lang="en-GB">MP3 audio (streamed)</comment>
+  <comment xml:lang="eo">MP3-sondosiero (fluigate)</comment>
+  <comment xml:lang="es">audio MP3 (en continuo)</comment>
+  <comment xml:lang="eu">MP3 audioa (korrontea)</comment>
+  <comment xml:lang="fi">MP3-ääni (virtaus)</comment>
+  <comment xml:lang="fo">MP3 ljóður (streymað)</comment>
+  <comment xml:lang="fr">audio MP3 (flux)</comment>
+  <comment xml:lang="fur">audio MP3 (in trasmission)</comment>
+  <comment xml:lang="ga">fuaim MP3 (sruthaithe)</comment>
+  <comment xml:lang="gl">son MP3 (en stream)</comment>
+  <comment xml:lang="he">שמע MP3  (מוזרם)</comment>
+  <comment xml:lang="hr">MP3 zvučni zapis (strujanje)</comment>
+  <comment xml:lang="hu">MP3 hang (sugárzott)</comment>
+  <comment xml:lang="ia">Audio MP3 (fluxo)</comment>
+  <comment xml:lang="id">Audio MP3 (stream)</comment>
+  <comment xml:lang="it">Audio MP3 (in streaming)</comment>
+  <comment xml:lang="ja">MP3 オーディオ (ストリーム)</comment>
+  <comment xml:lang="ka">MP3 აუდიო (ნაკადი)</comment>
+  <comment xml:lang="kk">MP3 аудиосы (ағымдық)</comment>
+  <comment xml:lang="ko">MP3 오디오(스트림)</comment>
+  <comment xml:lang="lt">MP3 garso įrašas (transliuojamas)</comment>
+  <comment xml:lang="lv">MP3 audio (straumēts)</comment>
+  <comment xml:lang="ms">Audio MP3 (aliran)</comment>
+  <comment xml:lang="nb">MP3-lyd (streaming)</comment>
+  <comment xml:lang="nl">MP3-audio (gestreamd)</comment>
+  <comment xml:lang="nn">Strauma MP3-lyd</comment>
+  <comment xml:lang="oc">àudio MP3 (flux)</comment>
+  <comment xml:lang="pl">Plik dźwiękowy MP3 (strumień)</comment>
+  <comment xml:lang="pt">áudio MP3 (em fluxo)</comment>
+  <comment xml:lang="pt-BR">Áudio MP3 (em fluxo)</comment>
+  <comment xml:lang="ro">Audio MP3 (flux)</comment>
+  <comment xml:lang="ru">Аудио MP3 (потоковое)</comment>
+  <comment xml:lang="sk">Zvuk MP3 (streamovaný)</comment>
+  <comment xml:lang="sl">Zvočna datoteka MP3 (pretočna)</comment>
+  <comment xml:lang="sq">Audio MP3 (streamed)</comment>
+  <comment xml:lang="sr">МП3 звук (проточан)</comment>
+  <comment xml:lang="sv">MP3-ljud (flöde)</comment>
+  <comment xml:lang="tr">MP3 sesi (akış)</comment>
+  <comment xml:lang="uk">звук MP3 (потоковий)</comment>
+  <comment xml:lang="vi">Âm thanh MP3 (chạy luồng)</comment>
+  <comment xml:lang="zh-CN">MP3 音频流媒体</comment>
+  <comment xml:lang="zh-TW">MP3 音訊 (串流)</comment>
+  <sub-class-of type="text/plain"/>
+  <alias type="audio/mpegurl"/>
+  <alias type="application/m3u"/>
+  <alias type="audio/x-mp3-playlist"/>
+  <alias type="audio/m3u"/>
+  <alias type="audio/x-m3u"/>
+  <glob pattern="*.m3u"/>
+  <glob pattern="*.m3u8"/>
+  <glob pattern="*.vlc"/>
+</mime-type>

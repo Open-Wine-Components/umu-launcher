@@ -1,0 +1,96 @@
+//
+// XKB symbol :: National Bangla/Bengali Standard Keyboard Layout for Bangladesh
+// Ref: http://www.bcc.net.bd/keyboard/bsti_kb_specification.pdf
+//
+// Author: Jamil Ahmed <jamil at bengalinux.org>
+// Created: 18-12-2005
+// Last Updated: 08-01-2006
+// Version: 6.01.3
+//
+// Issues:
+// <AC08> Khanda-Ta is given U-09CE; But BCC had U-09BA
+// <AC07> U-09BB is added though it is not allocated in Original Unicode
+// <AE06> U-09B3 is added though it is not allocated in Original Unicode
+// 3 Conjunct characters are not included
+//
+
+default  partial alphanumeric_keys
+xkb_symbols "basic" {
+   name[Group1]= "Bangla";
+   key <ESC>  { [ Escape ] };
+
+// numbers
+   key <TLDE> { [ grave,	asciitilde,	voidsymbol,	voidsymbol ] };
+   key <AE01> { [ 0x10009E7,	exclam,		0x10009F4,	voidsymbol ] };
+   key <AE02> { [ 0x10009E8,	at,		0x10009F5,	voidsymbol ] };
+   key <AE03> { [ 0x10009E9,	numbersign,	0x10009F6,	voidsymbol ] };
+   key <AE04> { [ 0x10009EA,	dollar,		0x10009F3,	0x10009F2  ] };
+   key <AE05> { [ 0x10009EB,	percent,	0x10009F7,	voidsymbol ] };
+   key <AE06> { [ 0x10009EC,	asciicircum,	0x10009F8,	0x10009B3  ] };
+   key <AE07> { [ 0x10009ED,	ampersand,	0x1000902,	voidsymbol ] };
+   key <AE08> { [ 0x10009EE,	asterisk,	voidsymbol,	voidsymbol ] };
+   key <AE09> { [ 0x10009EF,	parenleft,	voidsymbol,	voidsymbol ] };
+   key <AE10> { [ 0x10009E6,	parenright,	0x10009F9,	voidsymbol ] };
+   key <AE11> { [ minus,	underscore,	0x100200C,	voidsymbol ] };
+   key <AE12> { [ equal,	plus,		0x100200D,	voidsymbol ] };
+   key <BKSP> { [ BackSpace ] };
+
+// tab, q to ] 
+   key <TAB>  { [ Tab,  ISO_Left_Tab ] };
+   key <AD01> { [ 0x1000999,	0x1000982,	0x10009E2,	0x10009E3  ] };
+   key <AD02> { [ 0x10009AF,	0x10009DF,	voidsymbol,	voidsymbol ] };
+   key <AD03> { [ 0x10009A1,	0x10009A2,	0x10009C4,	voidsymbol ] };
+   key <AD04> { [ 0x10009AA,	0x10009AB,	voidsymbol,	voidsymbol ] };
+   key <AD05> { [ 0x100099F,	0x10009A0,	voidsymbol,	voidsymbol ] };
+   key <AD06> { [ 0x100099A,	0x100099B,	voidsymbol,	voidsymbol ] };
+   key <AD07> { [ 0x100099C,	0x100099D,	voidsymbol,	voidsymbol ] };
+   key <AD08> { [ 0x10009B9,	0x100099E,	0x10009BD,	voidsymbol ] };
+   key <AD09> { [ 0x1000997,	0x1000998,	voidsymbol,	voidsymbol ] };
+   key <AD10> { [ 0x10009DC,	0x10009DD,	voidsymbol,	voidsymbol ] };
+   key <AD11> { [ bracketleft,	braceleft,	voidsymbol,	voidsymbol ] };
+   key <AD12> { [ bracketright,	braceright,	voidsymbol,	voidsymbol ] };
+   key <RTRN> { [ Return ] };
+
+// caps, a to ' 
+// key <CAPS> { [ Caps_Lock ] };
+   key <AC01> { [ 0x10009C3,	0x10009D7,	0x100098B,	0x10009E0  ] };
+   key <AC02> { [ 0x10009C1,	0x10009C2,	0x1000989,	0x100098A  ] };
+   key <AC03> { [ 0x10009BF,	0x10009C0,	0x1000987,	0x1000988  ] };
+   key <AC04> { [ 0x10009AC,	0x10009AD,	0x10009F0,	0x10009F1  ] };
+   key <AC05> { [ 0x10009CD,	0x1000964,	0x1000965,	voidsymbol ] };
+   key <AC06> { [ 0x10009BE,	0x1000985,	0x1000986,	voidsymbol ] };
+   key <AC07> { [ 0x1000995,	0x1000996,	0x10009BB,	voidsymbol ] };
+   key <AC08> { [ 0x10009A4,	0x10009A5,	0x10009CE,	voidsymbol ] };
+   key <AC09> { [ 0x10009A6,	0x10009A7,	0x100098C,	0x10009E1  ] };
+   key <AC10> { [ semicolon,	colon,		voidsymbol,	voidsymbol ] };
+   key <AC11> { [ apostrophe,	quotedbl,	voidsymbol,	voidsymbol ] };
+
+// shift, z to /
+// key <LFSH> { [ Shift_L ] };
+   key <AB01> { [ 0x1000981,	0x1000983,	0x10009FA,	voidsymbol ] };
+   key <AB02> { [ 0x10009CB,	0x10009CC,	0x1000993,	0x1000994  ] };
+   key <AB03> { [ 0x10009C7,	0x10009C8,	0x100098F,	0x1000990  ] };
+   key <AB04> { [ 0x10009B0,	0x10009B2,	voidsymbol,	voidsymbol ] };
+   key <AB05> { [ 0x10009A8,	0x10009A3,	voidsymbol,	voidsymbol ] };
+   key <AB06> { [ 0x10009B8,	0x10009B7,	voidsymbol,	voidsymbol ] };
+   key <AB07> { [ 0x10009AE,	0x10009B6,	voidsymbol,	voidsymbol ] };
+   key <AB08> { [ comma,	less,		voidsymbol,	voidsymbol ] };
+   key <AB09> { [ period,	greater,	0x10009BC,	voidsymbol ] };
+   key <AB10> { [ slash,	question,	voidsymbol,	voidsymbol ] };
+   key <BKSL> { [ backslash,	bar,		voidsymbol,	voidsymbol ] };
+
+// third level with right-Alt
+    include "level3(ralt_switch)"
+
+};
+
+
+//
+// XKB symbol :: Probhat Bangla/Bengali Keyboard Layout
+// Ref: www.ankurbangla.org/images/probhat_layout.png
+//
+
+xkb_symbols "probhat" {
+    include "in(ben_probhat)"
+    name[Group1]= "Bangla (Probhat)";
+};

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/vnd.sun.xml.writer.global">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>OpenOffice Writer global document</comment>
+  <comment xml:lang="af">OpenOffice Writer globale dokument</comment>
+  <comment xml:lang="ar">مستند المكتب المفتوح Writer العالمي</comment>
+  <comment xml:lang="ast">Documentu global d'OpenOffice Writer</comment>
+  <comment xml:lang="az">OpenOffice Writer qlobal sənədi</comment>
+  <comment xml:lang="be-Latn">Hlabalny dakument OpenOffice Writer</comment>
+  <comment xml:lang="bg">Глобален документ — OpenOffice Writer</comment>
+  <comment xml:lang="ca">document global d'OpenOffice Writer</comment>
+  <comment xml:lang="cs">globální dokument OpenOffice Writer</comment>
+  <comment xml:lang="cy">Dogfen eang OpenOffice (Writer)</comment>
+  <comment xml:lang="da">OpenOffice Writer-globalt dokument</comment>
+  <comment xml:lang="de">OpenOffice-Writer-Globaldokument</comment>
+  <comment xml:lang="el">Καθολικό έγγραφο OpenOffice Writer</comment>
+  <comment xml:lang="en-GB">OpenOffice Writer global document</comment>
+  <comment xml:lang="es">documento global de LibreOffice Writer</comment>
+  <comment xml:lang="eu">OpenOffice.org Writer dokumentu globala</comment>
+  <comment xml:lang="fi">OpenOffice Writer - yleinen asiakirja</comment>
+  <comment xml:lang="fo">OpenOffice Writer heiltøkt skjal</comment>
+  <comment xml:lang="fr">document global OpenOffice Writer</comment>
+  <comment xml:lang="fur">document globâl OpenOffice Writer</comment>
+  <comment xml:lang="ga">cáipéis chomhchoiteann OpenOffice Writer</comment>
+  <comment xml:lang="gl">documento global de OpenOffice Writer</comment>
+  <comment xml:lang="he">מסמך גלובלי של OpenOffice Writer</comment>
+  <comment xml:lang="hr">OpenOffice Writer globalni dokument</comment>
+  <comment xml:lang="hu">OpenOffice Writer globális dokumentum</comment>
+  <comment xml:lang="ia">Documento global OpenOffice Writer</comment>
+  <comment xml:lang="id">Dokumen global OpenOffice Writer</comment>
+  <comment xml:lang="it">Documento globale OpenOffice Writer</comment>
+  <comment xml:lang="ja">OpenOffice Writer グローバルドキュメント</comment>
+  <comment xml:lang="ka">OpenOffice Writer-ის გლობალური დოკუმენტი</comment>
+  <comment xml:lang="kk">OpenOffice Writer негізгі құжаты</comment>
+  <comment xml:lang="ko">OpenOffice Writer 글로벌 문서</comment>
+  <comment xml:lang="lt">OpenOffice Writer bendrinis dokumentas</comment>
+  <comment xml:lang="lv">OpenOffice Writer globālais dokuments</comment>
+  <comment xml:lang="nb">Global OpenOffice Writer globalt dokument</comment>
+  <comment xml:lang="nl">OpenOffice.org Writer-globaal-document</comment>
+  <comment xml:lang="nn">OpenOffice Writer globalt dokument</comment>
+  <comment xml:lang="oc">document global OpenOffice Writer</comment>
+  <comment xml:lang="pl">Globalny dokument OpenOffice.org Writer</comment>
+  <comment xml:lang="pt">documento global OpenOffice Writer</comment>
+  <comment xml:lang="pt-BR">Documento global do OpenOffice Writer</comment>
+  <comment xml:lang="ro">Document global OpenOffice Writer</comment>
+  <comment xml:lang="ru">Основной документ OpenOffice Writer</comment>
+  <comment xml:lang="sk">Globálny dokument OpenOffice Writer</comment>
+  <comment xml:lang="sl">Splošni dokument OpenOffice.org Writer</comment>
+  <comment xml:lang="sq">Dokument i përgjithshëm OpenOffice Writer</comment>
+  <comment xml:lang="sr">Општи документ Опен Офис Писца</comment>
+  <comment xml:lang="sv">OpenOffice Writer-globaldokument</comment>
+  <comment xml:lang="tr">OpenOffice Writer global belgesi</comment>
+  <comment xml:lang="uk">загальний документ OpenOffice Writer</comment>
+  <comment xml:lang="vi">Tài liệu toàn cục Writer của OpenOffice.org</comment>
+  <comment xml:lang="zh-CN">OpenOffice Writer 全局文档</comment>
+  <comment xml:lang="zh-TW">OpenOffice Writer 主控文件</comment>
+  <sub-class-of type="application/zip"/>
+  <generic-icon name="x-office-document"/>
+  <glob pattern="*.sxg"/>
+</mime-type>

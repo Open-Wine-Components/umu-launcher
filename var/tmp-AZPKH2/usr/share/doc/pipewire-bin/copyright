@@ -1,0 +1,219 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: pipewire
+Source: https://gitlab.freedesktop.org/pipewire/pipewire
+License: Expat and LGPL-2.1+
+
+Files: *
+Copyright: 2009 Lennart Poettering
+           2010 David Henningsson
+           2013 Inigo Quilez
+           2015-2022 Wim Taymans
+           2016-2021 Axis Communications
+           2018-2022 Collabora Ltd.
+           2020 Konsulko Group
+           2020 Sergey Bugaev
+           2020 Georges Basile Stavracas Neto
+           2021 jothepro
+           2019-2021 Red Hat, Inc.
+           2021 Arun Raghavan
+           2013 The Chromium OS Authors.
+           2010 Google Inc.
+           2017 HiFi-LoFi
+           2000-2002 Richard W.E. Furse, Paul Barton-Davis
+           2021 Sanchayan Maity
+           2021 Pauli Virtanen
+           2021 Florian Hülsmann
+License: Expat
+
+Files: include/*
+Copyright: 2000-2017 Julian Seward.
+License: BZIP2
+
+Files: pipewire-jack/jack/*
+Copyright: 2000-2013 Paul Davis
+           2003-2004 Jack OQuin
+           2002 Kai Vehmanen
+           2011-2014 David Robillard
+           2004 Ian Esten
+           2004-2012 Grame
+           2003 Rohan Drape
+           2010 Torben Hohn
+           2004 Rui Nuno Capela, Lee Revell
+License: LGPL-2.1+
+
+Files: pipewire-jack/jack/control.h
+Copyright: 2008 Nedko Arnaudov
+           2008 GRAME
+License: GPL-2
+
+Files: spa/plugins/alsa/90-pipewire-alsa.rules
+       spa/plugins/alsa/acp/*
+       spa/plugins/alsa/mixer/paths/*
+       spa/plugins/alsa/mixer/profile-sets/*
+       spa/plugins/alsa/mixer/samples/*
+Copyright: 1999 Tom Tromey
+           2000 Red Hat, Inc.
+           2004-2009 Lennart Poettering
+           2006 Pierre Ossman
+           2006 Pierre Ossman for Cendio AB
+           2011 Intel Corporation
+           2011 Collabora Multimedia
+           2011 Arun Raghavan
+           2011 Wolfson Microelectronics PLC
+           2012 Feng Wei, Freescale Ltd.
+           2015-2022 Wim Taymans
+License: LGPL-2+ and LGPL-2.1+ and Expat
+
+Files: spa/plugins/bluez5/*
+Copyright: 2004-2010 Marcel Holtmann
+           2006-2010 Nokia Corporation
+           2016-2017 Arkadiusz Bokowy
+           2018-2022 Wim Taymans
+           2018-2022 Collabora Ltd.
+           2018 Pali Rohár
+           2021-2022 Pauli Virtanen
+           2013 Julien Pommier
+License: Expat and LGPL-2.1+
+
+Files: src/modules/module-client-node/v0/*
+       src/modules/module-protocol-native/v0/*
+       src/modules/module-portal.c
+Copyright: 2015-2022 Wim Taymans
+           2019 Red Hat Inc.
+License: LGPL-2+
+
+Files: src/modules/module-filter-chain/ladspa.h
+Copyright: 2000-2002 Richard W.E. Furse, Paul Barton-Davis
+License: LGPL-2.1+
+
+Files: src/modules/module-filter-chain/pffft.*
+Copyright: 2013 Julien Pommier
+           2004 The University Corporation for Atmospheric Research
+License: FFTPACK
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+
+License: LGPL-2+
+ This package is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+ .
+ This package is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <https://www.gnu.org/licenses/>.
+ .
+ On Debian systems, the complete text of the GNU Lesser General
+ Public License can be found in "/usr/share/common-licenses/LGPL-2".
+
+License: LGPL-2.1+
+ This package is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+ .
+ This package is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <https://www.gnu.org/licenses/>.
+ .
+ On Debian systems, the complete text of the GNU Lesser General
+ Public License can be found in "/usr/share/common-licenses/LGPL-2.1".
+
+License: FFTPACK
+ Redistribution and use of the Software in source and binary forms,
+ with or without modification, is permitted provided that the
+ following conditions are met:
+ .
+ - Neither the names of NCAR's Computational and Information Systems
+   Laboratory, the University Corporation for Atmospheric Research,
+   nor the names of its sponsors or contributors may be used to
+   endorse or promote products derived from this Software without
+   specific prior written permission.
+ .
+ - Redistributions of source code must retain the above copyright
+   notices, this list of conditions, and the disclaimer below.
+ .
+ - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions, and the disclaimer below in the
+   documentation and/or other materials provided with the
+   distribution.
+ .
+ THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, INDIRECT, INCIDENTAL, SPECIAL,
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE
+ SOFTWARE.
+
+License: BZIP2
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. The origin of this software must not be misrepresented; you must
+    not claim that you wrote the original software.  If you use this
+    software in a product, an acknowledgment in the product
+    documentation would be appreciated but is not required.
+ .
+ 3. Altered source versions must be plainly marked as such, and must
+    not be misrepresented as being the original software.
+ .
+ 4. The name of the author may not be used to endorse or promote
+    products derived from this software without specific prior written
+    permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: GPL-2
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; version 2 of the License.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ On Debian systems you can find the full text of the GNU General Public
+ License version 2 at /usr/share/common-licenses/GPL-2.

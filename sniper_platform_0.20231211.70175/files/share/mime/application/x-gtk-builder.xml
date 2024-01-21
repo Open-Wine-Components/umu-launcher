@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-gtk-builder">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>GTK+ Builder interface document</comment>
+  <comment xml:lang="bg">Интерфейс — GTK+ Builder</comment>
+  <comment xml:lang="ca">document d'interfície GTK+ Builder</comment>
+  <comment xml:lang="da">GTK+ Builder-brugerflade-dokument</comment>
+  <comment xml:lang="de">GTK+-Builder-Oberflächendokument</comment>
+  <comment xml:lang="en-GB">GTK+ Builder interface document</comment>
+  <comment xml:lang="es">documento de interfaz de GTK Builder</comment>
+  <comment xml:lang="eu">GTK+ Builder interfaze dokumentua</comment>
+  <comment xml:lang="fi">GTK+ Builder -käyttöliittymän asiakirja</comment>
+  <comment xml:lang="fr">document d'interface GTK+ Builder</comment>
+  <comment xml:lang="hr">GTK+ Graditelj dokument sučelja</comment>
+  <comment xml:lang="hu">GTK+ Builder felületleíró dokumentum</comment>
+  <comment xml:lang="it">Documento interfaccia GTK+ Builder</comment>
+  <comment xml:lang="ko">GTK+ 빌더 인터페이스 문서</comment>
+  <comment xml:lang="pl">Dokument interfejsu GTK Builder</comment>
+  <comment xml:lang="pt-BR">Documento de interface do GTK+ Builder</comment>
+  <comment xml:lang="sv">GTK+-Builder-gränssnittsdokument</comment>
+  <comment xml:lang="tr">GTK+ Builder arayüz belgesi</comment>
+  <comment xml:lang="uk">документ інтерфейсу GTK+ Builder</comment>
+  <comment xml:lang="zh-CN">GTK+ Builder 界面文档</comment>
+  <sub-class-of type="application/xml"/>
+  <generic-icon name="x-office-document"/>
+  <glob pattern="*.ui"/>
+</mime-type>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.screensaver" path="/org/gnome/desktop/screensaver/">
+    <key name="idle-activation-enabled" type="b">
+      <default>true</default>
+      <summary>Activate when idle</summary>
+      <description>
+        Set this to TRUE to activate the screensaver when the session is idle.
+
+        DEPRECATED: This key is deprecated and ignored.
+        Set org.gnome.desktop.session idle-delay to 0 if you do not want to activate the screensaver.
+      </description>
+    </key>
+    <key name="lock-enabled" type="b">
+      <default>true</default>
+      <summary>Lock on activation</summary>
+      <description>Set this to TRUE to lock the screen when the screensaver goes active.</description>
+    </key>
+    <key name="lock-delay" type="u">
+      <default>0</default>
+      <summary>Time before locking</summary>
+      <description>The number of seconds after screensaver activation before locking the screen.</description>
+    </key>
+    <key name="show-full-name-in-top-bar" type="b">
+      <default>true</default>
+      <summary>Show full name in the lock screen</summary>
+      <description>Whether the user’s full name is shown in the lock screen or not. This only affects the screen shield, the name is always shown in the unlock dialog.</description>
+    </key>
+    <key name="embedded-keyboard-enabled" type="b">
+      <default>false</default>
+      <summary>Allow embedding a keyboard into the window</summary>
+      <description>
+        Set this to TRUE to allow embedding a keyboard into the window when trying to unlock.  The “keyboard_command” key must be set with the appropriate command.
+
+        DEPRECATED: This key is deprecated and ignored.
+</description>
+    </key>
+    <key name="embedded-keyboard-command" type="s">
+      <default>''</default>
+      <summary>Embedded keyboard command</summary>
+      <description>
+        The command that will be run, if the “embedded_keyboard_enabled” key is set to TRUE, to embed a keyboard widget into the window. This command should implement an XEMBED plug interface and output a window XID on the standard output.
+
+        DEPRECATED: This key is deprecated and ignored.
+      </description>
+    </key>
+    <key name="logout-enabled" type="b">
+      <default>false</default>
+      <summary>Allow logout</summary>
+      <description>
+        Set this to TRUE to offer an option in the unlock dialog to allow logging out after a delay.  The delay is specified in the “logout_delay” key.
+
+        DEPRECATED: This key is deprecated and ignored.
+      </description>
+    </key>
+    <key name="logout-delay" type="u">
+      <default>7200</default>
+      <summary>Time before logout option</summary>
+      <description>
+        The number of seconds after the screensaver activation before a logout option will appear in the unlock dialog. This key has effect only if the “logout_enable” key is set to TRUE.
+
+        DEPRECATED: This key is deprecated and ignored
+      </description>
+    </key>
+    <key name="logout-command" type="s">
+      <default>''</default>
+      <summary>Logout command</summary>
+      <description>
+        The command to invoke when the logout button is clicked.  This command should simply log the user out without any interaction. This key has effect only if the “logout_enable” key is set to TRUE.
+
+        DEPRECATED: This key is deprecated and ignored.
+      </description>
+    </key>
+    <key name="user-switch-enabled" type="b">
+      <default>true</default>
+      <summary>Allow user switching</summary>
+      <description>Set this to TRUE to offer an option in the unlock dialog to switch to a different user account.</description>
+    </key>
+    <key name="status-message-enabled" type="b">
+      <default>true</default>
+      <summary>Allow the session status message to be displayed</summary>
+      <description>
+        Allow the session status message to be displayed when the screen is locked.
+
+        DEPRECATED: This key is deprecated and ignored.
+      </description>
+    </key>
+    <key name="picture-options" enum="org.gnome.desktop.GDesktopBackgroundStyle">
+      <default>'zoom'</default>
+      <summary>Picture Options</summary>
+      <description>
+        Determines how the image set by wallpaper_filename is rendered.
+        Possible values are “none”, “wallpaper”, “centered”, “scaled”,
+        “stretched”, “zoom”, “spanned”.
+      </description>
+    </key>
+    <key name="picture-uri" type="s">
+      <default>'file:///usr/share/backgrounds/gnome/adwaita-timed.xml'</default>
+      <summary>Picture URI</summary>
+      <description>
+        URI to use for the background image. Note that the backend only supports
+        local (file://) URIs.
+      </description>
+    </key>
+    <key name="picture-opacity" type="i">
+      <range min="0" max="100"/>
+      <default>100</default>
+      <summary>Picture Opacity</summary>
+      <description>
+        Opacity with which to draw the background picture.
+      </description>
+    </key>
+    <key name="primary-color" type="s">
+      <default>'#023c88'</default>
+      <summary>Primary Color</summary>
+      <description>
+        Left or Top color when drawing gradients, or the solid color.
+      </description>
+    </key>
+    <key name="secondary-color" type="s">
+      <default>'#5789ca'</default>
+      <summary>Secondary Color</summary>
+      <description>
+        Right or Bottom color when drawing gradients, not used for solid color.
+      </description>
+    </key>
+    <key name="color-shading-type" enum="org.gnome.desktop.GDesktopBackgroundShading">
+      <default>'solid'</default>
+      <summary>Color Shading Type</summary>
+      <description>
+        How to shade the background color. Possible values are “horizontal”,
+        “vertical”, and “solid”.
+      </description>
+    </key>
+  </schema>
+</schemalist>

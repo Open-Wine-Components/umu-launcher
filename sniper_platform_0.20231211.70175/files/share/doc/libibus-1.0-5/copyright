@@ -1,0 +1,410 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ibus
+Source: https://github.com/ibus/ibus/releases
+
+Files:     *
+Copyright: 2008-2018 Peng Huang <shawn.p.huang@gmail.com>
+           2007-2019 Red Hat, Inc.
+	   2010-2020 Takao Fujiwara <takao.fujiwara1@gmail.com>
+License:   LGPL-2.1+
+
+Files:     debian/*
+Copyright: 2008-2010 LI Daobing <lidaobing@debian.org>
+           2010-2012 Asias He <asias.hejun@gmail.com>
+           2012 Kees Cook <kees@ubuntu.com>
+           2012-2016 Aron Xu <aron@debian.org>
+           2011-2019 Osamu Aoki <osamu@debian.org>
+           2019 Boyuan Yang <byang@debian.org>
+           2019-2020 Changwoo Ryu <cwryu@debian.org>
+License:   LGPL-2.1+
+
+Files:     Makefile.in
+           bindings/Makefile.in
+           bindings/pygobject/Makefile.in
+           bindings/vala/Makefile.in
+           bus/Makefile.in
+           client/Makefile.in
+           client/gtk2/Makefile.in
+           client/gtk3/Makefile.in
+           client/wayland/Makefile.in
+           client/x11/Makefile.in
+           conf/Makefile.in
+           conf/dconf/Makefile.in
+           conf/memconf/Makefile.in
+           data/Makefile.in
+           data/annotations/Makefile.in
+           data/dconf/Makefile.in
+           data/icons/Makefile.in
+           data/its/Makefile.in
+           data/keymaps/Makefile.in
+           docs/Makefile.in
+           docs/reference/Makefile.in
+           docs/reference/ibus/Makefile.in
+           engine/Makefile.in
+           ibus/Makefile.in
+           ibus/interface/Makefile.in
+           m4/Makefile.in
+           portal/Makefile.in
+           setup/Makefile.in
+           src/Makefile.in
+           src/tests/Makefile.in
+           tools/Makefile.in
+           ui/Makefile.in
+           ui/gtk3/Makefile.in
+           util/IMdkit/Makefile.in
+           util/Makefile.in
+Copyright: 1994-2019 Free Software Foundation, Inc.
+License:   permissive-makefile-in
+ This Makefile.in is free software; the Free Software Foundation
+ gives unlimited permission to copy and/or distribute it,
+ with or without modifications, as long as this notice is preserved.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+ even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ PARTICULAR PURPOSE.
+
+Files:     util/IMdkit/IMConn.c
+           util/IMdkit/IMMethod.c
+           util/IMdkit/IMValues.c
+           util/IMdkit/IMdkit.h
+           util/IMdkit/Xi18n.h
+           util/IMdkit/Xi18nX.h
+           util/IMdkit/XimFunc.h
+           util/IMdkit/i18nAttr.c
+           util/IMdkit/i18nClbk.c
+           util/IMdkit/i18nIc.c
+           util/IMdkit/i18nMethod.c
+           util/IMdkit/i18nPtHdr.c
+           util/IMdkit/i18nUtil.c
+           util/IMdkit/i18nX.c
+Copyright: 1993-1994 Hewlett-Packard Company
+           1994-1995 Sun Microsystems, Inc.
+	   2014 Peng Huang
+License:   ISC-Sun
+ Permission to use, copy, modify, distribute, and sell this software
+ and its documentation for any purpose is hereby granted without fee,
+ provided that the above copyright notice appear in all copies and
+ that both that copyright notice and this permission notice appear
+ in supporting documentation, and that the name of Sun Microsystems, Inc.
+ and Hewlett-Packard not be used in advertising or publicity pertaining to
+ distribution of the software without specific, written prior permission.
+ Sun Microsystems, Inc. and Hewlett-Packard make no representations about
+ the suitability of this software for any purpose.  It is provided "as is"
+ without express or implied warranty.
+ .
+ SUN MICROSYSTEMS INC. AND HEWLETT-PACKARD COMPANY DISCLAIMS ALL
+ WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ SUN MICROSYSTEMS, INC. AND HEWLETT-PACKARD COMPANY BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+ CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Files:     m4/gettext.m4
+           m4/iconv.m4
+           m4/intlmacosx.m4
+           m4/lib-ld.m4
+           m4/lib-link.m4
+           m4/lib-prefix.m4
+           m4/libtool.m4
+           m4/ltoptions.m4
+           m4/ltsugar.m4
+           m4/ltversion.m4
+           m4/lt~obsolete.m4
+           m4/nls.m4
+           m4/po.m4
+           m4/progtest.m4
+Copyright: 1995-2018 Free Software Foundation, Inc.
+License:   permissive-autoconf-m4
+ This file is free software; the Free Software Foundation gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+Files:     compile
+           depcomp
+           ltmain.sh
+           missing
+           py-compile
+           test-driver
+Copyright: 1996-2018 Free Software Foundation, Inc.
+License:   GPL-2.0+ with autoconf exception
+
+Files:     client/wayland/input-method-unstable-v1-client-protocol.h
+           client/wayland/input-method-unstable-v1-protocol.c
+Copyright: 2012-2013 Intel Corporation
+License:   ISC-Intel
+ Permission to use, copy, modify, distribute, and sell this
+ software and its documentation for any purpose is hereby granted
+ without fee, provided that the above copyright notice appear in
+ all copies and that both that copyright notice and this permission
+ notice appear in supporting documentation, and that the name of
+ the copyright holders not be used in advertising or publicity
+ pertaining to distribution of the software without specific,
+ written prior permission.  The copyright holders make no
+ representations about the suitability of this software for any
+ purpose.  It is provided "as is" without express or implied
+ warranty.
+ .
+ THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ THIS SOFTWARE.
+
+Files:     client/wayland/Makefile.am
+Copyright: 2007-2013 Peng Huang <shawn.p.huang@gmail.com>
+	   2019 Takao Fujiwara <takao.fujiwara1@gmail.com>
+           2007-2019 Red Hat, Inc.
+License:   LGPL-2.1+
+
+Files:     client/wayland/main.c
+Copyright: 2019 Takao Fujiwara <takao.fujiwara1@gmail.com>
+	   2013 Intel Corporation
+           2013-2019 Red Hat, Inc.
+License:   LGPL-2.1+
+
+Files:     util/IMdkit/XimProto.h
+Copyright: 1992-1994 FUJITSU LIMITED
+License:   ISC-Fujitsu
+ Permission to use, copy, modify, distribute, and sell this software
+ and its documentation for any purpose is hereby granted without fee,
+ provided that the above copyright notice appear in all copies and
+ that both that copyright notice and this permission notice appear
+ in supporting documentation, and that the name of FUJITSU LIMITED
+ not be used in advertising or publicity pertaining to distribution
+ of the software without specific, written prior permission.
+ FUJITSU LIMITED makes no representations about the suitability of
+ this software for any purpose.
+ It is provided "as is" without express or implied warranty.
+ .
+ FUJITSU LIMITED DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ EVENT SHALL FUJITSU LIMITED BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+ USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ PERFORMANCE OF THIS SOFTWARE.
+ .
+ This version tidied and debugged by Steve Underwood May 1999
+
+Files:     util/IMdkit/Xtrans.h
+Copyright: 1993-1994 X Consortium
+           1993-1994 NCR Corporation - Dayton, Ohio, USA
+License:   MIT and ISC-NCR
+
+License: MIT
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+ .
+ Except as contained in this notice, the name of the X Consortium shall
+ not be used in advertising or otherwise to promote the sale, use or
+ other dealings in this Software without prior written authorization
+ from the X Consortium.
+
+License: ISC-NCR
+ Permission to use, copy, modify, and distribute this software and its
+ documentation for any purpose and without fee is hereby granted, provided
+ that the above copyright notice appear in all copies and that both that
+ copyright notice and this permission notice appear in supporting
+ documentation, and that the name NCR not be used in advertising
+ or publicity pertaining to distribution of the software without specific,
+ written prior permission.  NCR makes no representations about the
+ suitability of this software for any purpose.  It is provided "as is"
+ without express or implied warranty.
+ .
+ NCR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN
+ NO EVENT SHALL NCR BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+ NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Files:     install-sh
+Copyright: 1994 X Consortium
+License:   MIT
+Comment:   FSF changes to this file are in the public domain.
+
+Files:     src/ibuskeynames.c
+           src/ibuskeyuni.c
+Copyright: 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
+License:   LGPL-2.0+
+
+Files:     src/gtkimcontextsimpleseqs.h
+Copyright: 2007-2008 GNOME Foundation
+License:   LGPL-2.0+
+
+Files:     client/x11/gdk-private.h
+Copyright: 2008 Peng Huang <shawn.p.huang@gmail.com>
+           2008 Red Hat, Inc.
+License:   LGPL-2.1+
+
+Files:     setup/main.py
+Copyright: 2007-2016 Peng Huang <shawn.p.huang@gmail.com>
+	   2010-2018 Takao Fujiwara <takao.fujiwara1@gmail.com>
+           2007-2016 Red Hat, Inc.
+License:   LGPL-2.1+
+
+Files:     ibus/keysyms.py
+Copyright: 1998-2003 James Henstridge
+License:   LGPL-2.1+
+
+Files:     client/x11/gdk-private.c
+Copyright: 2008-2015 Peng Huang <shawn.p.huang@gmail.com>
+           2008-2015 Red Hat, Inc.
+License:   LGPL-2.1+
+
+Files:     client/x11/main.c
+Copyright: 2007-2015 Peng Huang <shawn.p.huang@gmail.com>
+	   2015-2019 Takao Fujiwara <takao.fujiwara1@gmail.com>
+           2007-2015 Red Hat, Inc.
+License:   LGPL-2.1+
+
+Files:     m4/vapigen.m4
+Copyright: 2012 Evan Nemerson dnl
+License:   LGPL-2.1+
+
+Files:     configure
+Copyright: 1992-2012 Free Software Foundation, Inc.
+License:   permissive-fsf-grant
+ This configure script is free software; the Free Software Foundation
+ gives unlimited permission to copy, distribute and modify it.
+
+Files:     INSTALL
+Copyright: 1994-2016 Free Software Foundation, Inc.
+License:   permissive
+
+Files:     po/Makefile.in.in
+Copyright: 1995-2010 Ulrich Drepper <drepper@gnu.ai.mit.edu>
+License:   permissive
+
+License: permissive
+ Copying and distribution of this file, with or without modification,
+ are permitted in any medium without royalty provided the copyright
+ notice and this notice are preserved.  This file is offered as-is,
+ without any warranty.
+
+Files:     aclocal.m4
+Copyright: 1996-2018 Free Software Foundation, Inc.
+License:   permissive-fsf-grant-attribution
+ This file is free software; the Free Software Foundation
+ gives unlimited permission to copy and/or distribute it,
+ with or without modifications, as long as this notice is preserved.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+ even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ PARTICULAR PURPOSE.
+
+Files:     m4/introspection.m4
+Copyright: 2009 Johan Dahlin
+License:   permissive-author-grant-attribution
+ This file is free software; the author(s) gives unlimited
+ permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+Files:     config.sub
+           config.guess
+Copyright: 1992-2018 Free Software Foundation, Inc.
+License:   GPL-3.0+ with autoconf exception
+ This file is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, see <http://www.gnu.org/licenses/>.
+ .
+ As a special exception to the GNU General Public License, if you
+ distribute this file as part of a program that contains a
+ configuration script generated by Autoconf, you may include it under
+ the same distribution terms that you use for the rest of that
+ program.  This Exception is an additional permission under section 7
+ of the GNU General Public License, version 3 ("GPLv3").
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ Version 3 can be found in `/usr/share/common-licenses/GPL-3'.
+
+License:   GPL-2.0+ with autoconf exception
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ .
+ As a special exception to the GNU General Public License, if you
+ distribute this file as part of a program that contains a
+ configuration script generated by Autoconf, you may include it under
+ the same distribution terms that you use for the rest of that program.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ Version 2 can be found in `/usr/share/common-licenses/GPL-2'.
+
+License:   LGPL-2.0+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+ .
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library. If not, see <http://www.gnu.org/licenses/>.
+ .
+ On Debian systems, the complete text of the GNU Library General Public License
+ Version 2 can be found in `/usr/share/common-licenses/LGPL-2'.
+
+License:   LGPL-2.1+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+ .
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ USA
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public License
+ Version 2.1 can be found in `/usr/share/common-licenses/LGPL-2.1'.

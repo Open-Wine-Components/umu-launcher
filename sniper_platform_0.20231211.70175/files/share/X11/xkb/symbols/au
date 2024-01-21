@@ -1,0 +1,9 @@
+//
+// Default Australian is the same as American
+//
+default  partial alphanumeric_keys
+xkb_symbols "basic" {
+    include "us(basic)"
+
+    name[Group1]= "English (Australian)";
+};

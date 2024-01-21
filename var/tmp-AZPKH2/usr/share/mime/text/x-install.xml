@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="text/x-install">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>installation instructions</comment>
+  <comment xml:lang="af">installasie-instruksies</comment>
+  <comment xml:lang="ar">تعليمات التثبيت</comment>
+  <comment xml:lang="ast">instrucciones d'instalación</comment>
+  <comment xml:lang="be-Latn">instrukcyja dla instalavańnia</comment>
+  <comment xml:lang="bg">Инструкции за инсталация</comment>
+  <comment xml:lang="ca">instruccions d'instal·lació</comment>
+  <comment xml:lang="cs">návod k instalaci</comment>
+  <comment xml:lang="da">installationsinstruktioner</comment>
+  <comment xml:lang="de">Installationsanleitung</comment>
+  <comment xml:lang="el">Οδηγίες εγκατάστασης</comment>
+  <comment xml:lang="en-GB">installation instructions</comment>
+  <comment xml:lang="es">instrucciones de instalación</comment>
+  <comment xml:lang="eu">instalazioaren instrukzioak</comment>
+  <comment xml:lang="fi">asennusohjeet</comment>
+  <comment xml:lang="fo">innleggingar vegleiðing</comment>
+  <comment xml:lang="fr">instructions d'installation</comment>
+  <comment xml:lang="fur">istruzions di instalazion</comment>
+  <comment xml:lang="ga">treoracha suiteála</comment>
+  <comment xml:lang="gl">instrucións de instalación</comment>
+  <comment xml:lang="he">הוראות התקנה</comment>
+  <comment xml:lang="hr">Upute za instalaciju</comment>
+  <comment xml:lang="hu">telepítési utasítások</comment>
+  <comment xml:lang="ia">Instructiones de installation</comment>
+  <comment xml:lang="id">instruksi instalasi</comment>
+  <comment xml:lang="it">Istruzioni di installazione</comment>
+  <comment xml:lang="ja">ソフトウェアインストール説明</comment>
+  <comment xml:lang="kk">бағдарламаны орнату нұсқаулары</comment>
+  <comment xml:lang="ko">설치 방법</comment>
+  <comment xml:lang="lt">diegimo instrukcijos</comment>
+  <comment xml:lang="lv">instalācijas instrukcijas</comment>
+  <comment xml:lang="nb">installationsinstruksjoner</comment>
+  <comment xml:lang="nl">installatie-instructies</comment>
+  <comment xml:lang="nn">installasjonsinstruksjonar</comment>
+  <comment xml:lang="oc">instructions d'installacion</comment>
+  <comment xml:lang="pl">Instrukcje instalacji</comment>
+  <comment xml:lang="pt">instruções de instalação</comment>
+  <comment xml:lang="pt-BR">Instruções de instalação</comment>
+  <comment xml:lang="ro">instrucțiuni de instalare</comment>
+  <comment xml:lang="ru">Инструкции по установке</comment>
+  <comment xml:lang="sk">Návod na inštaláciu</comment>
+  <comment xml:lang="sl">navodila namestitve</comment>
+  <comment xml:lang="sq">Udhëzime instalimi</comment>
+  <comment xml:lang="sr">упутства инсталације</comment>
+  <comment xml:lang="sv">installationsinstruktioner</comment>
+  <comment xml:lang="tr">kurulum yönergeleri</comment>
+  <comment xml:lang="uk">інструкції з встановлення</comment>
+  <comment xml:lang="vi">hướng dẫn cài đặt</comment>
+  <comment xml:lang="zh-CN">软件安装指南</comment>
+  <comment xml:lang="zh-TW">安裝指引</comment>
+  <sub-class-of type="text/plain"/>
+  <glob pattern="INSTALL"/>
+</mime-type>

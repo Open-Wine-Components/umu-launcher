@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.interface" path="/org/gnome/desktop/interface/">
+    <key name="toolkit-accessibility" type="b">
+      <default>false</default>
+      <summary>Enable Toolkit Accessibility</summary>
+      <description>
+        Whether toolkits should load accessibility related modules.
+      </description>
+    </key>
+    <key name="enable-animations" type="b">
+      <default>true</default>
+      <summary>Enable Animations</summary>
+      <description>
+        Whether animations should be displayed. Note: This is a global key,
+        it changes the behaviour of the window manager, the panel etc.
+      </description>
+    </key>
+    <key name="menus-have-tearoff" type="b">
+      <default>false</default>
+      <summary>Menus Have Tearoff</summary>
+      <description>
+        Whether menus should have a tearoff.
+      </description>
+    </key>
+    <key name="can-change-accels" type="b">
+      <default>false</default>
+      <summary>Can Change Accels</summary>
+      <description>
+        Whether the user can dynamically type a new accelerator when
+        positioned over an active menuitem.
+      </description>
+    </key>
+    <key name="toolbar-style" enum="org.gnome.desktop.GDesktopToolbarStyle">
+      <default>'both-horiz'</default>
+      <summary>Toolbar Style</summary>
+      <description>
+        Toolbar Style. Valid values are “both”, “both-horiz”, “icons”,
+        and “text”.
+      </description>
+    </key>
+    <key name="menubar-detachable" type="b">
+      <default>false</default>
+      <summary>Menubar Detachable</summary>
+      <description>
+        Whether the user can detach menubars and move them around.
+      </description>
+    </key>
+    <key name="toolbar-detachable" type="b">
+      <default>false</default>
+      <summary>Toolbar Detachable</summary>
+      <description>
+        Whether the user can detach toolbars and move them around.
+      </description>
+    </key>
+    <key name="toolbar-icons-size" enum="org.gnome.desktop.GDesktopToolbarIconSize">
+      <default>'large'</default>
+      <summary>Toolbar Icon Size</summary>
+      <description>
+        Size of icons in toolbars, either “small” or “large”.
+      </description>
+    </key>
+    <key name="cursor-blink" type="b">
+      <default>true</default>
+      <summary>Cursor Blink</summary>
+      <description>
+        Whether the cursor should blink.
+      </description>
+    </key>
+    <key name="cursor-blink-time" type="i">
+      <range min="100" max="2500"/>
+      <default>1200</default>
+      <summary>Cursor Blink Time</summary>
+      <description>
+        Length of the cursor blink cycle, in milliseconds.
+      </description>
+    </key>
+    <key name="cursor-blink-timeout" type="i">
+      <range min="1" max="2147483647"/>
+      <default>10</default>
+      <summary>Cursor Blink Timeout</summary>
+      <description>
+        Time after which the cursor stops blinking, in seconds.
+      </description>
+    </key>
+    <key name="icon-theme" type="s">
+      <default>'Adwaita'</default>
+      <summary>Icon Theme</summary>
+      <description>
+        Icon theme to use for the panel, nautilus etc.
+      </description>
+    </key>
+    <key name="gtk-theme" type="s">
+      <default>'Adwaita'</default>
+      <summary>Gtk+ Theme</summary>
+      <description>
+        Basename of the default theme used by gtk+.
+      </description>
+    </key>
+    <key name="gtk-key-theme" type="s">
+      <default>'Default'</default>
+      <summary>Gtk+ Keybinding Theme</summary>
+      <description>
+        Basename of the default keybinding theme used by gtk+.
+      </description>
+    </key>
+    <key name="font-name" type="s">
+      <default>'Cantarell 11'</default>
+      <summary>Default font</summary>
+      <description>
+        Name of the default font used by gtk+.
+      </description>
+    </key>
+    <key name="avatar-directories" type="as">
+      <default>[]</default>
+      <summary>Directories with avatar faces</summary>
+      <description>
+        Directories to override the default avatar faces installed by gnome-control-center.
+      </description>
+    </key>
+    <key name="text-scaling-factor" type="d">
+      <range min="0.5" max="3.0"/>
+      <default>1.0</default>
+      <summary>Text scaling factor</summary>
+      <description>
+        Factor used to enlarge or reduce text display, without changing font size.
+      </description>
+    </key>
+    <key name="scaling-factor" type="u">
+      <default>0</default>
+      <summary>Window scaling factor</summary>
+      <description>
+        Integer factor used to scale windows by. For use on high-dpi screens.
+        0 means pick automatically based on monitor.
+      </description>
+    </key>
+    <key name="gtk-im-preedit-style" type="s">
+      <default>'callback'</default>
+      <summary>GTK IM Preedit Style</summary>
+      <description>
+        Name of the GTK+ input method Preedit Style used by gtk+.
+      </description>
+    </key>
+    <key name="gtk-im-status-style" type="s">
+      <default>'callback'</default>
+      <summary>GTK IM Status Style</summary>
+      <description>
+        Name of the GTK+ input method Status Style used by gtk+.
+      </description>
+    </key>
+    <key name="gtk-im-module" type="s">
+      <default>''</default>
+      <summary>GTK IM Module</summary>
+      <description>
+        Name of the input method module used by GTK+.
+      </description>
+    </key>
+    <key name="document-font-name" type="s">
+      <default>'Cantarell 11'</default>
+      <summary>Document font</summary>
+      <description>
+        Name of the default font used for reading documents.
+      </description>
+    </key>
+    <key name="monospace-font-name" type="s">
+      <default>'Source Code Pro 10'</default>
+      <summary>Monospace font</summary>
+      <description>
+        Name of a monospaced (fixed-width) font for use in locations like
+        terminals.
+      </description>
+    </key>
+    <key name="menubar-accel" type="s">
+      <default>'F10'</default>
+      <summary>Menubar accelerator</summary>
+      <description>
+        Keyboard shortcut to open the menu bars.
+      </description>
+    </key>
+    <key name="cursor-theme" type="s">
+      <default>'Adwaita'</default>
+      <summary>Cursor theme</summary>
+      <description>Cursor theme name. Used only by Xservers that support the Xcursor extension.</description>
+    </key>
+    <key name="cursor-size" type="i">
+      <default>24</default>
+      <summary>Cursor size</summary>
+      <description>Size of the cursor used as cursor theme.</description>
+    </key>
+    <key name="gtk-timeout-initial" type="i">
+      <default>200</default>
+      <summary>Timeout before click repeat</summary>
+      <description>Timeout in milliseconds before a click starts repeating (on spinner buttons for example).</description>
+    </key>
+    <key name="gtk-timeout-repeat" type="i">
+      <default>20</default>
+      <summary>Timeout between click repeats</summary>
+      <description>Timeout in milliseconds between repeated clicks when a button is left pressed.</description>
+    </key>
+    <key name="gtk-color-palette" type="s">
+      <default>'black:white:gray50:red:purple:blue:light blue:green:yellow:orange:lavender:brown:goldenrod4:dodger blue:pink:light green:gray10:gray30:gray75:gray90'</default>
+      <summary>Palette used in the color selector</summary>
+      <description>Palette used in the color selector as defined by the “gtk-color-palette” setting</description>
+    </key>
+    <key name="gtk-color-scheme" type="s">
+      <default>''</default>
+      <summary>List of symbolic names and color equivalents</summary>
+      <description>A “\n” separated list of “name:color” as defined by the “gtk-color-scheme” setting</description>
+    </key>
+    <key name="clock-format" enum="org.gnome.desktop.GDesktopClockFormat">
+      <default>'24h'</default>
+      <summary>Whether the clock displays in 24h or 12h format</summary>
+      <description>
+        Whether the clock displays in 24h or 12h format
+      </description>
+    </key>
+    <key name="clock-show-seconds" type="b">
+      <default>false</default>
+      <summary>Whether the clock shows seconds</summary>
+      <description>
+	If true, display seconds in the clock.
+      </description>
+    </key>
+    <key name="clock-show-date" type="b">
+      <default>true</default>
+      <summary>Show date in clock</summary>
+      <description>
+        If true, display date in the clock, in addition to time.
+      </description>
+    </key>
+    <key name="clock-show-weekday" type="b">
+      <default>false</default>
+      <summary>Show weekday in clock</summary>
+      <description>
+        If true, display weekday in the clock, in addition to time.
+      </description>
+    </key>
+    <key name="enable-hot-corners" type="b">
+      <default>true</default>
+      <summary>Enable hot corners</summary>
+      <description>
+        If true, the activities overview can be accessed by moving the
+        mouse to the top-left corner.
+      </description>
+    </key>
+    <key name="show-battery-percentage" type="b">
+      <default>false</default>
+      <summary>Show battery percentage</summary>
+      <description>
+        If true, display battery percentage in the status menu, in addition to the icon.
+      </description>
+    </key>
+    <key name="gtk-enable-primary-paste" type="b">
+      <default>true</default>
+      <summary>Enable the primary paste selection</summary>
+      <description>
+        If true, gtk+ uses the primary paste selection, usually triggered by a middle mouse button click.
+      </description>
+    </key>
+    <key name="overlay-scrolling" type="b">
+      <default>true</default>
+      <summary>Allow overlay scrolling</summary>
+      <description>
+        Whether scrollbars should be overlayed as indicators. Depending
+        on input devices in use, permanent scrollbars may still be
+        displayed.
+      </description>
+    </key>
+    <key name="locate-pointer" type="b">
+      <default>false</default>
+      <summary>Highlights the current location of the pointer.</summary>
+      <description>
+        If true, pressing a key will highlight the current pointer location on screen.
+      </description>
+    </key>
+  </schema>
+</schemalist>

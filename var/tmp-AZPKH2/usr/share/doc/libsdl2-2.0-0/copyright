@@ -1,0 +1,567 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: SDL
+Upstream-Contact: Sam Lantinga <slouken@libsdl.org>
+Source: https://www.libsdl.org/
+Files-Excluded: Android.mk
+                android-project
+                src/hidapi/windows/ddk_build
+                src/render/metal/SDL_shaders_metal_*.h
+                src/video/os2/SDL_gradd.h
+                test/unifont-*
+                VisualC
+                VisualC-WinRT
+                Xcode
+                Xcode-iOS
+
+Files: *
+Copyright:
+ 1997-2023 Sam Lantinga <slouken@libsdl.org>
+ 2012 Raspberry Pi Foundation
+ 2012-2018 RISC OS Open Ltd
+ 2018-2019 EXL
+ 2020-2022 Valve Corporation
+ 2022 Collabora Ltd.
+License: zlib/libpng and zlib-libpng-like-permissive
+
+Files: include/SDL_egl.h
+       include/SDL_opengl_glext.h
+       include/SDL_opengles2_khrplatform.h
+Copyright: 1997-2021 Sam Lantinga
+           2008-2014 The Khronos Group Inc.
+License: zlib/libpng and Expat-like and Apache-2.0
+
+Files: include/SDL_opengles2_gl2.h
+       include/SDL_opengles2_gl2ext.h
+       include/SDL_opengles2_gl2platform.h
+Copyright: 1997-2016 Sam Lantinga <slouken@libsdl.org>
+License: SGI-Free-Software-License-B
+
+Files: include/SDL_hidapi.h
+       src/hidapi/*
+Copyright: 2009-2010 Alan Ott, Signal 11 Software
+           1997-2021 Sam Lantinga
+           2021 Valve Corporation
+License: BSD-3-clause or GPL-3 or hidapi-orig, and zlib/libpng
+
+Files: src/libm/*
+Copyright: 1993 by Sun Microsystems, Inc. All rights reserved.
+License: SunPro
+
+Files: src/main/windows/SDL_windows_main.c
+Copyright: 1998 Sam Lantinga
+License: PublicDomain_Sam_Lantinga
+Comment: SDL_main.c, placed in the public domain by Sam Lantinga  4/13/98
+
+Files: src/main/winrt/SDL_winrt_main_NonXAML.cpp
+Copyright: 2014 David Ludwig
+License: PublicDomain_David_Ludwig
+
+Files: src/render/SDL_yuv_sw.c
+Copyright: 1995 Erik Corry
+           1995 The Regents of the University of California
+           1995 Brown University
+License: BrownUn_UnCalifornia_ErikCorry
+
+Files: src/stdlib/SDL_qsort.c
+Copyright: 1998 Gareth McCaughan
+License: Gareth_McCaughan
+
+Files: src/test/SDL_test_md5.c include/SDL_test_md5.h
+Copyright: 1997-2012 Sam Lantinga <slouken@libsdl.org>
+           1990-1991 RSA Data Security, Inc.
+License: zlib/libpng and RSA_Data_Security
+
+Files:
+ src/video/arm/pixman-arm-asm.h
+ src/video/arm/pixman-arm-neon-asm.S
+ src/video/arm/pixman-arm-neon-asm.h
+Copyright:
+ 2009-2010 Nokia Corporation
+License: Mozilla-permissive and Expat and zlib/libpng
+
+Files: src/video/khronos/vulkan/*.h
+Copyright:
+ 2014-2020 The Khronos Group Inc.
+ 2015-2017 Valve Corporation
+ 2015-2017 LunarG, Inc.
+License: Apache-2.0
+
+Files: src/video/haiku/SDL_bkeyboard.cc
+       src/video/haiku/SDL_bkeyboard.h
+Copyright: 1997-2012 Sam Lantinga
+License: LGPL-2.1+
+
+Files: test/testautomation_*
+Copyright: Edgar Simo "bobbens"
+License: PublicDomain_Edgar_Simo
+
+Files: test/testautomation_rwops.c
+       include/SDL_test_fuzzer.h
+       include/SDL_test_harness.h
+Copyright: 2011 Markus Kauppila <markus.kauppila@gmail.com>
+License: zlib/libpng
+
+Files: test/testhaptic.c
+Copyright: 1997-2011 Sam Lantinga <slouken@libsdl.org>
+           2008 Edgar Simo Serra
+License: BSD-3-clause
+
+Files: test/testrumble.c
+Copyright: 1997-2011 Sam Lantinga <slouken@libsdl.org>
+           2011 Edgar Simo Serra
+License: BSD-3-clause
+
+Files: test/nacl/*
+Copyright: 2013 The Chromium Authors
+License: BSD-3-clause-chromium
+
+Files: test/shapes/*
+Copyright: none
+License: zlib/libpng
+Comment: No specific information about the images
+
+Files: wayland-protocols/*.xml
+Copyright:
+ 2008-2011 Kristian Høgsberg
+ 2010-2013 Intel Corporation
+ 2012-2016 Collabora, Ltd.
+ 2014 Stephen "Lyude" Chandler Paul
+ 2015-2016 Jan Arne Petersen
+ 2015 Samsung Electronics Co., Ltd
+ 2015-2018 Red Hat, Inc.
+ 2018 Purism SPC
+ 2022 Kenny Levinsen
+License: Expat and MIT-open-group
+
+Files: debian/*
+Copyright: 2015-2020, Gianfranco Costamagna <locutusofborg@debian.org>
+           2011-2013, Manuel A. Fernandez Montecelo <mafm@debian.org>
+           2011-2013, Felix Geyer <fgeyer@debian.org>
+           2011, Roman Vasiyarov <rvasiyarov@gmail.com>
+           2010, Jon Dowland <jmtd@debian.org>
+           2009, Barry deFreese <bdefreese@debian.org>
+           2007-2008, Aurelien Jarno <aurel32@debian.org>
+           2007-2008, Sam Hocevar (Debian packages) <sam+deb@zoy.org>
+           2002-2007, Josselin Mouette <joss@debian.org>
+           2001, Christian T. Steigies <cts@debian.org>
+           2001, Branden Robinson <branden@debian.org>
+           2012, Canonical Ltd.
+           2018-2023, Simon McVittie
+           2022-2023, Collabora Ltd.
+License: LGPL-2.1+
+
+Files: debian/tests/cmake-findsdl2/FindSDL2.cmake
+Copyright: 2003-2009 Kitware, Inc.
+License: BSD-3-clause-kitware
+Comment:
+ Taken from the openjk package. Similar files exist in hedgewars, spring,
+ megaglest, etc.
+
+License: SGI-Free-Software-License-B
+ SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
+ Copyright (C) 1991-2000 Silicon Graphics, Inc. All Rights Reserved.
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the "Software"),
+ to deal in the Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice including the dates of first publication and
+ either this permission notice or a reference to
+ http://oss.sgi.com/projects/FreeB/
+ shall be included in all copies or substantial portions of the Software.
+ ,
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ SILICON GRAPHICS, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ .
+ Except as contained in this notice, the name of Silicon Graphics, Inc.
+ shall not be used in advertising or otherwise to promote the sale, use or
+ other dealings in this Software without prior written authorization from
+ Silicon Graphics, Inc.
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the "Software"),
+ to deal in the Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice (including the next
+ paragraph) shall be included in all copies or substantial portions of the
+ Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ DEALINGS IN THE SOFTWARE.
+
+License: Expat-like
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and/or associated documentation files (the
+ "Materials"), to deal in the Materials without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Materials, and to
+ permit persons to whom the Materials are furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Materials.
+ .
+ THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
+
+License: zlib/libpng
+ This software is provided 'as-is', without any express or implied
+ warranty.  In no event will the authors be held liable for any damages
+ arising from the use of this software.
+ .
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
+ .
+ 1. The origin of this software must not be misrepresented; you must not
+    claim that you wrote the original software. If you use this software
+    in a product, an acknowledgment in the product documentation would be
+    appreciated but is not required.
+ 2. Altered source versions must be plainly marked as such, and must not be
+    misrepresented as being the original software.
+ 3. This notice may not be removed or altered from any source distribution.
+
+License: zlib-libpng-like-permissive
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+  .
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely.
+
+License: LGPL-2.1+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.1 of the License, or (at
+ your option) any later version.
+ .
+ On Debian systems, the complete text of version 2.1 of the GNU Lesser General
+ Public License can be found in '/usr/share/common-licenses/LGPL-2.1'.
+
+License: Apache-2.0
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ .
+      http://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ .
+ On Debian systems, a copy of the Apache License version 2.0
+ can be found in /usr/share/common-licenses/Apache-2.0.
+
+License: BSD-3-clause-chromium
+ Copyright (c) 2011 Google Inc. All rights reserved.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are
+ met:
+ .
+    * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+ copyright notice, this list of conditions and the following disclaimer
+ in the documentation and/or other materials provided with the
+ distribution.
+    * Neither the name of Google Inc. nor the names of its
+ contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: BSD-3-clause-kitware
+ Copyright 2003-2009 Kitware, Inc.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ * Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+ .
+ * Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+ .
+ * Neither the names of Kitware, Inc., the Insight Software Consortium,
+   nor the names of their contributors may be used to endorse or promote
+   products derived from this software without specific prior written
+   permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+     * Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+     * Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+     * Neither the name of the LibQxt project nor the
+       names of its contributors may be used to endorse or promote products
+       derived from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Comment:
+  Copyright (C) 1997-2011 Sam Lantinga <slouken@libsdl.org>
+  .
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+  .
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely.
+  .
+  .
+  Copyright (c) 2011, Edgar Simo Serra
+  All rights reserved.
+  .
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+  .
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of the Simple Directmedia Layer (SDL) nor the names of
+      its contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+  .
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: BrownUn_UnCalifornia_ErikCorry
+ /* This code was derived from code carrying the following copyright notices:
+  * Copyright (c) 1995 The Regents of the University of California.
+  * All rights reserved.
+  *
+  * Permission to use, copy, modify, and distribute this software and its
+  * documentation for any purpose, without fee, and without written agreement is
+  * hereby granted, provided that the above copyright notice and the following
+  * two paragraphs appear in all copies of this software.
+  *
+  * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
+  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
+  * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF
+  * CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+  * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+  * ON AN "AS IS" BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO OBLIGATION TO
+  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+  *
+  * Copyright (c) 1995 Erik Corry
+  * All rights reserved.
+  *
+  * Permission to use, copy, modify, and distribute this software and its
+  * documentation for any purpose, without fee, and without written agreement is
+  * hereby granted, provided that the above copyright notice and the following
+  * two paragraphs appear in all copies of this software.
+  *
+  * IN NO EVENT SHALL ERIK CORRY BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT,
+  * SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF
+  * THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF ERIK CORRY HAS BEEN ADVISED
+  * OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  * ERIK CORRY SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
+  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+  * PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS"
+  * BASIS, AND ERIK CORRY HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+  * UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+  *
+  * Portions of this software Copyright (c) 1995 Brown University.
+  * All rights reserved.
+  *
+  * Permission to use, copy, modify, and distribute this software and its
+  * documentation for any purpose, without fee, and without written agreement
+  * is hereby granted, provided that the above copyright notice and the
+  * following two paragraphs appear in all copies of this software.
+  *
+  * IN NO EVENT SHALL BROWN UNIVERSITY BE LIABLE TO ANY PARTY FOR
+  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
+  * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF BROWN
+  * UNIVERSITY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  * BROWN UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
+  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+  * PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS"
+  * BASIS, AND BROWN UNIVERSITY HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+  * SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+  */
+
+License: GPL-3
+ On Debian systems, the complete text of the GNU General
+ Public License version 3 can be found in
+ /usr/share/common-licenses/GPL-3.
+
+License: Gareth_McCaughan
+  You may use it in anything you like; you may make money
+  out of it; you may distribute it in object form or as
+  part of an executable without including source code;
+  you don't have to credit me. (But it would be nice if
+  you did.)
+
+License: SunPro
+  Developed at SunPro, a Sun Microsystems, Inc. business.
+  Permission to use, copy, modify, and distribute this
+  software is freely granted, provided that this notice
+  is preserved.
+
+License: PublicDomain_Sam_Lantinga
+ Placed in the public domain by Sam Lantinga  4/13/98
+
+License: PublicDomain_David_Ludwig
+ placed in the public domain by David Ludwig  3/13/14
+
+License: PublicDomain_Edgar_Simo
+ Written by Edgar Simo "bobbens"
+ .
+ Released under Public Domain.
+
+License: RSA_Data_Security
+ ***********************************************************************
+ ** utl_md5.c -- the source code for MD5 routines                      **
+ ** RSA Data Security, Inc. MD5 Message-Digest Algorithm              **
+ ** Created: 2/17/90 RLR                                              **
+ ** Revised: 1/91 SRD,AJ,BSK,JT Reference C ver., 7/10 constant corr. **
+ ***********************************************************************
+ ***********************************************************************
+ ** Copyright (C) 1990, RSA Data Security, Inc. All rights reserved.  **
+ **                                                                   **
+ ** License to copy and use this software is granted provided that    **
+ ** it is identified as the "RSA Data Security, Inc. MD5 Message-     **
+ ** Digest Algorithm" in all material mentioning or referencing this  **
+ ** software or this function.                                        **
+ **                                                                   **
+ ** License is also granted to make and use derivative works          **
+ ** provided that such works are identified as "derived from the RSA  **
+ ** Data Security, Inc. MD5 Message-Digest Algorithm" in all          **
+ ** material mentioning or referencing the derived work.              **
+ **                                                                   **
+ ** RSA Data Security, Inc. makes no representations concerning       **
+ ** either the merchantability of this software or the suitability    **
+ ** of this software for any particular purpose.  It is provided "as  **
+ ** is" without express or implied warranty of any kind.              **
+ **                                                                   **
+ ** These notices must be retained in any copies of any part of this  **
+ ** documentation and/or software.                                    **
+ ***********************************************************************
+
+License: MIT-open-group
+ Permission to use, copy, modify, distribute, and sell this
+ software and its documentation for any purpose is hereby granted
+ without fee, provided that the above copyright notice appear in
+ all copies and that both that copyright notice and this permission
+ notice appear in supporting documentation, and that the name of
+ the copyright holders not be used in advertising or publicity
+ pertaining to distribution of the software without specific,
+ written prior permission.  The copyright holders make no
+ representations about the suitability of this software for any
+ purpose.  It is provided "as is" without express or implied
+ warranty.
+ .
+ THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ THIS SOFTWARE.
+Comment: SPDX: MIT-open-group
+
+License: Mozilla-permissive
+ Permission to use, copy, modify, distribute, and sell this software and its
+ documentation for any purpose is hereby granted without fee, provided that
+ the above copyright notice appear in all copies and that both that
+ copyright notice and this permission notice appear in supporting
+ documentation, and that the name of Mozilla Corporation not be used in
+ advertising or publicity pertaining to distribution of the software without
+ specific, written prior permission.  Mozilla Corporation makes no
+ representations about the suitability of this software for any purpose.  It
+ is provided "as is" without express or implied warranty.
+ .
+ THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ SOFTWARE.
+Comment:
+ Same as MIT-open-group but with "Mozilla Corporation" instead of
+ "The copyright holders"
+
+License: hidapi-orig
+ This software may be used by anyone for any reason so
+ long as the copyright notice in the source files
+ remains intact.

@@ -1,0 +1,38 @@
+This is the Debian GNU/Linux prepackaged version of GNU tar.  GNU
+tar, heavily based on John Gilmore's public domain version of tar,
+was originally written by Graham Todd.  It is now maintained by
+Paul Eggert <eggert@twinsun.com>.
+
+This package is maintained for Debian by Janos Lenart <ocsi@debian.org>, and
+was built from the sources found at:
+
+	ftp://ftp.gnu.org/gnu/tar/
+
+More recently, I'm directly using the upstream source repository at 
+
+	http://git.savannah.gnu.org/cgit/tar.git
+
+GNU tar is 
+
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000,
+   2001, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 3, or (at your option) any later
+   version.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public 
+License version 3 can be found in /usr/share/common-licenses/GPL-3.
+
+The Debian packaging is 
+
+   Copyright (C) 2006, 2007 Bdale Garbee <bdale@gag.com>
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any later
+   version.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public 
+License version 2 can be found in /usr/share/common-licenses/GPL-2.

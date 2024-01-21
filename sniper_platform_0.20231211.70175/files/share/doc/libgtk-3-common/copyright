@@ -1,0 +1,616 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: gtk+
+Source: https://download.gnome.org/sources/gtk+/
+
+Files: *
+Copyright: Copyright (C) 1986, 1987, 1998  The Open Group
+           Copyright (C) 1993 Robert Nation
+           Copyright (C) 1997-2010 The GTK Team
+           Copyright (C) 1991-1993, 1995, 1999-2010 Free Software Foundation, Inc.
+           Copyright (C) 1995, 1996, 1997, 1998 Steffen Beyer
+           Copyright (C) 1996-2007, 2009 Sun Microsystems, Inc.
+           Copyright (C) 1998 David Abilleira Freijeiro <odaf@nexo.es>
+           Copyright (C) 1998 Lars Hamann and Stefan Jeske
+           Copyright (C) 1998 Cesar Miquel and Shawn T. Amundson
+           Copyright (C) 1995-2007 Peter Mattis, Spencer Kimball and Josh MacDonald
+           Copyright (C) 1995-2007 Ryan Lortie
+           Copyright (C) 1998, 2002 Owen Taylor
+           Copyright (C) 1998 Elliot Lee
+           Copyright (C) 1998 Shawn T. Amundson
+           Copyright (C) 1998-2004 Tor Lillqvist
+           Copyright (C) 1998-2001, 2005, 2006 Tim Janik
+           Copyright (C) 1998-2020 Red Hat, Inc.
+           Copyright (C) 1998 Stanislav Brabec <utx@k332.feld.cvut.cz>
+           Copyright (C) 1998 Jiří Pavlovský <pavlovsk@ff.cuni.cz>
+           Copyright (C) 1999 Mark Crichton, Larry Ewing
+           Copyright (C) 1999 Michael Zucchi
+           Copyright (C) 2000 Keith Packard
+           Copyright (C) 2000 SuSE Linux Ltd
+           Copyright (C) 2001 CodeFactory AB
+           Copyright (C) 2001 Havoc Pennington
+           Copyright (C) 2001 Stefan Ondrejicka
+           Copyright (C) 2001 Archaeopteryx Software Inc.
+           Copyright (C) 2001-2005 Hans Breuer
+           Copyright (C) 2001,2002,2004 Anders Carlsson <andersca@gnu.org>
+           Copyright (C) 2001-2003, 2006, 2007, 2009, 2010 Kristian Rietveld <kris@gtk.org>
+           Copyright (C) 2002 Sayed Jaffer Al-Mosawi <mosawi@arabeyes.org>
+           Copyright (C) 2002 Naba Kumar <kh_naba@users.sourceforge.net>
+           Copyright (C) 2002 James Henstridge <james@daa.com.au>
+           Copyright (C) 2003, 2004 Raymond Penners <raymond@dotsphinx.com>
+           Copyright (C) 2003, 2004 Dom Lachowicz <cinamod@hotmail.com>
+           Copyright (C) 2003, 2004 Soeren Sandmann <sandmann@daimi.au.dk>
+           Copyright (C) 2003, 2004, 2006, 2009 Matthias Clasen <mclasen@redhat.com>
+           Copyright (C) 2003 Takuro Ashie
+           Copyright (C) 2003-2004 Kazuki IWAMOTO
+           Copyright (C) 2003 Apple Computer, Inc.
+           Copyright (C) 2003 Ricardo Fernandez Pascual
+           Copyright (C) 2003 Alex Graveley
+           Copyright (C) 2004 Paolo Borelli
+           Copyright (C) 2004-2011 Nokia Corporation
+           Copyright (C) 2004-2006 Christian Hammond
+           Copyright (C) 2004 Lorenzo Gil Sanchez
+           Copyright (c) 2004 James M. Cape <jcape@ignore-your.tv>
+           Copyright (C) 2004-2009 GNOME Foundation
+           Copyright (C) 2005 Paolo Maggi
+           Copyright (C) 2005 Jamie McCracken <jamiemcc@gnome.org>
+           Copyright (C) 2005 Ronald S. Bultje
+           Copyright (C) 2005-2007 Vincent Untz
+           Copyright (C) 2005,2007-2009 Carlos Garnacho <carlosg@gnome.org>
+           Copyright (C) 2005-2008 Imendio AB
+           Copyright (C) 2005 Novell, Inc.
+           Copyright (C) 2005-2007 Emmanuele Bassi
+           Copyright (C) 2006 Alexander Larsson <alexl@redhat.com>
+           Copyright (C) 2006 John (J5) Palmieri <johnp@redhat.com>
+           Copyright (C) 2006-2008, 2010 Christian Persch
+           Copyright (C) 2006,2008 Jan Arne Petersen
+           Copyright (C) 2006 Hong Jen Yee (PCMan) <pcman.tw@gmail.com>
+           Copyright (C) 2006-2007 Async Open Source
+           Copyright (C) 2006-2010 Openismus GmbH
+           Copyright (C) 2007 John Stowers, Neil Jagdish Patel
+           Copyright (C) 2007-2009 Cody Russell
+           Copyright (C) 2008 Tristan Van Berkom <tristan.van.berkom@gmail.com>
+           Copyright (C) 2008 Tadej Borovšak <tadeboro@gmail.com>
+           Copyright (C) 2008 Jaap Haitsma <jaap@haitsma.org>
+           Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+           Copyright (C) 2009 Bastien Nocera
+           Copyright (C) 2009 Stefan Walter <stef@memberwebs.com>
+           Copyright (C) 2009 Ghee Teo <ghee.teo@sun.com>
+           Copyright (C) 2010 Codethink Limited
+           Copyright (C) 2010 Christian Dywan
+           Copyright (C) 2010 Xandru Armesto <xandru@softastur.org>
+           Copyright (C) 2010 Damyan Ivanov <dam+gnome@ktnx.net>
+           Copyright (C) 2010 Sadia Afroz <sadia@ankur.org.bd>
+           Copyright (C) 2010 Israt Jahan <israt@ankur.org.bd>
+           Copyright (C) Federico Mena
+           Copyright (C) Christian Kellner <gicmo@gnome.org>
+           Copyright (C) David Zeuthen <davidz@redhat.com>
+           Copyright (C) Javier Jardón <jjardon@gnome.org>
+License: LGPL-2+ and LGPL-2.1+
+
+License: LGPL-2+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by the
+ Free Software Foundation; either version 2 of the License, or (at your
+ option) any later version.
+ .
+ This library is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the
+ Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ 02110-1301  USA.
+ .
+ See /usr/share/common-licenses/LGPL-2 on your debian system.
+
+License: LGPL-2.1+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by the
+ Free Software Foundation; either version 2.1 of the License, or (at your
+ option) any later version.
+ .
+ This library is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the
+ Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ 02110-1301  USA.
+ .
+ See /usr/share/common-licenses/LGPL-2.1 on your debian system.
+
+Files: po/*
+       po-properties/*
+Copyright: Copyright (C) 1998-2019 Free Software Foundation, Inc.
+           Copyright (C) 1999, 2003-2010 The GTK Team
+           Copyright (C) 2004 Zuza Software Foundation <info@translate.org.za>
+           Copyright (C) 2008-2010 F Wolff <friedel@translate.org.za>
+           Copyright (C) 2002 Ge'ez Frontier Foundation <locales@geez.org>
+           Copyright (C) 2004 GNOME Foundation
+           Copyright (C) 2004 James Johnson <modean52@comcast.net>
+           Copyright (C) 2004 David Lodge <dave@cirt.net>
+           Copyright (C) 2004 Ayman Hourieh <aymanh@gmail.com>
+           Copyright (C) 2002 Sayed Jaffer Al-Mosawi <mosawi@arabeyes.org>
+           Copyright (C) 2002 Isam Bayazidi <bayazidi@arabeyes.org>
+           Copyright (C) 2003, 2004 Arafat Medini <lumina@silverpen.de>
+           Copyright (C) 2004 Ayman Hourieh <aymanh@gmail.com>
+           Copyright (C) 2006 Djihed Afifi <djihed@gmail.com>
+           Copyright (C) 2006 Seba Barto <nanoosaamar@yahoo.com>
+           Copyright (C) 2008 Anas Afif Emad <anas.e87@gmail.com>
+           Copyright (C) 2006-2010 Khaled Hosny <khaledhosny@eglug.org>
+           Copyright (C) 2006, 2008 Amitakhya Phukan <aphukan@redhat.com>
+           Copyright (C) 2008 Amitakhya Phukan <amitakhya@svn.gnome.org>
+           Copyright (C) 2009 Amitakhya Phukan <aphukan@fedoraproject.org>
+           Copyright (C) 2007 Rosetta Contributors and Canonical Ltd
+           Copyright (C) 2007 Xose S. Puente <xspuente@gmail.com>
+           Copyright (C) 2004 Amir Hedayaty <amir@bamdad.org>
+           Copyright (C) 2000 Vasif Ismailoglu MD <azerb_linux@hotmail.com>
+           Copyright (C) 2003, 2004 Mətin Əmirov <metin@karegen.com>
+           Copyright (C) 2006 Alaksandar Navicki <zolak@lacinka.org>
+           Copyright (C) 2001-2003 Ales Nyakhaychyk <i18n@infonet.by>
+           Copyright (C) 2005 Vital Khilko <vk@altlinux.ru>
+           Copyright (C) 2005 Ales Nyakhaychyk <nab@mail.by>
+           Copyright (C) 2002 Borislav Aleksandrov <B.Aleksandrov@CNsys.bg>
+           Copyright (C) 2002 Yanko Kaneti <yaneti@declera.com>
+           Copyright (C) 2004, 2005 Vladimir Petkov <kaladan@gmail.com>
+           Copyright (C) 2005-2010 Alexander Shopov <ash@kambanaria.org>
+           Copyright (C) 2007 Runa Bhattacharjee <runabh@gmail.com>
+           Copyright (C) 2008-2010 Runa Bhattacharjee <runab@redhat.com>
+           Copyright (C) 2004 Sayamindu Dasgupta <unmadindu@Softhome.net>
+           Copyright (C) 2004, 2005 Progga <progga@BengaLinux.Org>
+           Copyright (C) 2007 Runa Bhattacharjee <runabh@gmail.com>
+           Copyright (C) 2008, 2009 Runa Bhattacharjee <runab@redhat.com>
+           Copyright (C) 2009 Maruf Ovee <maruf@ankur.org.bd>
+           Copyright (C) 2004 Rosetta Contributors and Canonical Ltd
+           Copyright (C) 2004 Thierry Vignaud <tvignaud@mandriva.com>
+           Copyright (C) 2005-2008 Alan Monfort <alan.monfort@free.fr>
+           Copyright (C) 2009 Jamy <jamybzh@fre.fr>
+           Copyright (C) 2004 Kenan Hadžiavdić <kenanh@frisurf.no>
+           Copyright (C) 2004 Kenan Hadžiavdić <kenan@bgnett.no>
+           Copyright (C) 1999, 2000 Ivan Vilata i Balaguer <ivan@selidor.net>
+           Copyright (C) 2000-2002 Softcatala <gnome@softcatala.net>
+           Copyright (C) 2002-2006 Jordi Mallach <jordi@sindominio.net>
+           Copyright (C) 2003 Mireia Farrús <mifarrus@hotmail.com>
+           Copyright (C) 2005, 2006 Josep Puigdemont <josep.puigdemont@gmail.com>
+           Copyright (C) 2008-2010 David Planella <david.planella@gmail.com>
+           Copyright (C) 1999, 2000 Ivan Vilata i Balaguer <ivan@selidor.net>
+           Copyright (C) 2000-2002 Softcatala <gnome@softcatala.net>
+           Copyright (C) 2002-2006 Jordi Mallach <jordi@sindominio.net>
+           Copyright (C) 2003 Mireia Farrús <mifarrus@hotmail.com>
+           Copyright (C) 2005, 2006 Josep Puigdemont <josep.puigdemont@gmail.com>
+           Copyright (C) 2008-2010 David Planella <david.planella@gmail.com>
+           Copyright (C) 2009, 2010 Reşat SABIQ <tilde.birlik@gmail.com>
+           Copyright (C) 2003, 2004, 2005 Miloslav Trmac <mitr@volny.cz>
+           Copyright (C) 2006 Lukas Novotny <lukasnov@cvs.gnome.org>
+           Copyright (C) 2002 Jiří Lebl <jirka@5z.com>
+           Copyright (C) 2002 Michal Bukovjan <bukm@centrum.cz>
+           Copyright (C) 2003-2005 Miloslav Trmac <mitr@volny.cz>
+           Copyright (C) 2006 Jakub Friedl <jfriedl@suse.cz>
+           Copyright (C) 2006 Lukas Novotny <lukasnov@cvs.gnome.org>
+           Copyright (C) 2007-2010 Petr Kovar <pknbe@volny.cz>
+           Copyright (C) 2002 Rhoslyn Prys <rhoslyn.prys@ntlworld.com>
+           Copyright (C) 2003, 2004 Dafydd Harries <daf@muse.19inch.net>
+           Copyright (C) 2004-2006 Rhys Jones <rhys@sucs.org>
+           Copyright (C) 2009 Iestyn Pryce <dylunio@gmail.com>
+           Copyright (C) 1999, 2000 Kenneth Christiansen
+           Copyright (C) 2000 Keld Simonsen <keld@dkuug.dk>
+           Copyright (C) 2001-2004 Ole Laursen <olau@hardworking.dk>
+           Copyright (C) 2005 Martin Willemoes Hansen <mwh@sysrq.dk>
+           Copyright (C) 2005 Marie Lund <marielund@post.cybercity.dk>
+           Copyright (C) 2007-2010 Ask Hjorth Larsen <asklarsen@gmail.com>
+           Copyright (C) 2001, 2002 Matthias Warkus <mawarkus@gnome.org>
+           Copyright (C) 2002-2004 Christian Neumair <chris@gnome-de.org>
+           Copyright (C) 2004-2009 Hendrik Richter <hendrikr@gnome.org>
+           Copyright (C) 2004, 2005 Hendrik Brandt <heb@gnome-de.org>
+           Copyright (C) 2008 Andre Klapper <ak-47@gmx.net>
+           Copyright (C) 2009, 2010 Mario Blättermann <mariobl@gnome.org>
+           Copyright (C) 2009, 2010 Christian Kirbach <Christian.Kirbach@googlemail.com>
+           Copyright (C) 1999, 2001, 2002 Simos Xenitellis <simos@hellug.gr>
+           Copyright (C) 2003-2008 Nikos Charonitakis <nikox@gmail.com>
+           Copyright (C) 2003 Nikos Kannelopoulos <nkan@panafonet.gr>
+           Copyright (C) 2002-2007 Kostas Papadimas <pkst@gnome.org>
+           Copyright (C) 2006 Simos Xenitellis <simos@gnome.org>
+           Copyright (C) 2009 Jennie Petoumenou <epetoumenou@gmail.com>
+           Copyright (C) 2009 Simos Xenitellis <simos@gnome.org>
+           Copyright (C) 2004 Adam Weinberger and the GNOME Foundation
+           Copyright (C) 2004 Adam Weinberger <adamw@gnome.org>
+           Copyright (C) 2004 Abigail Brady <morwen@evilmagic.org>
+           Copyright (C) 2004 Gareth Owen <gowen72@yahoo.com>
+           Copyright (C) 2009, 2010 Bruce Cowan <bcowan@fastmail.co.uk>
+           Copyright (C) 2007 Antono VASILJEV <antono.vasiljev@gmail.com>
+           Copyright (C) 2007 Guillaume SAVATON <llumeao@gmail.com>
+           Copyright (C) 1998-2000 Pablo Saratxaga <srtxg@chanae.alphanet.ch>
+           Copyright (C) 2001 José Antonio Salgueiro A. <joseantsa@eresmas.net>
+           Copyright (C) 2002 Carlos Perelló Marín <carlos@gnome-db.org>
+           Copyright (C) 2002 Germán Poo-Caamaño <gpoo@ubiobio.cl>
+           Copyright (C) 2002, 2003 Pablo Gonzalo del Campo <pablodc@bigfoot.com>
+           Copyright (C) 2003 Juan Manuel García Molina <juanma_gm@wanadoo.es>
+           Copyright (C) 2003-2006 Francisco Javier F. Serrador <serrador@cvs.gnome.org>
+           Copyright (C) 2007-2010 Jorge González <jorgegonz@svn.gnome.org>
+           Copyright (C) 2007-2010 The GNOME Project.
+           Copyright (C) 2002-2004 Tõivo Leedjärv <toivo linux ee>
+           Copyright (C) 2004, 2005 Priit Laes <amd tt ee>
+           Copyright (C) 2005-2010 Ivar Smolin <okul linux ee>
+           Copyright (C) 2009-2010 Mattias Põldaru <mahfiaz gmail com>
+           Copyright (C) 1999-2000 Joseba Bidaurrazaga van Dierdonck <gcpbivaj@lg.ehu.es>
+           Copyright (C) 2004 Hizkuntza Politikarako Sailburuordetza <hizpol@ej-gv.es>
+           Copyright (C) 2004-2006, 2008-2010 Iñaki Larrañaga Murgoitio <dooteo@euskalgnu.org>
+           Copyright (C) 2007 Iñaki Larrañaga Murgoitio <dooteo@zundan.com>
+           Copyright (C) 2000, 2002, 2003, 2004, 2005 Sharif FarsiWeb, Inc.
+           Copyright (C) 2000, 2002-2005 Roozbeh Pournader <roozbeh@farsiweb.info>
+           Copyright (C) 2005 Meelad Zakaria <meelad@bamdad.org>
+           Copyright (C) 2004 Sami Pesonen <sampeson@iki.fi>
+           Copyright (C) 2000-2005 Pauli Virtanen
+           Copyright (C) 2005-2009 Ilkka Tuohela <hile@iki.fi>
+           Copyright (C) 2009-2010 Tommi Vainikainen <thv@iki.fi>
+           Copyright (C) 2009 Jiri Grönroos <jiri.gronroos@iki.fi>
+           Copyright (C) 2000-2006 Christophe Merlet <redfox@redfoxcenter.org>
+           Copyright (C) 20002 Christophe Fergeau <christophe.fergeau@laposte.net>
+           Copyright (C) 2003 David Bellot <david.bellot@inrialpes.fr>
+           Copyright (C) 2006 Benoît Dejean <benoit@placenet.org>
+           Copyright (C) 2006-2007 Jonathan Ernst <jonathan@ernstfamily.ch>
+           Copyright (C) 2006-2008 Robert-André Mauchin <zebob.m@pengzone.org>
+           Copyright (C) 2007-2008 Stéphane Raimbault <stephane.raimbault@gmail.com>
+           Copyright (C) 2007-2010 Claude Paroz <claude@2xlibre.net>
+           Copyright (C) 2008 Yannick Tailliez <ytdispatch-libre@yahoo.com>
+           Copyright (C) 2009 Laurent Coudeur <laurentc@iol.ie>
+           Copyright (C) 2004 Alastair McKinstry <mckinstry@computer.org>
+           Copyright (C) 2005 Alan Horkan <horkan@maths.tcd.ie>
+           Copyright (C) 2007-2010 Seán de Búrca <leftmostcat@gmail.com>
+           Copyright (C) 1999, 2000 Jesus Bravo Alvarez <jba@pobox.com>
+           Copyright (C) 2005, 2006 Ignacio Casal Quinteiro <nacho.resa@gmail.com>
+           Copyright (C) 2008 Ignacio Casal Quinteiro <icq@svn.gnome.org>
+           Copyright (C) 2009 Mancomún - Centro de Referencia e Servizos de Software Libre <g11n@mancomun.org>
+           Copyright (C) 2009 Antón Méixome <meixome@mancomun.org>
+           Copyright (C) 2009 Anton Meixome <certima@certima.net>
+           Copyright (C) 2009, 2010 Fran Dieguez <frandieguez@ubuntu.com>
+           Copyright (C) 2004 MagNet <magnet@magnet-i.com>
+           Copyright (C) 2005, 2006 Ankit Patel <ankit644@yahoo.com>
+           Copyright (C) 2007, 2009 Ankit Patel <ankit@redhat.com>
+           Copyright (C) 2008-2010 Sweta Kothari <swkothar@redhat.com>
+           Copyright (C) 2000 Tzafrir Cohen <tzafrir@technion.ac.il>
+           Copyright (C) 2002, 2004 Gil 'Dolfin' Osher <dolfin@rpg.org.il>
+           Copyright (C) 2006 Yair Hershkovitz <yairhr@gmail.com>
+           Copyright (C) 2003 G Karunakar <karunakar@freedomink.org>
+           Copyright (C) 2004 Ravishankar Shrivastava <raviratlami@yahoo.com>
+           Copyright (C) 2005, 2006, 2009 Rajesh Ranjan <rranjan@redhat.com>
+           Copyright (C) 2009 Manoj Kumar Giri <mgiri@redhat.com>
+           Copyright (C) 2009 Rajesh Ranjan <rajesh672@gmail.com>
+           Copyright (C) 1999-2002 Szabolcs Ban <shooby at gnome dot hu>
+           Copyright (C) 2002 Andras Timar <timar at gnome dot hu>
+           Copyright (C) 2004, 2005 Laszlo Dvornik <dvornik at gnome dot hu>
+           Copyright (C) 2004, 2005, 2007-2010 Gabor Kelemen <kelemeng at gnome dot hu>
+           Copyright (C) 2005 Lilit Azizbekyan <l@freenet.am>
+           Copyright (C) 2005 Lilit Sargsyan <magicliliac@yahoo.co.uk>
+           Copyright (C) 2005 Norayr Chilingaryan <norik@freenet.am>
+           Copyright (C) 2006 Ahmad Riza H Nst  <rizahnst@gnome.org>
+           Copyright (C) 2003 Mohammad DAMT <mdamt@bisnisweb.com>
+           Copyright (C) 2007 Michael Terry <mike@mterry.name>
+           Copyright (C) 2003 Richard Allen <ra@ra.is>
+           Copyright (C) 2000-2002 Christopher Gabriel <cgabriel@gnu.org>
+           Copyright (C) 2003-2007 Alessio Dessì <alessiodessi@tiscali.it>
+           Copyright (C) 2007-2010 Luca Ferretti <lferrett@gnome.org>
+           Copyright (C) 2000, 2001 Yukihiro Nakai <nakai@gnome.gr.jp>
+           Copyright (C) 2002, 2009, 2010 Takayuki KUSANO <AE5T-KSN@asahi-net.or.jp>
+           Copyright (C) 2002 Akira TAGOH <tagoh@gnome.gr.jp>
+           Copyright (C) 2003-2009 Takeshi AIHANA <takeshi.aihana@gmail.com>
+           Copyright (C) 2003 KAMAGASAKO Masatoshi <emerald@gnome.gr.jp>
+           Copyright (C) 2006 Satoru SATOh <ss@gnome.gr.jp>
+           Copyright (C) 2009-2010 Nishibori Kiyotaka <ml.nishibori.kiyotaka@gmail.com>
+           Copyright (C) 2005 Gia Shervashidze <giasher@telenet.ge>
+           Copyright (C) 2007, 2008 Vladimer Sichinava ვლადიმერ სიჭინავა <vsichi@gnome.org>
+           Copyright (C) 2006-2010 Kibavuidi Nsiangani <lundombe01@zaya-dio.com>
+           Copyright (C) 2007-2010 Shankar Prasad <svenkate@redhat.com>
+           Copyright (C) 2002-2010 Changwod Ryu <cwryu@debian.org>
+           Copyright (C) 2008, 2009 Erdal Ronahi <erdal dot ronahi at gmail dot com>
+           Copyright (C) 2003 Mathieu van Woerkom <mathieu@brabants.org>
+           Copyright (C) 2000-2004 Gediminas Paulauskas <menesis@delfi.lt>
+           Copyright (C) 2004 Tomas Kuliavas <tokul@users.sourceforge.net>
+           Copyright (C) 2004-2007, 2010 Žygimantas Beručka <zygis@gnome.org>
+           Copyright (C) 2006 Mantas Kriaučiūnas <mantas@akl.lt>
+           Copyright (C) 2007 Gintautas Miliauskas <gintas@akl.lt>
+           Copyright (C) 2008, 2010 Rimas Kudelis <rq@akl.lt>
+           Copyright (C) 2009 Gintautas Miliauskas <gintautas@miliauskas.lt>
+           Copyright (C) 2006, 2007, 2009 Raivis Dejus <orvils@gmail.com>
+           Copyright (C) 2008 BOSS GNU/Linux <bosslinux@cdac.in>
+           Copyright (C) 20009 Rajesh Ranjan <rranjan@redhat.com>
+           Copyright (C) 2009 Rajesh Ranjan <rajesh672@gmail.com>
+           Copyright (C) 2006 The GNOME Foundation
+           Copyright (C) 2004 John C Barstow <jbowtie@amathaine.com>
+           Copyright (C) 2002 Ivan Stojmirov <stojmir@linux.net.mk>
+           Copyright (C) 2004 Tomislav Markovski <herrera@users.sourceforge.net>
+           Copyright (C) 2005 Арангел Ангов <ufo@linux.net.mk>
+           Copyright (C) 2006 Arangel Angov <ufo@linux.net.mk>
+           Copyright (C) 2006, 2007 Jovan Naumovski <jovan@lugola.net>
+           Copyright (C) 2007 Arangel Angov <arangel@linux.net.mk>
+           Copyright (C) 2003 FSF-India <locale@gnu.org.in>
+           Copyright (C) 2006, 2007, 2009 Ani Peter <apeter@redhat.com>
+           Copyright (C) 2008 Hari Vishnu <harivishnu@gmail.com>
+           Copyright (C) 2003 OpenMN team
+           Copyright (C) 2003 2004 Sanlig Badral <badral@openmn.org>
+           Copyright (C) 2004 Sayamindu Dasgupta <unmadindu@Softhome.net>
+           Copyright (C) 2003 Swapnil Hajare <dreamil1000a@yahoo.com>
+           Copyright (C) 2004 Pradeep Deshpande <npdeshpande@vsnl.net>
+           Copyright (C) 2006 Rahul Bhalerao <b.rahul.pm@gmail.com>
+           Copyright (C) 2008, 2009 Sandeep Shedmake <sandeep.shedmake@gmail.com>
+           Copyright (C) 2009, 2010 Sandeep Shedmake <sshedmak@redhat.com>
+           Copyright (C) 2002 Hasbullah Bin Pit (sebol)<sebol@ikhlas.com>
+           Copyright (C) 2009, 2010 Russell Kyaw <rkyaw@yahoo.com>
+           Copyright (C) 2005 Terance Edward Sola <terance@lyse.net>
+           Copyright (C) 2008 Rosetta Contributors and Canonical Ltd 2008
+           Copyright (C) 2009 Nils-Christoph Fiedler <fiedler@medienkompanie.de>
+           Copyright (C) 2004 Pawan Chitrakar <pawan@nplinux.org>
+           Copyright (C) 2005 Jyotshna Shrestha <shresthajyo@hotmail.com>
+           Copyright (C) 2005 Ganesh Ghimire <gghimire@gmail.com>
+           Copyright (C) 2005 Jaydeep Bhusal <zaydeep@hotmail.com>
+           Copyright (C) 2006 Shyam Krishna Bal <shyamkrishna_bal@yahoo.com>
+           Copyright (C) 2006 Shiva Pokharel <pokharelshiva@hotmail.com>
+           Copyright (C) 2006 Mahesh subedi <submanesh@hotmail.com>
+           Copyright (C) 2002 Dirk-Jan C. Binnema <djcb@djcbsoftware.nl>
+           Copyright (C) 2002 Ronald Hummelink <ronald@hummelink.xs4all.nl>
+           Copyright (C) 2002-2010 Tino Meinen <tino.meinen@gmail.com>
+           Copyright (C) 2009 Reinout van Schouwen <reinouts@gnome.org>
+           Copyright (C) 1998-2001 Kjartan Maraas <kmaraas@gnome.org>
+           Copyright (C) 2001-2002 Roy-Magne Mo <rmo@sunnmore.net>
+           Copyright (C) 2003, 2004 Åsmund Skjæveland <aasmunds@fys.uio.no>
+           Copyright (C) 2008, 2009 Eskild Hustvedt <eskildh@gnome.org>
+           Copyright (C) 2009 Åsmund Skjæveland <aasmunds@ulrik.uio.no>
+           Copyright (C) 2004 Zuza Software Foundation <info@translate.org.za>
+           Copyright (C) 2006-2008 Yannig Marchegay (Kokoyaya) <yannig@marchegay.org>
+           Copyright (C) 2005 Gora Mohanty <gora_mohanty@yahoo.co.in>
+           Copyright (C) 2006 Subhransu Behera <arya_subhransu@yahoo.co.in>
+           Copyright (C) 2008, 2009, 2010 Manoj Kumar Giri <mgiri@redhat.com>
+           Copyright (C) 2004 Amanpreet Singh Alam <amanlinux@netscape.net>
+           Copyright (C) 2005-2009 Amanpreet Singh Alam <aalam@users.sf.net>
+           Copyright (C) 2009, 2010 A S Alam <aalam@users.sf.net>
+           Copyright (C) 2004 Gustavo Noronha Silva <kov@debian.org>
+           Copyright (C) 2004 Alex Camacho Castilho <gnomebr@uol.com.br>
+           Copyright (C) 2004, 2005 Afonso Celso Medina <medina@maua.br>
+           Copyright (C) 2006 Raphael Higino <In Memoriam>
+           Copyright (C) 2007 Og Maciel <ogmaciel@gnome.org>
+           Copyright (C) 2007 Pedro Vaz Mello de Medeiros <pedrovmm@gmail.com>
+           Copyright (C) 2008 Henrique P Machado <zehrique@gmail.com>
+           Copyright (C) 2008 Fábio Nogueira <deb-user-ba@ubuntu.com>
+           Copyright (C) 2006-2009 Leonardo Ferreira Fontenelle <leonardof@gnome.org>
+           Copyright (C) 2009 Vladimir Melo <vmelo@gnome.org>
+           Copyright (C) 2009 André Gondim <andregondim@ubuntu.com>
+           Copyright (C) 2009, 2010 Jonh Wendell <jwendell@gnome.org>
+           Copyright (C) 2001-2010 Duarte Loreto <happyguy_pt@hotmail.com>
+           Copyright (C) 1999, 2000 Dan Damian <dand@gnome.ro>
+           Copyright (C) 2001, 2002 Marius Andreiana <marius galuna.ro>
+           Copyright (C) 2003-2010 Mișu Moldovan <dumol@gnome.ro>
+           Copyright (C) 2009, 2010 Lucian Adrian Grijincu <lucian.grijincu@gmail.com>
+           Copyright (C) 2000-2002 Valek Filippov <frob@df.ru>
+           Copyright (C) 2002-2004 Dmitry Mastrukov <dmitry@taurussoft.org>
+           Copyright (C) 2002 Sun G11n <gnome_int_l10n@ireland.sun.com>
+           Copyright (C) 2003 Andrew W. Nosenko <awn@bcs.zp.ua>
+           Copyright (C) 2004-2006 Leonid Kanter <leon@asplinux.ru>
+           Copyright (C) 2006 Alexander Sigachov <alexander.sigachov@gmail.com>
+           Copyright (C) 2007 Vasiliy Faronov <qvvx@yandex.ru>
+           Copyright (C) 2008 Anton Shestakov <engored@ya.ru>
+           Copyright (C) 2009 Lebedev Roman <roman@lebedev.com>
+           Copyright (C) 2004 Steve Murphy <murf@e-tools.com>
+           Copyright (C) 2004 Philibert Ndandali  <philinda@mail.rw>
+           Copyright (C) 2004 Viateur MUGENZI <muvia@hotmail.com>
+           Copyright (C) 2004 Noëlla Mupole <s24211045@tuks.co.za>
+           Copyright (C) 2004 Carole Karema <karemacarole@hotmail.com>
+           Copyright (C) 2007 Danishka Navin <danishka@gmail.com>
+           Copyright (C) 2001, 2002, 2004 Stanislav Visnovsky <visnovsky@nenya.ms.mff.cuni.cz>
+           Copyright (C) 2005, 2008 Marcel Telka <marcel@telka.sk>
+           Copyright (C) 2006-2010 Pavol Šimo <palo.simo@gmail.com>
+           Copyright (C) 2006 Matic Žgur <mr.zgur@gmail.com>
+           Copyright (C) 2007 Martin Srebotnjak <miles@filmsi.net>
+           Copyright (C) 2007 Matej Urbančič <mateju@svn.gnome.org>
+           Copyright (C) 2003 Besnik Bleta <besnikbleta@hotmail.com>
+           Copyright (C) 2003-2009 Laurent Dhima <laurenti@alblinux.net>
+           Copyright (C) 2003-2007 Courtesy of Prevod.org team (http://prevod.org/)
+           Copyright (C) 2000-2005 Christian Rose <menthos@menthos.com>
+           Copyright (C) 2006-2010 Daniel Nylander <po@danielnylander.se>
+           Copyright (C) 2001-2003 Dinesh Nadarajah <n_dinesh@yahoo.com>
+           Copyright (C) 2006 Felix <ifelix25@gmail.com>
+           Copyright (C) 2009 I. Felix <ifelix@redhat.com>
+           Copyright (C) 2005 Prajasakti Localisation Team <localisation@prajasakti.com>
+           Copyright (C) 2007 Sunil Mohan Adapa <sunilmohan@gnu.org.in>
+           Copyright (C) 2008, 2009 Krishna Babu K <kkrothap@redhat.com>
+           Copyright (C) 2003, 2004 Paisa Seeluangsawat <paisa@users.sf.net>
+           Copyright (C) 2005-2010 Theppitak Karoonboonyanan <thep@linux.thai.net>
+           Copyright (C) 2004 Gurban Mühemmet Tewekgeli <gmtavakkoli@yahoo.com>
+           Copyright (C) 2003 Arman Aksoy <armish@linux-sevenler.de
+           Copyright (C) 2002 Ömer Fadıl USTA <omer_fad@hotmail.com>
+           Copyright (C) 2001, 2002 Nilgün Belma Bugüner <nilgun@fide.org>
+           Copyright (C) 1999-2001 Fatih Demir <kabalak@gtranslator.org>
+           Copyright (C) 2001 Görkem Cetin <gorkem@gelecek.com.tr>
+           Copyright (C) 2006-2009 Baris Cicek <baris@teamforce.name.tr>
+           Copyright (C) 2005 Albert Fazlí <tatarish.l10n@gmail.com>
+           Copyright (C) 2008 Rosetta Contributors and Canonical Ltd
+           Copyright (C) 2008 Ömerjan Tursunqasim <omarjan14@qq.com>
+           Copyright (C) 1999, 2004 Yuri Syrota <rasta@cvs.gnome.org>
+           Copyright (C) 2004-2010 Maxim Dziumanenko <dziumanenko@gmail.com>
+           Copyright (C) 2009 wanderlust <wanderlust@ukr.net>
+           Copyright (C) 2003, 2004 Mashrab Kuvatov <kmashrab@uni-bremen.de>
+           Copyright (C) 2008 Nurali Abdurahmonov <mavnur@gmail.com>
+           Copyright (C) 2003, 2004 Mashrab Kuvatov <kmashrab@uni-bremen.de>
+           Copyright (C) 2008 Nurali Abdurahmonov <mavnur@gmail.com>
+           Copyright (C) 2000-2002 Hoang Ngoc Tu <hntu@gmx.de>
+           Copyright (C) 2000-2002 Joern v. Kattchee <kattchee@cs.tu-berlin.de>
+           Copyright (C) 2002-2004, 2007-2009 Nguyễn Thái Ngọc Duy <pclouds@gmail.com>
+           Copyright (C) 2005-2010 Clytie Siddall <clytie@riverland.net.au>
+           Copyright (C) 2001, 2003-2006 Pablo Saratxaga <pablo@walon.org>
+           Copyright (C) 2005 Canonical Ltd.
+           Copyright (C) 2005 Translation World CC in South Africa
+           Copyright (C) 2003 Raphael Finkel <raphael@cs.uky.edu>
+           Copyright (C) 2000 辛立仁 <hsin@med.cgu.edu.tw>
+           Copyright (C) 2000 Chih-Wei Huang <cwhuang@linux.org.tw>
+           Copyright (C) 2001 Abel Cheung <maddog@linux.org.hk>
+           Copyright (C) 2001 He Qiangqiang <carton@263.net>
+           Copyright (C) 2003, 2004 Funda Wang <fundawang@linux.net.cn>
+           Copyright (C) 2007 Yang Zhang <zyangmath@gmail.com>
+           Copyright (C) 2008, 2009 Deng Xiyue <manphiz@gmail.com>
+           Copyright (C) 2008, 2009 Funda Wang <fundawang@gmail.com>
+           Copyright (C) 2009, 2010 Hinker <hinkerliu@gmail.com>
+License: LGPL-2+
+
+Files: gdk/win32/wintab.h
+       gdk/win32/pktdef.h
+Copyright: Copyright (C) 1991-1998 LCS/Telegraphics
+License: other
+ The text and information contained in this file may be freely used,
+ copied, or distributed without compensation or licensing restrictions.
+
+Files: gtk/gtktexttag.*
+       gtk/gtktextmark.*
+       gtk/gtktextsegment.c
+       gtk/gtktextchild.c
+       gtk/gtktextchildprivate.h
+       gtk/gtktextbtree.c
+Copyright: Copyright (C) 1992-1994 The Regents of the University of California.
+           Copyright (C) 1994-1997 Sun Microsystems, Inc.
+           Copyright (C) 2000      Red Hat, Inc.
+License: SWL
+
+License: SWL
+ This software is copyrighted by the Regents of the University of
+ California, Sun Microsystems, Inc., and other parties.  The
+ following terms apply to all files associated with the software
+ unless explicitly disclaimed in individual files.
+ .
+ The authors hereby grant permission to use, copy, modify,
+ distribute, and license this software and its documentation for any
+ purpose, provided that existing copyright notices are retained in
+ all copies and that this notice is included verbatim in any
+ distributions. No written agreement, license, or royalty fee is
+ required for any of the authorized uses.  Modifications to this
+ software may be copyrighted by their authors and need not follow
+ the licensing terms described here, provided that the new terms are
+ clearly indicated on the first page of each file where they apply.
+ .
+ IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY
+ PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+ DAMAGES ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION,
+ OR ANY DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED
+ OF THE POSSIBILITY OF SUCH DAMAGE.
+ .
+ THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
+ INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+ NON-INFRINGEMENT.  THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS,
+ AND THE AUTHORS AND DISTRIBUTORS HAVE NO OBLIGATION TO PROVIDE
+ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ .
+ GOVERNMENT USE: If you are acquiring this software on behalf of the
+ U.S. government, the Government shall have only "Restricted Rights"
+ in the software and related documentation as defined in the Federal
+ Acquisition Regulations (FARs) in Clause 52.227.19 (c) (2).  If you
+ are acquiring the software on behalf of the Department of Defense,
+ the software shall be classified as "Commercial Computer Software"
+ and the Government shall have only "Restricted Rights" as defined
+ in Clause 252.227-7013 (c) (1) of DFARs.  Notwithstanding the
+ foregoing, the authors grant the U.S. Government and others acting
+ in its behalf permission to use and distribute the software in
+ accordance with the terms specified in this license.
+
+Files: gtk/gtktextdisplay.*
+       gtk/gtktextlayout.*
+Copyright: Copyright (C) 1992-1994 The Regents of the University of California.
+           Copyright (C) 1994-1997 Sun Microsystems, Inc.
+           Copyright (C) 2000      Red Hat, Inc.
+License: LGPL-2+ or SWL
+
+Files:
+ modules/input/gtk-text-input.xml
+ modules/input/text-input-unstable-v3.xml
+Copyright:
+ 2012-2013 Intel Corporation
+ 2015-2016 Jan Arne Petersen
+ 2017-2018 Red Hat, Inc.
+ 2018 Purism SPC
+License: X11R5-permissive
+
+Files:
+ gdk/broadway/rawinflate.min.js
+ debian/missing-sources/zlib.js-0.1.6/*
+Copyright: © 2012 imaya
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+
+Files:
+ debian/missing-sources/zlib.js-0.1.6/closure-primitives/*
+Copyright: © 2006-2010 The Closure Library Authors
+License: Apache-2.0
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ .
+      https://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS-IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+Comment:
+ On Debian systems a copy of the Apache License, Version 2.0 can be
+ found in /usr/share/common-licenses/Apache-2.0
+
+Files:
+ testsuite/gdk/check-gdk-cairo.c
+Copyright: 2008 Sven Herzberg
+License: check-gdk-cairo-permissive
+ This work is provided "as is"; redistribution and modification
+ in whole or in part, in any medium, physical or electronic is
+ permitted without restriction.
+ .
+ This work is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ .
+ In no event shall the authors or contributors be liable for any
+ direct, indirect, incidental, special, exemplary, or consequential
+ damages (including, but not limited to, procurement of substitute
+ goods or services; loss of use, data, or profits; or business
+ interruption) however caused and on any theory of liability, whether
+ in contract, strict liability, or tort (including negligence or
+ otherwise) arising in any way out of the use of this software, even
+ if advised of the possibility of such damage.
+
+License: X11R5-permissive
+ Permission to use, copy, modify, distribute, and sell this
+ software and its documentation for any purpose is hereby granted
+ without fee, provided that the above copyright notice appear in
+ all copies and that both that copyright notice and this permission
+ notice appear in supporting documentation, and that the name of
+ the copyright holders not be used in advertising or publicity
+ pertaining to distribution of the software without specific,
+ written prior permission.  The copyright holders make no
+ representations about the suitability of this software for any
+ purpose.  It is provided "as is" without express or implied
+ warranty.
+ .
+ THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ THIS SOFTWARE.

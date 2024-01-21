@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="multipart/report">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>mail system report</comment>
+  <comment xml:lang="ar">تقرير نظام البريد</comment>
+  <comment xml:lang="az">poçt sistemi raportu</comment>
+  <comment xml:lang="be-Latn">rapart paštovaj systemy</comment>
+  <comment xml:lang="bg">Отчет за пощенската система</comment>
+  <comment xml:lang="ca">informe de sistema de correu</comment>
+  <comment xml:lang="cs">zpráva poštovního systému</comment>
+  <comment xml:lang="cy">adroddiad system bost</comment>
+  <comment xml:lang="da">postsystemrapport</comment>
+  <comment xml:lang="de">E-Mail-Systembericht</comment>
+  <comment xml:lang="el">Αναφορά συστήματος ηλ. ταχυδρομείου</comment>
+  <comment xml:lang="en-GB">mail system report</comment>
+  <comment xml:lang="eo">raporto de retpoŝta sistemo</comment>
+  <comment xml:lang="es">informe del sistema de correo</comment>
+  <comment xml:lang="eu">posta sistemako txostena</comment>
+  <comment xml:lang="fi">viestijärjestelmän ilmoitus</comment>
+  <comment xml:lang="fo">postkervisfrásøgn</comment>
+  <comment xml:lang="fr">rapport système de courriels</comment>
+  <comment xml:lang="fur">rapuart di sisteme de pueste</comment>
+  <comment xml:lang="ga">tuairisc chórais r-phoist</comment>
+  <comment xml:lang="gl">informe do sistema de correo</comment>
+  <comment xml:lang="he">דו״ח של מערכת הדואר</comment>
+  <comment xml:lang="hr">Izvještaj sustava pošte</comment>
+  <comment xml:lang="hu">levelezőrendszer jelentése</comment>
+  <comment xml:lang="ia">Reporto de systema de e-mail</comment>
+  <comment xml:lang="id">laporan sistem surat</comment>
+  <comment xml:lang="it">Rapporto di sistema posta</comment>
+  <comment xml:lang="ja">メールシステムレポート</comment>
+  <comment xml:lang="kk">пошта жүйесінің мәлімдемесі</comment>
+  <comment xml:lang="ko">메일 시스템 보고서</comment>
+  <comment xml:lang="lt">pašto sistemos ataskaita</comment>
+  <comment xml:lang="lv">pasta sistēmas atskaite</comment>
+  <comment xml:lang="ms">Laporan sistem mel</comment>
+  <comment xml:lang="nb">e-postsystemrapport</comment>
+  <comment xml:lang="nl">e-mail-systeembericht</comment>
+  <comment xml:lang="nn">e-post-systemrapport</comment>
+  <comment xml:lang="oc">rapòrt sistèma de corrièrs electronics</comment>
+  <comment xml:lang="pl">Raport systemu pocztowego</comment>
+  <comment xml:lang="pt">relatório de sistema de email</comment>
+  <comment xml:lang="pt-BR">Relatório do sistema de correspondência</comment>
+  <comment xml:lang="ro">raport sistem email</comment>
+  <comment xml:lang="ru">Отчёт почтовой системы</comment>
+  <comment xml:lang="sk">Správa poštového systému</comment>
+  <comment xml:lang="sl">poročilo poštnega sistema</comment>
+  <comment xml:lang="sq">Raport i sistemit të postës</comment>
+  <comment xml:lang="sr">извештај поштанског система</comment>
+  <comment xml:lang="sv">e-postsystemrapport</comment>
+  <comment xml:lang="tr">posta sistem raporu</comment>
+  <comment xml:lang="uk">звіт поштової системи</comment>
+  <comment xml:lang="vi">thông báo hệ thống thư</comment>
+  <comment xml:lang="zh-CN">邮件系统报告</comment>
+  <comment xml:lang="zh-TW">郵件系統回報</comment>
+</mime-type>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/geo+json">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>GeoJSON geospatial data</comment>
+  <comment xml:lang="af">GeoJSON georuimtelike data</comment>
+  <comment xml:lang="bg">Географски данни — GeoJSON</comment>
+  <comment xml:lang="ca">dades geomàtiques GeoJSON</comment>
+  <comment xml:lang="cs">geoprostorová data GeoJSON</comment>
+  <comment xml:lang="da">GEoJSON-geospatiale data</comment>
+  <comment xml:lang="de">GeoJSON raumbezogene Daten</comment>
+  <comment xml:lang="en-GB">GeoJSON geospatial data</comment>
+  <comment xml:lang="es">datos geoespaciales en GeoJSON</comment>
+  <comment xml:lang="eu">GeoJSON geomatika datua</comment>
+  <comment xml:lang="fi">GeoJSON paikkatiedot</comment>
+  <comment xml:lang="fr">données géospatiales GeoJSON</comment>
+  <comment xml:lang="fur">dâts gjeo-spaziâls GeoJSON</comment>
+  <comment xml:lang="ga">sonraí geospásúla GeoJSON</comment>
+  <comment xml:lang="hr">GeoJSON geoprostorni podaci</comment>
+  <comment xml:lang="hu">GeoJSON téradatok</comment>
+  <comment xml:lang="id">Data geospasial GeoJSON</comment>
+  <comment xml:lang="it">Dati geo-spaziali GeoJSON</comment>
+  <comment xml:lang="kk">GeoJSON геокеңістіктік деректері</comment>
+  <comment xml:lang="ko">GeoJSON 지리 정보 데이터</comment>
+  <comment xml:lang="pl">Dane geoprzestrzenne GeoJSON</comment>
+  <comment xml:lang="pt-BR">Dados geoespaciais GeoJSON</comment>
+  <comment xml:lang="ru">Геопространственные данные GeoJSON</comment>
+  <comment xml:lang="sk">Geopriestorové údaje GeoJSON</comment>
+  <comment xml:lang="sr">ГеоЈСОН геопросторни подаци</comment>
+  <comment xml:lang="sv">Geospatialt GeoJSON-data</comment>
+  <comment xml:lang="tr">GeoJSON coğrafi veriler</comment>
+  <comment xml:lang="uk">геопросторові дані GeoJSON</comment>
+  <comment xml:lang="zh-CN">GeoJSON 地理空间数据</comment>
+  <comment xml:lang="zh-TW">GeoJSON 地理空間資料</comment>
+  <sub-class-of type="application/json"/>
+  <glob pattern="*.geojson"/>
+  <glob pattern="*.geo.json"/>
+  <alias type="application/vnd.geo+json"/>
+</mime-type>

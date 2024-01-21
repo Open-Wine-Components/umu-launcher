@@ -1,0 +1,38 @@
+This package was debianized by Emmanuele Bassi <ebassi@openedhand.com> on Thu, 01 May 2008 15:31:18 +0100
+
+It was downloaded from:
+  ftp://ftp.gnome.org/pub/gnome/sources/json-glib/
+
+Upstream Authors:
+  Emmanuele Bassi <ebassi@openedhand.com>
+
+Copyright (C) 2008 OpenedHand Ltd.
+
+License:
+
+  This library is free software; you can redistribute it and/or modify it under
+  the terms of the GNU Lesser General Public License as published by the Free
+  Software Foundation; either version 2 of the License, or (at your option) any
+  later version.
+
+  This library is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License along
+  with this library; if not, write to the Free Software Foundation, Inc., 51
+  Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+
+On Debian systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/LGPL-2'.
+
+This package also contains documentation licensed under the GFDL with no
+invariant sections:
+
+  Permission is granted to copy, distribute and/or modify this document under
+  the terms of the GNU Free Documentation License, Version 1.1 or any later
+  version published by the Free Software Foundation with no Invariant
+  Sections, no Front-Cover Texts, and no Back-Cover Texts.
+
+On Debian systems, the complete text of the GNU Free Documentation License can
+be found in `/usr/share/common-licenses/GFDL`.

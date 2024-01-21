@@ -1,0 +1,259 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: pango
+Source: https://download.gnome.org/sources/pango/
+
+Files: *
+Copyright: 1999-2019  Red Hat
+           2005-2007  Imendio AB
+           2007       Novell, Inc
+           2001       Sun Microsystems
+           2000       SuSE Linux Ltd
+           2005       Amit Aronovitch
+           2012       Emmanuele Bassi
+           2008       Jürg Billeter
+           2001       Hans Breuer
+           2002-2020  Matthias Clasen
+           2001, 2002, 2006 Behdad Esfahbod
+           2016       Chun-wei Fan
+           2001       Alexander Larsson
+           2012       Ryan Lortie
+           2003       Noah Levitt
+           2000-2002  Tor Lillqvist
+           2000, 2005 Keith Packard
+           2010, 2012 Kristian Rietveld
+                      Owen Taylor
+                      Abigail Brady
+                      Sivaraj Doddannan
+                      Karl Koehler
+                      Havoc Pennington
+                      Roozbeh Pournader
+                      Changwoo Ryu
+                      Chookij Vanatham
+License: LGPL-2+
+
+Files: examples/cairoshape.c
+       examples/cairotwisted.c
+Copyright: 2006-2007 Behdad Esfahbod
+License: Example
+
+Files: debian/tests/installed-tests
+Copyright: 2013, Canonical Ltd.
+License: LGPL-2+
+
+Files: pango/break-arabic.c
+Copyright: 2006 Red Hat
+           2006 Sharif FarsiWeb, Inc.
+License: LGPL-2+
+
+Files: pango/break-thai.c
+Copyright: 2003 Theppitak Karoonboonyanan
+License: LGPL-2+
+
+Files: pango/pango-color.c
+Copyright: 2000 Red Hat
+           Regents of the University of California
+           Sun Microsystems, Inc., and other parties
+License: LGPL-2+ and TCL
+
+Files: pango/pango-emoji-private.h
+Copyright: 2017 Google, Inc.
+License: LGPL-2+
+
+Files: pango/pango-emoji.c
+Copyright: 2015 The Chromium Authors
+           2017 Google, Inc.
+License: LGPL-2+
+
+Files: pango/pango-break-table.h
+       pango/pango-emoji-table.h
+       tests/GraphemeBreakTest.txt
+       tests/SentenceBreakTest.txt
+       tests/WordBreakTest.txt
+Copyright: 2016-2020 Unicode, Inc.
+License:   Unicode
+
+Files: pango/pango-script.c
+       tests/testscript.c
+Copyright: 2002 Red Hat
+           1997-2002 International Business Machines Corporation and others
+License: LGPL-2+ and ICU
+
+Files: utils/pango-list.c
+Copyright: 2018 Google
+License: LGPL-2+
+
+Files:
+ pango/emoji_presentation_scanner.c
+ pango/emoji_presentation_scanner.rl
+Copyright:
+ 2018 The Chromium Authors
+License: Chromium-BSD-style
+
+License: Chromium-BSD-style
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are
+ met:
+ .
+    * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+ copyright notice, this list of conditions and the following disclaimer
+ in the documentation and/or other materials provided with the
+ distribution.
+    * Neither the name of Google Inc. nor the names of its
+ contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: Example
+ Permission to use, copy, modify, distribute, and sell this example
+ for any purpose is hereby granted without fee.
+ It is provided "as is" without express or implied warranty.
+
+License: ICU
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the "Software")
+ to deal in the Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, provided that the above copyright notice(s) and this
+ permission notice appear in all copies of the Software and that both the
+ above copyright notice(s) and this permission notice appear in supporting
+ documentation.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS NOTICE
+ BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL DAMAGES
+ OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS
+ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION
+ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ SOFTWARE.
+ .
+ Except as contained in this notice, the name of a copyright holder shall
+ not be used in advertising or otherwise to promote the sale, use or other
+ dealings in this Software without prior written authorization of the
+ copyright holder.
+ .
+ All trademarks and registered trademarks mentioned herein are the property
+ of their respective owners.
+
+License: LGPL-2+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+ .
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public
+ License version 2 can be found in "/usr/share/common-licenses/LGPL-2".
+
+License: TCL
+ This software is copyrighted by the Regents of the University of
+ California, Sun Microsystems, Inc., and other parties. The following terms
+ apply to all files associated with the software unless explicitly
+ disclaimed in individual files.
+ .
+ The authors hereby grant permission to use, copy, modify, distribute,
+ and license this software and its documentation for any purpose,
+ provided that existing copyright notices are retained in all copies
+ and that this notice is included verbatim in any distributions. No
+ written agreement, license, or royalty fee is required for any of the
+ authorized uses. Modifications to this software may be copyrighted by
+ their authors and need not follow the licensing terms described here,
+ provided that the new terms are clearly indicated on the first page
+ of each file where they apply.
+ .
+ IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
+ FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
+ DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+ .
+ THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
+ INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+ NON-INFRINGEMENT. THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, AND
+ THE AUTHORS AND DISTRIBUTORS HAVE NO OBLIGATION TO PROVIDE
+ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ .
+ GOVERNMENT USE: If you are acquiring this software on behalf of the
+ U.S. government, the Government shall have only "Restricted Rights"
+ in the software and related documentation as defined in the Federal
+ Acquisition Regulations (FARs) in Clause 52.227.19 (c) (2). If you
+ are acquiring the software on behalf of the Department of Defense,
+ the software shall be classified as "Commercial Computer Software"
+ and the Government shall have only "Restricted Rights" as defined in
+ Clause 252.227-7013 (c) (1) of DFARs. Notwithstanding the foregoing,
+ the authors grant the U.S. Government and others acting in its behalf
+ permission to use and distribute the software in accordance with the
+ terms specified in this license.
+
+License: Unicode
+ Unicode Data Files include all data files under the directories
+ http://www.unicode.org/Public/, http://www.unicode.org/reports/,
+ http://www.unicode.org/cldr/data/, http://source.icu-project.org/repos/icu/, and
+ http://www.unicode.org/utility/trac/browser/.
+ .
+ Unicode Data Files do not include PDF online code charts under the
+ directory http://www.unicode.org/Public/.
+ .
+ Software includes any source code published in the Unicode Standard
+ or under the directories
+ http://www.unicode.org/Public/, http://www.unicode.org/reports/,
+ http://www.unicode.org/cldr/data/, http://source.icu-project.org/repos/icu/, and
+ http://www.unicode.org/utility/trac/browser/.
+ .
+ NOTICE TO USER: Carefully read the following legal agreement.
+ BY DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING UNICODE INC.'S
+ DATA FILES ("DATA FILES"), AND/OR SOFTWARE ("SOFTWARE"),
+ YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+ TERMS AND CONDITIONS OF THIS AGREEMENT.
+ IF YOU DO NOT AGREE, DO NOT DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE
+ THE DATA FILES OR SOFTWARE.
+ .
+ COPYRIGHT AND PERMISSION NOTICE
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of the Unicode data files and any associated documentation
+ (the "Data Files") or Unicode software and any associated documentation
+ (the "Software") to deal in the Data Files or Software
+ without restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, and/or sell copies of
+ the Data Files or Software, and to permit persons to whom the Data Files
+ or Software are furnished to do so, provided that either
+ (a) this copyright and permission notice appear with all copies
+ of the Data Files or Software, or
+ (b) this copyright and permission notice appear in associated
+ Documentation.
+ .
+ THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF
+ ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS
+ NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL
+ DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ PERFORMANCE OF THE DATA FILES OR SOFTWARE.
+ .
+ Except as contained in this notice, the name of a copyright holder
+ shall not be used in advertising or otherwise to promote the sale,
+ use or other dealings in these Data Files or Software without prior
+ written authorization of the copyright holder.

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-ipynb+json">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>Jupyter notebook document</comment>
+  <comment xml:lang="bg">Скицник — Jupyter</comment>
+  <comment xml:lang="ca">document de llibreta de notes de Jupyter</comment>
+  <comment xml:lang="da">Jupyter notebook-dokument</comment>
+  <comment xml:lang="de">Jupyter-Notebook-Dokument</comment>
+  <comment xml:lang="en-GB">Jupyter notebook document</comment>
+  <comment xml:lang="es">documento de cuaderno de Jupyter</comment>
+  <comment xml:lang="eu">Jupyter notebook dokumentua</comment>
+  <comment xml:lang="fi">Jupyter kannettavan asiakirja</comment>
+  <comment xml:lang="fr">carnet de notes Jupyter</comment>
+  <comment xml:lang="hr">Jupyter notebook dokument</comment>
+  <comment xml:lang="hu">Jupyter munkafüzet dokumentum</comment>
+  <comment xml:lang="it">Documento notebook Jupyter</comment>
+  <comment xml:lang="ko">주피터 노트북 문서</comment>
+  <comment xml:lang="pl">Dokument notatnika Jupyter</comment>
+  <comment xml:lang="sv">Jupyter-anteckningsboksdokument</comment>
+  <comment xml:lang="tr">Jupyter notebook belgesi</comment>
+  <comment xml:lang="uk">документ нотатника Jupyter</comment>
+  <comment xml:lang="zh-CN">Jupyter 笔记本文档</comment>
+  <sub-class-of type="application/json"/>
+  <generic-icon name="x-office-document"/>
+  <glob pattern="*.ipynb"/>
+</mime-type>

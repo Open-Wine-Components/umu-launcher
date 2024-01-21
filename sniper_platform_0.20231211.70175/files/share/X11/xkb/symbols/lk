@@ -1,0 +1,184 @@
+// X Keyboard Extension file for Sinhala (Sri Lanka) (2004-04-22)
+// Maintainer  : Harshula Jayasuriya <harshula@gmail.com>
+// Last Updated: 2011-05-25
+// This is a phonetic static mapping for a standard US-English keyboard
+// (QWERTY)
+// http://www.nongnu.org/sinhala/doc/keymaps/sinhala-keyboard_3.html
+
+// Repaya, Rakaransaya and Yansaya aren't inserted with A-r, R and Y,
+// respectively. The problem lies with the XKB infrastructure which
+// only allows a one-to-one mapping of keycodes to Unicode codepoints.
+// Unfortunately, the 3 mentioned glyphs actually consists of 3
+// Unicode codepoints each. The result is that the user must
+// manually construct the glyph by typing each of the 3 codepoints.
+// ALT-, represents the 'JOIN' key, it requires
+// two codepoints, hence it also has to be manually constructed.
+// Similarly, ALT-/ representing the 'TOUCH' key requires
+// two codepoints.
+
+// Repaya = rayanna,AL,ZWJ
+// Rakaransaya = AL,ZWJ,rayanna
+// Yansaya = AL,ZWJ,yayanna
+// JOIN = AL,ZWJ
+// TOUCH = ZWJ,AL
+
+// Where,
+// AL = Al Lakuna = ALT-a
+// ZWJ = Zero Width Joiner = ALT-/
+// rayanna = r
+// yayanna = y
+
+default  partial alphanumeric_keys
+xkb_symbols "sin_phonetic" {
+
+  include "us"
+  name[Group1] = "Sinhala (phonetic)";
+  key.type[Group1] = "FOUR_LEVEL";
+
+  // q - p
+  key <AD01> { [ Sinh_ri, Sinh_rii, Sinh_ru2, Sinh_ruu2 ] };
+  key <AD02> { [ Sinh_ae, Sinh_aee, Sinh_ae2, Sinh_aee2 ] };
+  key <AD03> { [ Sinh_e, Sinh_ee, Sinh_e2, Sinh_ee2 ] };
+  key <AD04> { [ Sinh_ra, Sinh_al, Sinh_ra, NoSymbol ] };
+  key <AD05> { [ Sinh_tha, Sinh_thha, Sinh_tta, Sinh_ttha ] };
+  key <AD06> { [ Sinh_ya, Sinh_al, NoSymbol, NoSymbol ] };
+  key <AD07> { [ Sinh_u, Sinh_uu, Sinh_u2, Sinh_uu2 ] };
+  key <AD08> { [ Sinh_i, Sinh_ii, Sinh_i2, Sinh_ii2 ] };
+  key <AD09> { [ Sinh_o, Sinh_oo, Sinh_o2, Sinh_oo2 ] };
+  key <AD10> { [ Sinh_pa, Sinh_pha, NoSymbol, NoSymbol ] };
+
+  // a - l
+  key <AC01> { [ Sinh_a, Sinh_aa, Sinh_al, Sinh_aa2 ] };
+  key <AC02> { [ Sinh_sa, Sinh_sha, Sinh_ssha, NoSymbol ] };
+  key <AC03> { [ Sinh_dha, Sinh_dhha, Sinh_dda, Sinh_ddha ] };
+  key <AC04> { [ Sinh_fa, NoSymbol, Sinh_ai2, Sinh_ai ] };
+  key <AC05> { [ Sinh_ga, Sinh_gha, Sinh_nga, NoSymbol ] };
+  key <AC06> { [ Sinh_ha, Sinh_h2, Sinh_au2, Sinh_au ] };
+  key <AC07> { [ Sinh_ja, Sinh_jha, Sinh_nja, NoSymbol ] };
+  key <AC08> { [ Sinh_ka, Sinh_kha, Sinh_lu, Sinh_luu ] };
+  key <AC09> { [ Sinh_la, Sinh_lla, Sinh_lu2, Sinh_luu2 ] };
+
+  // z - ?
+  key <AB01> { [ Sinh_nya, Sinh_jnya, NoSymbol, NoSymbol ] };
+  key <AB02> { [ Sinh_ndha, Sinh_ndda, NoSymbol, NoSymbol ] };
+  key <AB03> { [ Sinh_ca, Sinh_cha, NoSymbol, NoSymbol ] };
+  key <AB04> { [ Sinh_va, NoSymbol, NoSymbol, NoSymbol ] };
+  key <AB05> { [ Sinh_ba, Sinh_bha, NoSymbol, NoSymbol ] };
+  key <AB06> { [ Sinh_na, Sinh_nna, Sinh_ng, Sinh_ng2 ] };
+  key <AB07> { [ Sinh_ma, Sinh_mba, NoSymbol, NoSymbol ] };
+  key <AB08> { [ any, any, Sinh_al, NoSymbol ] };
+  key <AB09> { [ any, any, Sinh_kunddaliya, NoSymbol ] };
+  key <AB10> { [ any, any, 0x100200d, NoSymbol ] };
+
+  // Space
+  include "nbsp(nb2zwnj3s)"
+
+  include "level3(ralt_switch)"
+};
+
+partial alphanumeric_keys
+xkb_symbols "tam_unicode" {
+    include "in(tam_tamilnet)"
+    name[Group1]= "Tamil (Sri Lanka, TamilNet '99)";
+};
+
+partial alphanumeric_keys
+xkb_symbols "tam_TAB" {
+    include "in(tam_tamilnet_TAB)"
+    name[Group1]= "Tamil (Sri Lanka, TamilNet '99, TAB encoding)";
+};
+
+// SINHALA - US, SUBSTITUTES SOME AND ADDS SOME
+// =============================================
+//
+// This started as an upgrade to the first romanized version of
+// Sinhala called PTS Pali created in the 1860s. PTS requires
+// dots and bars on letters that are rare in fonts, and impossible
+// to type. Its singular purpose was to print Tripitaka, the
+// collection of Buddhist discourses.
+//
+// This version covers the entire newer Sinhala phoneme chart
+// (Hodiya) that became standard just before the end of the 19th
+// century. All the phonemes map to the SBCS. It is easy and
+// faster than English to type. It overcomes the setback of
+// Unicode Sinhala that it is not compatible with Pali and
+// Sanskrit because it encodes two ligatures as base letters and
+// the SLS1134 specification matching shape and morpheme sets
+// violating Sanskrit orthography.
+//
+// Most importantly, this romanized version of Sinhala has a
+// companion orthographic font that displays the text in the
+// native script and a JavaScript converts it to Unicode Sinhala
+// and back dramatically increasing Sinhala seen on the web due
+// to its ease of use
+//
+// Dedication:
+// Thomas William Rhys Davids, Ven. Udagama Sumangala
+// Rev. Fr. A. M. Gunasekara, Rev. Fr. Theodore G. Perera
+// Ven. Mettavihari
+//
+// Maintainer:
+// JC Ahangama - sing@ahangama.com
+//
+partial alphanumeric_keys modifier_keys
+xkb_symbols "us" {
+  include "us(basic)"
+  name[Group1]= "Sinhala (US, with Sinhala letters)";
+//
+//                   UNSHIFTED,         SHIFT,           ALT
+//                   --------------------------------------------
+//
+  key <AB01> { [             z,    VoidSymbol,    VoidSymbol ] };
+  key <AB02> { [             x,    VoidSymbol,    VoidSymbol ] };
+  key <AB03> { [             c,      ccedilla,    VoidSymbol ] };
+  key <AB04> { [             v,    VoidSymbol,    VoidSymbol ] };
+  key <AB05> { [             b,             B,    VoidSymbol ] };
+  key <AB06> { [             n,             N,        ntilde ] };
+  key <AB07> { [             m,    VoidSymbol,    VoidSymbol ] };
+  key <AB08> { [         comma,          less,           UAB ] };
+  key <AB09> { [        period,       greater,           UBB ] };
+  key <AB10> { [         slash,      question,         U200C ] };
+
+  key <AC01> { [             a,        aacute,    adiaeresis ] };
+  key <AC02> { [             s,    VoidSymbol,    VoidSymbol ] };
+  key <AC03> { [           eth,           ETH,    VoidSymbol ] };
+  key <AC04> { [         thorn,             f,    VoidSymbol ] };
+  key <AC05> { [             g,             G,    VoidSymbol ] };
+  key <AC06> { [             h,    VoidSymbol,    VoidSymbol ] };
+  key <AC07> { [             j,      ccedilla,    VoidSymbol ] };
+  key <AC08> { [             k,    VoidSymbol,    VoidSymbol ] };
+  key <AC09> { [             l,             L,   ocircumflex ] };
+  key <AC10> { [     semicolon,         colon,    VoidSymbol ] };
+  key <AC11> { [    apostrophe,      quotedbl,    VoidSymbol ] };
+
+  key <AD01> { [             d,             D,             q ] };
+  key <AD02> { [            ae,         acute,    VoidSymbol ] };
+  key <AD03> { [             e,        eacute,    ediaeresis ] };
+  key <AD04> { [             r,   ucircumflex,    VoidSymbol ] };
+  key <AD05> { [             t,    VoidSymbol,    VoidSymbol ] };
+  key <AD06> { [             y,    VoidSymbol,    VoidSymbol ] };
+  key <AD07> { [             u,        uacute,    udiaeresis ] };
+  key <AD08> { [             i,        iacute,    idiaeresis ] };
+  key <AD09> { [             o,        oacute,    odiaeresis ] };
+  key <AD10> { [             p,    VoidSymbol,    VoidSymbol ] };
+  key <AD11> { [   bracketleft,     braceleft,    VoidSymbol ] };
+  key <AD12> { [  bracketright,    braceright,    VoidSymbol ] };
+
+  key <AE01> { [             1,        exclam,   dead_macron ] };
+  key <AE02> { [             2,            at, dead_belowdot ] };
+  key <AE03> { [             3,    numbersign, dead_abovedot ] };
+  key <AE04> { [             4,        dollar,      currency ] };
+  key <AE05> { [             5,       percent,           UB0 ] };
+  key <AE06> { [             6,   asciicircum,    onequarter ] };
+  key <AE07> { [             7,     ampersand,       onehalf ] };
+  key <AE08> { [             8,      asterisk, threequarters ] };
+  key <AE09> { [             9,     parenleft,    VoidSymbol ] };
+  key <AE10> { [             0,    parenright,    VoidSymbol ] };
+  key <AE11> { [         minus,    underscore,         U2014 ] };
+  key <AE12> { [         equal,          plus,    VoidSymbol ] };
+
+  key <BKSL> { [     backslash,           bar,    VoidSymbol ] };
+  key <SPCE> { [         space,  nobreakspace,    VoidSymbol ] };
+  key <TLDE> { [         grave,    asciitilde,    VoidSymbol ] };
+  include "level3(alt_switch)"
+};

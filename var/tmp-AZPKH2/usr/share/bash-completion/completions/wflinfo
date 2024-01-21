@@ -1,0 +1,75 @@
+_wflinfo() {
+
+  local cur prev
+  if _get_comp_words_by_ref -n= cur prev &>/dev/null; then
+    prefix=""
+    case $cur in
+      -p*|-a*|-V*|-f*)
+        prev=${cur:0:2}
+        cur=${cur:2}
+        prefix="-P $prev"
+        ;;
+      --platform=*|--api=*|--version=*|--format=*)
+        prev=${cur%%=*}
+        cur=${cur#*=}
+        ;;
+    esac
+
+    case $prev in
+      -p|--platform)
+        COMPREPLY=($(compgen $prefix -W 'android cgl gbm glx surfaceless_egl sl wayland wgl x11_egl' -- "$cur"))
+        return
+        ;;
+      -a|--api)
+        COMPREPLY=($(compgen $prefix -W 'gl gles1 gles2 gles3' -- "$cur"))
+        return
+        ;;
+      -V|--version)
+        local versions=(1.{0..5} 2.{0..1} 3.{0..3} 4.{0..6})
+        COMPREPLY=($(compgen $prefix -W "${versions[*]}" -- "$cur"))
+        return
+        ;;
+      --profile)
+        COMPREPLY=($(compgen $prefix -W 'core compat none' -- "$cur"))
+        return
+        ;;
+      -f|--format)
+        COMPREPLY=($(compgen $prefix -W 'original json' -- "$cur"))
+        return
+        ;;
+    esac
+  else
+    cur="${COMP_WORDS[COMP_CWORD]}"
+  fi
+
+  local shortopts=(
+    p
+    a
+    V
+    v
+    f
+    h
+  )
+
+  local longopts=(
+    platform
+    api
+    version
+    profile
+    verbose
+    forward-compatible
+    debug-context
+    format
+    help
+  )
+
+  if [[ "$cur" == "--"* ]]; then
+    COMPREPLY=($(compgen -P '--' -W '${longopts[*]}' -- "${cur:2}"))
+  elif [[ "$cur" == "-"* && ${#cur} -gt 1 ]]; then
+    COMPREPLY=($(compgen -P '-' -W '${shortopts[*]}' -- "${cur:1}"))
+  else
+    COMPREPLY=($(compgen -P '-' -W '${shortopts[*]}' -- "${cur:1}")
+               $(compgen -P '--' -W '${longopts[*]}' -- "${cur:2}"))
+  fi
+} &&
+complete -F _wflinfo wflinfo

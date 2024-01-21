@@ -1,0 +1,6 @@
+libtheora.so.0 libtheora0 #MINVER#
+# No symbols listed here yet
+libtheoradec.so.1 libtheora0 #MINVER#
+# No symbols listed here yet
+libtheoraenc.so.1 libtheora0 #MINVER#
+# No symbols listed here yet

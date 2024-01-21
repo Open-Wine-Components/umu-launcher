@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="inode/blockdevice">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>block device</comment>
+  <comment xml:lang="af">bloktoestel</comment>
+  <comment xml:lang="ar">جهاز كتلي</comment>
+  <comment xml:lang="ast">preséu de bloques</comment>
+  <comment xml:lang="be-Latn">blokavaja pryłada</comment>
+  <comment xml:lang="bg">Блоково устройство</comment>
+  <comment xml:lang="ca">dispositiu de blocs</comment>
+  <comment xml:lang="cs">blokové zařízení</comment>
+  <comment xml:lang="da">blokenhed</comment>
+  <comment xml:lang="de">Blockorientiertes Gerät</comment>
+  <comment xml:lang="el">Συσκευή block</comment>
+  <comment xml:lang="en-GB">block device</comment>
+  <comment xml:lang="eo">bloka disponaĵo</comment>
+  <comment xml:lang="es">dispositivo de bloques</comment>
+  <comment xml:lang="eu">bloke-gailua</comment>
+  <comment xml:lang="fi">laitetiedosto</comment>
+  <comment xml:lang="fo">blokka tóleind</comment>
+  <comment xml:lang="fr">périphérique de blocs</comment>
+  <comment xml:lang="fur">dispositîf a blocs</comment>
+  <comment xml:lang="ga">gléas bloc</comment>
+  <comment xml:lang="gl">dispositivo de bloque</comment>
+  <comment xml:lang="he">התקן בלוק</comment>
+  <comment xml:lang="hr">Blokovski uređaj</comment>
+  <comment xml:lang="hu">blokkos eszköz</comment>
+  <comment xml:lang="ia">Dispositivo de blocos</comment>
+  <comment xml:lang="id">peranti blok</comment>
+  <comment xml:lang="it">Device a blocchi</comment>
+  <comment xml:lang="ja">ブロックデバイス</comment>
+  <comment xml:lang="kk">блоктық құрылғысы</comment>
+  <comment xml:lang="ko">블록 장치</comment>
+  <comment xml:lang="lt">blokinis įrenginys</comment>
+  <comment xml:lang="lv">bloka ierīce</comment>
+  <comment xml:lang="ms">Peranti blok</comment>
+  <comment xml:lang="nb">blokkenhet</comment>
+  <comment xml:lang="nl">blok-apparaat</comment>
+  <comment xml:lang="nn">blokk-eining</comment>
+  <comment xml:lang="oc">periferic de blòts</comment>
+  <comment xml:lang="pl">Urządzenie blokowe</comment>
+  <comment xml:lang="pt">dispositivo de bloco</comment>
+  <comment xml:lang="pt-BR">Dispositivo de bloco</comment>
+  <comment xml:lang="ro">dispozitiv bloc</comment>
+  <comment xml:lang="ru">Блочное устройство</comment>
+  <comment xml:lang="sk">Blokové zariadenie</comment>
+  <comment xml:lang="sl">bločna naprava</comment>
+  <comment xml:lang="sq">device me blloqe</comment>
+  <comment xml:lang="sr">блок уређај</comment>
+  <comment xml:lang="sv">blockenhet</comment>
+  <comment xml:lang="tr">blok aygıtı</comment>
+  <comment xml:lang="uk">блоковий пристрій</comment>
+  <comment xml:lang="vi">thiết bị khối</comment>
+  <comment xml:lang="zh-CN">块设备</comment>
+  <comment xml:lang="zh-TW">區塊裝置</comment>
+</mime-type>

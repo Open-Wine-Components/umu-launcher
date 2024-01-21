@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/vnd.comicbook-rar">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>comic book archive</comment>
+  <comment xml:lang="af">strokiesprent-argief</comment>
+  <comment xml:lang="ar">أرشيف comic book</comment>
+  <comment xml:lang="be-Latn">archiŭ komiksaŭ</comment>
+  <comment xml:lang="bg">Архив — комикси</comment>
+  <comment xml:lang="ca">arxiu comic book</comment>
+  <comment xml:lang="cs">archiv knihy komiksů</comment>
+  <comment xml:lang="da">comic book-arkiv</comment>
+  <comment xml:lang="de">Comic-Book-Archiv</comment>
+  <comment xml:lang="el">Συμπιεσμένο αρχείο κόμικ</comment>
+  <comment xml:lang="en-GB">comic book archive</comment>
+  <comment xml:lang="es">archivador de libro de cómic</comment>
+  <comment xml:lang="eu">komiki artxiboa</comment>
+  <comment xml:lang="fi">sarjakuva-arkisto</comment>
+  <comment xml:lang="fo">teknisøgubóka skjalasavn</comment>
+  <comment xml:lang="fr">archive Comic Book</comment>
+  <comment xml:lang="fur">archivi di fumets</comment>
+  <comment xml:lang="ga">cartlann chartúin</comment>
+  <comment xml:lang="gl">ficheiro de libro de banda deseñada</comment>
+  <comment xml:lang="he">ארכיון ספר קומי</comment>
+  <comment xml:lang="hr">Strip arhiva</comment>
+  <comment xml:lang="hu">képregényarchívum</comment>
+  <comment xml:lang="ia">Archivo Comic Book</comment>
+  <comment xml:lang="id">arsip buku komik</comment>
+  <comment xml:lang="it">Archivio comic book</comment>
+  <comment xml:lang="ja">コミックブックアーカイブ</comment>
+  <comment xml:lang="kk">комикстар архиві</comment>
+  <comment xml:lang="ko">만화책 압축 파일</comment>
+  <comment xml:lang="lt">komiksų knygos archyvas</comment>
+  <comment xml:lang="lv">komiksu grāmatas arhīvs</comment>
+  <comment xml:lang="nb">Tegneseriearkiv</comment>
+  <comment xml:lang="nl">stripboek-archief</comment>
+  <comment xml:lang="nn">teikneseriearkiv</comment>
+  <comment xml:lang="oc">archiu Comic Book</comment>
+  <comment xml:lang="pl">Archiwum komiksu</comment>
+  <comment xml:lang="pt">arquivo de banda desenhada</comment>
+  <comment xml:lang="pt-BR">Pacote de histórias em quadrinhos</comment>
+  <comment xml:lang="ro">arhivă benzi desenate</comment>
+  <comment xml:lang="ru">Архив комиксов</comment>
+  <comment xml:lang="sk">Archív knihy komiksov</comment>
+  <comment xml:lang="sl">Datoteka arhiva stripov</comment>
+  <comment xml:lang="sq">Arkiv comic book</comment>
+  <comment xml:lang="sr">архива стрипа</comment>
+  <comment xml:lang="sv">serietidningsarkiv</comment>
+  <comment xml:lang="tr">çizgi roman arşivi</comment>
+  <comment xml:lang="uk">архів коміксів</comment>
+  <comment xml:lang="vi">Kho nén sách tranh chuyện vui</comment>
+  <comment xml:lang="zh-CN">漫画书归档文件</comment>
+  <comment xml:lang="zh-TW">漫畫書封存檔</comment>
+  <sub-class-of type="application/vnd.rar"/>
+  <generic-icon name="x-office-document"/>
+  <glob pattern="*.cbr"/>
+  <alias type="application/x-cbr"/>
+</mime-type>

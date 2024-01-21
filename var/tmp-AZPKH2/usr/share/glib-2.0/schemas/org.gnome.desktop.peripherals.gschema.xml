@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.peripherals" path="/org/gnome/desktop/peripherals/">
+    <child name="touchpad" schema="org.gnome.desktop.peripherals.touchpad"/>
+    <child name="keyboard" schema="org.gnome.desktop.peripherals.keyboard"/>
+    <child name="mouse" schema="org.gnome.desktop.peripherals.mouse"/>
+    <child name="trackball" schema="org.gnome.desktop.peripherals.trackball"/>
+    <child name="tablet" schema="org.gnome.desktop.peripherals.tablet"/>
+    <child name="touchscreen" schema="org.gnome.desktop.peripherals.touchscreen"/>
+  </schema>
+  <schema id="org.gnome.desktop.peripherals.touchpad" path="/org/gnome/desktop/peripherals/touchpad/">
+    <key name="edge-scrolling-enabled" type="b">
+      <default>false</default>
+      <summary>Whether edge scrolling is enabled</summary>
+      <description>When enabled, touchpads that support edge scrolling will have that feature enabled.</description>
+    </key>
+    <key name="two-finger-scrolling-enabled" type="b">
+      <default>true</default>
+      <summary>Whether edge scrolling is enabled</summary>
+      <description>When enabled, touchpads that support two-finger scrolling will have that feature enabled.</description>
+    </key>
+    <key name="disable-while-typing" type="b">
+      <default>true</default>
+      <summary>Whether to disable the touchpad while typing</summary>
+      <description>When enabled, touchpads will be disabled while typing on the keyboard.</description>
+    </key>
+    <key name="tap-to-click" type="b">
+      <default>false</default>
+      <summary>Enable mouse clicks with touchpad</summary>
+      <description>Set this to TRUE to be able to send mouse clicks by tapping on the touchpad.</description>
+    </key>
+    <key name="tap-button-map" enum="org.gnome.desktop.GDesktopTouchpadTapButtonMap">
+      <default>'default'</default>
+      <summary>Tap Button Map</summary>
+      <description>Defines the mapping between the number of fingers and touchpad buttons. The default is to have a 1, 2 and 3 finger tap to map to the left, right and middle button ("lrm"), respectively.</description>
+    </key>
+    <key name="tap-and-drag" type="b">
+      <default>true</default>
+      <summary>Enable tap-and-drag with touchpad</summary>
+      <description>Set this to TRUE to be able to start a drag by tapping and immediately moving the finger that’s now pressed on the touchpad.</description>
+    </key>
+    <key name="tap-and-drag-lock" type="b">
+      <default>false</default>
+      <summary>Enable tap-and-drag-lock with touchpad</summary>
+      <description>Set this to TRUE to lock the dragging process within a short timeout when the finger is lifted on the touchpad and the tap-and-drag setting is enabled.</description>
+    </key>
+    <key name="send-events" enum="org.gnome.desktop.GDesktopDeviceSendEvents">
+      <default>'enabled'</default>
+      <summary>Touchpad enabled</summary>
+      <description>Defines the situations in which the touchpad is enabled.</description>
+    </key>
+    <key name="left-handed" enum="org.gnome.desktop.GDesktopTouchpadHandedness">
+      <default>'mouse'</default>
+      <summary>Touchpad button orientation</summary>
+      <description>Swap left and right mouse buttons for left-handed mice with “left”, “right” for right-handed, “mouse” to follow the mouse setting.</description>
+    </key>
+    <key name="speed" type="d">
+      <default>0</default>
+      <summary>Pointer speed</summary>
+      <description>Pointer speed for the touchpad. Accepted values are in the [-1..1] range (from “unaccelerated” to “fast”). A value of 0 is the system default.</description>
+      <range min="-1" max="1"/>
+    </key>
+    <key name="natural-scroll" type="b">
+      <default>true</default>
+      <summary>Natural scrolling</summary>
+      <description>Set this to TRUE to enable natural (reverse) scrolling for touchpads.</description>
+    </key>
+    <key name="click-method" enum="org.gnome.desktop.GDesktopTouchpadClickMethod">
+      <default>'fingers'</default>
+      <summary>Click method</summary>
+      <description>How to generate software-emulated buttons, either disabled (“none”), through specific areas (“areas”), number of fingers (“fingers”) or left as hardware default (“default”).</description>
+    </key>
+    <key name="middle-click-emulation" type="b">
+      <default>false</default>
+      <summary>Emulate middle click</summary>
+      <description>Set this to TRUE to enable middle click during simultaneous left and right click.</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.desktop.peripherals.keyboard" path="/org/gnome/desktop/peripherals/keyboard/">
+    <key name="repeat" type="b">
+      <default>true</default>
+      <summary>Keyboard repeat</summary>
+      <description>Set this to TRUE to enable keyboard repeat.</description>
+    </key>
+    <key name="repeat-interval" type="u">
+      <default>30</default>
+      <summary>Key Repeat Interval</summary>
+      <description>Delay between repeats in milliseconds.</description>
+    </key>
+    <key name="delay" type="u">
+      <default>500</default>
+      <summary>Initial Key Repeat Delay</summary>
+      <description>Initial key repeat delay in milliseconds.</description>
+    </key>
+    <key name="remember-numlock-state" type="b">
+      <default>true</default>
+      <summary>Remember NumLock state</summary>
+      <description>When set to true, GNOME will remember the state of the NumLock LED between sessions.</description>
+    </key>
+    <key name="numlock-state" type="b">
+      <default>false</default>
+      <summary>NumLock state</summary>
+      <description>The remembered state of the NumLock LED.</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.desktop.peripherals.mouse" path="/org/gnome/desktop/peripherals/mouse/">
+    <key name="left-handed" type="b">
+      <default>false</default>
+      <summary>Mouse button orientation</summary>
+      <description>Swap left and right mouse buttons for left-handed mice.</description>
+    </key>
+    <key name="speed" type="d">
+      <default>0</default>
+      <summary>Pointer speed</summary>
+      <description>Pointer speed for mice. Accepted values are in the [-1..1] range (from “unaccelerated” to “fast”). A value of 0 is the system default.</description>
+      <range min="-1" max="1"/>
+    </key>
+    <key name="natural-scroll" type="b">
+      <default>false</default>
+      <summary>Natural scrolling</summary>
+      <description>Set this to TRUE to enable natural (reverse) scrolling for mice.</description>
+    </key>
+    <key name="accel-profile" enum="org.gnome.desktop.GDesktopPointerAccelProfile">
+      <default>'default'</default>
+      <summary>Acceleration profile</summary>
+      <description>Acceleration profile used for connected mice. The acceleration profile can be set to either default (“default”) which uses the default acceleration profile for each device, flat (“flat”), which accelerates by a device specific constant factor derived from the configured pointer speed, or adaptive (“adaptive”) which adapts the acceleration depending on the mouse movement. If a mouse doesn’t support the configured profile, “default” will be used.</description>
+    </key>
+    <key name="middle-click-emulation" type="b">
+      <default>false</default>
+      <summary>Emulate middle click</summary>
+      <description>Set this to TRUE to enable middle click during simultaneous left and right click.</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.desktop.peripherals.tablet">
+    <key name="display" type="as">
+      <default>["", "", ""]</default>
+      <summary>Deprecated tablet output mapping</summary>
+      <description>This key is deprecated. Use "org.gnome.desktop.peripherals.tablet output" instead</description>
+    </key>
+    <key name="output" type="as">
+      <default>["", "", ""]</default>
+      <summary>Drawing tablet mapping</summary>
+      <description>EDID information of the output the tablet is mapped to. Must be in the format [vendor, product, serial]. ["","",""] relies on automatic mapping.</description>
+    </key>
+    <key name="mapping" enum="org.gnome.desktop.GDesktopTabletMapping">
+      <default>'absolute'</default>
+      <summary>Tablet mapping</summary>
+      <description>How input affects the pointer on the screen</description>
+    </key>
+    <key name="area" type="ad">
+      <default>[0, 0, 0, 0]</default>
+      <summary>Tablet area</summary>
+      <description>Dead area padding around the active area, in percentages. Respectively applied to left,right,top and bottom sides.</description>
+    </key>
+    <key name="keep-aspect" type="b">
+      <default>false</default>
+      <summary>Tablet aspect ratio</summary>
+      <description>Enable this to restrict the tablet area to match the aspect ratio of the output.</description>
+    </key>
+    <key name="left-handed" type="b">
+      <default>false</default>
+      <summary>Tablet left-handed mode</summary>
+      <description>Enable this to allow physically rotating the tablet for left-handed setups</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.desktop.peripherals.tablet.stylus">
+    <key name="pressure-curve" type="ai">
+      <default>[0, 0, 100, 100]</default>
+      <summary>Stylus pressure curve</summary>
+      <description>Set this to x1, y1 and x2, y2 of the pressure curve applied to the stylus.</description>
+    </key>
+    <key name="eraser-pressure-curve" type="ai">
+      <default>[0, 0, 100, 100]</default>
+      <summary>Eraser pressure curve</summary>
+      <description>Set this to x1, y1 and x2, y2 of the pressure curve applied to the eraser.</description>
+    </key>
+    <key name="button-action" enum="org.gnome.desktop.GDesktopStylusButtonAction">
+      <default>'default'</default>
+      <summary>Button action</summary>
+      <description>Stylus button action, this button is located along the pen handle.</description>
+    </key>
+    <key name="secondary-button-action" enum="org.gnome.desktop.GDesktopStylusButtonAction">
+      <default>'default'</default>
+      <summary>Secondary button action</summary>
+      <description>Secondary stylus button action, this button is located along the pen handle on some styli like the Grip Pen. Other styli like the Airbrush Pen or the Inking Pen only have one button, this setting is ineffective on those.</description>
+    </key>
+    <key name="tertiary-button-action" enum="org.gnome.desktop.GDesktopStylusButtonAction">
+      <default>'default'</default>
+      <summary>Tertiary button action</summary>
+      <description>Tertiary stylus button action, this button is located along the pen handle on some styli like the 3D Pen. Other styli like the Grip Pen only have two buttons, this setting is ineffective on those.</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.desktop.peripherals.tablet.pad-button">
+    <key name="action" enum="org.gnome.desktop.GDesktopPadButtonAction">
+      <default>'none'</default>
+      <summary>Pad button action type</summary>
+      <description>The type of action triggered by the button being pressed.</description>
+    </key>
+    <key type="s" name="keybinding">
+      <default>''</default>
+      <summary>Key combination for the custom action</summary>
+      <description>The keyboard shortcut generated when the button is pressed for custom actions.</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.desktop.peripherals.touchscreen">
+    <key name="display" type="as">
+      <default>["", "", ""]</default>
+      <summary>Deprecated touchscreen output mapping</summary>
+      <description>This key is deprecated. Use "org.gnome.desktop.peripherals.touchscreen output" instead</description>
+    </key>
+    <key name="output" type="as">
+      <default>["", "", ""]</default>
+      <summary>Touchscreen output mapping</summary>
+      <description>EDID information of the output the touchscreen is mapped to. Must be in the format [vendor, product, serial]. ["","",""] relies on automatic mapping.</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.desktop.peripherals.trackball" path="/org/gnome/desktop/peripherals/trackball/">
+    <key name="scroll-wheel-emulation-button" type="i">
+      <default>0</default>
+      <range min="0" max="24"/>
+      <summary>Mouse wheel emulation button. 0 to disable the feature.</summary>
+    </key>
+    <key name="accel-profile" enum="org.gnome.desktop.GDesktopPointerAccelProfile">
+      <default>'default'</default>
+      <summary>Acceleration profile</summary>
+      <description>Acceleration profile used for the trackball. The acceleration profile can be set to either default (“default”) which uses the default acceleration profile, flat (“flat”), which accelerates by a device specific constant factor derived from the configured speed, or adaptive (“adaptive”) which adapts the acceleration depending on the movement. If the trackball doesn’t support the configured profile, “default” will be used.</description>
+    </key>
+    <key name="middle-click-emulation" type="b">
+      <default>false</default>
+      <summary>Emulate middle click</summary>
+      <description>Set this to TRUE to enable middle click during simultaneous left and right click.</description>
+    </key>
+  </schema>
+</schemalist>

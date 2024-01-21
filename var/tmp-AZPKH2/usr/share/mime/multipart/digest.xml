@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="multipart/digest">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>message digest</comment>
+  <comment xml:lang="ar">خلاصة الرسالة</comment>
+  <comment xml:lang="az">ismarış daycesti</comment>
+  <comment xml:lang="be-Latn">digest paviedamleńniaŭ</comment>
+  <comment xml:lang="bg">Извадка от съобщение</comment>
+  <comment xml:lang="ca">recopilació de missatges</comment>
+  <comment xml:lang="cs">přehled zpráv</comment>
+  <comment xml:lang="cy">crynodeb negeseuon</comment>
+  <comment xml:lang="da">meddelelsessammendrag</comment>
+  <comment xml:lang="de">Nachrichtensammlung</comment>
+  <comment xml:lang="el">Περίληψη μηνύματος</comment>
+  <comment xml:lang="en-GB">message digest</comment>
+  <comment xml:lang="eo">mesaĝaro</comment>
+  <comment xml:lang="es">recopilación de mensajes</comment>
+  <comment xml:lang="eu">mezu laburra</comment>
+  <comment xml:lang="fi">viestikokoelma</comment>
+  <comment xml:lang="fo">boð samandráttur</comment>
+  <comment xml:lang="fr">condensé de message</comment>
+  <comment xml:lang="fur">sunt di messaç</comment>
+  <comment xml:lang="ga">achoimre theachtaireachtaí</comment>
+  <comment xml:lang="gl">recompilación de mensaxe</comment>
+  <comment xml:lang="he">תקציר ההודעה</comment>
+  <comment xml:lang="hr">Poruka kratkg sadržaja</comment>
+  <comment xml:lang="hu">ömlesztett üzenet</comment>
+  <comment xml:lang="ia">Digesto de messages</comment>
+  <comment xml:lang="id">digest pesan</comment>
+  <comment xml:lang="it">Digest di messaggi</comment>
+  <comment xml:lang="ja">メッセージダイジェスト</comment>
+  <comment xml:lang="kk">мәлімдеме профилі</comment>
+  <comment xml:lang="ko">메시지 묶음</comment>
+  <comment xml:lang="lt">laiškų santrauka</comment>
+  <comment xml:lang="lv">ziņojumu apkopojums</comment>
+  <comment xml:lang="ms">Jilid mesej</comment>
+  <comment xml:lang="nb">medldingssamling</comment>
+  <comment xml:lang="nl">berichtenbundel</comment>
+  <comment xml:lang="nn">meldingsamandrag</comment>
+  <comment xml:lang="oc">condensé de messatge</comment>
+  <comment xml:lang="pl">Wiadomość przetwarzania</comment>
+  <comment xml:lang="pt">grupo de mensagens</comment>
+  <comment xml:lang="pt-BR">Resumo de mensagem</comment>
+  <comment xml:lang="ro">colecție mesaje email</comment>
+  <comment xml:lang="ru">Дайджест сообщения</comment>
+  <comment xml:lang="sk">Prehľad správ</comment>
+  <comment xml:lang="sl">povzetek sporočila</comment>
+  <comment xml:lang="sq">Shpërndarje mesazhesh</comment>
+  <comment xml:lang="sr">гомила порука</comment>
+  <comment xml:lang="sv">meddelandesamling</comment>
+  <comment xml:lang="tr">mesaj özeti</comment>
+  <comment xml:lang="uk">збірка повідомлень</comment>
+  <comment xml:lang="vi">bản tóm tắt thông điệp</comment>
+  <comment xml:lang="zh-CN">信件摘要</comment>
+  <comment xml:lang="zh-TW">訊息摘要</comment>
+</mime-type>

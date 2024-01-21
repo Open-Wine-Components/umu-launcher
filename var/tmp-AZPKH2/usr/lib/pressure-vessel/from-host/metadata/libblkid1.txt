@@ -1,0 +1,19 @@
+This is libblkid, previously part of e2fsprogs this is now part of
+util-linux-ng and has thus moved to the util-linux Debian source
+package.
+
+Upstream Author: Theodore Ts'o <tytso@mit.edu>
+
+Copyright:
+
+Copyright (C) 1999, 2001 by Andries Brouwer
+Copyright (C) 1999, 2000, 2003 by Theodore Ts'o
+Copyright (C) 2001 Andreas Dilger
+Copyright (C) 2008 Kay Sievers <kay.sievers@vrfy.org>
+Copyright (C) 2009 Karel Zak <kzak@redhat.com>
+
+You are free to distribute this software under the terms of the GNU
+Lesser (Library) General Public License.
+
+On Debian systems, the complete text of the GNU Lesser (Library)
+General Public License can be found in /usr/share/common-licenses/LGPL.

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/vnd.sun.xml.impress">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <comment>OpenOffice Impress presentation</comment>
+  <comment xml:lang="af">OpenOffice Impress-voorlegging</comment>
+  <comment xml:lang="ar">عرض تقديمي Impress المكتب المفتوح</comment>
+  <comment xml:lang="az">OpenOffice Impress sənədi</comment>
+  <comment xml:lang="be-Latn">Prezentacyja OpenOffice Impress</comment>
+  <comment xml:lang="bg">Презентация — OpenOffice Impress</comment>
+  <comment xml:lang="ca">presentació d'OpenOffice Impress</comment>
+  <comment xml:lang="cs">prezentace OpenOffice Impress</comment>
+  <comment xml:lang="cy">Cyflwyniad OpenOffice (Impress)</comment>
+  <comment xml:lang="da">OpenOffice Impress-præsentation</comment>
+  <comment xml:lang="de">OpenOffice-Impress-Vorlage</comment>
+  <comment xml:lang="el">Παρουσίαση OpenOffice Impress</comment>
+  <comment xml:lang="en-GB">OpenOffice Impress presentation</comment>
+  <comment xml:lang="es">presentación de LibreOffice Impress</comment>
+  <comment xml:lang="eu">OpenOffice.org Impress aurkezpena</comment>
+  <comment xml:lang="fi">OpenOffice Impress -esitys</comment>
+  <comment xml:lang="fo">OpenOffice Impress framløga</comment>
+  <comment xml:lang="fr">présentation OpenOffice Impress</comment>
+  <comment xml:lang="fur">presentazion OpenOffice Impress</comment>
+  <comment xml:lang="ga">láithreoireacht OpenOffice Impress</comment>
+  <comment xml:lang="gl">presentación de  de OpenOffice Impress</comment>
+  <comment xml:lang="he">מצגת של OpenOffice Impress</comment>
+  <comment xml:lang="hr">OpenOffice Impress prezentacija</comment>
+  <comment xml:lang="hu">OpenOffice Impress bemutató</comment>
+  <comment xml:lang="ia">Presentation OpenOffice Impress</comment>
+  <comment xml:lang="id">Presentasi OpenOffice Impress</comment>
+  <comment xml:lang="it">Presentazione OpenOffice Impress</comment>
+  <comment xml:lang="ja">OpenOffice Impress プレゼンテーション</comment>
+  <comment xml:lang="ka">OpenOffice Impress-ის პრეზენტაცია</comment>
+  <comment xml:lang="kk">OpenOffice Impress презентациясы</comment>
+  <comment xml:lang="ko">OpenOffice Impress 프레젠테이션</comment>
+  <comment xml:lang="lt">OpenOffice Impress pateiktis</comment>
+  <comment xml:lang="lv">OpenOffice Impress prezentācija</comment>
+  <comment xml:lang="nb">OpenOffice Impress-presentasjon</comment>
+  <comment xml:lang="nl">OpenOffice.org Impress-presentatie</comment>
+  <comment xml:lang="nn">OpenOffice Impress-presentasjon</comment>
+  <comment xml:lang="oc">presentacion OpenOffice Impress</comment>
+  <comment xml:lang="pl">Prezentacja OpenOffice.org Impress</comment>
+  <comment xml:lang="pt">apresentação OpenOffice Impress</comment>
+  <comment xml:lang="pt-BR">Apresentação do OpenOffice Impress</comment>
+  <comment xml:lang="ro">Prezentare OpenOffice Impress</comment>
+  <comment xml:lang="ru">Презентация OpenOffice Impress</comment>
+  <comment xml:lang="sk">Prezentácia OpenOffice Impress</comment>
+  <comment xml:lang="sl">Predstavitev OpenOffice.org Impress</comment>
+  <comment xml:lang="sq">Prezantim OpenOffice Impress</comment>
+  <comment xml:lang="sr">Презентација Опен Офис Импреса</comment>
+  <comment xml:lang="sv">OpenOffice Impress-presentation</comment>
+  <comment xml:lang="tr">OpenOffice Impress sunumu</comment>
+  <comment xml:lang="uk">презентація OpenOffice Impress</comment>
+  <comment xml:lang="vi">Trình diễn Impress của OpenOffice.org</comment>
+  <comment xml:lang="zh-CN">OpenOffice Impress 演示文稿</comment>
+  <comment xml:lang="zh-TW">OpenOffice Impress 簡報</comment>
+  <sub-class-of type="application/zip"/>
+  <generic-icon name="x-office-presentation"/>
+  <glob pattern="*.sxi"/>
+</mime-type>

@@ -1,0 +1,974 @@
+escape_char /
+comment_char %
+% Locale for C locale in UTF-8
+% Contributed by Aurelien Jarno <aurel32@debian.org>, 2011
+
+LC_IDENTIFICATION
+title      "C locale"
+source     ""
+address    ""
+contact    ""
+email      "aurel32@debian.org"
+tel        ""
+fax        ""
+language   "C"
+territory  ""
+revision   "1.6"
+date       "2016-08-08"
+%
+category  "i18n:2012";LC_IDENTIFICATION
+category  "i18n:2012";LC_CTYPE
+category  "i18n:2012";LC_COLLATE
+category  "i18n:2012";LC_NUMERIC
+category  "i18n:2012";LC_MONETARY
+category  "i18n:2012";LC_TIME
+category  "i18n:2012";LC_MESSAGES
+category  "i18n:2012";LC_PAPER
+category  "i18n:2012";LC_NAME
+category  "i18n:2012";LC_ADDRESS
+category  "i18n:2012";LC_TELEPHONE
+category  "i18n:2012";LC_MEASUREMENT
+END LC_IDENTIFICATION
+
+LC_CTYPE
+copy "i18n"
+
+translit_start
+include "translit_combining";""
+translit_end
+
+END LC_CTYPE
+
+LC_COLLATE
+order_start forward
+<U0000>
+..
+<U007F>
+<U0080>
+..
+<U00FF>
+<U0100>
+..
+<U017F>
+<U0180>
+..
+<U024F>
+<U0250>
+..
+<U02AF>
+<U02B0>
+..
+<U02FF>
+<U0300>
+..
+<U036F>
+<U0370>
+..
+<U03FF>
+<U0400>
+..
+<U04FF>
+<U0500>
+..
+<U052F>
+<U0530>
+..
+<U058F>
+<U0590>
+..
+<U05FF>
+<U0600>
+..
+<U06FF>
+<U0700>
+..
+<U074F>
+<U0750>
+..
+<U077F>
+<U0780>
+..
+<U07BF>
+<U07C0>
+..
+<U07FF>
+<U0800>
+..
+<U083F>
+<U0840>
+..
+<U085F>
+<U08A0>
+..
+<U08FF>
+<U0900>
+..
+<U097F>
+<U0980>
+..
+<U09FF>
+<U0A00>
+..
+<U0A7F>
+<U0A80>
+..
+<U0AFF>
+<U0B00>
+..
+<U0B7F>
+<U0B80>
+..
+<U0BFF>
+<U0C00>
+..
+<U0C7F>
+<U0C80>
+..
+<U0CFF>
+<U0D00>
+..
+<U0D7F>
+<U0D80>
+..
+<U0DFF>
+<U0E00>
+..
+<U0E7F>
+<U0E80>
+..
+<U0EFF>
+<U0F00>
+..
+<U0FFF>
+<U1000>
+..
+<U109F>
+<U10A0>
+..
+<U10FF>
+<U1100>
+..
+<U11FF>
+<U1200>
+..
+<U137F>
+<U1380>
+..
+<U139F>
+<U13A0>
+..
+<U13FF>
+<U1400>
+..
+<U167F>
+<U1680>
+..
+<U169F>
+<U16A0>
+..
+<U16FF>
+<U1700>
+..
+<U171F>
+<U1720>
+..
+<U173F>
+<U1740>
+..
+<U175F>
+<U1760>
+..
+<U177F>
+<U1780>
+..
+<U17FF>
+<U1800>
+..
+<U18AF>
+<U18B0>
+..
+<U18FF>
+<U1900>
+..
+<U194F>
+<U1950>
+..
+<U197F>
+<U1980>
+..
+<U19DF>
+<U19E0>
+..
+<U19FF>
+<U1A00>
+..
+<U1A1F>
+<U1A20>
+..
+<U1AAF>
+<U1AB0>
+..
+<U1AFF>
+<U1B00>
+..
+<U1B7F>
+<U1B80>
+..
+<U1BBF>
+<U1BC0>
+..
+<U1BFF>
+<U1C00>
+..
+<U1C4F>
+<U1C50>
+..
+<U1C7F>
+<U1C80>
+..
+<U1C8F>
+<U1CC0>
+..
+<U1CCF>
+<U1CD0>
+..
+<U1CFF>
+<U1D00>
+..
+<U1D7F>
+<U1D80>
+..
+<U1DBF>
+<U1DC0>
+..
+<U1DFF>
+<U1E00>
+..
+<U1EFF>
+<U1F00>
+..
+<U1FFF>
+<U2000>
+..
+<U206F>
+<U2070>
+..
+<U209F>
+<U20A0>
+..
+<U20CF>
+<U20D0>
+..
+<U20FF>
+<U2100>
+..
+<U214F>
+<U2150>
+..
+<U218F>
+<U2190>
+..
+<U21FF>
+<U2200>
+..
+<U22FF>
+<U2300>
+..
+<U23FF>
+<U2400>
+..
+<U243F>
+<U2440>
+..
+<U245F>
+<U2460>
+..
+<U24FF>
+<U2500>
+..
+<U257F>
+<U2580>
+..
+<U259F>
+<U25A0>
+..
+<U25FF>
+<U2600>
+..
+<U26FF>
+<U2700>
+..
+<U27BF>
+<U27C0>
+..
+<U27EF>
+<U27F0>
+..
+<U27FF>
+<U2800>
+..
+<U28FF>
+<U2900>
+..
+<U297F>
+<U2980>
+..
+<U29FF>
+<U2A00>
+..
+<U2AFF>
+<U2B00>
+..
+<U2BFF>
+<U2C00>
+..
+<U2C5F>
+<U2C60>
+..
+<U2C7F>
+<U2C80>
+..
+<U2CFF>
+<U2D00>
+..
+<U2D2F>
+<U2D30>
+..
+<U2D7F>
+<U2D80>
+..
+<U2DDF>
+<U2DE0>
+..
+<U2DFF>
+<U2E00>
+..
+<U2E7F>
+<U2E80>
+..
+<U2EFF>
+<U2F00>
+..
+<U2FDF>
+<U2FF0>
+..
+<U2FFF>
+<U3000>
+..
+<U303F>
+<U3040>
+..
+<U309F>
+<U30A0>
+..
+<U30FF>
+<U3100>
+..
+<U312F>
+<U3130>
+..
+<U318F>
+<U3190>
+..
+<U319F>
+<U31A0>
+..
+<U31BF>
+<U31C0>
+..
+<U31EF>
+<U31F0>
+..
+<U31FF>
+<U3200>
+..
+<U32FF>
+<U3300>
+..
+<U33FF>
+<U3400>
+..
+<U4DBF>
+<U4DC0>
+..
+<U4DFF>
+<U4E00>
+..
+<U9FFF>
+<UA000>
+..
+<UA48F>
+<UA490>
+..
+<UA4CF>
+<UA4D0>
+..
+<UA4FF>
+<UA500>
+..
+<UA63F>
+<UA640>
+..
+<UA69F>
+<UA6A0>
+..
+<UA6FF>
+<UA700>
+..
+<UA71F>
+<UA720>
+..
+<UA7FF>
+<UA800>
+..
+<UA82F>
+<UA830>
+..
+<UA83F>
+<UA840>
+..
+<UA87F>
+<UA880>
+..
+<UA8DF>
+<UA8E0>
+..
+<UA8FF>
+<UA900>
+..
+<UA92F>
+<UA930>
+..
+<UA95F>
+<UA960>
+..
+<UA97F>
+<UA980>
+..
+<UA9DF>
+<UA9E0>
+..
+<UA9FF>
+<UAA00>
+..
+<UAA5F>
+<UAA60>
+..
+<UAA7F>
+<UAA80>
+..
+<UAADF>
+<UAAE0>
+..
+<UAAFF>
+<UAB00>
+..
+<UAB2F>
+<UAB30>
+..
+<UAB6F>
+<UAB70>
+..
+<UABBF>
+<UABC0>
+..
+<UABFF>
+<UAC00>
+..
+<UD7AF>
+<UD7B0>
+..
+<UD7FF>
+<UD800>
+..
+<UDB7F>
+<UDB80>
+..
+<UDBFF>
+<UDC00>
+..
+<UDFFF>
+<UE000>
+..
+<UF8FF>
+<UF900>
+..
+<UFAFF>
+<UFB00>
+..
+<UFB4F>
+<UFB50>
+..
+<UFDFF>
+<UFE00>
+..
+<UFE0F>
+<UFE10>
+..
+<UFE1F>
+<UFE20>
+..
+<UFE2F>
+<UFE30>
+..
+<UFE4F>
+<UFE50>
+..
+<UFE6F>
+<UFE70>
+..
+<UFEFF>
+<UFF00>
+..
+<UFFEF>
+<UFFF0>
+..
+<UFFFF>
+<U10000>
+..
+<U1007F>
+<U10080>
+..
+<U100FF>
+<U10100>
+..
+<U1013F>
+<U10140>
+..
+<U1018F>
+<U10190>
+..
+<U101CF>
+<U101D0>
+..
+<U101FF>
+<U10280>
+..
+<U1029F>
+<U102A0>
+..
+<U102DF>
+<U102E0>
+..
+<U102FF>
+<U10300>
+..
+<U1032F>
+<U10330>
+..
+<U1034F>
+<U10350>
+..
+<U1037F>
+<U10380>
+..
+<U1039F>
+<U103A0>
+..
+<U103DF>
+<U10400>
+..
+<U1044F>
+<U10450>
+..
+<U1047F>
+<U10480>
+..
+<U104AF>
+<U104B0>
+..
+<U104FF>
+<U10500>
+..
+<U1052F>
+<U10530>
+..
+<U1056F>
+<U10600>
+..
+<U1077F>
+<U10800>
+..
+<U1083F>
+<U10840>
+..
+<U1085F>
+<U10860>
+..
+<U1087F>
+<U10880>
+..
+<U108AF>
+<U108E0>
+..
+<U108FF>
+<U10900>
+..
+<U1091F>
+<U10920>
+..
+<U1093F>
+<U10980>
+..
+<U1099F>
+<U109A0>
+..
+<U109FF>
+<U10A00>
+..
+<U10A5F>
+<U10A60>
+..
+<U10A7F>
+<U10A80>
+..
+<U10A9F>
+<U10AC0>
+..
+<U10AFF>
+<U10B00>
+..
+<U10B3F>
+<U10B40>
+..
+<U10B5F>
+<U10B60>
+..
+<U10B7F>
+<U10B80>
+..
+<U10BAF>
+<U10C00>
+..
+<U10C4F>
+<U10C80>
+..
+<U10CFF>
+<U10E60>
+..
+<U10E7F>
+<U11000>
+..
+<U1107F>
+<U11080>
+..
+<U110CF>
+<U110D0>
+..
+<U110FF>
+<U11100>
+..
+<U1114F>
+<U11150>
+..
+<U1117F>
+<U11180>
+..
+<U111DF>
+<U111E0>
+..
+<U111FF>
+<U11200>
+..
+<U1124F>
+<U11280>
+..
+<U112AF>
+<U112B0>
+..
+<U112FF>
+<U11300>
+..
+<U1137F>
+<U11400>
+..
+<U1147F>
+<U11480>
+..
+<U114DF>
+<U11580>
+..
+<U115FF>
+<U11600>
+..
+<U1165F>
+<U11660>
+..
+<U1167F>
+<U11680>
+..
+<U116CF>
+<U11700>
+..
+<U1173F>
+<U118A0>
+..
+<U118FF>
+<U11AC0>
+..
+<U11AFF>
+<U11C00>
+..
+<U11C6F>
+<U11C70>
+..
+<U11CBF>
+<U12000>
+..
+<U123FF>
+<U12400>
+..
+<U1247F>
+<U12480>
+..
+<U1254F>
+<U13000>
+..
+<U1342F>
+<U14400>
+..
+<U1467F>
+<U16800>
+..
+<U16A3F>
+<U16A40>
+..
+<U16A6F>
+<U16AD0>
+..
+<U16AFF>
+<U16B00>
+..
+<U16B8F>
+<U16F00>
+..
+<U16F9F>
+<U16FE0>
+..
+<U16FFF>
+<U17000>
+..
+<U187FF>
+<U18800>
+..
+<U18AFF>
+<U1B000>
+..
+<U1B0FF>
+<U1BC00>
+..
+<U1BC9F>
+<U1BCA0>
+..
+<U1BCAF>
+<U1D000>
+..
+<U1D0FF>
+<U1D100>
+..
+<U1D1FF>
+<U1D200>
+..
+<U1D24F>
+<U1D300>
+..
+<U1D35F>
+<U1D360>
+..
+<U1D37F>
+<U1D400>
+..
+<U1D7FF>
+<U1D800>
+..
+<U1DAAF>
+<U1E000>
+..
+<U1E02F>
+<U1E800>
+..
+<U1E8DF>
+<U1E900>
+..
+<U1E95F>
+<U1EE00>
+..
+<U1EEFF>
+<U1F000>
+..
+<U1F02F>
+<U1F030>
+..
+<U1F09F>
+<U1F0A0>
+..
+<U1F0FF>
+<U1F100>
+..
+<U1F1FF>
+<U1F200>
+..
+<U1F2FF>
+<U1F300>
+..
+<U1F5FF>
+<U1F600>
+..
+<U1F64F>
+<U1F650>
+..
+<U1F67F>
+<U1F680>
+..
+<U1F6FF>
+<U1F700>
+..
+<U1F77F>
+<U1F780>
+..
+<U1F7FF>
+<U1F800>
+..
+<U1F8FF>
+<U1F900>
+..
+<U1F9FF>
+<U20000>
+..
+<U2A6DF>
+<U2A700>
+..
+<U2B73F>
+<U2B740>
+..
+<U2B81F>
+<U2B820>
+..
+<U2CEAF>
+<U2F800>
+..
+<U2FA1F>
+<UE0000>
+..
+<UE007F>
+<UE0100>
+..
+<UE01EF>
+<UF0000>
+..
+<UFFFFF>
+<U100000>
+..
+<U10FFFF>
+UNDEFINED
+order_end
+END LC_COLLATE
+
+LC_MONETARY
+copy "POSIX"
+END LC_MONETARY
+
+LC_NUMERIC
+copy "POSIX"
+END LC_NUMERIC
+
+LC_TIME
+% Abbreviated weekday names (%s)
+abday       "<U0053><U0075><U006E>";"<U004D><U006F><U006E>";/
+            "<U0054><U0075><U0065>";"<U0057><U0065><U0064>";/
+            "<U0054><U0068><U0075>";"<U0046><U0072><U0069>";/
+            "<U0053><U0061><U0074>"
+%
+% Full weekday names (%A)
+day         "<U0053><U0075><U006E><U0064><U0061><U0079>";/
+            "<U004D><U006F><U006E><U0064><U0061><U0079>";/
+            "<U0054><U0075><U0065><U0073><U0064><U0061><U0079>";/
+            "<U0057><U0065><U0064><U006E><U0065><U0073><U0064><U0061><U0079>";/
+            "<U0054><U0068><U0075><U0072><U0073><U0064><U0061><U0079>";/
+            "<U0046><U0072><U0069><U0064><U0061><U0079>";/
+            "<U0053><U0061><U0074><U0075><U0072><U0064><U0061><U0079>"
+%
+% Abbreviated month names (%b)
+abmon       "<U004A><U0061><U006E>";"<U0046><U0065><U0062>";/
+            "<U004D><U0061><U0072>";"<U0041><U0070><U0072>";/
+            "<U004D><U0061><U0079>";"<U004A><U0075><U006E>";/
+            "<U004A><U0075><U006C>";"<U0041><U0075><U0067>";/
+            "<U0053><U0065><U0070>";"<U004F><U0063><U0074>";/
+            "<U004E><U006F><U0076>";"<U0044><U0065><U0063>"
+%
+% Full month names (%B)
+mon         "<U004A><U0061><U006E><U0075><U0061><U0072><U0079>";/
+            "<U0046><U0065><U0062><U0072><U0075><U0061><U0072><U0079>";/
+            "<U004D><U0061><U0072><U0063><U0068>";/
+            "<U0041><U0070><U0072><U0069><U006C>";/
+            "<U004D><U0061><U0079>";/
+            "<U004A><U0075><U006E><U0065>";/
+            "<U004A><U0075><U006C><U0079>";/
+            "<U0041><U0075><U0067><U0075><U0073><U0074>";/
+            "<U0053><U0065><U0070><U0074><U0065><U006D><U0062><U0065><U0072>";/
+            "<U004F><U0063><U0074><U006F><U0062><U0065><U0072>";/
+            "<U004E><U006F><U0076><U0065><U006D><U0062><U0065><U0072>";/
+            "<U0044><U0065><U0063><U0065><U006D><U0062><U0065><U0072>"
+%
+% Week description, consists of three fields:
+% 1. Number of days in a week.
+% 2. Gregorian date that is a first weekday (19971130 for Sunday, 19971201 for Monday).
+% 3. The weekday number to be contained in the first week of the year.
+%
+% ISO 8601 conforming applications should use the values 7, 19971130 (a
+% Monday), and 4 (Thursday), respectively.
+week    7;19971130;4
+first_weekday 1
+first_workday 2
+%
+% Equivalent of AM/PM (%p)      "AM"/"PM"
+am_pm   "<U0041><U004D>";"<U0050><U004D>"
+%
+% Appropriate date and time representation (%c)
+%       "%a %b %e %H:%M:%S %Y"
+d_t_fmt "<U0025><U0061><U0020><U0025><U0062><U0020><U0025><U0065>/
+<U0020><U0025><U0048><U003A><U0025><U004D>/
+<U003A><U0025><U0053><U0020><U0025><U0059>"
+%
+% Appropriate date representation (%x)   "%m/%d/%y"
+d_fmt   "<U0025><U006D><U002F><U0025><U0064><U002F><U0025><U0079>"
+%
+% Appropriate time representation (%X)   "%H:%M:%S"
+t_fmt   "<U0025><U0048><U003A><U0025><U004D><U003A><U0025><U0053>"
+%
+% Appropriate 12 h time representation (%r)   "%I:%M:%S %p"
+t_fmt_ampm "<U0025><U0049><U003A><U0025><U004D><U003A><U0025><U0053>/
+<U0020><U0025><U0070>"
+%
+% Appropriate date representation (date(1))   "%a %b %e %H:%M:%S %Z %Y"
+date_fmt        "<U0025><U0061><U0020><U0025><U0062><U0020><U0025><U0065><U0020><U0025><U0048><U003A><U0025><U004D><U003A><U0025><U0053><U0020><U0025><U005A><U0020><U0025><U0059>"
+END LC_TIME
+
+LC_MESSAGES
+% This is the POSIX Locale definition for
+% the LC_NUMERIC category.
+%
+yesexpr "<U005E><U005B><U0079><U0059><U005D>"
+%
+noexpr  "<U005E><U005B><U006E><U004E><U005D>"
+END LC_MESSAGES
+
+LC_PAPER
+copy "i18n"
+END LC_PAPER
+
+LC_NAME
+copy "i18n"
+END LC_NAME
+
+LC_ADDRESS
+copy "i18n"
+END LC_ADDRESS
+
+LC_TELEPHONE
+tel_int_fmt     "<U002B><U0025><U0063><U0020><U0025><U0061><U0020><U0025><U006C>"
+END LC_TELEPHONE
+
+LC_MEASUREMENT
+copy "i18n"
+END LC_MEASUREMENT

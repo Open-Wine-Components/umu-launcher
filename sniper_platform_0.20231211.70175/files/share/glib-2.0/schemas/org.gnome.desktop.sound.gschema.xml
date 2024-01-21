@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.sound" path="/org/gnome/desktop/sound/">
+    <key name="event-sounds" type="b">
+      <default>true</default>
+      <summary>Sounds for events</summary>
+      <description>Whether to play sounds on user events.</description>
+    </key>
+    <key name="theme-name" type="s">
+      <default>'freedesktop'</default>
+      <summary>Sound theme name</summary>
+      <description>The XDG sound theme to use for event sounds.</description>
+    </key>
+    <key name="input-feedback-sounds" type="b">
+      <default>false</default>
+      <summary>Input feedback sounds</summary>
+      <description>Whether to play sounds on input events.</description>
+    </key>
+    <key type="b" name="allow-volume-above-100-percent">
+      <default>false</default>
+      <summary>Allow volume above 100%</summary>
+      <description>Whether volume can be set above 100%, using software amplification.</description>
+    </key>
+  </schema>
+</schemalist>

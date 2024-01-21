@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.media-handling" path="/org/gnome/desktop/media-handling/">
+    <key name="automount" type="b">
+      <default>true</default>
+      <summary>Whether to automatically mount media</summary>
+      <description>If set to true, then Nautilus will automatically mount media such as user-visible hard disks and removable media on start-up and media insertion.</description>
+    </key>
+    <key name="automount-open" type="b">
+      <default>true</default>
+      <summary>Whether to automatically open a folder for automounted media</summary>
+      <description>If set to true, then Nautilus will automatically open a folder when media is automounted. This only applies to media where no known x-content/* type was detected; for media where a known x-content type is detected, the user configurable action will be taken instead.</description>
+    </key>
+    <key name="autorun-never" type="b">
+      <default>false</default>
+      <summary>Never prompt or autorun/autostart programs when media are inserted</summary>
+      <description>If set to true, then Nautilus will never prompt nor autorun/autostart programs when a medium is inserted.</description>
+    </key>
+    <key name="autorun-x-content-start-app" type="as">
+      <default>[ 'x-content/unix-software', 'x-content/ostree-repository' ]</default>
+      <summary>List of x-content/* types where the preferred application will be launched</summary>
+      <description>List of x-content/* types for which the user have chosen to start an application in the preference capplet. The preferred application for the given type will be started on insertion on media matching these types.</description>
+    </key>
+    <key name="autorun-x-content-ignore" type="as">
+      <default>[]</default>
+      <summary>List of x-content/* types set to “Do Nothing”</summary>
+      <description>List of x-content/* types for which the user have chosen “Do Nothing” in the preference capplet. No prompt will be shown nor will any matching application be started on insertion of media matching these types.</description>
+    </key>
+    <key name="autorun-x-content-open-folder" type="as">
+      <default>[]</default>
+      <summary>List of x-content/* types set to “Open Folder”</summary>
+      <description>List of x-content/* types for which the user have chosen “Open Folder” in the preferences capplet. A folder window will be opened on insertion of media matching these types.</description>
+    </key>
+  </schema>
+</schemalist>

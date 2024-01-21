@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-desktop-schemas">
+  <schema id="org.gnome.desktop.a11y.keyboard" path="/org/gnome/desktop/a11y/keyboard/">
+    <key name="enable" type="b">
+      <default>false</default>
+      <summary>Enable accessibility keyboard shortcuts</summary>
+    </key>
+    <key name="feature-state-change-beep" type="b">
+      <default>false</default>
+      <summary>Beep when a keyboard accessibility feature changes</summary>
+      <description>Whether to beep when a keyboard accessibility feature is enabled or disabled.</description>
+    </key>
+    <key name="timeout-enable" type="b">
+      <default>false</default>
+      <summary>Disable keyboard accessibility after a timeout</summary>
+      <description>Whether to disable keyboard accessibility after a timeout, useful for shared machines.</description>
+    </key>
+    <key name="disable-timeout" type="i">
+      <default>200</default>
+      <summary>Duration of the disabling timeout</summary>
+      <description>Duration of the timeout before disabling the keyboard accessibility.</description>
+    </key>
+    <key name="bouncekeys-enable" type="b">
+      <default>false</default>
+      <summary>Enable “Bounce Keys”</summary>
+      <description>Whether the “Bounce Keys” keyboard accessibility feature is turned on.</description>
+    </key>
+    <key name="bouncekeys-delay" type="i">
+      <default>300</default>
+      <summary>Minimum interval in milliseconds</summary>
+      <description>Ignore multiple presses of the same key within this many milliseconds.</description>
+    </key>
+    <key name="bouncekeys-beep-reject" type="b">
+      <default>false</default>
+      <summary>Beep when a key is rejected</summary>
+      <description>Whether to beep when a key is rejected.</description>
+    </key>
+    <key name="mousekeys-enable" type="b">
+      <default>false</default>
+      <summary>Enable “Mouse Keys”</summary>
+      <description>Whether the “Mouse Keys” accessibility feature is turned on.</description>
+    </key>
+    <key name="mousekeys-max-speed" type="i">
+      <default>10</default>
+      <summary>Pixels per seconds</summary>
+      <description>How many pixels per second to move at the maximum speed.</description>
+    </key>
+    <key name="mousekeys-accel-time" type="i">
+      <default>300</default>
+      <summary>How long to accelerate in milliseconds</summary>
+      <description>How many milliseconds it takes to go from 0 to maximum speed.</description>
+    </key>
+    <key name="mousekeys-init-delay" type="i">
+      <default>300</default>
+      <summary>Initial delay in milliseconds</summary>
+      <description>How many milliseconds to wait before mouse movement keys start to operate.</description>
+    </key>
+    <key name="slowkeys-enable" type="b">
+      <default>false</default>
+      <summary>Enable “Slow Keys”</summary>
+      <description>Whether the “Slow Keys” accessibility feature is turned on.</description>
+    </key>
+    <key name="slowkeys-delay" type="i">
+      <default>300</default>
+      <summary>Minimum interval in milliseconds</summary>
+      <description>Do not accept a key as being pressed unless held for this many milliseconds.</description>
+    </key>
+    <key name="slowkeys-beep-press" type="b">
+      <default>false</default>
+      <summary>Beep when a key is first pressed</summary>
+      <description>Whether to beep when a key is first pressed.</description>
+    </key>
+    <key name="slowkeys-beep-accept" type="b">
+      <default>false</default>
+      <summary>Beep when a key is accepted</summary>
+      <description>Whether to beep when a key is accepted.</description>
+    </key>
+    <key name="slowkeys-beep-reject" type="b">
+      <default>false</default>
+      <summary>Beep when a key is rejected</summary>
+      <description>Whether to beep when a key is rejected.</description>
+    </key>
+    <key name="stickykeys-enable" type="b">
+      <default>false</default>
+      <summary>Enable sticky keys</summary>
+      <description>Whether the sticky keys accessibility feature is turned on.</description>
+    </key>
+    <key name="stickykeys-two-key-off" type="b">
+      <default>false</default>
+      <summary>Disable when two keys are pressed at the same time</summary>
+      <description>Whether to disable sticky keys if two keys are pressed at the same time.</description>
+    </key>
+    <key name="stickykeys-modifier-beep" type="b">
+      <default>false</default>
+      <summary>Beep when a modifier is pressed.</summary>
+      <description>Whether to beep when a modifier key is pressed.</description>
+    </key>
+    <key name="togglekeys-enable" type="b">
+      <default>false</default>
+      <summary>Enable “Toggle Keys”</summary>
+      <description>Whether the “Toggle Keys” accessibility feature is turned on.</description>
+    </key>
+  </schema>
+</schemalist>
