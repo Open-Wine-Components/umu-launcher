@@ -31,4 +31,4 @@ export FONTCONFIG_PATH=''
 export EXE="$2"
 export LAUNCHARGS="$3"
 
-/home/tcrider/ULWGL/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$LAUNCHARGS"
+ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$LAUNCHARGS"
