@@ -26,7 +26,7 @@ The second part `_v2-entry-point` is just a bash script which loads proton into 
 
 So, ULWGL is basically a copy paste of SteamLinuxRuntime_sniper, which is a compiled version of steam-runtime-tools. We've renamed _v2-entry-point to ULWGL and added `gamelauncher.sh` to replace steam-launch-wrapper.
 
-When you use `gamelauncher.sh` to run a game, it uses the specified WINEPREFIX, proton version, executable, and arguements passed to it to run the game in proton, inside steam's runtime container JUST like if you were running the game through Steam, except now you're no longer limited to Steam's game library or forced to add the game to Steam's librar, in fact, you don't even have to have steam installed.
+When you use `gamelauncher.sh` to run a game, it uses the specified WINEPREFIX, proton version, executable, and arguements passed to it to run the game in proton, inside steam's runtime container JUST like if you were running the game through Steam, except now you're no longer limited to Steam's game library or forced to add the game to Steam's library, in fact, you don't even have to have steam installed.
 
 # HOW DO I USE IT?
 
