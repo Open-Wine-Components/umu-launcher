@@ -2,9 +2,9 @@
 
 set -x
 
-if [[ -z $1 ]] || [[ -z $2 ]] || [[ -z $WINEPREFIX ]]; then
- echo "Usage: WINEPREFIX=/path-to-prefix ./gamelauncher.sh <proton-path> <executable-path> <arguements>"
- echo 'Ex: WINEPREFIX=$HOME/Games/epic-games-store ./gamelauncher.sh "$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28" "$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe" "-opengl -SkipBuildPatchPrereq"'
+if [[ -z $1 ]] || [[ -z $2 ]] || [[ -z $WINEPREFIX ]] || [[ -z $GAMEID ]]; then
+ echo "Usage: WINEPREFIX=/path-to-prefix GAMEID=makeoneup ./gamelauncher.sh <proton-path> <executable-path> <arguements>"
+ echo 'Ex: WINEPREFIX=$HOME/Games/epic-games-store GAMEID=egs ./gamelauncher.sh "$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28" "$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe" "-opengl -SkipBuildPatchPrereq"'
  exit 1
 fi
 if [[ $WINEPREFIX ]]; then
@@ -15,7 +15,7 @@ if [[ $WINEPREFIX ]]; then
    touch "$WINEPREFIX"/tracked_files
 fi
 export PROTONPATH="$1"
-export STEAM_COMPAT_APP_ID='egs'
+export STEAM_COMPAT_APP_ID="$GAMEID"
 export SteamAppId="$STEAM_COMPAT_APP_ID"
 export STEAM_COMPAT_TOOL_PATHS=''
 export STEAM_COMPAT_LIBRARY_PATHS=''
