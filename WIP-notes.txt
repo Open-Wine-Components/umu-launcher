@@ -1,0 +1,67 @@
+meson
+cmake
+ninja
+pandoc
+glslang
+libselinux-devel
+libcap-devel
+waffle-devel
+glib2-devel
+json-glib-devel
+elfutils-libelf-devel
+libva-devel
+libvdpau-devel
+vulkan-devel
+libxcb-devel
+meson-libGL-devel
+
+
+
+Run-time dependency libselinux found: YES 3.5
+Run-time dependency libcap found: YES 2.48
+Run-time dependency waffle-1 found: YES 1.7.0
+Configuring _steam-runtime-tools-config.h using configuration
+Run-time dependency glib-2.0 found: YES 2.78.3
+Run-time dependency gobject-2.0 found: YES 2.78.3
+Run-time dependency gio-2.0 found: YES 2.78.3
+Run-time dependency gio-unix-2.0 found: YES 2.78.3
+Run-time dependency json-glib-1.0 found: YES 1.8.0
+Run-time dependency threads found: YES
+Run-time dependency libelf found: YES 0.190
+Run-time dependency libva found: YES 1.20.0
+Run-time dependency libva-x11 found: YES 1.20.0
+Run-time dependency vdpau found: YES 1.5
+Run-time dependency vulkan found: YES 1.3.270
+Run-time dependency xau found: YES 1.0.11
+Run-time dependency xcb found: YES 1.13.1
+Run-time dependency gl found: YES 1.2
+Run-time dependency x11 found: YES 1.8.7
+Run-time dependency xrandr found: YES 1.5.4;
+
+mkdir -p _build
+meson -Dlibcurl_compat=true -Dman=enabled --werror _build/devel -Dinstalled_tests=false -Dprefix=$PWD/_build/RELEASE/
+ninja -C _build/devel
+ninja -C _build/devel install
+
+
+provides pressure-vessel folder contents and main folder contents (mtree.txt.gz,run,run-in-sniper,toolmanifest.vdf,_v2-entry-point(ULWGL)):
+https://gitlab.steamos.cloud/steamrt/steam-runtime-tools
+
+provides sniper_platform_*:
+https://gitlab.steamos.cloud/steamrt/sniper/platform#running-the-steam-container-runtime-without-steam
+```
+Each versioned subdirectory of
+https://repo.steampowered.com/steamrt3/images/
+contains an archive named steam-container-runtime-complete.tar.gz, which
+is used to build the official SteamLinuxRuntime_sniper releases.
+These can also be used without going via Steam.
+To do this, download and unpack steam-container-runtime-complete.tar.gz.
+All subdirectories except for depot/ can be discarded.
+The depot directory is the equivalent of the SteamLinuxRuntime_sniper
+directory in official releases: for example,
+
+.../depot/run -- xterm
+
+
+will launch an interactive terminal in the container environment.
+```
