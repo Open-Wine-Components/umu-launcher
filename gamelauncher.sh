@@ -30,5 +30,6 @@ export FONTCONFIG_PATH=''
 
 export EXE="$2"
 export LAUNCHARGS="$3"
-
-./ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$LAUNCHARGS"
+me="$(readlink -f "$0")"
+here="${me%/*}"
+$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$LAUNCHARGS"
