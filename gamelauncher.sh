@@ -29,7 +29,8 @@ export PROTON_CRASH_REPORT_DIR='/tmp/ULWGL_crashreports'
 export FONTCONFIG_PATH=''
 
 export EXE="$2"
-export LAUNCHARGS="$3"
+shift 2
+export LAUNCHARGS="$@"
 me="$(readlink -f "$0")"
 here="${me%/*}"
-$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$LAUNCHARGS"
+$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" $LAUNCHARGS
