@@ -23,6 +23,7 @@ if [[ $(cat $ULWGL_ID | cut -d "-" -f 2) =~ $numcheck ]]; then
   export STEAM_COMPAT_APP_ID=$(cat $ULWGL_ID | cut -d "-" -f 2)
 fi
 export SteamAppId="$STEAM_COMPAT_APP_ID"
+export SteamGameId="$STEAM_COMPAT_APP_ID"
 export STEAM_COMPAT_LIBRARY_PATHS=''
 
 if [[ -z $STEAM_COMPAT_INSTALL_PATH ]]; then
