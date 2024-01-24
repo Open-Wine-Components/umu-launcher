@@ -16,7 +16,12 @@ if [[ $WINEPREFIX ]]; then
    touch "$WINEPREFIX"/tracked_files
 fi
 export PROTONPATH="$PROTONPATH"
+export ULWGL_ID="$GAMEID"
 export STEAM_COMPAT_APP_ID="$GAMEID"
+numcheck='^[0-9]+$'
+if [[ $(cat $ULWGL_ID | cut -d "-" -f 2) =~$numcheck ]]; then
+  export STEAM_COMPAT_APP_ID=$(cat $ULWGL_ID | cut -d "-" -f 2)
+fi
 export SteamAppId="$STEAM_COMPAT_APP_ID"
 export STEAM_COMPAT_TOOL_PATHS=''
 export STEAM_COMPAT_LIBRARY_PATHS=''
