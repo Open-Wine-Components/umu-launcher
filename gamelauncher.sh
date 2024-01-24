@@ -34,4 +34,4 @@ shift 1
 export LAUNCHARGS="$@"
 me="$(readlink -f "$0")"
 here="${me%/*}"
-$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" $LAUNCHARGS
+$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$1" "$2" "$3"
