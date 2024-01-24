@@ -3,7 +3,7 @@
 set -x
 
 if [[ -z $1 ]] || [[ -z $2 ]] || [[ -z $WINEPREFIX ]] || [[ -z $GAMEID ]] || [[ -z $PROTONPATH ]]; then
- echo "Usage: WINEPREFIX=/path-to-prefix GAMEID=makeoneup PROTONPATH=<protonpath> ./gamelauncher.sh <executable-path> <arguements>"
+ echo 'Usage: WINEPREFIX=<wine-prefix-path> GAMEID=<ulwgl-id> PROTONPATH=<proton-version-path> ./gamelauncher.sh <executable-path> <arguements>'
  echo 'Ex:'
  echo 'WINEPREFIX=$HOME/Games/epic-games-store GAMEID=egs PROTONPATH="$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28" ./gamelauncher.sh "$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe" "-opengl -SkipBuildPatchPrereq"'
  exit 1
