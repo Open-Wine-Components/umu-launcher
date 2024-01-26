@@ -49,4 +49,4 @@ here="${me%/*}"
 export STEAM_COMPAT_TOOL_PATHS="$PROTONPATH:$here"
 export STEAM_COMPAT_MOUNTS="$PROTONPATH:$here"
 
-$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$1" "$2" "$3"
+$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$@"
