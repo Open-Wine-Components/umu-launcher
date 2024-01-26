@@ -41,7 +41,6 @@ export FONTCONFIG_PATH=''
 
 export EXE="$1"
 shift 1
-export LAUNCHARGS="$@"
 
 me="$(readlink -f "$0")"
 here="${me%/*}"
@@ -49,4 +48,5 @@ here="${me%/*}"
 export STEAM_COMPAT_TOOL_PATHS="$PROTONPATH:$here"
 export STEAM_COMPAT_MOUNTS="$PROTONPATH:$here"
 
-$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$1" "$2" "$3"
+$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$@"
+
