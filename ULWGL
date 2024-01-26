@@ -177,7 +177,18 @@ if [ -n "$log_to_file" ]; then
     if [ -z "${STEAM_COMPAT_APP_ID-}" ] && [ -z "${SteamAppId-}" ]; then
         app="non-steam-game"
     else
-        app="app${STEAM_COMPAT_APP_ID-${SteamAppId}}"
+        # for non-steam games ULWGL passes the ULWGL_ID as STEAM_COMPAT_APP_ID and SteamAppId
+        # which means it won't be null and will fail the above check, making this script think
+        # it's a steam game. We need to perform a numerical check here
+        # to validate a non-numeric ID is set as a non-steam game.
+        numcheck='^[0-9]+$'
+        # if is numeric, assign as steam app id.
+        if [[ $(cat ${STEAM_COMPAT_APP_ID-}) =~ $numcheck ]] || [[ $(cat ${SteamAppId-}) =~ $numcheck ]]; then
+            app="app${STEAM_COMPAT_APP_ID-${SteamAppId}}"
+        else
+        # if not numeric, assign as non-steam game.
+            app="non-steam-game"
+        fi
     fi
 
     log_filename="slr-${app}-t$(date +'%Y%m%dT%H%M%S').log"
