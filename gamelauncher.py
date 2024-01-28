@@ -33,15 +33,12 @@ def _setup_pfx(path):
     Path(path + "/tracked_files").touch()
 
 
-# Sets various environment variables for the Steam RT
-# Expects to be invoked if not reading a TOML file
-def set_env(env, args):
+# Before executing a game check if environment variables
+def check_env(env):
     if "WINEPREFIX" not in os.environ or not os.path.isdir(os.environ["WINEPREFIX"]):
         raise ("Environment variable not set or not a directory: WINEPREFIX")
     path = os.environ["WINEPREFIX"]
     env["WINEPREFIX"] = path
-
-    _setup_pfx(path)
 
     if "GAMEID" not in os.environ:
         raise ValueError("Environment variable not set: GAMEID")
@@ -52,6 +49,11 @@ def set_env(env, args):
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
 
+
+# Sets various environment variables for the Steam RT
+# Expects to be invoked if not reading a TOML file
+def set_env(env, args):
+    _setup_pfx(env["WINEPREFIX"])
     # Sets the environment variables: PROTONPATH, STEAM_COMPAT_INSTALL_PATH, EXE and LAUNCHERARGS
     for arg, val in vars(args).items():
         if val is None:
@@ -128,6 +130,7 @@ def main():
         if vars(args).get("config"):
             set_env_toml(env, args)
         else:
+            check_env(env)
             set_env(env, args)
     except Exception as err:
         print(f"{err}")
