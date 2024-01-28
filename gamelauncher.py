@@ -54,6 +54,8 @@ def set_env(env, args):
 
     # Sets the environment variables: PROTONPATH, STEAM_COMPAT_INSTALL_PATH, EXE and LAUNCHARGS
     for arg, val in vars(args).items():
+        if val is None:
+            continue
         if arg == "proton":
             env["PROTONPATH"] = val
             env["STEAM_COMPAT_INSTALL_PATH"] = val
