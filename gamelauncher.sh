@@ -32,6 +32,10 @@ if [[ -z $STEAM_COMPAT_INSTALL_PATH ]]; then
   export STEAM_COMPAT_INSTALL_PATH="$gameinstallpath"
 fi
 
+if [[ -z $PROTON_VERB ]]; then
+  export PROTON_VERB="waitforexitandrun"
+fi
+
 export STEAM_COMPAT_CLIENT_INSTALL_PATH=''
 export STEAM_COMPAT_DATA_PATH="$WINEPREFIX"
 export STEAM_COMPAT_SHADER_PATH="$STEAM_COMPAT_DATA_PATH"/shadercache
@@ -48,5 +52,5 @@ here="${me%/*}"
 export STEAM_COMPAT_TOOL_PATHS="$PROTONPATH:$here"
 export STEAM_COMPAT_MOUNTS="$PROTONPATH:$here"
 
-$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton waitforexitandrun "$EXE" "$@"
+$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"
 
