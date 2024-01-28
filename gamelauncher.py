@@ -11,17 +11,12 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog="example usage:\n  gamelauncher.py --config example.toml"
-        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --game ... --options [...]",
+        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --game=''",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--config", help="path to TOML file")
-    parser.add_argument("--game", help="path to game executable")
-    parser.add_argument(
-        "--options",
-        help="launch options for game executable\nNOTE: hyphens must be omitted",
-        nargs="*",
-    )
+    parser.add_argument("--game", help="path to game executable\nNOTE: when passing options, value must be wrapped in quotes")
 
     return parser.parse_args(sys.argv[1:])
 
@@ -57,20 +52,17 @@ def set_env(env, args):
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
 
-    # Sets the environment variables: PROTONPATH, STEAM_COMPAT_INSTALL_PATH, EXE and LAUNCHARGS
+    # Sets the environment variables: PROTONPATH, STEAM_COMPAT_INSTALL_PATH, EXE and LAUNCHERARGS
     for arg, val in vars(args).items():
         if val is None:
             continue
-        if arg == "game":
-            env["EXE"] = val
-        elif arg == "options":
-            # Add a hyphen to the beginning of each option
-            # We're doing this because argparse cannot parse hyphenated-values
-            for launch_options in val:
-                if env["LAUNCHARGS"] == "":
-                    env["LAUNCHARGS"] = "-" + launch_options
-                else:
-                    env["LAUNCHARGS"] = env["LAUNCHARGS"] + " -" + launch_options
+        elif arg == "game":
+            # Handle game options
+            if val.find(" ") != -1:
+                env["LAUNCHARGS"] = val[val.find(" ") + 1:]
+                env["EXE"] = val[:val.find(" ")]
+            else:
+                env["EXE"] = val
 
 
 # Reads a TOML file then sets the environment variables for the Steam RT
