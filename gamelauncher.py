@@ -37,21 +37,18 @@ def _setup_pfx(path):
 # Expects to be invoked if not reading a TOML file
 def set_env(env, args):
     if "WINEPREFIX" not in os.environ or not os.path.isdir(os.environ["WINEPREFIX"]):
-        print("Environment variable not set or not a directory: WINEPREFIX")
-        return
+        raise ("Environment variable not set or not a directory: WINEPREFIX")
     path = os.environ["WINEPREFIX"]
     env["WINEPREFIX"] = path
 
     _setup_pfx(path)
 
     if "GAMEID" not in os.environ:
-        print("Environment variable not set: GAMEID")
-        return
+        raise ValueError("Environment variable not set: GAMEID")
     env["GAMEID"] = os.environ["GAMEID"]
 
     if "PROTONPATH" not in os.environ:
-        print("Environment variable not set: PROTONPATH")
-        return
+        raise ValueError("Environment variable not set: PROTONPATH")
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
 
@@ -127,10 +124,14 @@ def main():
 
     args = parse_args()
 
-    if vars(args).get("config"):
-        set_env_toml(env, args)
-    else:
-        set_env(env, args)
+    try:
+        if vars(args).get("config"):
+            set_env_toml(env, args)
+        else:
+            set_env(env, args)
+    except Exception as err:
+        print(f"{err}")
+        return
 
     env["STEAM_COMPAT_APP_ID"] = env["GAMEID"]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
