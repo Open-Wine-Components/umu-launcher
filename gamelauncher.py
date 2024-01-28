@@ -16,7 +16,10 @@ def parse_args():
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--config", help="path to TOML file")
-    parser.add_argument("--game", help="path to game executable\nNOTE: when passing options, value must be wrapped in quotes")
+    parser.add_argument(
+        "--game",
+        help="path to game executable\nNOTE: when passing options, value must be wrapped in quotes",
+    )
 
     return parser.parse_args(sys.argv[1:])
 
@@ -59,14 +62,17 @@ def set_env(env, args):
         elif arg == "game":
             # Handle game options
             if val.find(" ") != -1:
-                env["LAUNCHARGS"] = val[val.find(" ") + 1:]
-                env["EXE"] = val[:val.find(" ")]
+                env["LAUNCHARGS"] = val[val.find(" ") + 1 :]
+                env["EXE"] = val[: val.find(" ")]
             else:
                 env["EXE"] = val
 
 
 # Reads a TOML file then sets the environment variables for the Steam RT
-# When applying launch options, unlike the standard usage, no hyphens are applied
+# In the TOML file, keys map to Steam RT environment variables. For example:
+#   proton -> $PROTONPATH
+#   prefix -> $WINEPREFIX
+#   ...
 def set_env_toml(env, args):
     toml = ""
 
@@ -95,6 +101,7 @@ def set_env_toml(env, args):
                 else:
                     env["LAUNCHARGS"] = env["LAUNCHARGS"] + " " + launch_options
         elif key == "game":
+            # NOTE: It's possible that game options could be appended at the end
             env["EXE"] = val
 
 
