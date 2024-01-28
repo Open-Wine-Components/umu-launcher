@@ -11,12 +11,11 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog="example usage:\n  gamelauncher.py --config example.toml"
-        + "\n  WINEPREFIX= GAMEID= gamelauncher.py --proton ... --game ... --options opengl SkipBuildPatchPrereq",
+        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --game ... --options [...]",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--config", help="path to TOML file")
-    parser.add_argument("--proton", help="path to proton directory")
     parser.add_argument("--game", help="path to game executable")
     parser.add_argument(
         "--options",
@@ -52,14 +51,17 @@ def set_env(env, args):
         return
     env["GAMEID"] = os.environ["GAMEID"]
 
+    if "PROTONPATH" not in os.environ:
+        print("Environment variable not set: PROTONPATH")
+        return
+    env["PROTONPATH"] = os.environ["PROTONPATH"]
+    env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
+
     # Sets the environment variables: PROTONPATH, STEAM_COMPAT_INSTALL_PATH, EXE and LAUNCHARGS
     for arg, val in vars(args).items():
         if val is None:
             continue
-        if arg == "proton":
-            env["PROTONPATH"] = val
-            env["STEAM_COMPAT_INSTALL_PATH"] = val
-        elif arg == "game":
+        if arg == "game":
             env["EXE"] = val
         elif arg == "options":
             # Add a hyphen to the beginning of each option
