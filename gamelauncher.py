@@ -58,12 +58,14 @@ def check_env(env):
 # Expects to be invoked if not reading a TOML file
 def set_env(env, args):
     _setup_pfx(env["WINEPREFIX"])
-    # Sets the environment variables: PROTONPATH, STEAM_COMPAT_INSTALL_PATH, EXE and LAUNCHERARGS
+
+    # Sets the environment variables: EXE and LAUNCHARGS
     for arg, val in vars(args).items():
         if val is None:
             continue
         elif arg == "game":
             # Handle game options
+            # If a game's executable follows with options, assign the options to its environment variable
             if val.find(" ") != -1:
                 env["LAUNCHARGS"] = val[val.find(" ") + 1 :]
                 env["EXE"] = val[: val.find(" ")]
@@ -75,7 +77,10 @@ def set_env(env, args):
 # In the TOML file, keys map to Steam RT environment variables. For example:
 #   proton -> $PROTONPATH
 #   prefix -> $WINEPREFIX
-#   ...
+#   game_id -> $GAMEID
+#   launch_opts -> $LAUNCHARGS
+#   game -> $EXE
+# At the moment we expect the tables: 'ulwgl'
 def set_env_toml(env, args):
     toml = None
 
