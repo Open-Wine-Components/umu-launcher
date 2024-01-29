@@ -2,19 +2,24 @@
 
 import os
 import argparse
+from argparse import ArgumentParser, _ArgumentGroup, Namespace
 import sys
 from pathlib import Path
 import tomllib
+from tomllib import TOMLDecodeError
+from typing import Dict, Any, Union
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
+def parse_args() -> Namespace:
+    parser: ArgumentParser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog="example usage:\n  gamelauncher.py --config example.toml"
         + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --game=''",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    group = parser.add_mutually_exclusive_group(required=True)
+    group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--config", help="path to TOML file")
     group.add_argument(
         "--game",
@@ -25,7 +30,7 @@ def parse_args():
 
 
 # Create a symlink and tracked_files file
-def _setup_pfx(path):
+def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
     try:
         os.symlink(path, path + "/pfx")
     except FileExistsError:
@@ -38,7 +43,7 @@ def _setup_pfx(path):
 
 
 # Before executing a game check if environment variables
-def check_env(env):
+def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
     if not ("WINEPREFIX" in os.environ or os.path.isdir(os.environ["WINEPREFIX"])):
         raise ValueError("Environment variable not set or not a directory: WINEPREFIX")
     path = os.environ["WINEPREFIX"]
@@ -56,7 +61,7 @@ def check_env(env):
 
 # Sets various environment variables for the Steam RT
 # Expects to be invoked if not reading a TOML file
-def set_env(env, args):
+def set_env(env: Dict[str, str], args: Namespace) -> Union[None, ValueError]:
     _setup_pfx(env["WINEPREFIX"])
 
     # Sets the environment variables: EXE and LAUNCHARGS
@@ -79,8 +84,10 @@ def set_env(env, args):
 #   launch_opts -> $LAUNCHARGS
 #   game -> $EXE
 # At the moment we expect the tables: 'ulwgl'
-def set_env_toml(env, args):
-    toml = None
+def set_env_toml(
+    env: Dict[str, str], args: Namespace
+) -> Union[None, KeyError, IsADirectoryError, TOMLDecodeError]:
+    toml: Dict[str, Any] = None
 
     with open(vars(args).get("config"), "rb") as file:
         toml = tomllib.load(file)
@@ -117,8 +124,8 @@ def set_env_toml(env, args):
             env["EXE"] = val
 
 
-def main():
-    env = {
+def main() -> None:
+    env: Dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
         "CRASH_REPORT": "/tmp/ULWGL_crashreports",
@@ -137,7 +144,7 @@ def main():
         "SteamAppId": "",
     }
 
-    args = parse_args()
+    args: Namespace = parse_args()
 
     try:
         if vars(args).get("config"):
