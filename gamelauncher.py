@@ -14,9 +14,9 @@ def parse_args():
         + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --game=''",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    group = parser.add_mutually_exclusive_group()
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--config", help="path to TOML file")
-    parser.add_argument(
+    group.add_argument(
         "--game",
         help="path to game executable\nNOTE: when passing options, value must be wrapped in quotes",
     )
