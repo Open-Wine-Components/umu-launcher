@@ -10,8 +10,6 @@ from tomllib import TOMLDecodeError
 from typing import Dict, Any, Union
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(
 def parse_args() -> Namespace:
     parser: ArgumentParser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
@@ -29,8 +27,10 @@ def parse_args() -> Namespace:
     return parser.parse_args(sys.argv[1:])
 
 
-# Create a symlink and tracked_files file
 def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
+    """
+    Create a symlink and tracked_files file
+    """
     try:
         os.symlink(path, path + "/pfx")
     except FileExistsError:
@@ -42,8 +42,10 @@ def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
     Path(path + "/tracked_files").touch()
 
 
-# Before executing a game check if environment variables
 def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
+    """
+    Before executing a game check if environment variables
+    """
     if not ("WINEPREFIX" in os.environ or os.path.isdir(os.environ["WINEPREFIX"])):
         raise ValueError("Environment variable not set or not a directory: WINEPREFIX")
     path = os.environ["WINEPREFIX"]
@@ -59,9 +61,11 @@ def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
     env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
 
 
-# Sets various environment variables for the Steam RT
-# Expects to be invoked if not reading a TOML file
 def set_env(env: Dict[str, str], args: Namespace) -> Union[None, ValueError]:
+    """
+    Sets various environment variables for the Steam RT
+    Expects to be invoked if not reading a TOML file
+    """
     _setup_pfx(env["WINEPREFIX"])
 
     # Sets the environment variables: EXE and LAUNCHARGS
@@ -76,17 +80,19 @@ def set_env(env: Dict[str, str], args: Namespace) -> Union[None, ValueError]:
                 env["EXE"] = val
 
 
-# Reads a TOML file then sets the environment variables for the Steam RT
-# In the TOML file, keys map to Steam RT environment variables. For example:
-#   proton -> $PROTONPATH
-#   prefix -> $WINEPREFIX
-#   game_id -> $GAMEID
-#   launch_opts -> $LAUNCHARGS
-#   game -> $EXE
-# At the moment we expect the tables: 'ulwgl'
 def set_env_toml(
     env: Dict[str, str], args: Namespace
 ) -> Union[None, KeyError, IsADirectoryError, TOMLDecodeError]:
+    """
+    Reads a TOML file then sets the environment variables for the Steam RT
+    In the TOML file, keys map to Steam RT environment variables. For example:
+          proton -> $PROTONPATH
+          prefix -> $WINEPREFIX
+          game_id -> $GAMEID
+          launch_opts -> $LAUNCHARGS
+          game -> $EXE
+    At the moment we expect the tables: 'ulwgl'
+    """
     toml: Dict[str, Any] = None
 
     with open(vars(args).get("config"), "rb") as file:
