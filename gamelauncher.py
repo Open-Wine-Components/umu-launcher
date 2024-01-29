@@ -92,6 +92,9 @@ def set_env_toml(env, args):
 
     # Set the values read from TOML to environment variables
     for key, val in toml["ulwgl"].items():
+        # Handle cases for empty values
+        if not val:
+            raise ValueError("Value is empty for key in TOML: " + key)
         if key == "prefix":
             env["WINEPREFIX"] = val
             _setup_pfx(val)
