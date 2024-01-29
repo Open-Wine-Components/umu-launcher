@@ -75,6 +75,11 @@ export PROTON_CRASH_REPORT_DIR='/tmp/ULWGL_crashreports'
 export FONTCONFIG_PATH=''
 
 export EXE="$1"
+if [[ "$EXE" == "createprefix"  ]]; then
+	# Hack, leave empty.
+	# forces proton to create a prefix without actually running anything.
+	EXE=""
+fi
 shift 1
 
 me="$(readlink -f "$0")"
@@ -85,6 +90,3 @@ export STEAM_COMPAT_MOUNTS="$PROTONPATH:$here"
 
 $here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"
 
-# Kill wineserver andpressure vessel in case of lingering processes
-killall -9 wineserver
-killall -9 pressure-vessel-adverb
