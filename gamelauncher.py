@@ -4,7 +4,7 @@ import os
 import argparse
 import sys
 from pathlib import Path
-from tomlkit import parse
+import tomllib
 
 
 def parse_args():
@@ -73,12 +73,10 @@ def set_env(env, args):
 #   prefix -> $WINEPREFIX
 #   ...
 def set_env_toml(env, args):
-    toml = ""
+    toml = None
 
-    with open(vars(args).get("config"), "r") as file:
-        # This might fail. Handle it.
-        toml_string = file.read()
-        toml = parse(toml_string)
+    with open(vars(args).get("config"), "rb") as file:
+        toml = tomllib.load(file)
 
     if not toml.get("ulwgl"):
         raise KeyError("Table 'ulwgl' was not found in TOML file.")
