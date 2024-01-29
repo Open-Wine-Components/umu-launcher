@@ -12,8 +12,12 @@ if [[ $WINEPREFIX ]]; then
    if [[ ! -d "$WINEPREFIX" ]]; then
      mkdir -p "$WINEPREFIX"
    fi
-   ln -s "$WINEPREFIX" "$WINEPREFIX"/pfx
-   touch "$WINEPREFIX"/tracked_files
+   if [[ ! -d "$WINEPREFIX"/pfx ]]; then
+     ln -s "$WINEPREFIX" "$WINEPREFIX"/pfx
+   fi
+   if [[ ! -f "$WINEPREFIX"/tracked_files ]]; then
+     touch "$WINEPREFIX"/tracked_files
+   fi
 fi
 export PROTONPATH="$PROTONPATH"
 export ULWGL_ID="$GAMEID"
@@ -81,3 +85,6 @@ export STEAM_COMPAT_MOUNTS="$PROTONPATH:$here"
 
 $here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"
 
+# Kill wineserver andpressure vessel in case of lingering processes
+killall -9 wineserver
+killall -9 pressure-vessel-adverb
