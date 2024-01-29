@@ -82,8 +82,13 @@ def set_env_toml(env, args):
     with open(vars(args).get("config"), "rb") as file:
         toml = tomllib.load(file)
 
-    if not toml.get("ulwgl"):
-        raise KeyError("Table 'ulwgl' was not found in TOML file.")
+    # Check if 'prefix' and 'proton' values are directories and exist
+    if not (
+        os.path.isdir(toml["ulwgl"]["prefix"]) or os.path.isdir(toml["ulwgl"]["proton"])
+    ):
+        raise NotADirectoryError(
+            "Value for 'prefix' or 'proton' in TOML is not a directory."
+        )
 
     # Set the values read from TOML to environment variables
     for key, val in toml["ulwgl"].items():
