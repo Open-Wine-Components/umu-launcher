@@ -32,7 +32,8 @@ if [[ -z $STEAM_COMPAT_INSTALL_PATH ]]; then
   export STEAM_COMPAT_INSTALL_PATH="$gameinstallpath"
 fi
 
-export STEAM_COMPAT_LIBRARY_PATH=""
+compat_lib_path=$(findmnt -T $STEAM_COMPAT_INSTALL_PATH | tail -n 1 | awk '{ print $1 }')
+export STEAM_COMPAT_LIBRARY_PATH="$compat_lib_path"
 
 if [[ -z $STEAM_RUNTIME_LIBRARY_PATH ]]; then
   # The following info taken from steam ~/.local/share/ubuntu12_32/steam-runtime/run.sh
