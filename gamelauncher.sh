@@ -36,8 +36,8 @@ if [[ -z $STEAM_COMPAT_INSTALL_PATH ]]; then
   export STEAM_COMPAT_INSTALL_PATH="$gameinstallpath"
 fi
 
-compat_lib_path=$(findmnt -T $STEAM_COMPAT_INSTALL_PATH | tail -n 1 | awk '{ print $1 }')
-export STEAM_COMPAT_LIBRARY_PATH="$compat_lib_path"
+compat_lib_path=$(findmnt -T "$STEAM_COMPAT_INSTALL_PATH" | tail -n 1 | awk '{ print $1 }')
+export STEAM_COMPAT_LIBRARY_PATHS="${STEAM_COMPAT_LIBRARY_PATHS:+"${STEAM_COMPAT_LIBRARY_PATHS}:"}$compat_lib_path"
 
 if [[ -z $STEAM_RUNTIME_LIBRARY_PATH ]]; then
   # The following info taken from steam ~/.local/share/ubuntu12_32/steam-runtime/run.sh
@@ -88,5 +88,5 @@ here="${me%/*}"
 export STEAM_COMPAT_TOOL_PATHS="$PROTONPATH:$here"
 export STEAM_COMPAT_MOUNTS="$PROTONPATH:$here"
 
-$here/ULWGL --verb=waitforexitandrun -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"
+"$here"/ULWGL "--verb=$PROTON_VERB" -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"
 
