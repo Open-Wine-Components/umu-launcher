@@ -61,9 +61,7 @@ def set_env(env, args):
 
     # Sets the environment variables: EXE and LAUNCHARGS
     for arg, val in vars(args).items():
-        if val is None:
-            continue
-        elif arg == "game":
+        if arg == "game":
             # Handle game options
             # If a game's executable follows with options, assign the options to its environment variable
             if val.find(" ") != -1:
