@@ -25,13 +25,16 @@ fi
 export SteamAppId="$STEAM_COMPAT_APP_ID"
 export SteamGameId="$STEAM_COMPAT_APP_ID"
 
+# TODO: Ideally this should be the main game install path, which is often, but not always the path of the game's executable.
 if [[ -z $STEAM_COMPAT_INSTALL_PATH ]]; then
   exepath="$(readlink -f "$1")"
   gameinstallpath="${exepath%/*}"
   export STEAM_COMPAT_INSTALL_PATH="$gameinstallpath"
 fi
 
-if [[ -z $STEAM_COMPAT_LIBRARY_PATHS ]]; then
+export STEAM_COMPAT_LIBRARY_PATH=""
+
+if [[ -z $STEAM_RUNTIME_LIBRARY_PATH ]]; then
   # The following info taken from steam ~/.local/share/ubuntu12_32/steam-runtime/run.sh
   host_library_paths=
   exit_status=0
@@ -52,7 +55,7 @@ if [[ -z $STEAM_COMPAT_LIBRARY_PATHS ]]; then
 
   host_library_paths="${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}$host_library_paths"
   steam_runtime_library_paths="${STEAM_COMPAT_INSTALL_PATH}:${host_library_paths}"
-  export STEAM_COMPAT_LIBRARY_PATHS="$steam_runtime_library_paths"
+  export STEAM_RUNTIME_LIBRARY_PATH="$steam_runtime_library_paths"
 fi
 
 if [[ -z $PROTON_VERB ]]; then
