@@ -40,7 +40,6 @@ class TestGameLauncher(unittest.TestCase):
         """
         Test parse_args with no options
         """
-        test_file = "./tmp.WMYQiPb9A"
         with self.assertRaises(SystemExit):
             result = gamelauncher.parse_args()
             self.assertIsInstance(result, Namespace)
@@ -52,7 +51,11 @@ class TestGameLauncher(unittest.TestCase):
         Test parse_args --config
         """
         test_file = "./tmp.WMYQiPb9A"
-        with patch.object(gamelauncher, 'parse_args', return_value=argparse.Namespace(config=test_file)):
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=test_file),
+        ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(result, Namespace)
 
@@ -61,11 +64,12 @@ class TestGameLauncher(unittest.TestCase):
         Test parse_args --game
         """
         test_file = "./tmp.WMYQiPb9A"
-        with patch.object(gamelauncher, 'parse_args', return_value=argparse.Namespace(game=test_file)):
+        with patch.object(
+            gamelauncher, "parse_args", return_value=argparse.Namespace(game=test_file)
+        ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(result, Namespace)
             self.assertIsInstance(result, Namespace)
-
 
     def test_env_vars(self):
         """
