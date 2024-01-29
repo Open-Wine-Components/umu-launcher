@@ -30,6 +30,10 @@ def _setup_pfx(path):
         os.symlink(path, path + "/pfx")
     except FileExistsError:
         print(f"Symbolic link already exists at {path}/pfx")
+    except Exception:
+        raise RuntimeError(
+            "Error occurred when creating symbolic link at " + path + "/pfx"
+        )
     Path(path + "/tracked_files").touch()
 
 
