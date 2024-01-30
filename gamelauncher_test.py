@@ -11,7 +11,7 @@ from shutil import rmtree
 
 """Test suite for gamelauncher.py
 
-TODO: dynamically create the test_files and crash report file, test for mutually exclusive options
+TODO: test for mutually exclusive options
 """
 
 
