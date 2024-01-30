@@ -8,14 +8,18 @@ from pathlib import Path
 from tomllib import TOMLDecodeError
 
 
+"""Test suite for gamelauncher.py
+
+TODO: dynamically create the test_files and crash report file, test for mutually exclusive options
+"""
+
+
 class TestGameLauncher(unittest.TestCase):
     def setUp(self):
         pass
 
     def tearDown(self):
-        """
-        Unset environment variables
-        """
+        """Unset environment variables and delete test files after each test"""
         test_file = "./tmp.WMYQiPb9A"
         env = {
             "WINEPREFIX": "",
@@ -390,7 +394,6 @@ class TestGameLauncher(unittest.TestCase):
 
         Ensure no failures when passing --game and setting $WINEPREFIX and $PROTONPATH
         """
-        Test when setting WINEPREFIX, GAMEID and PROTONPATH
         env = {
             "WINEPREFIX": "",
             "GAMEID": "",
@@ -551,9 +554,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_env_vars_proton(self):
-        """
-        Test when setting only WINEPREFIX and GAMEID
-        """
+        """Test check_env when setting only WINEPREFIX and GAMEID"""
         test_file = "./tmp.WMYQiPb9A"
         env = {
             "WINEPREFIX": "",
@@ -581,9 +582,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(env["GAMEID"], test_file)
 
     def test_env_vars_wine(self):
-        """
-        Test when setting only WINEPREFIX
-        """
+        """Test check_env when setting only WINEPREFIX"""
         test_file = "./tmp.WMYQiPb9A"
         env = {
             "WINEPREFIX": "",
@@ -609,9 +608,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(env["WINEPREFIX"], test_file)
 
     def test_env_vars_none(self):
-        """
-        Tests when setting no env vars
-        """
+        """Tests check_env when setting no env vars"""
         env = {
             "WINEPREFIX": "",
             "GAMEID": "",
