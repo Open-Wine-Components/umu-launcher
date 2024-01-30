@@ -443,9 +443,50 @@ class TestGameLauncher(unittest.TestCase):
                 result, "Expected None when setting environment variables"
             )
 
+    def test_setup_pfx_runtime_err(self):
+        """Test _setup_pfx for RuntimeError
+
+        _setup_pfx expects a $WINEPREFIX as input
+        Therefore one case a RuntimeError can occur is when the path to $WINEPREFIX does not exist
+        """
+        test_file = "./foo"
+        with self.assertRaisesRegex(RuntimeError, "Error"):
+            gamelauncher._setup_pfx(test_file)
+            self.assertFalse(
+                os.path.isdir(test_file), "Expected WINEPREFIX to not be a directory"
+            )
+
+    def test_setup_pfx_err(self):
+        """Test _setup_pfx for error
+
+        Ensure no error is raised when the symbolic link to $WINEPREFIX exist
         """
         test_file = "./tmp.WMYQiPb9A"
         result = None
+        gamelauncher._setup_pfx(test_file)
+        result = gamelauncher._setup_pfx(test_file)
+        self.assertIsNone(
+            result,
+            "Expected None when creating symbolic link to WINE prefix twice",
+        )
+
+    def test_setup_pfx(self):
+        """Test _setup_pfx"""
+        test_file = "./tmp.WMYQiPb9A"
+        result = None
+        result = gamelauncher._setup_pfx(test_file)
+        self.assertIsNone(
+            result,
+            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+        )
+        self.assertTrue(
+            os.path.islink(test_file + "/pfx"), "Expected pfx to be a symlink"
+        )
+        self.assertTrue(
+            os.path.isfile(test_file + "/tracked_files"),
+            "Expected tracked_files to be a file",
+        )
+
         env = {
             "WINEPREFIX": "",
             "GAMEID": "",
