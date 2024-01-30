@@ -8,6 +8,7 @@ from pathlib import Path
 import tomllib
 from tomllib import TOMLDecodeError
 from typing import Dict, Any, Union
+# TODO: Change CRASH_REPORT to PROTON_CRASH_REPORT_DIR, unset environment variables on init, add checks for EXE is a file and LAUNCHARGS is a string
 
 
 def parse_args() -> Namespace:
@@ -28,9 +29,7 @@ def parse_args() -> Namespace:
 
 
 def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
-    """
-    Create a symlink and tracked_files file
-    """
+    """Create a symlink to the WINE prefix and tracked_files file"""
     try:
         os.symlink(path, path + "/pfx")
     except FileExistsError:
@@ -43,9 +42,7 @@ def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
 
 
 def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
-    """
-    Before executing a game check if environment variables
-    """
+    """Before executing a game check for environment variables"""
     if not ("WINEPREFIX" in os.environ or os.path.isdir(os.environ["WINEPREFIX"])):
         raise ValueError("Environment variable not set or not a directory: WINEPREFIX")
     path = os.environ["WINEPREFIX"]
@@ -62,8 +59,8 @@ def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
 
 
 def set_env(env: Dict[str, str], args: Namespace) -> Union[None, ValueError]:
-    """
-    Sets various environment variables for the Steam RT
+    """Sets various environment variables for the Steam RT
+
     Expects to be invoked if not reading a TOML file
     """
     _setup_pfx(env["WINEPREFIX"])
@@ -83,9 +80,9 @@ def set_env(env: Dict[str, str], args: Namespace) -> Union[None, ValueError]:
 def set_env_toml(
     env: Dict[str, str], args: Namespace
 ) -> Union[None, KeyError, IsADirectoryError, TOMLDecodeError]:
-    """
-    Reads a TOML file then sets the environment variables for the Steam RT
-    In the TOML file, keys map to Steam RT environment variables. For example:
+    """Reads a TOML file then sets the environment variables for the Steam RT
+
+    In the TOML file, certain keys map to Steam RT environment variables. For example:
           proton -> $PROTONPATH
           prefix -> $WINEPREFIX
           game_id -> $GAMEID
@@ -98,6 +95,7 @@ def set_env_toml(
     with open(vars(args).get("config"), "rb") as file:
         toml = tomllib.load(file)
 
+    # TODO: verify if launch_opts is not a file or dir and game is a file
     # Check if 'prefix' and 'proton' values are directories and exist
     if not (
         os.path.isdir(toml["ulwgl"]["prefix"]) or os.path.isdir(toml["ulwgl"]["proton"])
