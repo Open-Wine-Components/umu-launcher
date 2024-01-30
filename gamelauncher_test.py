@@ -546,9 +546,9 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["GAMEID"] = test_file
         os.environ["PROTONPATH"] = test_file
         result = gamelauncher.check_env(env)
-        self.assertEqual(env["WINEPREFIX"], test_file)
-        self.assertEqual(env["GAMEID"], test_file)
-        self.assertEqual(env["PROTONPATH"], test_file)
+        self.assertEqual(env["WINEPREFIX"], test_file, "Expected WINEPREFIX to be set")
+        self.assertEqual(env["GAMEID"], test_file, "Expected GAMEID to be set")
+        self.assertEqual(env["PROTONPATH"], test_file, "Expected PROTONPATH to be set")
         self.assertIsNone(
             result, "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set"
         )
@@ -578,8 +578,10 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["WINEPREFIX"] = test_file
             os.environ["GAMEID"] = test_file
             gamelauncher.check_env(env)
-            self.assertEqual(env["WINEPREFIX"], test_file)
-            self.assertEqual(env["GAMEID"], test_file)
+            self.assertEqual(
+                env["WINEPREFIX"], test_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(env["GAMEID"], test_file, "Expected GAMEID to be set")
 
     def test_env_vars_wine(self):
         """Test check_env when setting only WINEPREFIX"""
@@ -605,7 +607,9 @@ class TestGameLauncher(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "GAMEID"):
             os.environ["WINEPREFIX"] = test_file
             gamelauncher.check_env(env)
-            self.assertEqual(env["WINEPREFIX"], test_file)
+            self.assertEqual(
+                env["WINEPREFIX"], test_file, "Expected WINEPREFIX to be set"
+            )
 
     def test_env_vars_none(self):
         """Tests check_env when setting no env vars"""
