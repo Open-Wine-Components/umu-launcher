@@ -373,7 +373,6 @@ class TestGameLauncher(unittest.TestCase):
             self.assertTrue(env.get("EXE"), "Expected EXE to not be empty")
             self.assertFalse(env.get("LAUNCHARGS"), "Expected LAUNCHARGS to be empty")
 
-    def test_env_vars(self):
     def test_set_env(self):
         """Test set_env
 
@@ -506,6 +505,10 @@ class TestGameLauncher(unittest.TestCase):
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
 
+    def test_env_vars(self):
+        """Test check_env when setting WINEPREFIX, GAMEID and PROTONPATH"""
+        test_file = "./tmp.WMYQiPb9A"
+        result = None
         env = {
             "WINEPREFIX": "",
             "GAMEID": "",
