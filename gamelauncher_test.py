@@ -16,6 +16,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         Unset environment variables
         """
+        test_file = "./tmp.WMYQiPb9A"
         env = {
             "WINEPREFIX": "",
             "GAMEID": "",
@@ -38,8 +39,19 @@ class TestGameLauncher(unittest.TestCase):
             if key in os.environ:
                 os.environ.pop(key)
 
+        if (
+            os.path.exists(test_file)
+            and os.path.isfile(test_file + "/tracked_files")
+            and os.path.islink(test_file + "/pfx")
+        ):
+            os.remove(test_file + "/tracked_files")
+            os.unlink(test_file + "/pfx")
+            if os.path.isfile(test_file + "/foo.toml"):
+                os.remove(test_file + "/foo.toml")
+
     def test_set_env_toml_err(self):
         """Test set_env_toml for valid TOML
+
         A TOMLDecodeError should be raised for invalid values
         """
         env = {
