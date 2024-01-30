@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -x
+# use for debug only.
+# set -x
 
 if [[ -z $1 ]] || [[ -z $WINEPREFIX ]] || [[ -z $GAMEID ]] || [[ -z $PROTONPATH ]]; then
  echo 'Usage: WINEPREFIX=<wine-prefix-path> GAMEID=<ulwgl-id> PROTONPATH=<proton-version-path> ./gamelauncher.sh <executable-path> <arguments>'
@@ -11,12 +12,17 @@ fi
 if [[ $WINEPREFIX ]]; then
    if [[ ! -d "$WINEPREFIX" ]]; then
      mkdir -p "$WINEPREFIX"
+     export PROTON_DLL_COPY="*"
    fi
    if [[ ! -d "$WINEPREFIX"/pfx ]]; then
      ln -s "$WINEPREFIX" "$WINEPREFIX"/pfx
    fi
    if [[ ! -f "$WINEPREFIX"/tracked_files ]]; then
      touch "$WINEPREFIX"/tracked_files
+   fi
+   if [[ ! -f "$WINEPREFIX/dosdevices/" ]]; then
+     mkdir -p "$WINEPREFIX"/dosdevices
+     ln -s "../drive_c" "$WINEPREFIX/dosdevices/c:"
    fi
 fi
 export PROTONPATH="$PROTONPATH"
