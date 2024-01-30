@@ -257,18 +257,192 @@ class TestGameLauncher(unittest.TestCase):
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             result_set_env = gamelauncher.set_env_toml(env, result)
             self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+
+    def test_set_env_opts(self):
+        """Test set_env
+
+        Ensure no failures and verify that EXE and LAUNCHARGS is not empty
         """
+        env = {
+            "WINEPREFIX": "",
+            "GAMEID": "",
+            "CRASH_REPORT": "/tmp/ULWGL_crashreports",
+            "PROTONPATH": "",
+            "STEAM_COMPAT_APP_ID": "",
+            "STEAM_COMPAT_TOOL_PATHS": "",
+            "STEAM_COMPAT_LIBRARY_PATHS": "",
+            "STEAM_COMPAT_MOUNTS": "",
+            "STEAM_COMPAT_INSTALL_PATH": "",
+            "STEAM_COMPAT_CLIENT_INSTALL_PATH": "",
+            "STEAM_COMPAT_DATA_PATH": "",
+            "STEAM_COMPAT_SHADER_PATH": "",
+            "FONTCONFIG_PATH": "",
+            "EXE": "",
+            "LAUNCHARGS": "",
+            "SteamAppId": "",
+        }
         test_file = "./tmp.WMYQiPb9A"
+        result_args = None
+        result_check_env = None
+        result = None
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --game=...
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(game="foo -bar -baz"),
+        ):
+            os.environ["WINEPREFIX"] = test_file
+            os.environ["PROTONPATH"] = test_file
+            os.environ["GAMEID"] = test_file
+            result_args = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result_args, Namespace, "parse_args did not return a Namespace"
+            )
+            result_check_env = gamelauncher.check_env(env)
+            self.assertEqual(
+                env["WINEPREFIX"], test_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(env["GAMEID"], test_file, "Expected GAMEID to be set")
+            self.assertEqual(
+                env["PROTONPATH"], test_file, "Expected PROTONPATH to be set"
+            )
+            self.assertIsNone(
+                result_check_env,
+                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
+            )
+            result = gamelauncher.set_env(env, result_args)
+            self.assertIsNone(
+                result, "Expected None when setting environment variables"
+            )
+            self.assertTrue(env.get("EXE"), "Expected EXE to not be empty")
+            self.assertTrue(
+                env.get("LAUNCHARGS"), "Expected LAUNCHARGS to not be empty"
+            )
+            # Test for expected LAUNCHARGS and EXE
+            self.assertEqual(
+                env.get("LAUNCHARGS"),
+                "-bar -baz",
+                "Expected LAUNCHARGS to not have extra spaces",
+            )
+            self.assertEqual(
+                env.get("EXE"), "foo", "Expected EXE to not have extra spaces"
+            )
+
+    def test_set_env_exe(self):
+        """Test set_env
+
+        Ensure no failures and verify that EXE and LAUNCHARGS is empty
+        """
+        env = {
+            "WINEPREFIX": "",
+            "GAMEID": "",
+            "CRASH_REPORT": "/tmp/ULWGL_crashreports",
+            "PROTONPATH": "",
+            "STEAM_COMPAT_APP_ID": "",
+            "STEAM_COMPAT_TOOL_PATHS": "",
+            "STEAM_COMPAT_LIBRARY_PATHS": "",
+            "STEAM_COMPAT_MOUNTS": "",
+            "STEAM_COMPAT_INSTALL_PATH": "",
+            "STEAM_COMPAT_CLIENT_INSTALL_PATH": "",
+            "STEAM_COMPAT_DATA_PATH": "",
+            "STEAM_COMPAT_SHADER_PATH": "",
+            "FONTCONFIG_PATH": "",
+            "EXE": "",
+            "LAUNCHARGS": "",
+            "SteamAppId": "",
+        }
+        test_file = "./tmp.WMYQiPb9A"
+        result_args = None
+        result_check_env = None
+        result = None
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --game=...
         with patch.object(
             gamelauncher, "parse_args", return_value=argparse.Namespace(game=test_file)
         ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(result, Namespace)
             self.assertIsInstance(result, Namespace)
+            os.environ["WINEPREFIX"] = test_file
+            os.environ["PROTONPATH"] = test_file
+            os.environ["GAMEID"] = test_file
+            result_args = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result_args, Namespace, "parse_args did not return a Namespace"
+            )
+            result_check_env = gamelauncher.check_env(env)
+            self.assertEqual(
+                env["WINEPREFIX"], test_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(env["GAMEID"], test_file, "Expected GAMEID to be set")
+            self.assertEqual(
+                env["PROTONPATH"], test_file, "Expected PROTONPATH to be set"
+            )
+            self.assertIsNone(
+                result_check_env,
+                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
+            )
+            result = gamelauncher.set_env(env, result_args)
+            self.assertIsNone(
+                result, "Expected None when setting environment variables"
+            )
+            self.assertTrue(env.get("EXE"), "Expected EXE to not be empty")
+            self.assertFalse(env.get("LAUNCHARGS"), "Expected LAUNCHARGS to be empty")
 
     def test_env_vars(self):
+    def test_set_env(self):
+        """Test set_env
+
+        Ensure no failures when passing --game and setting $WINEPREFIX and $PROTONPATH
         """
         Test when setting WINEPREFIX, GAMEID and PROTONPATH
+        env = {
+            "WINEPREFIX": "",
+            "GAMEID": "",
+            "CRASH_REPORT": "/tmp/ULWGL_crashreports",
+            "PROTONPATH": "",
+            "STEAM_COMPAT_APP_ID": "",
+            "STEAM_COMPAT_TOOL_PATHS": "",
+            "STEAM_COMPAT_LIBRARY_PATHS": "",
+            "STEAM_COMPAT_MOUNTS": "",
+            "STEAM_COMPAT_INSTALL_PATH": "",
+            "STEAM_COMPAT_CLIENT_INSTALL_PATH": "",
+            "STEAM_COMPAT_DATA_PATH": "",
+            "STEAM_COMPAT_SHADER_PATH": "",
+            "FONTCONFIG_PATH": "",
+            "EXE": "",
+            "LAUNCHARGS": "",
+            "SteamAppId": "",
+        }
+        test_file = "./tmp.WMYQiPb9A"
+        result_args = None
+        result_check_env = None
+        result = None
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --game=...
+        with patch.object(
+            gamelauncher, "parse_args", return_value=argparse.Namespace(game=test_file)
+        ):
+            os.environ["WINEPREFIX"] = test_file
+            os.environ["PROTONPATH"] = test_file
+            os.environ["GAMEID"] = test_file
+            result_args = gamelauncher.parse_args()
+            self.assertIsInstance(result_args, Namespace)
+            result_check_env = gamelauncher.check_env(env)
+            self.assertEqual(
+                env["WINEPREFIX"], test_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(env["GAMEID"], test_file, "Expected GAMEID to be set")
+            self.assertEqual(
+                env["PROTONPATH"], test_file, "Expected PROTONPATH to be set"
+            )
+            self.assertIsNone(
+                result_check_env,
+                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
+            )
+            result = gamelauncher.set_env(env, result_args)
+            self.assertIsNone(
+                result, "Expected None when setting environment variables"
+            )
+
         """
         test_file = "./tmp.WMYQiPb9A"
         result = None
