@@ -38,12 +38,10 @@ class TestGameLauncher(unittest.TestCase):
             if key in os.environ:
                 os.environ.pop(key)
 
-    def test_parse_args(self):
     def test_set_env_toml_err(self):
         """Test set_env_toml for valid TOML
         A TOMLDecodeError should be raised for invalid values
         """
-        Test parse_args with no options
         env = {
             "WINEPREFIX": "",
             "GAMEID": "",
@@ -71,7 +69,6 @@ class TestGameLauncher(unittest.TestCase):
         game_id = "{test_file}"
         launch_opts = ["{test_file}", "{test_file}"]
         """
-        with self.assertRaises(SystemExit):
         toml_path = test_file + "/" + test_toml
         result = None
 
@@ -86,9 +83,6 @@ class TestGameLauncher(unittest.TestCase):
             return_value=argparse.Namespace(config=toml_path),
         ):
             result = gamelauncher.parse_args()
-            self.assertIsInstance(result, Namespace)
-            self.assertIsNone(result.config, "--config is not None")
-            self.assertIsNone(result.game, "--game is not None")
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -98,10 +92,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_set_env_toml_nodir(self):
         """Test set_env_toml if certain key/value are not a dir
 
-    def test_parse_args_config(self):
         An IsDirectoryError should be raised if proton or prefix are not directories
         """
-        Test parse_args --config
         env = {
             "WINEPREFIX": "",
             "GAMEID": "",
@@ -193,11 +185,9 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(config=test_file),
             return_value=argparse.Namespace(config=toml_path),
         ):
             result = gamelauncher.parse_args()
-            self.assertIsInstance(result, Namespace)
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -205,7 +195,6 @@ class TestGameLauncher(unittest.TestCase):
             with self.assertRaisesRegex(KeyError, "ulwgl"):
                 gamelauncher.set_env_toml(env, result)
 
-    def test_parse_args_game(self):
     def test_set_env_toml(self):
         """Test set_env_toml"""
         env = {
@@ -235,7 +224,6 @@ class TestGameLauncher(unittest.TestCase):
         game_id = "{test_file}"
         launch_opts = ["{test_file}", "{test_file}"]
         """
-        Test parse_args --game
         toml_path = test_file + "/" + test_toml
         result = None
         result_set_env = None
@@ -359,9 +347,6 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher, "parse_args", return_value=argparse.Namespace(game=test_file)
         ):
-            result = gamelauncher.parse_args()
-            self.assertIsInstance(result, Namespace)
-            self.assertIsInstance(result, Namespace)
             os.environ["WINEPREFIX"] = test_file
             os.environ["PROTONPATH"] = test_file
             os.environ["GAMEID"] = test_file
@@ -486,6 +471,40 @@ class TestGameLauncher(unittest.TestCase):
             os.path.isfile(test_file + "/tracked_files"),
             "Expected tracked_files to be a file",
         )
+
+    def test_parse_args(self):
+        """Test parse_args with no options"""
+        with self.assertRaises(SystemExit):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertIsNone(result.config, "Expected --config to be None")
+            self.assertIsNone(result.game, "Expected --game to be None")
+
+    def test_parse_args_config(self):
+        """Test parse_args --config"""
+        test_file = "./tmp.WMYQiPb9A"
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=test_file),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+
+    def test_parse_args_game(self):
+        """Test parse_args --game"""
+        test_file = "./tmp.WMYQiPb9A"
+        with patch.object(
+            gamelauncher, "parse_args", return_value=argparse.Namespace(game=test_file)
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
 
         env = {
             "WINEPREFIX": "",
