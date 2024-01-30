@@ -21,7 +21,7 @@ class TestGameLauncher(unittest.TestCase):
         self.env = {
             "WINEPREFIX": "",
             "GAMEID": "",
-            "CRASH_REPORT": "/tmp/ULWGL_crashreports",
+            "PROTON_CRASH_REPORT_DIR": "/tmp/ULWGL_crashreports",
             "PROTONPATH": "",
             "STEAM_COMPAT_APP_ID": "",
             "STEAM_COMPAT_TOOL_PATHS": "",

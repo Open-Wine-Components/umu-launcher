@@ -8,7 +8,7 @@ from pathlib import Path
 import tomllib
 from tomllib import TOMLDecodeError
 from typing import Dict, Any, Union
-# TODO: Change CRASH_REPORT to PROTON_CRASH_REPORT_DIR, unset environment variables on init, add checks for EXE is a file and LAUNCHARGS is a string
+# TODO: add checks for EXE is a file and LAUNCHARGS is a string
 
 
 def parse_args() -> Namespace:
@@ -132,7 +132,7 @@ def main() -> None:
     env: Dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
-        "CRASH_REPORT": "/tmp/ULWGL_crashreports",
+        "PROTON_CRASH_REPORT_DIR": "/tmp/ULWGL_crashreports",
         "PROTONPATH": "",
         "STEAM_COMPAT_APP_ID": "",
         "STEAM_COMPAT_TOOL_PATHS": "",
