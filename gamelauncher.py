@@ -15,13 +15,13 @@ def parse_args() -> Namespace:
     parser: ArgumentParser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog="example usage:\n  gamelauncher.py --config example.toml"
-        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --game=''",
+        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --exe=''",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--config", help="path to TOML file")
     group.add_argument(
-        "--game",
+        "--exe",
         help="path to game executable\nNOTE: when passing options, value must be wrapped in quotes",
     )
 
@@ -67,7 +67,7 @@ def set_env(env: Dict[str, str], args: Namespace) -> Union[None, ValueError]:
 
     # Sets the environment variables: EXE and LAUNCHARGS
     for arg, val in vars(args).items():
-        if arg == "game":
+        if arg == "exe":
             # Handle game options
             # If a game's executable follows with options, assign the options to its environment variable
             if val.find(" ") != -1:
@@ -87,7 +87,7 @@ def set_env_toml(
           prefix -> $WINEPREFIX
           game_id -> $GAMEID
           launch_opts -> $LAUNCHARGS
-          game -> $EXE
+          exe -> $EXE
     At the moment we expect the tables: 'ulwgl'
     """
     toml: Dict[str, Any] = None
@@ -123,7 +123,7 @@ def set_env_toml(
                     env["LAUNCHARGS"] = launch_options
                 else:
                     env["LAUNCHARGS"] = env["LAUNCHARGS"] + " " + launch_options
-        elif key == "game":
+        elif key == "exe":
             # NOTE: It's possible that game options could be appended at the end
             env["EXE"] = val
 

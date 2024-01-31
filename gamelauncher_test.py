@@ -189,11 +189,11 @@ class TestGameLauncher(unittest.TestCase):
         result_args = None
         result_check_env = None
         result = None
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --game=...
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(game="foo -bar -baz"),
+            return_value=argparse.Namespace(exe="foo -bar -baz"),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -242,11 +242,11 @@ class TestGameLauncher(unittest.TestCase):
         result_args = None
         result_check_env = None
         result = None
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --game=...
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(game=self.test_file),
+            return_value=argparse.Namespace(exe=self.test_file),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -281,12 +281,12 @@ class TestGameLauncher(unittest.TestCase):
     def test_set_env(self):
         """Test set_env
 
-        Ensure no failures when passing --game and setting $WINEPREFIX and $PROTONPATH
+        Ensure no failures when passing --exe and setting $WINEPREFIX and $PROTONPATH
         """
         result_args = None
         result_check_env = None
         result = None
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --game=...
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
         with patch.object(
             gamelauncher,
             "parse_args",
@@ -366,7 +366,7 @@ class TestGameLauncher(unittest.TestCase):
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertIsNone(result.config, "Expected --config to be None")
-            self.assertIsNone(result.game, "Expected --game to be None")
+            self.assertIsNone(result.exe, "Expected --exe to be None")
 
     def test_parse_args_config(self):
         """Test parse_args --config"""
@@ -381,11 +381,11 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_parse_args_game(self):
-        """Test parse_args --game"""
+        """Test parse_args --exe"""
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(game=self.test_file),
+            return_value=argparse.Namespace(exe=self.test_file),
         ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(
