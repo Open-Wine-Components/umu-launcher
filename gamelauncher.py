@@ -43,7 +43,7 @@ def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
 
 def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
     """Before executing a game check for environment variables"""
-    if not ("WINEPREFIX" in os.environ or os.path.isdir(os.environ["WINEPREFIX"])):
+    if not ("WINEPREFIX" in os.environ or Path(os.environ["WINEPREFIX"]).is_dir()):
         raise ValueError("Environment variable not set or not a directory: WINEPREFIX")
     path = os.environ["WINEPREFIX"]
     env["WINEPREFIX"] = path
@@ -97,8 +97,9 @@ def set_env_toml(
 
     # TODO: verify if launch_opts is not a file or dir and game is a file
     # Check if 'prefix' and 'proton' values are directories and exist
+
     if not (
-        os.path.isdir(toml["ulwgl"]["prefix"]) or os.path.isdir(toml["ulwgl"]["proton"])
+        Path(toml["ulwgl"]["prefix"]).is_dir() or Path(toml["ulwgl"]["proton"]).is_dir()
     ):
         raise NotADirectoryError(
             "Value for 'prefix' or 'proton' in TOML is not a directory."
