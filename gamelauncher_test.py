@@ -48,6 +48,41 @@ class TestGameLauncher(unittest.TestCase):
         if os.path.exists(self.test_file):
             rmtree(self.test_file)
 
+    def test_set_env_toml_empty(self):
+        """Test set_env_toml for empty values not required by parse_args
+
+        A ValueError should be thrown if 'game_id' is empty
+        """
+        test_toml = "foo.toml"
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{self.test_file}"
+        proton = "{self.test_file}"
+        game_id = ""
+        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        exe = "{self.test_file}"
+        """
+        toml_path = self.test_file + "/" + test_toml
+        result = None
+
+        Path(toml_path).touch()
+
+        with open(toml_path, "w") as file:
+            file.write(toml_str)
+
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            with self.assertRaisesRegex(ValueError, "game_id"):
+                gamelauncher.set_env_toml(self.env, result)
+
     def test_set_env_toml_err(self):
         """Test set_env_toml for valid TOML
 

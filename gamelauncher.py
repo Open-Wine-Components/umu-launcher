@@ -108,7 +108,7 @@ def set_env_toml(
     # Set the values read from TOML to environment variables
     for key, val in toml["ulwgl"].items():
         # Handle cases for empty values
-        if not val:
+        if not val and isinstance(val, str):
             raise ValueError("Value is empty for key in TOML: " + key)
         if key == "prefix":
             env["WINEPREFIX"] = val
