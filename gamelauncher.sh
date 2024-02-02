@@ -15,14 +15,14 @@ if [[ $WINEPREFIX ]]; then
      export PROTON_DLL_COPY="*"
    fi
    if [[ ! -d "$WINEPREFIX"/pfx ]]; then
-     ln -s "$WINEPREFIX" "$WINEPREFIX"/pfx
+     ln -s "$WINEPREFIX" "$WINEPREFIX"/pfx &> /dev/null
    fi
    if [[ ! -f "$WINEPREFIX"/tracked_files ]]; then
      touch "$WINEPREFIX"/tracked_files
    fi
    if [[ ! -f "$WINEPREFIX/dosdevices/" ]]; then
      mkdir -p "$WINEPREFIX"/dosdevices
-     ln -s "../drive_c" "$WINEPREFIX/dosdevices/c:"
+     ln -s "../drive_c" "$WINEPREFIX/dosdevices/c:" &> /dev/null
    fi
 fi
 export PROTONPATH="$PROTONPATH"
