@@ -42,8 +42,8 @@ def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
 
 
 def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
-    """Before executing a game check for environment variables"""
-    if not ("WINEPREFIX" in os.environ or Path(os.environ["WINEPREFIX"]).is_dir()):
+    """Before executing a game, check for environment variables"""
+    if "WINEPREFIX" not in os.environ or not Path(os.environ["WINEPREFIX"]).is_dir():
         raise ValueError("Environment variable not set or not a directory: WINEPREFIX")
     path = os.environ["WINEPREFIX"]
     env["WINEPREFIX"] = path
@@ -52,8 +52,8 @@ def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
         raise ValueError("Environment variable not set: GAMEID")
     env["GAMEID"] = os.environ["GAMEID"]
 
-    if "PROTONPATH" not in os.environ:
-        raise ValueError("Environment variable not set: PROTONPATH")
+    if "PROTONPATH" not in os.environ or not Path(os.environ["PROTONPATH"]).is_dir():
+        raise ValueError("Environment variable not set or not a directory: PROTONPATH")
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
 

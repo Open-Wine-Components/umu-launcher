@@ -427,6 +427,36 @@ class TestGameLauncher(unittest.TestCase):
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
 
+    def test_env_proton_dir(self):
+        """Test check_env when PROTONPATH is not a directory
+
+        An ValueError should occur if the value is not a directory
+        """
+        with self.assertRaisesRegex(ValueError, "PROTONPATH"):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["PROTONPATH"] = "./foo"
+            gamelauncher.check_env(self.env)
+            self.assertFalse(
+                Path(os.environ["PROTONPATH"]).is_dir(),
+                "Expected PROTONPATH to not be a directory",
+            )
+
+    def test_env_wine_dir(self):
+        """Test check_env when WINEPREFIX is not a directory
+
+        An ValueError should occur if the value is not a directory
+        """
+        with self.assertRaisesRegex(ValueError, "WINEPREFIX"):
+            os.environ["WINEPREFIX"] = "./foo"
+            os.environ["GAMEID"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            gamelauncher.check_env(self.env)
+            self.assertFalse(
+                Path(os.environ["WINEPREFIX"]).is_dir(),
+                "Expected WINEPREFIX to not be a directory",
+            )
+
     def test_env_vars(self):
         """Test check_env when setting WINEPREFIX, GAMEID and PROTONPATH"""
         result = None
@@ -471,7 +501,7 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_env_vars_none(self):
         """Tests check_env when setting no env vars"""
-        with self.assertRaisesRegex(KeyError, "WINEPREFIX"):
+        with self.assertRaisesRegex(ValueError, "WINEPREFIX"):
             gamelauncher.check_env(self.env)
 
 
