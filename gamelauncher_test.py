@@ -40,7 +40,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_file = "./tmp.WMYQiPb9A"
         # Executable
         self.test_exe = self.test_file + "/" + "foo"
-        os.mkdir(self.test_file)
+        Path(self.test_file).mkdir(exist_ok=True)
         Path(self.test_exe).touch()
 
     def tearDown(self):
@@ -49,7 +49,7 @@ class TestGameLauncher(unittest.TestCase):
             if key in os.environ:
                 os.environ.pop(key)
 
-        if os.path.exists(self.test_file):
+        if Path(self.test_file).exists():
             rmtree(self.test_file)
 
     def test_build_command_nofile(self):
@@ -72,7 +72,7 @@ class TestGameLauncher(unittest.TestCase):
         result_set_env = None
         test_command = []
         Path(toml_path).touch()
-        with open(toml_path, "w") as file:
+        with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
         with patch.object(
             gamelauncher,
@@ -117,7 +117,7 @@ class TestGameLauncher(unittest.TestCase):
         test_command = []
         Path(self.test_file + "/proton").touch()
         Path(toml_path).touch()
-        with open(toml_path, "w") as file:
+        with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
         with patch.object(
             gamelauncher,
@@ -230,7 +230,7 @@ class TestGameLauncher(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with open(toml_path, "w") as file:
+        with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -265,7 +265,7 @@ class TestGameLauncher(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with open(toml_path, "w") as file:
+        with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -300,7 +300,7 @@ class TestGameLauncher(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with open(toml_path, "w") as file:
+        with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -334,7 +334,7 @@ class TestGameLauncher(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with open(toml_path, "w") as file:
+        with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -367,7 +367,7 @@ class TestGameLauncher(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with open(toml_path, "w") as file:
+        with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -401,7 +401,7 @@ class TestGameLauncher(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with open(toml_path, "w") as file:
+        with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -434,7 +434,7 @@ class TestGameLauncher(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with open(toml_path, "w") as file:
+        with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -678,8 +678,9 @@ class TestGameLauncher(unittest.TestCase):
         test_file = "./foo"
         with self.assertRaisesRegex(RuntimeError, "Error"):
             gamelauncher._setup_pfx(test_file)
+
             self.assertFalse(
-                os.path.isdir(test_file), "Expected WINEPREFIX to not be a directory"
+                Path(test_file).is_dir(), "Expected WINEPREFIX to not be a directory"
             )
 
     def test_setup_pfx_err(self):
@@ -704,10 +705,10 @@ class TestGameLauncher(unittest.TestCase):
             "Expected None when creating symbolic link to WINE prefix and tracked_files file",
         )
         self.assertTrue(
-            os.path.islink(self.test_file + "/pfx"), "Expected pfx to be a symlink"
+            Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
         )
         self.assertTrue(
-            os.path.isfile(self.test_file + "/tracked_files"),
+            Path(self.test_file + "/tracked_files").is_file(),
             "Expected tracked_files to be a file",
         )
 

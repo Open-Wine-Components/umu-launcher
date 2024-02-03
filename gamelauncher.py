@@ -113,7 +113,7 @@ def set_env_toml(
     """
     toml: Dict[str, Any] = None
 
-    with open(vars(args).get("config"), "rb") as file:
+    with Path(vars(args).get("config")).open(mode="rb") as file:
         toml = tomllib.load(file)
 
     if not (
