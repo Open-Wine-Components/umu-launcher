@@ -9,6 +9,9 @@ import tomllib
 from tomllib import TOMLDecodeError
 from typing import Dict, Any, Union, List
 
+# TODO: Only set the environment variables that are not empty
+import subprocess
+
 
 def parse_args() -> Namespace:
     parser: ArgumentParser = argparse.ArgumentParser(
@@ -229,6 +232,7 @@ def main() -> None:
 
     build_command(env, command)
     print(f"The following command will be executed: {command}")
+    subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
 
 
 if __name__ == "__main__":
