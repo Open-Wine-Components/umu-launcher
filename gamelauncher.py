@@ -13,7 +13,7 @@ from typing import Dict, Any, Union, List
 import subprocess
 
 
-def parse_args() -> Namespace:
+def parse_args() -> Namespace:  # noqa: D103
     parser: ArgumentParser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog="example usage:\n  gamelauncher.py --config example.toml"
@@ -31,7 +31,7 @@ def parse_args() -> Namespace:
 
 
 def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
-    """Create a symlink to the WINE prefix and tracked_files file"""
+    """Create a symlink to the WINE prefix and tracked_files file."""
     try:
         os.symlink(path, path + "/pfx")
     except FileExistsError:
@@ -44,7 +44,7 @@ def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
 
 
 def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
-    """Before executing a game, check for environment variables"""
+    """Before executing a game, check for environment variables."""
     if "WINEPREFIX" not in os.environ or not Path(os.environ["WINEPREFIX"]).is_dir():
         raise ValueError("Environment variable not set or not a directory: WINEPREFIX")
     path = os.environ["WINEPREFIX"]
@@ -63,7 +63,7 @@ def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
 def set_env(
     env: Dict[str, str], args: Namespace
 ) -> Union[None, ValueError, FileNotFoundError]:
-    """Sets various environment variables for the Steam RT
+    """Set various environment variables for the Steam RT.
 
     Expects to be invoked if not reading a TOML file
     """
@@ -101,7 +101,7 @@ def set_env(
 def set_env_toml(
     env: Dict[str, str], args: Namespace
 ) -> Union[None, KeyError, IsADirectoryError, TOMLDecodeError, FileNotFoundError]:
-    """Reads a TOML file then sets the environment variables for the Steam RT
+    """Read a TOML file then sets the environment variables for the Steam RT.
 
     In the TOML file, certain keys map to Steam RT environment variables. For example:
           proton -> $PROTONPATH
@@ -159,7 +159,7 @@ def set_env_toml(
 def build_command(
     env: Dict[str, str], command: List[str]
 ) -> Union[None, FileNotFoundError]:
-    """Build the command to be executed"""
+    """Build the command to be executed."""
     verb: str = "waitforexitandrun"
     # NOTE: We must assume _v2-entry-point (ULWGL) is within the same dir as this launcher
     # Otherwise, an error can be raised
@@ -186,7 +186,7 @@ def build_command(
         )
 
 
-def main() -> None:
+def main() -> None:  # noqa: D103
     env: Dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",

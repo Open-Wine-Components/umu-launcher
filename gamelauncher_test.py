@@ -9,15 +9,14 @@ from tomllib import TOMLDecodeError
 from shutil import rmtree
 
 
-"""Test suite for gamelauncher.py
-
-TODO: test for mutually exclusive options
-"""
-
-
 class TestGameLauncher(unittest.TestCase):
+    """Test suite for gamelauncher.py.
+
+    TODO: test for mutually exclusive options
+    """
+
     def setUp(self):
-        """Create the test directory, exe and environment variables"""
+        """Create the test directory, exe and environment variables."""
         self.env = {
             "WINEPREFIX": "",
             "GAMEID": "",
@@ -44,7 +43,7 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_exe).touch()
 
     def tearDown(self):
-        """Unset environment variables and delete test files after each test"""
+        """Unset environment variables and delete test files after each test."""
         for key, val in self.env.items():
             if key in os.environ:
                 os.environ.pop(key)
@@ -53,7 +52,7 @@ class TestGameLauncher(unittest.TestCase):
             rmtree(self.test_file)
 
     def test_build_command_nofile(self):
-        """Test build_command
+        """Test build_command.
 
         A FileNotFoundError should be raised if $PROTONPATH/proton does not exist
         Just test the TOML case for the coverage
@@ -98,7 +97,7 @@ class TestGameLauncher(unittest.TestCase):
             gamelauncher.build_command(self.env, test_command)
 
     def test_build_command_toml(self):
-        """Test build_command
+        """Test build_command.
 
         After parsing a valid TOML file, be sure we do not raise a FileNotFoundError
         """
@@ -142,7 +141,7 @@ class TestGameLauncher(unittest.TestCase):
         gamelauncher.build_command(self.env, test_command)
 
     def test_build_command(self):
-        """Test build_command
+        """Test build_command.
 
         After parsing valid environment variables set by the user, be sure we do not raise a FileNotFoundError
         """
@@ -212,7 +211,7 @@ class TestGameLauncher(unittest.TestCase):
         gamelauncher.build_command(self.env, test_command)
 
     def test_set_env_toml_opts_nofile(self):
-        """Test set_env_toml for values that are not a file
+        """Test set_env_toml for values that are not a file.
 
         A ValueError should be raised if an exe's arguments is a file
         """
@@ -247,7 +246,7 @@ class TestGameLauncher(unittest.TestCase):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_nofile(self):
-        """Test set_env_toml for values that are not a file
+        """Test set_env_toml for values that are not a file.
 
         A FileNotFoundError should be raised if the 'exe' is not a file
         """
@@ -282,7 +281,7 @@ class TestGameLauncher(unittest.TestCase):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_empty(self):
-        """Test set_env_toml for empty values not required by parse_args
+        """Test set_env_toml for empty values not required by parse_args.
 
         A ValueError should be thrown if 'game_id' is empty
         """
@@ -317,7 +316,7 @@ class TestGameLauncher(unittest.TestCase):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_err(self):
-        """Test set_env_toml for valid TOML
+        """Test set_env_toml for valid TOML.
 
         A TOMLDecodeError should be raised for invalid values
         """
@@ -350,7 +349,7 @@ class TestGameLauncher(unittest.TestCase):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_nodir(self):
-        """Test set_env_toml if certain key/value are not a dir
+        """Test set_env_toml if certain key/value are not a dir.
 
         An IsDirectoryError should be raised if proton or prefix are not directories
         """
@@ -384,7 +383,7 @@ class TestGameLauncher(unittest.TestCase):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_tables(self):
-        """Test set_env_toml for expected tables
+        """Test set_env_toml for expected tables.
 
         A KeyError should be raised if the table 'ulwgl' is absent
         """
@@ -418,7 +417,7 @@ class TestGameLauncher(unittest.TestCase):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml(self):
-        """Test set_env_toml"""
+        """Test set_env_toml."""
         test_toml = "foo.toml"
         toml_str = f"""
         [ulwgl]
@@ -451,7 +450,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertIsNone(result_set_env, "Expected None after parsing TOML")
 
     def test_set_env_exe_nofile(self):
-        """Test set_env
+        """Test set_env.
 
         A FileNotFoundError should be raised if a value passed to --exe is not a file
         """
@@ -492,7 +491,7 @@ class TestGameLauncher(unittest.TestCase):
                 gamelauncher.set_env(self.env, result_args)
 
     def test_set_env_opts_nofile(self):
-        """Test set_env
+        """Test set_env.
 
         A ValueError should be raised if a launch option is found to be a file
         """
@@ -533,9 +532,9 @@ class TestGameLauncher(unittest.TestCase):
                 gamelauncher.set_env(self.env, result_args)
 
     def test_set_env_opts(self):
-        """Test set_env
+        """Test set_env.
 
-        Ensure no failures and verify that EXE and LAUNCHARGS is not empty
+        Ensure no failures and verify that $EXE and $LAUNCHARGS is not empty
         """
         result_args = None
         result_check_env = None
@@ -588,9 +587,9 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_set_env_exe(self):
-        """Test set_env
+        """Test set_env.
 
-        Ensure no failures and verify that EXE and LAUNCHARGS is empty
+        Ensure no failures and verify that $EXE and $LAUNCHARGS is empty
         """
         result_args = None
         result_check_env = None
@@ -632,7 +631,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_set_env(self):
-        """Test set_env
+        """Test set_env.
 
         Ensure no failures when passing --exe and setting $WINEPREFIX and $PROTONPATH
         """
@@ -670,7 +669,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_setup_pfx_runtime_err(self):
-        """Test _setup_pfx for RuntimeError
+        """Test _setup_pfx for RuntimeError.
 
         _setup_pfx expects a $WINEPREFIX as input
         Therefore one case a RuntimeError can occur is when the path to $WINEPREFIX does not exist
@@ -684,9 +683,9 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_setup_pfx_err(self):
-        """Test _setup_pfx for error
+        """Test _setup_pfx for error.
 
-        Ensure no error is raised when the symbolic link to $WINEPREFIX exist
+        Ensure no error is raised when the symbolic link to $WINEPREFIX exist or if tracked_files exists
         """
         result = None
         gamelauncher._setup_pfx(self.test_file)
@@ -697,7 +696,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_setup_pfx(self):
-        """Test _setup_pfx"""
+        """Test _setup_pfx."""
         result = None
         result = gamelauncher._setup_pfx(self.test_file)
         self.assertIsNone(
@@ -713,7 +712,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_parse_args(self):
-        """Test parse_args with no options"""
+        """Test parse_args with no options."""
         with self.assertRaises(SystemExit):
             result = gamelauncher.parse_args()
             self.assertIsInstance(
@@ -723,7 +722,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertIsNone(result.exe, "Expected --exe to be None")
 
     def test_parse_args_config(self):
-        """Test parse_args --config"""
+        """Test parse_args --config."""
         with patch.object(
             gamelauncher,
             "parse_args",
@@ -735,7 +734,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_parse_args_game(self):
-        """Test parse_args --exe"""
+        """Test parse_args --exe."""
         with patch.object(
             gamelauncher,
             "parse_args",
@@ -747,7 +746,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_env_proton_dir(self):
-        """Test check_env when PROTONPATH is not a directory
+        """Test check_env when $PROTONPATH is not a directory.
 
         An ValueError should occur if the value is not a directory
         """
@@ -762,7 +761,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_env_wine_dir(self):
-        """Test check_env when WINEPREFIX is not a directory
+        """Test check_env when $WINEPREFIX is not a directory.
 
         An ValueError should occur if the value is not a directory
         """
@@ -777,7 +776,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_env_vars(self):
-        """Test check_env when setting WINEPREFIX, GAMEID and PROTONPATH"""
+        """Test check_env when setting $WINEPREFIX, $GAMEID and $PROTONPATH."""
         result = None
         os.environ["WINEPREFIX"] = self.test_file
         os.environ["GAMEID"] = self.test_file
@@ -797,7 +796,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_env_vars_proton(self):
-        """Test check_env when setting only WINEPREFIX and GAMEID"""
+        """Test check_env when setting only $WINEPREFIX and $GAMEID."""
         with self.assertRaisesRegex(ValueError, "PROTONPATH"):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
@@ -810,7 +809,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_env_vars_wine(self):
-        """Test check_env when setting only WINEPREFIX"""
+        """Test check_env when setting only $WINEPREFIX."""
         with self.assertRaisesRegex(ValueError, "GAMEID"):
             os.environ["WINEPREFIX"] = self.test_file
             gamelauncher.check_env(self.env)
@@ -819,7 +818,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_env_vars_none(self):
-        """Tests check_env when setting no env vars"""
+        """Tests check_env when setting no env vars."""
         with self.assertRaisesRegex(ValueError, "WINEPREFIX"):
             gamelauncher.check_env(self.env)
 
