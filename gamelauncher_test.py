@@ -17,7 +17,7 @@ TODO: test for mutually exclusive options
 
 class TestGameLauncher(unittest.TestCase):
     def setUp(self):
-        """Create the test directory and environment variables"""
+        """Create the test directory, exe and environment variables"""
         self.env = {
             "WINEPREFIX": "",
             "GAMEID": "",
@@ -36,8 +36,12 @@ class TestGameLauncher(unittest.TestCase):
             "LAUNCHARGS": "",
             "SteamAppId": "",
         }
+        # Test directory
         self.test_file = "./tmp.WMYQiPb9A"
+        # Executable
+        self.test_exe = self.test_file + "/" + "foo"
         os.mkdir(self.test_file)
+        Path(self.test_exe).touch()
 
     def tearDown(self):
         """Unset environment variables and delete test files after each test"""
@@ -47,6 +51,77 @@ class TestGameLauncher(unittest.TestCase):
 
         if os.path.exists(self.test_file):
             rmtree(self.test_file)
+
+
+    def test_set_env_toml_opts_nofile(self):
+        """Test set_env_toml for values that are not a file
+
+        A ValueError should be raised if an exe's arguments is a file
+        """
+        test_toml = "foo.toml"
+        toml_path = self.test_file + "/" + test_toml
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{self.test_file}"
+        proton = "{self.test_file}"
+        game_id = "{self.test_file}"
+        launch_opts = ["{toml_path}"]
+        exe = "{self.test_exe}"
+        """
+        result = None
+
+        Path(toml_path).touch()
+
+        with open(toml_path, "w") as file:
+            file.write(toml_str)
+
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            with self.assertRaisesRegex(ValueError, "launch arguments"):
+                gamelauncher.set_env_toml(self.env, result)
+
+    def test_set_env_toml_nofile(self):
+        """Test set_env_toml for values that are not a file
+
+        A FileNotFoundError should be raised if the 'exe' is not a file
+        """
+        test_toml = "foo.toml"
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{self.test_file}"
+        proton = "{self.test_file}"
+        game_id = "{self.test_file}"
+        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        exe = "./bar"
+        """
+        toml_path = self.test_file + "/" + test_toml
+        result = None
+
+        Path(toml_path).touch()
+
+        with open(toml_path, "w") as file:
+            file.write(toml_str)
+
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            with self.assertRaisesRegex(FileNotFoundError, "exe"):
+                gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_empty(self):
         """Test set_env_toml for empty values not required by parse_args
@@ -193,6 +268,7 @@ class TestGameLauncher(unittest.TestCase):
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
         launch_opts = ["{self.test_file}", "{self.test_file}"]
+        exe = "{self.test_exe}"
         """
         toml_path = self.test_file + "/" + test_toml
         result = None
@@ -216,6 +292,88 @@ class TestGameLauncher(unittest.TestCase):
             result_set_env = gamelauncher.set_env_toml(self.env, result)
             self.assertIsNone(result_set_env, "Expected None after parsing TOML")
 
+    def test_set_env_exe_nofile(self):
+        """Test set_env
+
+        A FileNotFoundError should be raised if a value passed to --exe is not a file
+        """
+        result_args = None
+        result_check_env = None
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
+        # We assume everything after the first space are launch options
+        # Game file names are not expected to have spaces
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(
+                exe=self.test_file + "/bar" + " " + self.test_file + "/foo"
+            ),
+        ):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            result_args = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result_args, Namespace, "parse_args did not return a Namespace"
+            )
+            result_check_env = gamelauncher.check_env(self.env)
+            self.assertEqual(
+                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(
+                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
+            )
+            self.assertEqual(
+                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
+            )
+            self.assertIsNone(
+                result_check_env,
+                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
+            )
+            with self.assertRaisesRegex(FileNotFoundError, "exe"):
+                gamelauncher.set_env(self.env, result_args)
+
+    def test_set_env_opts_nofile(self):
+        """Test set_env
+
+        A ValueError should be raised if a launch option is found to be a file
+        """
+        result_args = None
+        result_check_env = None
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
+        # We assume everything after the first space are launch options
+        # Game file names are not expected to have spaces
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(
+                exe=self.test_file + "/foo" + " " + self.test_file + "/foo"
+            ),
+        ):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            result_args = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result_args, Namespace, "parse_args did not return a Namespace"
+            )
+            result_check_env = gamelauncher.check_env(self.env)
+            self.assertEqual(
+                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(
+                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
+            )
+            self.assertEqual(
+                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
+            )
+            self.assertIsNone(
+                result_check_env,
+                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
+            )
+            with self.assertRaisesRegex(ValueError, "launch arguments"):
+                gamelauncher.set_env(self.env, result_args)
+
     def test_set_env_opts(self):
         """Test set_env
 
@@ -228,7 +386,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(exe="foo -bar -baz"),
+            return_value=argparse.Namespace(exe=self.test_file + "/foo -bar -baz"),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -266,7 +424,9 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected LAUNCHARGS to not have extra spaces",
             )
             self.assertEqual(
-                self.env.get("EXE"), "foo", "Expected EXE to not have extra spaces"
+                self.env.get("EXE"),
+                self.test_exe,
+                "Expected EXE to not have extra spaces",
             )
 
     def test_set_env_exe(self):
@@ -281,7 +441,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(exe=self.test_file),
+            return_value=argparse.Namespace(exe=self.test_exe),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file

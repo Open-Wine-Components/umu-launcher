@@ -8,7 +8,6 @@ from pathlib import Path
 import tomllib
 from tomllib import TOMLDecodeError
 from typing import Dict, Any, Union
-# TODO: add checks for EXE is a file and LAUNCHARGS is a string
 
 
 def parse_args() -> Namespace:
@@ -58,7 +57,9 @@ def check_env(env: Dict[str, str]) -> Union[None, ValueError]:
     env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
 
 
-def set_env(env: Dict[str, str], args: Namespace) -> Union[None, ValueError]:
+def set_env(
+    env: Dict[str, str], args: Namespace
+) -> Union[None, ValueError, FileNotFoundError]:
     """Sets various environment variables for the Steam RT
 
     Expects to be invoked if not reading a TOML file
@@ -68,18 +69,34 @@ def set_env(env: Dict[str, str], args: Namespace) -> Union[None, ValueError]:
     # Sets the environment variables: EXE and LAUNCHARGS
     for arg, val in vars(args).items():
         if arg == "exe":
-            # Handle game options
-            # If a game's executable follows with options, assign the options to its environment variable
+            launch_args: str = ""
+            exe: str = val
+
+            # Seperate a game's launch arguments from its exe
             if val.find(" ") != -1:
-                env["LAUNCHARGS"] = val[val.find(" ") + 1 :]
-                env["EXE"] = val[: val.find(" ")]
+                launch_args = val[val.find(" ") + 1 :]
+                exe = val[: val.find(" ")]
+
+            if not Path(exe).is_file():
+                raise FileNotFoundError(f"Value for 'exe' is not a file: {exe}")
+
+            if launch_args:
+                for launch_arg in launch_args.split(" "):
+                    if Path(launch_arg).is_file():
+                        # There's no good reason why a launch argument should be an executable
+                        raise ValueError(
+                            f"Value for launch arguments should not be a file: {launch_arg}"
+                        )
+
+                env["LAUNCHARGS"] = launch_args
+                env["EXE"] = exe
             else:
-                env["EXE"] = val
+                env["EXE"] = exe
 
 
 def set_env_toml(
     env: Dict[str, str], args: Namespace
-) -> Union[None, KeyError, IsADirectoryError, TOMLDecodeError]:
+) -> Union[None, KeyError, IsADirectoryError, TOMLDecodeError, FileNotFoundError]:
     """Reads a TOML file then sets the environment variables for the Steam RT
 
     In the TOML file, certain keys map to Steam RT environment variables. For example:
@@ -95,9 +112,6 @@ def set_env_toml(
     with open(vars(args).get("config"), "rb") as file:
         toml = tomllib.load(file)
 
-    # TODO: verify if launch_opts is not a file or dir and game is a file
-    # Check if 'prefix' and 'proton' values are directories and exist
-
     if not (
         Path(toml["ulwgl"]["prefix"]).is_dir() or Path(toml["ulwgl"]["proton"]).is_dir()
     ):
@@ -109,7 +123,7 @@ def set_env_toml(
     for key, val in toml["ulwgl"].items():
         # Handle cases for empty values
         if not val and isinstance(val, str):
-            raise ValueError("Value is empty for key in TOML: " + key)
+            raise ValueError(f"Value is empty for key in TOML: {key}")
         if key == "prefix":
             env["WINEPREFIX"] = val
             _setup_pfx(val)
@@ -120,11 +134,21 @@ def set_env_toml(
             env["STEAM_COMPAT_INSTALL_PATH"] = val
         elif key == "launch_opts":
             for launch_options in val:
+                if Path(launch_options).is_file():
+                    # There's no good reason why a launch argument should be an executable
+                    raise ValueError(
+                        f"Value for launch arguments should not be a file: {launch_options}"
+                    )
+
                 if env["LAUNCHARGS"] == "":
                     env["LAUNCHARGS"] = launch_options
                 else:
                     env["LAUNCHARGS"] = env["LAUNCHARGS"] + " " + launch_options
         elif key == "exe":
+            # Raise an error for executables that do not exist
+            if not Path(val).is_file():
+                raise FileNotFoundError("Value for key 'exe' in TOML is not a file.")
+
             # NOTE: It's possible that game options could be appended at the end
             env["EXE"] = val
 
