@@ -64,7 +64,7 @@ class TestGameLauncher(unittest.TestCase):
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
-        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        launch_args = ["{self.test_file}", "{self.test_file}"]
         exe = "{self.test_exe}"
         """
         toml_path = self.test_file + "/" + test_toml
@@ -108,7 +108,7 @@ class TestGameLauncher(unittest.TestCase):
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
-        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        launch_args = ["{self.test_file}", "{self.test_file}"]
         exe = "{self.test_exe}"
         """
         toml_path = self.test_file + "/" + test_toml
@@ -223,7 +223,7 @@ class TestGameLauncher(unittest.TestCase):
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
-        launch_opts = ["{toml_path}"]
+        launch_args = ["{toml_path}"]
         exe = "{self.test_exe}"
         """
         result = None
@@ -257,7 +257,7 @@ class TestGameLauncher(unittest.TestCase):
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
-        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        launch_args = ["{self.test_file}", "{self.test_file}"]
         exe = "./bar"
         """
         toml_path = self.test_file + "/" + test_toml
@@ -292,7 +292,7 @@ class TestGameLauncher(unittest.TestCase):
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = ""
-        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        launch_args = ["{self.test_file}", "{self.test_file}"]
         exe = "{self.test_file}"
         """
         toml_path = self.test_file + "/" + test_toml
@@ -327,7 +327,7 @@ class TestGameLauncher(unittest.TestCase):
         prefix = [[
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
-        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        launch_args = ["{self.test_file}", "{self.test_file}"]
         """
         toml_path = self.test_file + "/" + test_toml
         result = None
@@ -360,7 +360,7 @@ class TestGameLauncher(unittest.TestCase):
         prefix = "foo"
         proton = "foo"
         game_id = "{self.test_file}"
-        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        launch_args = ["{self.test_file}", "{self.test_file}"]
         """
         toml_path = self.test_file + "/" + test_toml
         result = None
@@ -394,7 +394,7 @@ class TestGameLauncher(unittest.TestCase):
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
-        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        launch_args = ["{self.test_file}", "{self.test_file}"]
         """
         toml_path = self.test_file + "/" + test_toml
         result = None
@@ -425,7 +425,7 @@ class TestGameLauncher(unittest.TestCase):
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
-        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        launch_args = ["{self.test_file}", "{self.test_file}"]
         exe = "{self.test_exe}"
         """
         toml_path = self.test_file + "/" + test_toml

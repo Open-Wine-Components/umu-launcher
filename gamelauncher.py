@@ -107,7 +107,7 @@ def set_env_toml(
           proton -> $PROTONPATH
           prefix -> $WINEPREFIX
           game_id -> $GAMEID
-          launch_opts -> $LAUNCHARGS
+          launch_args -> $LAUNCHARGS
           exe -> $EXE
     At the moment we expect the tables: 'ulwgl'
     """
@@ -137,9 +137,7 @@ def set_env_toml(
         elif key == "proton":
             env["PROTONPATH"] = val
             env["STEAM_COMPAT_INSTALL_PATH"] = val
-        elif key == "launch_opts":
-            for launch_options in val:
-                if Path(launch_options).is_file():
+        elif key == "launch_args":
                     # There's no good reason why a launch argument should be an executable
                     raise ValueError(
                         f"Value for launch arguments should not be a file: {launch_options}"
