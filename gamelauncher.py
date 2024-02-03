@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 import tomllib
 from tomllib import TOMLDecodeError
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, List
 
 
 def parse_args() -> Namespace:
@@ -153,6 +153,36 @@ def set_env_toml(
             env["EXE"] = val
 
 
+def build_command(
+    env: Dict[str, str], command: List[str]
+) -> Union[None, FileNotFoundError]:
+    """Build the command to be executed"""
+    verb: str = "waitforexitandrun"
+    # NOTE: We must assume _v2-entry-point (ULWGL) is within the same dir as this launcher
+    # Otherwise, an error can be raised
+    entry_point: str = Path(Path(__file__).cwd().as_posix() + "/ULWGL").as_posix()
+
+    if not Path(env.get("PROTONPATH") + "/proton").is_file():
+        raise FileNotFoundError(
+            "The following file was not found in PROTONPATH: proton"
+        )
+
+    command.extend([entry_point, "--verb", verb, "--"])
+    if env.get("LAUNCHARGS"):
+        command.extend(
+            [
+                Path(env.get("PROTONPATH") + "/proton").as_posix(),
+                verb,
+                env.get("EXE"),
+                env.get("LAUNCHARGS"),
+            ]
+        )
+    else:
+        command.extend(
+            [Path(env.get("PROTONPATH") + "/proton").as_posix(), verb, env.get("EXE")]
+        )
+
+
 def main() -> None:
     env: Dict[str, str] = {
         "WINEPREFIX": "",
@@ -172,6 +202,7 @@ def main() -> None:
         "LAUNCHARGS": "",
         "SteamAppId": "",
     }
+    command: List[str] = []
 
     args: Namespace = parse_args()
 
@@ -191,9 +222,13 @@ def main() -> None:
     env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
 
     # Set all environment variable
+    # NOTE: `env` after this block should be read only
     for key, val in env.items():
         print(f"Setting environment variable: {key}={val}")
         os.environ[key] = val
+
+    build_command(env, command)
+    print(f"The following command will be executed: {command}")
 
 
 if __name__ == "__main__":

@@ -52,6 +52,164 @@ class TestGameLauncher(unittest.TestCase):
         if os.path.exists(self.test_file):
             rmtree(self.test_file)
 
+    def test_build_command_nofile(self):
+        """Test build_command
+
+        A FileNotFoundError should be raised if $PROTONPATH/proton does not exist
+        Just test the TOML case for the coverage
+        """
+        test_toml = "foo.toml"
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{self.test_file}"
+        proton = "{self.test_file}"
+        game_id = "{self.test_file}"
+        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        exe = "{self.test_exe}"
+        """
+        toml_path = self.test_file + "/" + test_toml
+        result = None
+        result_set_env = None
+        test_command = []
+        Path(toml_path).touch()
+        with open(toml_path, "w") as file:
+            file.write(toml_str)
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            result_set_env = gamelauncher.set_env_toml(self.env, result)
+            self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
+        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
+        self.env["STEAM_COMPAT_SHADER_PATH"] = (
+            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
+        )
+        for key, val in self.env.items():
+            os.environ[key] = val
+        with self.assertRaisesRegex(FileNotFoundError, "proton"):
+            gamelauncher.build_command(self.env, test_command)
+
+    def test_build_command_toml(self):
+        """Test build_command
+
+        After parsing a valid TOML file, be sure we do not raise a FileNotFoundError
+        """
+        test_toml = "foo.toml"
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{self.test_file}"
+        proton = "{self.test_file}"
+        game_id = "{self.test_file}"
+        launch_opts = ["{self.test_file}", "{self.test_file}"]
+        exe = "{self.test_exe}"
+        """
+        toml_path = self.test_file + "/" + test_toml
+        result = None
+        result_set_env = None
+        test_command = []
+        Path(self.test_file + "/proton").touch()
+        Path(toml_path).touch()
+        with open(toml_path, "w") as file:
+            file.write(toml_str)
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            result_set_env = gamelauncher.set_env_toml(self.env, result)
+            self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
+        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
+        self.env["STEAM_COMPAT_SHADER_PATH"] = (
+            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
+        )
+        for key, val in self.env.items():
+            os.environ[key] = val
+        gamelauncher.build_command(self.env, test_command)
+
+    def test_build_command(self):
+        """Test build_command
+
+        After parsing valid environment variables set by the user, be sure we do not raise a FileNotFoundError
+        """
+        result_args = None
+        result_check_env = None
+        result = None
+        test_command = []
+        # Mock the /proton file
+        Path(self.test_file + "/proton").touch()
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(exe=self.test_file + "/foo -bar -baz"),
+        ):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            result_args = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result_args, Namespace, "parse_args did not return a Namespace"
+            )
+            result_check_env = gamelauncher.check_env(self.env)
+            self.assertEqual(
+                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(
+                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
+            )
+            self.assertEqual(
+                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
+            )
+            self.assertIsNone(
+                result_check_env,
+                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
+            )
+            result = gamelauncher.set_env(self.env, result_args)
+            self.assertIsNone(
+                result, "Expected None when setting environment variables"
+            )
+            self.assertTrue(self.env.get("EXE"), "Expected EXE to not be empty")
+            self.assertTrue(
+                self.env.get("LAUNCHARGS"), "Expected LAUNCHARGS to not be empty"
+            )
+            # Test for expected LAUNCHARGS and EXE
+            self.assertEqual(
+                self.env.get("LAUNCHARGS"),
+                "-bar -baz",
+                "Expected LAUNCHARGS to not have extra spaces",
+            )
+            self.assertEqual(
+                self.env.get("EXE"),
+                self.test_exe,
+                "Expected EXE to not have extra spaces",
+            )
+
+        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
+        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
+        self.env["STEAM_COMPAT_SHADER_PATH"] = (
+            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
+        )
+
+        for key, val in self.env.items():
+            os.environ[key] = val
+
+        gamelauncher.build_command(self.env, test_command)
 
     def test_set_env_toml_opts_nofile(self):
         """Test set_env_toml for values that are not a file
