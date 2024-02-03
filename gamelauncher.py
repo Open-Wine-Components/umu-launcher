@@ -138,15 +138,16 @@ def set_env_toml(
             env["PROTONPATH"] = val
             env["STEAM_COMPAT_INSTALL_PATH"] = val
         elif key == "launch_args":
+            for arg in val:
+                if Path(arg).is_file():
                     # There's no good reason why a launch argument should be an executable
                     raise ValueError(
-                        f"Value for launch arguments should not be a file: {launch_options}"
+                        f"Value for launch arguments should not be a file: {arg}"
                     )
-
                 if env["LAUNCHARGS"] == "":
-                    env["LAUNCHARGS"] = launch_options
+                    env["LAUNCHARGS"] = arg
                 else:
-                    env["LAUNCHARGS"] = env["LAUNCHARGS"] + " " + launch_options
+                    env["LAUNCHARGS"] = env["LAUNCHARGS"] + " " + arg
         elif key == "exe":
             # Raise an error for executables that do not exist
             if not Path(val).is_file():
