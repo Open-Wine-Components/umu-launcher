@@ -70,6 +70,7 @@ def set_env(
     _setup_pfx(env["WINEPREFIX"])
 
     # Sets the environment variables: EXE and LAUNCHARGS
+    # If necessary, raise an error on invalid inputs
     for arg, val in vars(args).items():
         if arg == "exe":
             launch_args: str = ""
@@ -123,6 +124,7 @@ def set_env_toml(
         )
 
     # Set the values read from TOML to environment variables
+    # If necessary, raise an error on invalid inputs
     for key, val in toml["ulwgl"].items():
         # Handle cases for empty values
         if not val and isinstance(val, str):
