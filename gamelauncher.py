@@ -144,7 +144,7 @@ def set_env_toml(
     toml: Dict[str, Any] = None
     is_create_prefix: bool = False
 
-    with Path(vars(args).get("config")).open(mode="rb") as file:
+    with Path(getattr(args, "config", None)).open(mode="rb") as file:
         toml = tomllib.load(file)
 
     if not (
@@ -254,7 +254,7 @@ def main() -> None:  # noqa: D103
     args: Namespace = parse_args()
 
     try:
-        if vars(args).get("config"):
+        if getattr(args, "config", None):
             set_env_toml(env, args)
         else:
             check_env(env)
@@ -263,8 +263,8 @@ def main() -> None:  # noqa: D103
         print(f"{err}")
         return
 
-    if vars(args).get("verb") and vars(args).get("verb") in verbs:
-        verb = vars(args).get("verb")
+    if getattr(args, "verb", None) and getattr(args, "verb", None) in verbs:
+        verb = getattr(args, "verb", None)
 
     env["STEAM_COMPAT_APP_ID"] = env["GAMEID"]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
