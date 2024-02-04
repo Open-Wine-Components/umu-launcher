@@ -34,12 +34,12 @@ def parse_args() -> Namespace:  # noqa: D103
     return parser.parse_args(sys.argv[1:])
 
 
-def _setup_pfx(path: str) -> Union[None, FileExistsError, RuntimeError]:
+def _setup_pfx(path: str) -> Union[None, RuntimeError]:
     """Create a symlink to the WINE prefix and tracked_files file."""
     try:
-        os.symlink(path, path + "/pfx")
+        Path(path + "/pfx").symlink_to(path)
     except FileExistsError:
-        print(f"Symbolic link already exists at {path}/pfx")
+        pass
     except Exception:
         raise RuntimeError(
             "Error occurred when creating symbolic link at " + path + "/pfx"
