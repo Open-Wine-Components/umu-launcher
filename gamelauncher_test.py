@@ -772,7 +772,13 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_parse_args(self):
-        """Test parse_args with no options."""
+        """Test parse_args with no options.
+
+        There's a requirement to create an empty prefix
+        A SystemExit should be raised if neither --config and --exe are passed and --empty is 0
+        Example case:
+        ./gamelauncher.py
+        """
         with self.assertRaises(SystemExit):
             result = gamelauncher.parse_args()
             self.assertIsInstance(

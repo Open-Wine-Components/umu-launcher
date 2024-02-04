@@ -14,14 +14,17 @@ import gamelauncher_util
 import subprocess
 
 
-def parse_args() -> Namespace:  # noqa: D103
+def parse_args() -> Union[Namespace, SystemExit]:  # noqa: D103
     parser: ArgumentParser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog="example usage:\n  gamelauncher.py --config example.toml"
-        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --exe=''",
+        + "\n  gamelauncher.py --config example.toml --empty 1"
+        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --exe=''"
+        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --empty 1",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=True)
+    args: Namespace = None
+    group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=False)
     group.add_argument("--config", help="path to TOML file")
     group.add_argument(
         "--exe",
@@ -31,8 +34,26 @@ def parse_args() -> Namespace:  # noqa: D103
         "--verb",
         help="a verb to pass to Proton (default: waitforexitandrun)",
     )
+    parser.add_argument(
+        "--empty",
+        help="create an empty Proton prefix (default: 0)\nNOTE: accepts a non-zero value to create an empty prefix",
+        default=0,
+        type=int,
+    )
 
-    return parser.parse_args(sys.argv[1:])
+    args = parser.parse_args(sys.argv[1:])
+    # Raise a SystemExit in these cases:
+    # ./gamelauncher.py
+    if (
+        getattr(args, "config", None)
+        or getattr(args, "exe", None) is None
+        and getattr(args, "empty", None) != 0
+    ):
+        return args
+    parser.print_help()
+    raise SystemExit(
+        "Error: a value for --empty is required for creating empty Proton prefixes"
+    )
 
 
 def _setup_pfx(path: str) -> Union[None, RuntimeError]:
@@ -73,11 +94,15 @@ def set_env(
     Expects to be invoked if not reading a TOML file
     """
     _setup_pfx(env["WINEPREFIX"])
+    is_create_prefix: bool = False
+
+    if getattr(args, "empty", None):
+        is_create_prefix = True
 
     # Sets the environment variables: EXE and LAUNCHARGS
     # If necessary, raise an error on invalid inputs
     for arg, val in vars(args).items():
-        if arg == "exe":
+        if arg == "exe" and not is_create_prefix:
             launch_args: str = ""
             exe: str = val
 
@@ -117,6 +142,7 @@ def set_env_toml(
     At the moment we expect the tables: 'ulwgl'
     """
     toml: Dict[str, Any] = None
+    is_create_prefix: bool = False
 
     with Path(vars(args).get("config")).open(mode="rb") as file:
         toml = tomllib.load(file)
@@ -127,6 +153,9 @@ def set_env_toml(
         raise NotADirectoryError(
             "Value for 'prefix' or 'proton' in TOML is not a directory."
         )
+
+    if getattr(args, "empty", None):
+        is_create_prefix = True
 
     # Set the values read from TOML to environment variables
     # If necessary, raise an error on invalid inputs
@@ -142,7 +171,7 @@ def set_env_toml(
         elif key == "proton":
             env["PROTONPATH"] = val
             env["STEAM_COMPAT_INSTALL_PATH"] = val
-        elif key == "launch_args":
+        elif key == "launch_args" and not is_create_prefix:
             for arg in val:
                 if Path(arg).is_file():
                     # There's no good reason why a launch argument should be an executable
@@ -153,7 +182,7 @@ def set_env_toml(
                     env["LAUNCHARGS"] = arg
                 else:
                     env["LAUNCHARGS"] = env["LAUNCHARGS"] + " " + arg
-        elif key == "exe":
+        elif key == "exe" and not is_create_prefix:
             # Raise an error for executables that do not exist
             if not Path(val).is_file():
                 raise FileNotFoundError("Value for key 'exe' in TOML is not a file.")
@@ -256,6 +285,12 @@ def main() -> None:  # noqa: D103
     lib_paths.append(gamelauncher_util.get_steam_compat_lib())
 
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(lib_paths)
+    # Create an empty Proton prefix when asked
+    if getattr(args, "empty", None):
+        env["EXE"] = ""
+        env["LAUNCHARGS"] = ""
+        env["STEAM_COMPAT_INSTALL_PATH"] = ""
+        verb = "waitforexitandrun"
 
     # Set all environment variable
     # NOTE: `env` after this block should be read only
