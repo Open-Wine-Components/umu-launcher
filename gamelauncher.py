@@ -169,15 +169,13 @@ def build_command(
     # NOTE: We must assume _v2-entry-point (ULWGL) is within the same dir as this launcher
     # Otherwise, an error can be raised
     entry_point: str = Path(Path(__file__).cwd().as_posix() + "/ULWGL").as_posix()
-    # Default verb for _v2-entry-point
-    VERB: str = "waitforexitandrun"
 
     if not Path(env.get("PROTONPATH") + "/proton").is_file():
         raise FileNotFoundError(
             "The following file was not found in PROTONPATH: proton"
         )
 
-    command.extend([entry_point, "--verb", VERB, "--"])
+    command.extend([entry_point, "--verb", verb, "--"])
     if env.get("LAUNCHARGS"):
         command.extend(
             [
