@@ -54,6 +54,63 @@ class TestGameLauncher(unittest.TestCase):
         if Path(self.test_file).exists():
             rmtree(self.test_file)
 
+    def test_build_command_verb(self):
+        """Test build_command.
+
+        An error should not be raised if we pass a Proton verb we don't expect
+        By default, we use "waitforexitandrun" for a verb we don't expect
+        Currently we only expect:
+            "waitforexitandrun"
+            "run"
+            "runinprefix"
+            "destroyprefix"
+            "getcompatpath"
+            "getnativepath"
+        """
+        test_toml = "foo.toml"
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{self.test_file}"
+        proton = "{self.test_file}"
+        game_id = "{self.test_file}"
+        launch_args = ["{self.test_file}", "{self.test_file}"]
+        exe = "{self.test_exe}"
+        """
+        toml_path = self.test_file + "/" + test_toml
+        result = None
+        result_set_env = None
+        test_command = []
+        test_verb = "foo"
+        Path(self.test_file + "/proton").touch()
+        Path(toml_path).touch()
+        with Path(toml_path).open(mode="w") as file:
+            file.write(toml_str)
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path, verb=test_verb),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            # Check if a verb was passed
+            self.assertTrue(vars(result).get("verb"), "Expected a value for --verb")
+            result_set_env = gamelauncher.set_env_toml(self.env, result)
+            self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
+        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
+        self.env["STEAM_COMPAT_SHADER_PATH"] = (
+            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
+        )
+        for key, val in self.env.items():
+            os.environ[key] = val
+        gamelauncher.build_command(self.env, test_command, test_verb)
+        # The verb should be 2nd in the array
+        self.assertTrue(test_command[2], self.test_verb)
+
     def test_build_command_nofile(self):
         """Test build_command.
 
