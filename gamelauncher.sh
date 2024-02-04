@@ -3,12 +3,15 @@
 # use for debug only.
 # set -x
 
-if [[ -z $1 ]] || [[ -z $WINEPREFIX ]] || [[ -z $GAMEID ]] || [[ -z $PROTONPATH ]]; then
+if [[ -z $1 ]] || [[ -z $WINEPREFIX ]] || [[ -z $GAMEID ]]; then
  echo 'Usage: WINEPREFIX=<wine-prefix-path> GAMEID=<ulwgl-id> PROTONPATH=<proton-version-path> ./gamelauncher.sh <executable-path> <arguments>'
  echo 'Ex:'
  echo 'WINEPREFIX=$HOME/Games/epic-games-store GAMEID=egs PROTONPATH="$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28" ./gamelauncher.sh "$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe" "-opengl -SkipBuildPatchPrereq"'
  exit 1
 fi
+
+ULWGL_PROTON_VER="ULWGL-Proton-8.0-5"
+
 if [[ $WINEPREFIX ]]; then
    if [[ ! -d "$WINEPREFIX" ]]; then
      mkdir -p "$WINEPREFIX"
@@ -25,7 +28,32 @@ if [[ $WINEPREFIX ]]; then
      ln -s "../drive_c" "$WINEPREFIX/dosdevices/c:" &> /dev/null
    fi
 fi
-export PROTONPATH="$PROTONPATH"
+if [[ -n $PROTONPATH ]]; then
+  if [[ ! -d $PROTONPATH ]]; then
+    echo "ERROR: $PROTONPATH is invalid, aborting!"
+    exit 1
+  fi
+fi
+if [[ -z $PROTONPATH ]]; then
+  if [[ ! -d "$PWD"/ULWGL-Proton-Stable ]]; then
+    wget https://github.com/Open-Wine-Components/ULWGL-Proton/releases/download/$ULWGL_PROTON_VER/$ULWGL_PROTON_VER.tar.gz
+    wget https://github.com/Open-Wine-Components/ULWGL-Proton/releases/download/$ULWGL_PROTON_VER/$ULWGL_PROTON_VER.sha512sum
+    checksum=$(sha512sum $ULWGL_PROTON_VER.tar.gz)
+    if [[ "$checksum" == $(cat $ULWGL_PROTON_VER.sha512sum) ]]; then
+      tar -zxvf $ULWGL_PROTON_VER.tar.gz --one-top-level="$PWD"/ULWGL-Proton-Stable
+      rm $ULWGL_PROTON_VER.tar.gz
+      rm $ULWGL_PROTON_VER.sha512sum
+    else
+      echo "ERROR: $ULWGL_PROTON_VER.tar.gz checksum does not match $ULWGL_PROTON_VER.sha512sum, aborting!"
+      rm $ULWGL_PROTON_VER.tar.gz
+      rm $ULWGL_PROTON_VER.sha512sum
+      exit 1
+    fi
+  fi
+  PROTONPATH="$PWD"/ULWGL-Proton-Stable/$ULWGL_PROTON_VER
+else
+  export PROTONPATH="$PROTONPATH"
+fi
 export ULWGL_ID="$GAMEID"
 export STEAM_COMPAT_APP_ID="0"
 numcheck='^[0-9]+$'
