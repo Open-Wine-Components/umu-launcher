@@ -8,7 +8,7 @@ from pathlib import Path
 import tomllib
 from tomllib import TOMLDecodeError
 from typing import Dict, Any, Union, List, Set
-import gamelauncher_util
+# import gamelauncher_plugins
 
 # TODO: Only set the environment variables that are not empty
 import subprocess
@@ -251,9 +251,6 @@ def main() -> None:  # noqa: D103
         "getcompatpath",
         "getnativepath",
     }
-    # Stores all paths relevant for Game Drive to work
-    lib_paths: List[str] = []
-
     args: Namespace = parse_args()
 
     try:
@@ -276,15 +273,8 @@ def main() -> None:  # noqa: D103
     env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
 
     # Game Drive functionality
-    env["STEAM_COMPAT_LIBRARY_PATHS"] = gamelauncher_util.get_steam_compat_install(
-        env["STEAM_COMPAT_INSTALL_PATH"]
-    )
-    if "LD_LIBRARY_PATH" in os.environ:
-        lib_paths.append(os.environ["LD_LIBRARY_PATH"])
-    lib_paths.append(env["STEAM_COMPAT_INSTALL_PATH"])
-    lib_paths.append(gamelauncher_util.get_steam_compat_lib())
+    # gamelauncher_plugins.enable_steam_game_drive(env)
 
-    env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(lib_paths)
     # Create an empty Proton prefix when asked
     if getattr(args, "empty", None):
         env["EXE"] = ""
