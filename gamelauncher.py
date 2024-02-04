@@ -222,6 +222,8 @@ def main() -> None:  # noqa: D103
         "getcompatpath",
         "getnativepath",
     }
+    # Stores all paths relevant for Game Drive to work
+    lib_paths: List[str] = []
 
     args: Namespace = parse_args()
 
@@ -249,14 +251,11 @@ def main() -> None:  # noqa: D103
         env["STEAM_COMPAT_INSTALL_PATH"]
     )
     if "LD_LIBRARY_PATH" in os.environ:
-        env["STEAM_RUNTIME_LIBRARY_PATH"] = os.environ["LD_LIBRARY_PATH"]
-    env["STEAM_RUNTIME_LIBRARY_PATH"] = (
-        env["STEAM_RUNTIME_LIBRARY_PATH"]
-        + ":"
-        + env["STEAM_COMPAT_INSTALL_PATH"]
-        + ":"
-        + gamelauncher_util.get_steam_compat_lib()
-    )
+        lib_paths.append(os.environ["LD_LIBRARY_PATH"])
+    lib_paths.append(env["STEAM_COMPAT_INSTALL_PATH"])
+    lib_paths.append(gamelauncher_util.get_steam_compat_lib())
+
+    env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(lib_paths)
 
     # Set all environment variable
     # NOTE: `env` after this block should be read only
