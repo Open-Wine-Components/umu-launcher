@@ -65,3 +65,7 @@ directory in official releases: for example,
 
 will launch an interactive terminal in the container environment.
 ```
+
+From proton/docker/Makefile:
+STEAMRT_VERSION = 0.20230905.59202
+Keep an eye on this version. This is the version we want to pull from https://repo.steampowered.com/steamrt3/images/ to base our own on.
