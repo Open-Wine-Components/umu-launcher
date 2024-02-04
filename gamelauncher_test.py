@@ -35,6 +35,9 @@ class TestGameLauncher(unittest.TestCase):
             "LAUNCHARGS": "",
             "SteamAppId": "",
         }
+        # Proton verb
+        # Used when testing build_command
+        self.test_verb = "waitforexitandrun"
         # Test directory
         self.test_file = "./tmp.WMYQiPb9A"
         # Executable
@@ -94,7 +97,7 @@ class TestGameLauncher(unittest.TestCase):
         for key, val in self.env.items():
             os.environ[key] = val
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            gamelauncher.build_command(self.env, test_command)
+            gamelauncher.build_command(self.env, test_command, self.test_verb)
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -138,7 +141,7 @@ class TestGameLauncher(unittest.TestCase):
         )
         for key, val in self.env.items():
             os.environ[key] = val
-        gamelauncher.build_command(self.env, test_command)
+        gamelauncher.build_command(self.env, test_command, self.test_verb)
 
     def test_build_command(self):
         """Test build_command.
@@ -208,7 +211,7 @@ class TestGameLauncher(unittest.TestCase):
         for key, val in self.env.items():
             os.environ[key] = val
 
-        gamelauncher.build_command(self.env, test_command)
+        gamelauncher.build_command(self.env, test_command, self.test_verb)
 
     def test_set_env_toml_opts_nofile(self):
         """Test set_env_toml for values that are not a file.

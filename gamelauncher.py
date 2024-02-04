@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 import tomllib
 from tomllib import TOMLDecodeError
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union, List, Set
 
 # TODO: Only set the environment variables that are not empty
 import subprocess
@@ -25,6 +25,10 @@ def parse_args() -> Namespace:  # noqa: D103
     group.add_argument(
         "--exe",
         help="path to game executable\nNOTE: when passing options, value must be wrapped in quotes",
+    )
+    parser.add_argument(
+        "--verb",
+        help="a verb to pass to Proton (default: waitforexitandrun)",
     )
 
     return parser.parse_args(sys.argv[1:])
@@ -158,20 +162,21 @@ def set_env_toml(
 
 
 def build_command(
-    env: Dict[str, str], command: List[str]
+    env: Dict[str, str], command: List[str], verb: str
 ) -> Union[None, FileNotFoundError]:
     """Build the command to be executed."""
-    verb: str = "waitforexitandrun"
     # NOTE: We must assume _v2-entry-point (ULWGL) is within the same dir as this launcher
     # Otherwise, an error can be raised
     entry_point: str = Path(Path(__file__).cwd().as_posix() + "/ULWGL").as_posix()
+    # Default verb for _v2-entry-point
+    VERB: str = "waitforexitandrun"
 
     if not Path(env.get("PROTONPATH") + "/proton").is_file():
         raise FileNotFoundError(
             "The following file was not found in PROTONPATH: proton"
         )
 
-    command.extend([entry_point, "--verb", verb, "--"])
+    command.extend([entry_point, "--verb", VERB, "--"])
     if env.get("LAUNCHARGS"):
         command.extend(
             [
@@ -207,6 +212,16 @@ def main() -> None:  # noqa: D103
         "SteamAppId": "",
     }
     command: List[str] = []
+    verb: str = "waitforexitandrun"
+    # Represents a valid list of current supported Proton verbs
+    verbs: Set[str] = {
+        "waitforexitandrun",
+        "run",
+        "runinprefix",
+        "destroyprefix",
+        "getcompatpath",
+        "getnativepath",
+    }
 
     args: Namespace = parse_args()
 
@@ -220,6 +235,9 @@ def main() -> None:  # noqa: D103
         print(f"{err}")
         return
 
+    if vars(args).get("verb") and vars(args).get("verb") in verbs:
+        verb = vars(args).get("verb")
+
     env["STEAM_COMPAT_APP_ID"] = env["GAMEID"]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
@@ -231,7 +249,7 @@ def main() -> None:  # noqa: D103
         print(f"Setting environment variable: {key}={val}")
         os.environ[key] = val
 
-    build_command(env, command)
+    build_command(env, command, verb)
     print(f"The following command will be executed: {command}")
     subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
 
