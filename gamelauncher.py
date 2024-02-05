@@ -246,6 +246,7 @@ def main() -> None:  # noqa: D103
 
     build_command(env, command, verb)
     print(f"The following command will be executed: {command}")
+    subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
 
 
 if __name__ == "__main__":
