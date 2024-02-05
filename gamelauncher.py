@@ -51,9 +51,12 @@ def _setup_pfx(path: str) -> None:
 
 def check_env(env: Dict[str, str]) -> None:
     """Before executing a game, check for environment variables."""
-    if "WINEPREFIX" not in os.environ or not Path(os.environ["WINEPREFIX"]).is_dir():
+    if "WINEPREFIX" not in os.environ:
         err: str = "Environment variable not set or not a directory: WINEPREFIX"
         raise ValueError(err)
+
+    if not Path(os.environ["WINEPREFIX"]).is_dir():
+        Path(os.environ["WINEPREFIX"]).mkdir(parents=True)
     path = os.environ["WINEPREFIX"]
     env["WINEPREFIX"] = path
 
