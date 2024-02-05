@@ -122,7 +122,7 @@ modules:
         path: ulwgl-run
       - type: file
         url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC2/ULWGL-launcher.tar.gz
-        sha256: b29e67b03cfe869be401b54af0a22264d2d99bd103f39377e2f47e25caa96d95
+        sha256: 9c7a5102d2e010165527b4d903d77ca4a453401d9a654b1edfa101dc17236930
 
   - name: platform-bootstrap
     buildsystem: simple
