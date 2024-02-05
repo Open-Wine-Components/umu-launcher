@@ -22,7 +22,6 @@ def parse_args() -> Namespace:  # noqa: D103
         + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --empty 1",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    args: Namespace = None
     group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=False)
     group.add_argument("--config", help="path to TOML file")
     group.add_argument(
@@ -40,20 +39,7 @@ def parse_args() -> Namespace:  # noqa: D103
         type=int,
     )
 
-    args = parser.parse_args(sys.argv[1:])
-    # Raise a SystemExit in these cases:
-    # ./gamelauncher.py
-    if (
-        getattr(args, "config", None)
-        or getattr(args, "exe", None) is None
-        and getattr(args, "empty", None) != 0
-    ):
-        return args
-    parser.print_help()
-    err: str = (
-        "Error: a value for --empty is required for creating empty Proton prefixes"
-    )
-    raise SystemExit(err)
+    return parser.parse_args(sys.argv[1:])
 
 
 def _setup_pfx(path: str) -> None:
@@ -91,7 +77,7 @@ def set_env(env: Dict[str, str], args: Namespace) -> None:
     _setup_pfx(env["WINEPREFIX"])
     is_create_prefix: bool = False
 
-    if getattr(args, "empty", None):
+    if getattr(args, "empty", None) != 0:
         is_create_prefix = True
 
     # Sets the environment variables: EXE and LAUNCHARGS
@@ -149,7 +135,7 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
         err: str = "Value for 'prefix' or 'proton' in TOML is not a directory."
         raise NotADirectoryError(err)
 
-    if getattr(args, "empty", None):
+    if getattr(args, "empty", None) != 0:
         is_create_prefix = True
 
     # Set the values read from TOML to environment variables
@@ -269,7 +255,7 @@ def main() -> None:  # noqa: D103
     # gamelauncher_plugins.enable_steam_game_drive(env)
 
     # Create an empty Proton prefix when asked
-    if getattr(args, "empty", None):
+    if getattr(args, "empty", None) != 0:
         env["EXE"] = ""
         env["LAUNCHARGS"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
