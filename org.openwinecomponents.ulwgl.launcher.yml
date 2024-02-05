@@ -138,31 +138,19 @@ add-extensions:
     no-autodownload: true
     autodelete: true
 
-cleanup:
-  - /lib/*.a
-  - /lib/*.la
-  - /lib32/*.a
-  - /lib32/*.la
-  - /share/doc
-  - /share/gtk-doc
-  - /share/man
-
-cleanup-commands:
-  - python3 -m compileall --invalidation-mode=unchecked-hash /app
-
 modules:
   # --- ULWGL ---
   - name: ulwgl-run
     buildsystem: simple
     build-commands:
       - install -D ulwgl-run /app/bin/ulwgl-run
-      - install -D ULWGL-launcher.tar.gz /app/bin/ULWGL-launcher.tar.gz
+      - install -D ULWGL-launcher.tar.gz /app/share/ULWGL/ULWGL-launcher.tar.gz
     sources:
       - type: file
         path: ulwgl-run
       - type: file
-        url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC1/ULWGL-launcher.tar.gz
-        sha256: 11a85f0acaf5a3bec8dbef7c7f97e111e7d2eb5932c980346907cc5a9aad8811
+        url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC2/ULWGL-launcher.tar.gz
+        sha256: 9c7a5102d2e010165527b4d903d77ca4a453401d9a654b1edfa101dc17236930
 
   - name: platform-bootstrap
     buildsystem: simple
