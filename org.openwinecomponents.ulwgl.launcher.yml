@@ -58,7 +58,7 @@ finish-args:
   - --talk-name=org.freedesktop.Notifications
   - --talk-name=org.kde.StatusNotifierWatcher
   # Required for bwrap to work
-  - --talk-name=org.freedesktop.portal.Background",
+  - --talk-name=org.freedesktop.portal.Background
 
 add-extensions:
   org.freedesktop.Platform.Compat.i386:
@@ -121,8 +121,8 @@ modules:
       - type: file
         path: ulwgl-run
       - type: file
-        url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC1/ULWGL-launcher.tar.gz
-        sha256: f43412a4ec68814c6d2a17edb187d471f22884c04e279fad876d359c4cd74c7e
+        url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC2/ULWGL-launcher.tar.gz
+        sha256: b29e67b03cfe869be401b54af0a22264d2d99bd103f39377e2f47e25caa96d95
 
   - name: platform-bootstrap
     buildsystem: simple
