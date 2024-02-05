@@ -728,33 +728,6 @@ class TestGameLauncher(unittest.TestCase):
                 result, "Expected None when setting environment variables"
             )
 
-    def test_setup_pfx_runtime_err(self):
-        """Test _setup_pfx for RuntimeError.
-
-        _setup_pfx expects a $WINEPREFIX as input
-        Therefore one case a RuntimeError can occur is when the path to $WINEPREFIX does not exist
-        """
-        test_file = "./foo"
-        with self.assertRaisesRegex(RuntimeError, "Error"):
-            gamelauncher._setup_pfx(test_file)
-
-            self.assertFalse(
-                Path(test_file).is_dir(), "Expected WINEPREFIX to not be a directory"
-            )
-
-    def test_setup_pfx_err(self):
-        """Test _setup_pfx for error.
-
-        Ensure no error is raised when the symbolic link to $WINEPREFIX exist or if tracked_files exists
-        """
-        result = None
-        gamelauncher._setup_pfx(self.test_file)
-        result = gamelauncher._setup_pfx(self.test_file)
-        self.assertIsNone(
-            result,
-            "Expected None when creating symbolic link to WINE prefix twice",
-        )
-
     def test_setup_pfx(self):
         """Test _setup_pfx."""
         result = None
@@ -769,6 +742,10 @@ class TestGameLauncher(unittest.TestCase):
         self.assertTrue(
             Path(self.test_file + "/tracked_files").is_file(),
             "Expected tracked_files to be a file",
+        )
+        self.assertIsNone(
+            result,
+            "Expected None when creating symbolic link to WINE prefix twice",
         )
 
     def test_parse_args(self):

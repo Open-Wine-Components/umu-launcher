@@ -57,14 +57,8 @@ def parse_args() -> Namespace:  # noqa: D103
 
 def _setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
-    try:
+    if not (Path(path + "/pfx")).is_symlink():
         Path(path + "/pfx").symlink_to(path)
-    except FileExistsError:
-        pass
-    except Exception:
-        raise RuntimeError(
-            "Error occurred when creating symbolic link at " + path + "/pfx"
-        )
     Path(path + "/tracked_files").touch()
 
 
