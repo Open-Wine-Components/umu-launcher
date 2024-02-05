@@ -11,6 +11,16 @@ if [[ -z $1 ]] || [[ -z $WINEPREFIX ]] || [[ -z $GAMEID ]]; then
 fi
 
 ULWGL_PROTON_VER="ULWGL-Proton-8.0-5"
+ULWGL_LAUNCHER_VER="0.1-RC1"
+
+if [[ ! -d "$HOME"/.local/share/ULWGL/ ]]; then
+  tar -zxvf ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
+else
+    if [[ "$ULWGL_LAUNCHER_VER" != $(cat "$HOME"/.local/share/ULWGL/ULWGL-VERSION) ]]; then
+      rm -Rf "$HOME"/.local/share/ULWGL/
+      tar -zxvf ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
+    fi
+fi
 
 if [[ $WINEPREFIX ]]; then
    if [[ ! -d "$WINEPREFIX" ]]; then
@@ -30,17 +40,17 @@ if [[ $WINEPREFIX ]]; then
 fi
 if [[ -n $PROTONPATH ]]; then
   if [[ ! -d $PROTONPATH ]]; then
-    echo "ERROR: $PROTONPATH is invalid, aborting!"
+    echo "ERROR: $PROTONPATH is invalid, aborting!"    exit 1
     exit 1
   fi
 fi
 if [[ -z $PROTONPATH ]]; then
-  if [[ ! -d "$PWD"/ULWGL-Proton-Stable ]]; then
+  if [[ ! -d "$HOME"/.local/share/Steam/compatibilitytools.d/$ULWGL_PROTON_VER ]]; then
     wget https://github.com/Open-Wine-Components/ULWGL-Proton/releases/download/$ULWGL_PROTON_VER/$ULWGL_PROTON_VER.tar.gz
     wget https://github.com/Open-Wine-Components/ULWGL-Proton/releases/download/$ULWGL_PROTON_VER/$ULWGL_PROTON_VER.sha512sum
     checksum=$(sha512sum $ULWGL_PROTON_VER.tar.gz)
     if [[ "$checksum" == $(cat $ULWGL_PROTON_VER.sha512sum) ]]; then
-      tar -zxvf $ULWGL_PROTON_VER.tar.gz --one-top-level="$PWD"/ULWGL-Proton-Stable
+      tar -zxvf $ULWGL_PROTON_VER.tar.gz --one-top-level="$HOME"/.local/share/Steam/compatibilitytools.d/
       rm $ULWGL_PROTON_VER.tar.gz
       rm $ULWGL_PROTON_VER.sha512sum
     else
@@ -50,7 +60,7 @@ if [[ -z $PROTONPATH ]]; then
       exit 1
     fi
   fi
-  PROTONPATH="$PWD"/ULWGL-Proton-Stable/$ULWGL_PROTON_VER
+  PROTONPATH="$HOME"/.local/share/Steam/compatibilitytools.d/$ULWGL_PROTON_VER
 else
   export PROTONPATH="$PROTONPATH"
 fi
@@ -118,11 +128,11 @@ if [[ "$EXE" == "createprefix"  ]]; then
 fi
 shift 1
 
-me="$(readlink -f "$0")"
-here="${me%/*}"
+#me="$(readlink -f "$0")"
+#here="${me%/*}"
 
 export STEAM_COMPAT_TOOL_PATHS="$PROTONPATH:$here"
 export STEAM_COMPAT_MOUNTS="$PROTONPATH:$here"
 
-"$here"/ULWGL "--verb=$PROTON_VERB" -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"
+"$HOME"/.local/share/ULWGL/ULWGL "--verb=$PROTON_VERB" -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"
 
