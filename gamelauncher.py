@@ -235,15 +235,11 @@ def main() -> None:  # noqa: D103
     }
     args: Namespace = parse_args()
 
-    try:
-        if getattr(args, "config", None):
-            set_env_toml(env, args)
-        else:
-            check_env(env)
-            set_env(env, args)
-    except Exception as err:
-        print(f"{err}")
-        return
+    if getattr(args, "config", None):
+        set_env_toml(env, args)
+    else:
+        check_env(env)
+        set_env(env, args)
 
     if getattr(args, "verb", None) and getattr(args, "verb", None) in verbs:
         verb = getattr(args, "verb", None)
