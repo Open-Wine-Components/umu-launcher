@@ -32,11 +32,9 @@ def get_steam_compat_lib():
         return paths
     except subprocess.CalledProcessError as err:
         status = err.returncode
-        cmd = ldconfig_cmd + grep_cmd
-        chain = "".join(cmd)
-        raise subprocess.CalledProcessError(
-            f"An error occurred while executing {chain}: {status}"
-        )
+        cmd = " ".join(ldconfig_cmd + grep_cmd)
+        err = "An error occurred while executing {}: {}".format(cmd, status)
+        raise subprocess.CalledProcessError(err)
 
 
 def get_steam_compat_install(envar):
@@ -65,9 +63,6 @@ def get_steam_compat_install(envar):
 
     except subprocess.CalledProcessError as err:
         status = err.returncode
-        cmd = findmnt_cmd + tail_cmd + awk_cmd
-        chain = "".join(cmd)
-
-        raise subprocess.CalledProcessError(
-            f"An error occurred while executing {chain}: {status}"
-        )
+        cmd = " ".join(findmnt_cmd + tail_cmd + awk_cmd)
+        err = "An error occurred while executing {}: {}".format(cmd, status)
+        raise subprocess.CalledProcessError(err)

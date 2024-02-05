@@ -50,9 +50,10 @@ def parse_args() -> Namespace:  # noqa: D103
     ):
         return args
     parser.print_help()
-    raise SystemExit(
+    err: str = (
         "Error: a value for --empty is required for creating empty Proton prefixes"
     )
+    raise SystemExit(err)
 
 
 def _setup_pfx(path: str) -> None:
@@ -65,16 +66,19 @@ def _setup_pfx(path: str) -> None:
 def check_env(env: Dict[str, str]) -> None:
     """Before executing a game, check for environment variables."""
     if "WINEPREFIX" not in os.environ or not Path(os.environ["WINEPREFIX"]).is_dir():
-        raise ValueError("Environment variable not set or not a directory: WINEPREFIX")
+        err: str = "Environment variable not set or not a directory: WINEPREFIX"
+        raise ValueError(err)
     path = os.environ["WINEPREFIX"]
     env["WINEPREFIX"] = path
 
     if "GAMEID" not in os.environ:
-        raise ValueError("Environment variable not set: GAMEID")
+        err: str = "Environment variable not set: GAMEID"
+        raise ValueError(err)
     env["GAMEID"] = os.environ["GAMEID"]
 
     if "PROTONPATH" not in os.environ or not Path(os.environ["PROTONPATH"]).is_dir():
-        raise ValueError("Environment variable not set or not a directory: PROTONPATH")
+        err: str = "Environment variable not set or not a directory: PROTONPATH"
+        raise ValueError(err)
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
 
@@ -103,15 +107,18 @@ def set_env(env: Dict[str, str], args: Namespace) -> None:
                 exe = val[: val.find(" ")]
 
             if not Path(exe).is_file():
-                raise FileNotFoundError(f"Value for 'exe' is not a file: {exe}")
+                err: str = "Value for 'exe' is not a file: " + exe
+                raise FileNotFoundError(err)
 
             if launch_args:
                 for launch_arg in launch_args.split(" "):
                     if Path(launch_arg).is_file():
                         # There's no good reason why a launch argument should be an executable
-                        raise ValueError(
-                            f"Value for launch arguments should not be a file: {launch_arg}"
+                        err: str = (
+                            "Value for launch arguments should not be a file: "
+                            + launch_arg
                         )
+                        raise ValueError(err)
 
                 env["LAUNCHARGS"] = launch_args
                 env["EXE"] = exe
@@ -139,9 +146,8 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
     if not (
         Path(toml["ulwgl"]["prefix"]).is_dir() or Path(toml["ulwgl"]["proton"]).is_dir()
     ):
-        raise NotADirectoryError(
-            "Value for 'prefix' or 'proton' in TOML is not a directory."
-        )
+        err: str = "Value for 'prefix' or 'proton' in TOML is not a directory."
+        raise NotADirectoryError(err)
 
     if getattr(args, "empty", None):
         is_create_prefix = True
@@ -151,7 +157,8 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
     for key, val in toml["ulwgl"].items():
         # Handle cases for empty values
         if not val and isinstance(val, str):
-            raise ValueError(f"Value is empty for key in TOML: {key}")
+            err: str = "Value is empty for key in TOML: " + key
+            raise ValueError(err)
         if key == "prefix":
             env["WINEPREFIX"] = val
             _setup_pfx(val)
@@ -164,9 +171,8 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
             for arg in val:
                 if Path(arg).is_file():
                     # There's no good reason why a launch argument should be an executable
-                    raise ValueError(
-                        f"Value for launch arguments should not be a file: {arg}"
-                    )
+                    err: str = "Value for launch arguments should not be a file: " + arg
+                    raise ValueError(err)
                 if env["LAUNCHARGS"] == "":
                     env["LAUNCHARGS"] = arg
                 else:
@@ -174,7 +180,8 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
         elif key == "exe" and not is_create_prefix:
             # Raise an error for executables that do not exist
             if not Path(val).is_file():
-                raise FileNotFoundError("Value for key 'exe' in TOML is not a file.")
+                err: str = "Value for key 'exe' in TOML is not a file."
+                raise FileNotFoundError(err)
 
             # NOTE: It's possible that game options could be appended at the end
             env["EXE"] = val
@@ -187,9 +194,8 @@ def build_command(env: Dict[str, str], command: List[str], verb: str) -> None:
     entry_point: str = Path(Path(__file__).cwd().as_posix() + "/ULWGL").as_posix()
 
     if not Path(env.get("PROTONPATH") + "/proton").is_file():
-        raise FileNotFoundError(
-            "The following file was not found in PROTONPATH: proton"
-        )
+        err: str = "The following file was not found in PROTONPATH: proton"
+        raise FileNotFoundError(err)
 
     command.extend([entry_point, "--verb", verb, "--"])
     if env.get("LAUNCHARGS"):
@@ -277,7 +283,6 @@ def main() -> None:  # noqa: D103
 
     build_command(env, command, verb)
     print(f"The following command will be executed: {command}")
-    subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
 
 
 if __name__ == "__main__":
