@@ -16,13 +16,25 @@ ULWGL_LAUNCHER_VER="0.1-RC2"
 me="$(readlink -f "$0")"
 #here="${me%/*}"
 
-# This is how we update on flatpak. For distro packages it will be similar -- tarball placed in /usr/share which auto-extracts to the user's ~/.local/share/ULWGL/
+# Self-update
+# In flatpak it will check for /app/share/ULWGL/ULWGL-launcher.tar.gz and check version
+# In distro package it will check for /usr/share/ULWGL/ULWGL-launcher.tar.gz and check version
+# If tarball does not exist it will just download it.
 if [[ ! -d "$HOME"/.local/share/ULWGL/ ]]; then
-  tar -zxvf ${me%/*/*}/share/ULWGL/ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
+  if [[ -f ${me%/*/*}/share/ULWGL/ULWGL-launcher.tar.gz ]]; then
+    tar -zxvf ${me%/*/*}/share/ULWGL/ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
+  else
+    wget https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/$ULWGL_LAUNCHER_VER/ULWGL-launcher.tar.gz
+    tar -zxvf ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
+  fi
 else
     if [[ "$ULWGL_LAUNCHER_VER" != $(cat "$HOME"/.local/share/ULWGL/ULWGL-VERSION) ]]; then
       rm -Rf "$HOME"/.local/share/ULWGL/
+    if [[ -f ${me%/*/*}/share/ULWGL/ULWGL-launcher.tar.gz ]]; then
       tar -zxvf ${me%/*/*}/share/ULWGL/ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
+    else
+      wget https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/$ULWGL_LAUNCHER_VER/ULWGL-launcher.tar.gz
+      tar -zxvf ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
     fi
 fi
 
