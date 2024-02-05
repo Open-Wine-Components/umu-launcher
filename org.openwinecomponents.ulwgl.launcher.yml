@@ -1,0 +1,144 @@
+id: org.openwinecomponents.ulwgl.launcher
+sdk: org.freedesktop.Sdk
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+command: ulwgl-run
+separate-locales: false
+
+sdk-extensions:
+  - org.freedesktop.Sdk.Compat.i386
+  - org.freedesktop.Sdk.Extension.toolchain-i386
+
+finish-args:
+  - --allow=devel
+  - --allow=multiarch
+  - --device=all
+  - --allow=bluetooth
+  - --allow=per-app-dev-shm
+  - --env=PATH=/app/bin:/app/utils/bin:/usr/bin:/usr/lib/extensions/vulkan/MangoHud/bin:/usr/lib/extensions/vulkan/gamescope/bin:/usr/lib/extensions/vulkan/OBSVkCapture/bin
+  - --filesystem=xdg-data/lutris:rw
+  - --filesystem=xdg-data/Steam:rw
+  - --filesystem=xdg-data/applications:rw
+  - --filesystem=~/.steam:rw
+  - --filesystem=~/Games:rw
+  - --filesystem=~/.local/share:rw
+  - --filesystem=~/.var/app/com.valvesoftware.Steam:rw
+  - --filesystem=~/.var/app/org.openwinecomponents.ulwgl.launcher:rw
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-desktop
+  - --env=TZ=
+  - --unset-env=TZ
+  - --env=LC_ADDRESS=C
+  - --env=LC_COLLATE=C
+  - --env=LC_MONETARY=C
+  - --env=LC_MEASUREMENT=C
+  - --env=LC_NAME=C
+  - --env=LC_NUMERIC=C
+  - --env=LC_TELEPHONE=C
+  - --env=SDL_VIDEODRIVER=
+  - --unset-env=SDL_VIDEODRIVER
+  - --env=DBUS_FATAL_WARNINGS=0
+  # Wine uses UDisks2 to enumerate disk drives
+  - --system-talk-name=org.freedesktop.UDisks2
+  # should fix access to SD card on the deck
+  - --filesystem=/run/media
+  # There are still quite a few users using /mnt/ for external drives
+  - --filesystem=/mnt
+  # should fix steamdeck controler navigation
+  - --filesystem=/run/udev:ro
+  # should fix discord rich presence
+  - --filesystem=xdg-run/app/com.discordapp.Discord:create
+  - --persist=.
+  - --share=ipc
+  - --socket=wayland
+  - --socket=x11
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --share=network
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # Required for bwrap to work
+  - --talk-name=org.freedesktop.portal.Background",
+
+add-extensions:
+  org.freedesktop.Platform.Compat.i386:
+    directory: lib/i386-linux-gnu
+    version: '23.08'
+
+  org.freedesktop.Platform.Compat.i386.Debug:
+    directory: lib/debug/lib/i386-linux-gnu
+    version: '23.08'
+    no-autodownload: true
+
+  org.freedesktop.Platform.GL32:
+    directory: lib/i386-linux-gnu/GL
+    version: '23.08'
+    subdirectories: true
+    no-autodownload: true
+    autodelete: false
+    add-ld-path: lib
+    merge-dirs: vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors;lib/dri;lib/d3d;vulkan/explicit_layer.d;vulkan/implicit_layer.d;
+    download-if: active-gl-driver
+    enable-if: active-gl-driver
+
+  x-compat-i386-opts: &compat_i386_opts
+    prepend-pkg-config-path: /app/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
+    ldflags: -L/app/lib32
+    append-path: /usr/lib/sdk/toolchain-i386/bin
+    env:
+      CC: i686-unknown-linux-gnu-gcc
+      CXX: i686-unknown-linux-gnu-g++
+    libdir: /app/lib32
+
+  org.freedesktop.Platform.VAAPI.Intel.i386:
+    directory: lib/i386-linux-gnu/dri/intel-vaapi-driver
+    version: '23.08'
+    versions: '23.08'
+    autodelete: false
+    no-autodownload: true
+    add-ld-path: lib
+    download-if: have-intel-gpu
+    autoprune-unless: have-intel-gpu
+
+  com.valvesoftware.Steam.Utility:
+    subdirectories: true
+    directory: utils
+    version: stable
+    versions: stable;beta;test
+    add-ld-path: lib
+    merge-dirs: bin
+    no-autodownload: true
+    autodelete: true
+
+modules:
+  # --- ULWGL ---
+  - name: ulwgl-run
+    buildsystem: simple
+    build-commands:
+      - install -D ulwgl-run /app/bin/ulwgl-run
+      - install -D ULWGL-launcher.tar.gz /app/bin/ULWGL-launcher.tar.gz
+    sources:
+      - type: file
+        path: ulwgl-run
+      - type: file
+        url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC1/ULWGL-launcher.tar.gz
+        sha256: f43412a4ec68814c6d2a17edb187d471f22884c04e279fad876d359c4cd74c7e
+
+  - name: platform-bootstrap
+    buildsystem: simple
+    build-commands:
+      - |
+        set -e
+        mkdir -p /app/bin
+        mkdir -p /app/utils
+        mkdir -p /app/lib/i386-linux-gnu
+        mkdir -p /app/lib/debug/lib/i386-linux-gnu
+        mkdir -p /app/lib/i386-linux-gnu/GL
+        mkdir -p /app/lib/i386-linux-gnu/dri/intel-vaapi-driver
+        install -Dm644 -t /app/etc ld.so.conf
+    sources:
+      - type: inline
+        dest-filename: ld.so.conf
+        contents: |
+          /app/lib32
+          /app/lib/i386-linux-gnu

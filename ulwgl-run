@@ -11,7 +11,7 @@ if [[ -z $1 ]] || [[ -z $WINEPREFIX ]] || [[ -z $GAMEID ]]; then
 fi
 
 ULWGL_PROTON_VER="ULWGL-Proton-8.0-5"
-ULWGL_LAUNCHER_VER="0.1-RC1"
+ULWGL_LAUNCHER_VER="0.1-RC2"
 
 if [[ ! -d "$HOME"/.local/share/ULWGL/ ]]; then
   tar -zxvf ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
