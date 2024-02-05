@@ -1,7 +1,10 @@
 id: org.openwinecomponents.ulwgl.launcher
-sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
-runtime-version: '23.08'
+runtime-version: &runtime-version '23.08'
+x-gl-version: &gl-version '1.4'
+x-gl-versions: &gl-versions 23.08;23.08-extra;1.4
+x-gl-merge-dirs: &gl-merge-dirs vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors;lib/dri;lib/d3d;vulkan/explicit_layer.d;vulkan/implicit_layer.d
+sdk: org.freedesktop.Sdk
 command: ulwgl-run
 separate-locales: false
 
@@ -38,6 +41,7 @@ finish-args:
   - --env=SDL_VIDEODRIVER=
   - --unset-env=SDL_VIDEODRIVER
   - --env=DBUS_FATAL_WARNINGS=0
+  - --env=XDG_CONFIG_DIRS=/etc/xdg:/usr/lib/x86_64-linux-gnu/GL:/usr/lib/i386-linux-gnu/GL
   # Wine uses UDisks2 to enumerate disk drives
   - --system-talk-name=org.freedesktop.UDisks2
   # should fix access to SD card on the deck
@@ -52,7 +56,6 @@ finish-args:
   - --share=ipc
   - --socket=wayland
   - --socket=x11
-  - --socket=fallback-x11
   - --socket=pulseaudio
   - --share=network
   - --talk-name=org.freedesktop.Notifications
@@ -63,42 +66,67 @@ finish-args:
 add-extensions:
   org.freedesktop.Platform.Compat.i386:
     directory: lib/i386-linux-gnu
-    version: '23.08'
+    version: *runtime-version
 
   org.freedesktop.Platform.Compat.i386.Debug:
     directory: lib/debug/lib/i386-linux-gnu
-    version: '23.08'
+    version: *runtime-version
     no-autodownload: true
 
   org.freedesktop.Platform.GL32:
     directory: lib/i386-linux-gnu/GL
-    version: '23.08'
+    version: *gl-version
+    versions: *gl-versions
     subdirectories: true
     no-autodownload: true
     autodelete: false
     add-ld-path: lib
-    merge-dirs: vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors;lib/dri;lib/d3d;vulkan/explicit_layer.d;vulkan/implicit_layer.d;
+    merge-dirs: *gl-merge-dirs
     download-if: active-gl-driver
     enable-if: active-gl-driver
+    autoprune-unless: active-gl-driver
 
-  x-compat-i386-opts: &compat_i386_opts
-    prepend-pkg-config-path: /app/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
-    ldflags: -L/app/lib32
-    append-path: /usr/lib/sdk/toolchain-i386/bin
-    env:
-      CC: i686-unknown-linux-gnu-gcc
-      CXX: i686-unknown-linux-gnu-g++
-    libdir: /app/lib32
+  org.freedesktop.Platform.GL32.Debug:
+    directory: lib/debug/lib/i386-linux-gnu/GL
+    version: *gl-version
+    versions: *gl-versions
+    subdirectories: true
+    no-autodownload: true
+    merge-dirs: *gl-merge-dirs
+    enable-if: active-gl-driver
+    autoprune-unless: active-gl-driver
 
   org.freedesktop.Platform.VAAPI.Intel.i386:
     directory: lib/i386-linux-gnu/dri/intel-vaapi-driver
-    version: '23.08'
-    versions: '23.08'
+    version: *runtime-version
+    versions: *runtime-version
     autodelete: false
     no-autodownload: true
     add-ld-path: lib
     download-if: have-intel-gpu
     autoprune-unless: have-intel-gpu
+
+  org.freedesktop.Platform.ffmpeg-full:
+    directory: lib/ffmpeg
+    add-ld-path: .
+    version: *runtime-version
+    no-autodownload: true
+    autodelete: false
+
+  org.freedesktop.Platform.ffmpeg_full.i386:
+    directory: lib32/ffmpeg
+    add-ld-path: .
+    version: *runtime-version
+    no-autodownload: true
+    autodelete: false
+
+  com.valvesoftware.Steam.CompatibilityTool:
+    subdirectories: true
+    directory: share/steam/compatibilitytools.d
+    version: stable
+    versions: stable;beta;test
+    no-autodownload: true
+    autodelete: true
 
   com.valvesoftware.Steam.Utility:
     subdirectories: true
@@ -106,9 +134,21 @@ add-extensions:
     version: stable
     versions: stable;beta;test
     add-ld-path: lib
-    merge-dirs: bin
+    merge-dirs: bin;lib/python3.10/site-packages;share/vulkan/explicit_layer.d;share/vulkan/implicit_layer.d;share/steam/compatibilitytools.d;
     no-autodownload: true
     autodelete: true
+
+cleanup:
+  - /lib/*.a
+  - /lib/*.la
+  - /lib32/*.a
+  - /lib32/*.la
+  - /share/doc
+  - /share/gtk-doc
+  - /share/man
+
+cleanup-commands:
+  - python3 -m compileall --invalidation-mode=unchecked-hash /app
 
 modules:
   # --- ULWGL ---
@@ -121,8 +161,8 @@ modules:
       - type: file
         path: ulwgl-run
       - type: file
-        url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC2/ULWGL-launcher.tar.gz
-        sha256: 9c7a5102d2e010165527b4d903d77ca4a453401d9a654b1edfa101dc17236930
+        url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC1/ULWGL-launcher.tar.gz
+        sha256: 11a85f0acaf5a3bec8dbef7c7f97e111e7d2eb5932c980346907cc5a9aad8811
 
   - name: platform-bootstrap
     buildsystem: simple
@@ -130,15 +170,26 @@ modules:
       - |
         set -e
         mkdir -p /app/bin
-        mkdir -p /app/utils
         mkdir -p /app/lib/i386-linux-gnu
-        mkdir -p /app/lib/debug/lib/i386-linux-gnu
         mkdir -p /app/lib/i386-linux-gnu/GL
         mkdir -p /app/lib/i386-linux-gnu/dri/intel-vaapi-driver
+        mkdir -p /app/lib/debug/lib/i386-linux-gnu
+        mkdir -p /app/lib/debug/lib/i386-linux-gnu/GL
         install -Dm644 -t /app/etc ld.so.conf
+        mkdir -p /app/lib{,32}/ffmpeg
+        mkdir -p /app/share/steam/compatibilitytools.d
+        mkdir -p /app/utils /app/share/vulkan
+        ln -srv /app/{utils/,}share/vulkan/explicit_layer.d
+        ln -srv /app/{utils/,}share/vulkan/implicit_layer.d
+        mkdir -p /app/links/lib
+        ln -srv /app/lib /app/links/lib/x86_64-linux-gnu
+        ln -srv /app/lib32 /app/links/lib/i386-linux-gnu
     sources:
       - type: inline
         dest-filename: ld.so.conf
         contents: |
+          # We just make any GL32 extension have higher priority
+          include /run/flatpak/ld.so.conf.d/app-*-org.freedesktop.Platform.GL32.*.conf
           /app/lib32
           /app/lib/i386-linux-gnu
+          /lib64
