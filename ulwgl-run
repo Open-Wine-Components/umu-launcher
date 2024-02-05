@@ -30,11 +30,12 @@ if [[ ! -d "$HOME"/.local/share/ULWGL/ ]]; then
 else
     if [[ "$ULWGL_LAUNCHER_VER" != $(cat "$HOME"/.local/share/ULWGL/ULWGL-VERSION) ]]; then
       rm -Rf "$HOME"/.local/share/ULWGL/
-    if [[ -f ${me%/*/*}/share/ULWGL/ULWGL-launcher.tar.gz ]]; then
-      tar -zxvf ${me%/*/*}/share/ULWGL/ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
-    else
-      wget https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/$ULWGL_LAUNCHER_VER/ULWGL-launcher.tar.gz
-      tar -zxvf ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
+      if [[ -f ${me%/*/*}/share/ULWGL/ULWGL-launcher.tar.gz ]]; then
+        tar -zxvf ${me%/*/*}/share/ULWGL/ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
+      else
+        wget https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/$ULWGL_LAUNCHER_VER/ULWGL-launcher.tar.gz
+        tar -zxvf ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
+      fi
     fi
 fi
 
