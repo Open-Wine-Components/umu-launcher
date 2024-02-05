@@ -84,35 +84,9 @@ def set_env(env: Dict[str, str], args: Namespace) -> None:
         is_create_prefix = True
 
     # Sets the environment variables: EXE and LAUNCHARGS
-    # If necessary, raise an error on invalid inputs
     for arg, val in vars(args).items():
         if arg == "exe" and not is_create_prefix:
-            launch_args: str = ""
-            exe: str = val
-
-            # Seperate a game's launch arguments from its exe
-            if val.find(" ") != -1:
-                launch_args = val[val.find(" ") + 1 :]
-                exe = val[: val.find(" ")]
-
-            if not Path(exe).is_file():
-                err: str = "Value for 'exe' is not a file: " + exe
-                raise FileNotFoundError(err)
-
-            if launch_args:
-                for launch_arg in launch_args.split(" "):
-                    if Path(launch_arg).is_file():
-                        # There's no good reason why a launch argument should be an executable
-                        err: str = (
-                            "Value for launch arguments should not be a file: "
-                            + launch_arg
-                        )
-                        raise ValueError(err)
-
-                env["LAUNCHARGS"] = launch_args
-                env["EXE"] = exe
-            else:
-                env["EXE"] = exe
+            env["EXE"] = val
 
 
 def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
