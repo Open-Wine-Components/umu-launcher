@@ -911,17 +911,19 @@ class TestGameLauncher(unittest.TestCase):
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
 
-        An ValueError should occur if the value is not a directory
+        An error should not be raised if a WINEPREFIX is set but the path has not been created.
         """
-        with self.assertRaisesRegex(ValueError, "WINEPREFIX"):
-            os.environ["WINEPREFIX"] = "./foo"
-            os.environ["GAMEID"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
-            gamelauncher.check_env(self.env)
-            self.assertFalse(
-                Path(os.environ["WINEPREFIX"]).is_dir(),
-                "Expected WINEPREFIX to not be a directory",
-            )
+        os.environ["WINEPREFIX"] = "./foo"
+        os.environ["GAMEID"] = self.test_file
+        os.environ["PROTONPATH"] = self.test_file
+        gamelauncher.check_env(self.env)
+        self.assertEqual(
+            Path(os.environ["WINEPREFIX"]).is_dir(),
+            True,
+            "Expected WINEPREFIX to be created if not already exist",
+        )
+        if Path(os.environ["WINEPREFIX"]).is_dir():
+            rmtree(os.environ["WINEPREFIX"])
 
     def test_env_vars(self):
         """Test check_env when setting $WINEPREFIX, $GAMEID and $PROTONPATH."""
