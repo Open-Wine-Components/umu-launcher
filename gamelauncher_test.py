@@ -33,6 +33,7 @@ class TestGameLauncher(unittest.TestCase):
             "FONTCONFIG_PATH": "",
             "EXE": "",
             "SteamAppId": "",
+            "SteamGameId": "",
         }
         self.test_opts = "-foo -bar"
         # Proton verb
@@ -99,12 +100,20 @@ class TestGameLauncher(unittest.TestCase):
             self.assertTrue(vars(result).get("verb"), "Expected a value for --verb")
             result_set_env = gamelauncher.set_env_toml(self.env, result)
             self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
+        self.env["SteamGameId"] = self.env["SteamAppId"]
         self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
         self.env["STEAM_COMPAT_SHADER_PATH"] = (
             self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
         )
+        self.env["STEAM_COMPAT_INSTALL_PATH"] = Path(self.env["EXE"]).parent.as_posix()
+        self.env["STEAM_COMPAT_TOOL_PATHS"] = Path(
+            self.env["PROTONPATH"]
+        ).parent.as_posix()
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
+
         for key, val in self.env.items():
             os.environ[key] = val
         gamelauncher.build_command(self.env, test_command, test_verb)
@@ -145,12 +154,20 @@ class TestGameLauncher(unittest.TestCase):
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             result_set_env = gamelauncher.set_env_toml(self.env, result)
             self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
+        self.env["SteamGameId"] = self.env["SteamAppId"]
         self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
         self.env["STEAM_COMPAT_SHADER_PATH"] = (
             self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
         )
+        self.env["STEAM_COMPAT_INSTALL_PATH"] = Path(self.env["EXE"]).parent.as_posix()
+        self.env["STEAM_COMPAT_TOOL_PATHS"] = Path(
+            self.env["PROTONPATH"]
+        ).parent.as_posix()
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
+
         for key, val in self.env.items():
             os.environ[key] = val
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
@@ -190,12 +207,20 @@ class TestGameLauncher(unittest.TestCase):
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             result_set_env = gamelauncher.set_env_toml(self.env, result)
             self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
+        self.env["SteamGameId"] = self.env["SteamAppId"]
         self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
         self.env["STEAM_COMPAT_SHADER_PATH"] = (
             self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
         )
+        self.env["STEAM_COMPAT_INSTALL_PATH"] = Path(self.env["EXE"]).parent.as_posix()
+        self.env["STEAM_COMPAT_TOOL_PATHS"] = Path(
+            self.env["PROTONPATH"]
+        ).parent.as_posix()
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
+
         for key, val in self.env.items():
             os.environ[key] = val
         gamelauncher.build_command(self.env, test_command, self.test_verb)
@@ -252,10 +277,16 @@ class TestGameLauncher(unittest.TestCase):
 
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
+        self.env["SteamGameId"] = self.env["SteamAppId"]
         self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
         self.env["STEAM_COMPAT_SHADER_PATH"] = (
             self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
         )
+        self.env["STEAM_COMPAT_INSTALL_PATH"] = Path(self.env["EXE"]).parent.as_posix()
+        self.env["STEAM_COMPAT_TOOL_PATHS"] = Path(
+            self.env["PROTONPATH"]
+        ).parent.as_posix()
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
 
         for key, val in self.env.items():
             os.environ[key] = val
