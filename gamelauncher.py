@@ -233,7 +233,7 @@ def main() -> None:  # noqa: D103
     env["STEAM_COMPAT_APP_ID"] = env["GAMEID"]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
-    env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
+    env["STEAM_COMPAT_DATA_PATH"] = Path(env["WINEPREFIX"]).as_posix()
     env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
     env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
     env["STEAM_COMPAT_TOOL_PATHS"] = Path(env["PROTONPATH"]).parent.as_posix()
