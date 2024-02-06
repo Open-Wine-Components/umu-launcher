@@ -116,7 +116,13 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
     """
     toml: Dict[str, Any] = None
     is_create_prefix: bool = False
+    path_config: str = Path(getattr(args, "config", None)).as_posix()
 
+    if not Path(path_config).is_file():
+        msg: str = "Path to configuration is not a file: " + getattr(
+            args, "config", None
+        )
+        raise FileNotFoundError(msg)
     with Path(getattr(args, "config", None)).open(mode="rb") as file:
         toml = tomllib.load(file)
 

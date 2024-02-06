@@ -262,6 +262,25 @@ class TestGameLauncher(unittest.TestCase):
 
         gamelauncher.build_command(self.env, test_command, self.test_verb)
 
+    def test_set_env_toml_config(self):
+        """Test set_env_toml when passing a configuration file.
+
+        An FileNotFoundError should be raised when passing a TOML file that doesn't exist
+        """
+        test_file = "foo.toml"
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=test_file, empty=0),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            with self.assertRaisesRegex(FileNotFoundError, test_file):
+                gamelauncher.set_env_toml(self.env, result)
+
     def test_set_env_toml_opts_nofile(self):
         """Test set_env_toml for values that are not a file.
 
