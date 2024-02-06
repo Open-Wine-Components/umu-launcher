@@ -612,20 +612,25 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_set_env_opts_nofile(self):
-        """Test set_env.
+        """Test set_env when an exe's options is a file.
 
-        A ValueError should be raised if a launch option is found to be a file
+        We allow options that may or may not be legit
+        No error should be raised in this case and we just check if options are a file
         """
         result_args = None
         result_check_env = None
+        result_set_env = None
+
+        # File that will be passed as an option to the exe
+        test_opts_file = "baz"
+        Path(test_opts_file).touch()
+
         # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
-        # We assume everything after the first space are launch options
-        # Game file names are not expected to have spaces
         with patch.object(
             gamelauncher,
             "parse_args",
             return_value=argparse.Namespace(
-                exe=self.test_file + "/foo" + " " + self.test_file + "/foo"
+                exe=self.test_exe, empty=0, options=test_opts_file
             ),
         ):
             os.environ["WINEPREFIX"] = self.test_file
@@ -649,8 +654,26 @@ class TestGameLauncher(unittest.TestCase):
                 result_check_env,
                 "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
             )
-            with self.assertRaisesRegex(ValueError, "launch arguments"):
-                gamelauncher.set_env(self.env, result_args)
+            result_set_env = gamelauncher.set_env(self.env, result_args)
+            self.assertIsNone(
+                result_set_env,
+                "Expected None after setting EXE",
+            )
+            self.assertEqual(
+                self.env["EXE"],
+                self.test_exe + " " + test_opts_file,
+                "Expected EXE to be set after appending a file as an option",
+            )
+            # The concat of exe and options shouldn't be a file
+            self.assertFalse(
+                Path(self.env["EXE"]).is_file(),
+                "Expected EXE to not be a file when passing options",
+            )
+            self.assertTrue(
+                Path(test_opts_file).is_file(),
+                "Expected a file for this test to be used as an option",
+            )
+            Path(test_opts_file).unlink()
 
     def test_set_env_opts(self):
         """Test set_env.
