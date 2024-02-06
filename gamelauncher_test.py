@@ -240,7 +240,9 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(exe=self.test_file + "/foo -bar -baz"),
+            return_value=argparse.Namespace(
+                exe=self.test_exe, empty=0, options=self.test_opts
+            ),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
