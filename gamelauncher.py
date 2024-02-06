@@ -18,8 +18,10 @@ def parse_args() -> Namespace:  # noqa: D103
     usage: str = """
   example usage:
   {} --config example.toml
-  {} --config example.toml --options '-opengl'
-  WINEPREFIX= GAMEID= PROTONPATH= {} --exe example.exe --options '-opengl'
+  {} --config /home/foo/example.toml --options '-opengl'
+  WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --options '-opengl'
+  WINEPREFIX= GAMEID= PROTONPATH= {} --exe ""
+  WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --verb waitforexitandrun
     """.format(exe, exe, exe, exe, exe)
 
     parser: ArgumentParser = argparse.ArgumentParser(
@@ -31,7 +33,7 @@ def parse_args() -> Namespace:  # noqa: D103
     group.add_argument("--config", help="path to TOML file")
     group.add_argument(
         "--exe",
-        help="path to game executable\nNOTE: when passing options, value must be wrapped in quotes.\npass an empty string to create a prefix",
+        help="path to game executable\npass an empty string to create a prefix",
         default=None,
     )
     parser.add_argument(
@@ -115,6 +117,7 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
             args, "config", None
         )
         raise FileNotFoundError(msg)
+
     with Path(getattr(args, "config", None)).open(mode="rb") as file:
         toml = tomllib.load(file)
 
@@ -123,7 +126,6 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
     ):
         err: str = "Value for 'prefix' or 'proton' in TOML is not a directory."
         raise NotADirectoryError(err)
-
 
     # Set the values read from TOML to environment variables
     # If necessary, raise an error on invalid inputs
