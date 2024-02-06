@@ -127,6 +127,12 @@ class TestGameLauncher(unittest.TestCase):
         ).parent.as_posix()
         self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
 
+        # Create an empty Proton prefix when asked
+        if not getattr(result, "exe", None) and not getattr(result, "config", None):
+            self.env["EXE"] = ""
+            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
+            self.verb = "waitforexitandrun"
+
         for key, val in self.env.items():
             os.environ[key] = val
         test_command = gamelauncher.build_command(self.env, test_command, test_verb)
@@ -194,6 +200,12 @@ class TestGameLauncher(unittest.TestCase):
         ).parent.as_posix()
         self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
 
+        # Create an empty Proton prefix when asked
+        if not getattr(result, "exe", None) and not getattr(result, "config", None):
+            self.env["EXE"] = ""
+            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
+            self.verb = "waitforexitandrun"
+
         for key, val in self.env.items():
             os.environ[key] = val
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
@@ -259,6 +271,12 @@ class TestGameLauncher(unittest.TestCase):
             self.env["PROTONPATH"]
         ).parent.as_posix()
         self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
+
+        # Create an empty Proton prefix when asked
+        if not getattr(result, "exe", None) and not getattr(result, "config", None):
+            self.env["EXE"] = ""
+            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
+            self.verb = "waitforexitandrun"
 
         for key, val in self.env.items():
             os.environ[key] = val
@@ -344,6 +362,14 @@ class TestGameLauncher(unittest.TestCase):
             self.env["PROTONPATH"]
         ).parent.as_posix()
         self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
+
+        # Create an empty Proton prefix when asked
+        if not getattr(result_args, "exe", None) and not getattr(
+            result_args, "config", None
+        ):
+            self.env["EXE"] = ""
+            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
+            self.verb = "waitforexitandrun"
 
         for key, val in self.env.items():
             os.environ[key] = val

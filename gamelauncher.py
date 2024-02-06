@@ -247,7 +247,7 @@ def main() -> None:  # noqa: D103
     # gamelauncher_plugins.enable_steam_game_drive(env)
 
     # Create an empty Proton prefix when asked
-    if not getattr(args, "exe", None):
+    if not getattr(args, "exe", None) and not getattr(args, "config", None):
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         verb = "waitforexitandrun"
