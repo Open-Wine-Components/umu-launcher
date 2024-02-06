@@ -32,9 +32,9 @@ class TestGameLauncher(unittest.TestCase):
             "STEAM_COMPAT_SHADER_PATH": "",
             "FONTCONFIG_PATH": "",
             "EXE": "",
-            "LAUNCHARGS": "",
             "SteamAppId": "",
         }
+        self.test_opts = "-foo -bar"
         # Proton verb
         # Used when testing build_command
         self.test_verb = "waitforexitandrun"
@@ -243,19 +243,11 @@ class TestGameLauncher(unittest.TestCase):
                 result, "Expected None when setting environment variables"
             )
             self.assertTrue(self.env.get("EXE"), "Expected EXE to not be empty")
-            self.assertTrue(
-                self.env.get("LAUNCHARGS"), "Expected LAUNCHARGS to not be empty"
-            )
-            # Test for expected LAUNCHARGS and EXE
-            self.assertEqual(
-                self.env.get("LAUNCHARGS"),
-                "-bar -baz",
-                "Expected LAUNCHARGS to not have extra spaces",
-            )
+            # Test for expected EXE with options
             self.assertEqual(
                 self.env.get("EXE"),
-                self.test_exe,
-                "Expected EXE to not have extra spaces",
+                "{} {}".format(self.test_exe, self.test_opts),
+                "Expected the concat EXE and game options to not have trailing spaces",
             )
 
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
@@ -594,7 +586,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_set_env_opts(self):
         """Test set_env.
 
-        Ensure no failures and verify that $EXE and $LAUNCHARGS is not empty
+        Ensure no failures and verify that $EXE is set with options passed
         """
         result_args = None
         result_check_env = None
@@ -603,7 +595,9 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(exe=self.test_file + "/foo -bar -baz"),
+            return_value=argparse.Namespace(
+                exe=self.test_exe, options=self.test_opts, empty=0
+            ),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -631,19 +625,10 @@ class TestGameLauncher(unittest.TestCase):
                 result, "Expected None when setting environment variables"
             )
             self.assertTrue(self.env.get("EXE"), "Expected EXE to not be empty")
-            self.assertTrue(
-                self.env.get("LAUNCHARGS"), "Expected LAUNCHARGS to not be empty"
-            )
-            # Test for expected LAUNCHARGS and EXE
-            self.assertEqual(
-                self.env.get("LAUNCHARGS"),
-                "-bar -baz",
-                "Expected LAUNCHARGS to not have extra spaces",
-            )
             self.assertEqual(
                 self.env.get("EXE"),
-                self.test_exe,
-                "Expected EXE to not have extra spaces",
+                self.test_exe + " " + self.test_opts,
+                "Expected EXE to not have trailing spaces",
             )
 
     def test_set_env_exe(self):
@@ -658,7 +643,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe),
+            return_value=argparse.Namespace(exe=self.test_exe, empty=0),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file

@@ -38,6 +38,10 @@ def parse_args() -> Namespace:  # noqa: D103
         default=0,
         type=int,
     )
+    parser.add_argument(
+        "--options",
+        help="launch options for game executable\nNOTE: options must be wrapped in quotes",
+    )
 
     return parser.parse_args(sys.argv[1:])
 
@@ -83,10 +87,14 @@ def set_env(env: Dict[str, str], args: Namespace) -> None:
     if getattr(args, "empty", None) != 0:
         is_create_prefix = True
 
-    # Sets the environment variables: EXE and LAUNCHARGS
+    # Sets the environment variables: EXE
     for arg, val in vars(args).items():
         if arg == "exe" and not is_create_prefix:
+            # NOTE: options can possibly be appended at the end
             env["EXE"] = val
+        elif arg == "options" and val and not is_create_prefix:
+            # NOTE: assume it's space separated
+            env["EXE"] = env["EXE"] + " " + " ".join(val.split(" "))
 
 
 def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
@@ -96,7 +104,6 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
           proton -> $PROTONPATH
           prefix -> $WINEPREFIX
           game_id -> $GAMEID
-          launch_args -> $LAUNCHARGS
           exe -> $EXE
     At the moment we expect the tables: 'ulwgl'
     """
@@ -130,24 +137,26 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
         elif key == "proton":
             env["PROTONPATH"] = val
             env["STEAM_COMPAT_INSTALL_PATH"] = val
-        elif key == "launch_args" and not is_create_prefix:
-            for arg in val:
-                if Path(arg).is_file():
-                    # There's no good reason why a launch argument should be an executable
-                    err: str = "Value for launch arguments should not be a file: " + arg
-                    raise ValueError(err)
-                if env["LAUNCHARGS"] == "":
-                    env["LAUNCHARGS"] = arg
-                else:
-                    env["LAUNCHARGS"] = env["LAUNCHARGS"] + " " + arg
         elif key == "exe" and not is_create_prefix:
             # Raise an error for executables that do not exist
             if not Path(val).is_file():
                 err: str = "Value for key 'exe' in TOML is not a file."
                 raise FileNotFoundError(err)
 
-            # NOTE: It's possible that game options could be appended at the end
-            env["EXE"] = val
+            # It's possible for users to pass values to --options
+            # Add any if they exist
+            if toml.get("ulwgl").get("launch_args"):
+                env["EXE"] = val + " " + " ".join(toml.get("ulwgl").get("launch_args"))
+            else:
+                env["EXE"] = val
+
+            if getattr(args, "options", None):
+                # Assume space separated options and just trust it
+                env["EXE"] = (
+                    env["EXE"]
+                    + " "
+                    + " ".join(getattr(args, "options", None).split(" "))
+                )
 
 
 def build_command(env: Dict[str, str], command: List[str], verb: str) -> None:
@@ -161,19 +170,9 @@ def build_command(env: Dict[str, str], command: List[str], verb: str) -> None:
         raise FileNotFoundError(err)
 
     command.extend([entry_point, "--verb", verb, "--"])
-    if env.get("LAUNCHARGS"):
-        command.extend(
-            [
-                Path(env.get("PROTONPATH") + "/proton").as_posix(),
-                verb,
-                env.get("EXE"),
-                env.get("LAUNCHARGS"),
-            ]
-        )
-    else:
-        command.extend(
-            [Path(env.get("PROTONPATH") + "/proton").as_posix(), verb, env.get("EXE")]
-        )
+    command.extend(
+        [Path(env.get("PROTONPATH") + "/proton").as_posix(), verb, env.get("EXE")]
+    )
 
 
 def main() -> None:  # noqa: D103
@@ -192,7 +191,6 @@ def main() -> None:  # noqa: D103
         "STEAM_COMPAT_SHADER_PATH": "",
         "FONTCONFIG_PATH": "",
         "EXE": "",
-        "LAUNCHARGS": "",
         "SteamAppId": "",
         "SteamGameId": "",
         "STEAM_RUNTIME_LIBRARY_PATH": "",
@@ -234,7 +232,6 @@ def main() -> None:  # noqa: D103
     # Create an empty Proton prefix when asked
     if getattr(args, "empty", None) != 0:
         env["EXE"] = ""
-        env["LAUNCHARGS"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         verb = "waitforexitandrun"
 
