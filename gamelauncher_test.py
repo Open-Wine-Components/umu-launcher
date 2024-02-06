@@ -34,6 +34,7 @@ class TestGameLauncher(unittest.TestCase):
             "EXE": "",
             "SteamAppId": "",
             "SteamGameId": "",
+            "STEAM_RUNTIME_LIBRARY_PATH": "",
         }
         self.test_opts = "-foo -bar"
         # Proton verb
