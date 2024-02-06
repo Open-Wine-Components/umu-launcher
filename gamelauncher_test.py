@@ -825,6 +825,23 @@ class TestGameLauncher(unittest.TestCase):
             "Expected None when creating symbolic link to WINE prefix twice",
         )
 
+    def test_parse_args_verb(self):
+        """Test parse_args --verb."""
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(exe=self.test_exe, verb=self.test_verb),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertEqual(
+                result.verb,
+                self.test_verb,
+                "Expected the same value when setting --verb",
+            )
+
     def test_parse_args(self):
         """Test parse_args with no options.
 
