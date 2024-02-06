@@ -313,9 +313,10 @@ class TestGameLauncher(unittest.TestCase):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_opts_nofile(self):
-        """Test set_env_toml for values that are not a file.
+        """Test set_env_toml for options that are a file.
 
-        A ValueError should be raised if an exe's arguments is a file
+        An error should not be raised if a launch argument is a file
+        We allow this behavior to give users flexibility at the cost of security
         """
         test_toml = "foo.toml"
         toml_path = self.test_file + "/" + test_toml
@@ -337,15 +338,19 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(config=toml_path),
+            return_value=argparse.Namespace(config=toml_path, empty=0),
         ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
-            with self.assertRaisesRegex(ValueError, "launch arguments"):
-                gamelauncher.set_env_toml(self.env, result)
+            gamelauncher.set_env_toml(self.env, result)
+            # Check if the TOML file we just created
+            self.assertTrue(
+                Path(self.env["EXE"].split(" ")[1]).is_file(),
+                "Expected a file to be appended to the executable",
+            )
 
     def test_set_env_toml_nofile(self):
         """Test set_env_toml for values that are not a file.
@@ -372,7 +377,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(config=toml_path),
+            return_value=argparse.Namespace(config=toml_path, empty=0),
         ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(
@@ -552,21 +557,22 @@ class TestGameLauncher(unittest.TestCase):
             self.assertIsNone(result_set_env, "Expected None after parsing TOML")
 
     def test_set_env_exe_nofile(self):
-        """Test set_env.
+        """Test set_env when setting no options via --options and appending options to --exe.
 
-        A FileNotFoundError should be raised if a value passed to --exe is not a file
+        gamelauncher.py --exe "foo -bar"
+        Options can be appended at the end of the exe if wrapping the value in quotes
+        No error should be raised if the --exe passed by the user doesn't exist
+        We trust the user that its legit and only validate the EXE in the TOML case
         """
         result_args = None
         result_check_env = None
+        result_set_env = None
+
         # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
-        # We assume everything after the first space are launch options
-        # Game file names are not expected to have spaces
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(
-                exe=self.test_file + "/bar" + " " + self.test_file + "/foo"
-            ),
+            return_value=argparse.Namespace(exe=self.test_exe + " foo", empty=0),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -589,8 +595,21 @@ class TestGameLauncher(unittest.TestCase):
                 result_check_env,
                 "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
             )
-            with self.assertRaisesRegex(FileNotFoundError, "exe"):
-                gamelauncher.set_env(self.env, result_args)
+            result_set_env = gamelauncher.set_env(self.env, result_args)
+            self.assertIsNone(
+                result_set_env,
+                "Expected None after setting EXE",
+            )
+            self.assertEqual(
+                self.env["EXE"],
+                self.test_exe + " foo",
+                "Expected EXE to be set after passing garbage",
+            )
+            self.assertTrue(Path(self.test_exe).exists(), "Expected the EXE to exist")
+            self.assertFalse(
+                Path(self.test_exe + " foo").exists(),
+                "Expected the concat of EXE and options to not exist",
+            )
 
     def test_set_env_opts_nofile(self):
         """Test set_env.
