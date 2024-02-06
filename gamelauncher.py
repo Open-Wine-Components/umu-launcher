@@ -19,9 +19,7 @@ def parse_args() -> Namespace:  # noqa: D103
   example usage:
   {} --config example.toml
   {} --config example.toml --options '-opengl'
-  {} --config example.toml --empty 1
   WINEPREFIX= GAMEID= PROTONPATH= {} --exe example.exe --options '-opengl'
-  WINEPREFIX= GAMEID= PROTONPATH= {} --empty 1
     """.format(exe, exe, exe, exe, exe)
 
     parser: ArgumentParser = argparse.ArgumentParser(
@@ -29,21 +27,16 @@ def parse_args() -> Namespace:  # noqa: D103
         epilog=usage,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=False)
+    group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--config", help="path to TOML file")
     group.add_argument(
         "--exe",
-        help="path to game executable\nNOTE: when passing options, value must be wrapped in quotes",
+        help="path to game executable\nNOTE: when passing options, value must be wrapped in quotes.\npass an empty string to create a prefix",
+        default=None,
     )
     parser.add_argument(
         "--verb",
         help="a verb to pass to Proton (default: waitforexitandrun)",
-    )
-    parser.add_argument(
-        "--empty",
-        help="create an empty Proton prefix (default: 0)\nNOTE: accepts a non-zero value to create an empty prefix",
-        default=0,
-        type=int,
     )
     parser.add_argument(
         "--options",
@@ -91,7 +84,7 @@ def set_env(env: Dict[str, str], args: Namespace) -> None:
     _setup_pfx(env["WINEPREFIX"])
     is_create_prefix: bool = False
 
-    if getattr(args, "empty", None) != 0:
+    if not getattr(args, "exe", None):
         is_create_prefix = True
 
     # Sets the environment variables: EXE
@@ -115,7 +108,6 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
     At the moment we expect the tables: 'ulwgl'
     """
     toml: Dict[str, Any] = None
-    is_create_prefix: bool = False
     path_config: str = Path(getattr(args, "config", None)).as_posix()
 
     if not Path(path_config).is_file():
@@ -132,8 +124,6 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
         err: str = "Value for 'prefix' or 'proton' in TOML is not a directory."
         raise NotADirectoryError(err)
 
-    if getattr(args, "empty", None) != 0:
-        is_create_prefix = True
 
     # Set the values read from TOML to environment variables
     # If necessary, raise an error on invalid inputs
@@ -150,8 +140,9 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
         elif key == "proton":
             env["PROTONPATH"] = val
             env["STEAM_COMPAT_INSTALL_PATH"] = val
-        elif key == "exe" and not is_create_prefix:
+        elif key == "exe":
             # Raise an error for executables that do not exist
+            # One case this can happen is when game options are appended at the end of the exe
             if not Path(val).is_file():
                 err: str = "Value for key 'exe' in TOML is not a file."
                 raise FileNotFoundError(err)
@@ -243,7 +234,7 @@ def main() -> None:  # noqa: D103
     # gamelauncher_plugins.enable_steam_game_drive(env)
 
     # Create an empty Proton prefix when asked
-    if getattr(args, "empty", None) != 0:
+    if not getattr(args, "exe", None):
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         verb = "waitforexitandrun"

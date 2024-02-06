@@ -241,7 +241,7 @@ class TestGameLauncher(unittest.TestCase):
             gamelauncher,
             "parse_args",
             return_value=argparse.Namespace(
-                exe=self.test_exe, empty=0, options=self.test_opts
+                exe=self.test_exe, options=self.test_opts
             ),
         ):
             os.environ["WINEPREFIX"] = self.test_file
@@ -304,7 +304,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(config=test_file, empty=0),
+            return_value=argparse.Namespace(config=test_file),
         ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(
@@ -340,7 +340,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(config=toml_path, empty=0),
+            return_value=argparse.Namespace(config=toml_path),
         ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(
@@ -379,7 +379,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(config=toml_path, empty=0),
+            return_value=argparse.Namespace(config=toml_path),
         ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(
@@ -574,7 +574,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe + " foo", empty=0),
+            return_value=argparse.Namespace(exe=self.test_exe + " foo"),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -632,7 +632,7 @@ class TestGameLauncher(unittest.TestCase):
             gamelauncher,
             "parse_args",
             return_value=argparse.Namespace(
-                exe=self.test_exe, empty=0, options=test_opts_file
+                exe=self.test_exe, options=test_opts_file
             ),
         ):
             os.environ["WINEPREFIX"] = self.test_file
@@ -690,7 +690,7 @@ class TestGameLauncher(unittest.TestCase):
             gamelauncher,
             "parse_args",
             return_value=argparse.Namespace(
-                exe=self.test_exe, options=self.test_opts, empty=0
+                exe=self.test_exe, options=self.test_opts
             ),
         ):
             os.environ["WINEPREFIX"] = self.test_file
@@ -728,7 +728,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_set_env_exe(self):
         """Test set_env.
 
-        Ensure no failures and verify that $EXE and $LAUNCHARGS is empty
+        Ensure no failures and verify that $EXE
         """
         result_args = None
         result_check_env = None
@@ -737,7 +737,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe, empty=0),
+            return_value=argparse.Namespace(exe=self.test_exe),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -765,9 +765,6 @@ class TestGameLauncher(unittest.TestCase):
                 result, "Expected None when setting environment variables"
             )
             self.assertTrue(self.env.get("EXE"), "Expected EXE to not be empty")
-            self.assertFalse(
-                self.env.get("LAUNCHARGS"), "Expected LAUNCHARGS to be empty"
-            )
 
     def test_set_env(self):
         """Test set_env.
