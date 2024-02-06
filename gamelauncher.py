@@ -14,12 +14,19 @@ import subprocess
 
 
 def parse_args() -> Namespace:  # noqa: D103
+    exe: str = Path(__file__).name
+    usage: str = """
+  example usage:
+  {} --config example.toml
+  {} --config example.toml --options '-opengl'
+  {} --config example.toml --empty 1
+  WINEPREFIX= GAMEID= PROTONPATH= {} --exe example.exe --options '-opengl'
+  WINEPREFIX= GAMEID= PROTONPATH= {} --empty 1
+    """.format(exe, exe, exe, exe, exe)
+
     parser: ArgumentParser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
-        epilog="example usage:\n  gamelauncher.py --config example.toml"
-        + "\n  gamelauncher.py --config example.toml --empty 1"
-        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --exe=''"
-        + "\n  WINEPREFIX= GAMEID= PROTONPATH= gamelauncher.py --empty 1",
+        epilog=usage,
         formatter_class=argparse.RawTextHelpFormatter,
     )
     group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=False)
