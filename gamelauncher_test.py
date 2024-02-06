@@ -240,9 +240,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(
-                exe=self.test_exe, options=self.test_opts
-            ),
+            return_value=argparse.Namespace(exe=self.test_exe, options=self.test_opts),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -631,9 +629,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(
-                exe=self.test_exe, options=test_opts_file
-            ),
+            return_value=argparse.Namespace(exe=self.test_exe, options=test_opts_file),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -689,9 +685,7 @@ class TestGameLauncher(unittest.TestCase):
         with patch.object(
             gamelauncher,
             "parse_args",
-            return_value=argparse.Namespace(
-                exe=self.test_exe, options=self.test_opts
-            ),
+            return_value=argparse.Namespace(exe=self.test_exe, options=self.test_opts),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
