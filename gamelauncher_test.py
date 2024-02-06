@@ -85,8 +85,10 @@ class TestGameLauncher(unittest.TestCase):
         test_verb = "foo"
         Path(self.test_file + "/proton").touch()
         Path(toml_path).touch()
+
         with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
+
         with patch.object(
             gamelauncher,
             "parse_args",
@@ -100,7 +102,17 @@ class TestGameLauncher(unittest.TestCase):
             # Check if a verb was passed
             self.assertTrue(vars(result).get("verb"), "Expected a value for --verb")
             result_set_env = gamelauncher.set_env_toml(self.env, result)
-            self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+            self.assertIsInstance(
+                result_set_env, dict, "Expected a Dictionary from set_env_toml"
+            )
+            # Check for changes after calling
+            self.assertEqual(
+                result_set_env["EXE"],
+                self.test_exe + " " + self.test_file + " " + self.test_file,
+            )
+            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
+            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
+            self.assertEqual(result_set_env["GAMEID"], self.test_file)
 
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
@@ -117,8 +129,9 @@ class TestGameLauncher(unittest.TestCase):
 
         for key, val in self.env.items():
             os.environ[key] = val
-        gamelauncher.build_command(self.env, test_command, test_verb)
+        test_command = gamelauncher.build_command(self.env, test_command, test_verb)
         # The verb should be 2nd in the array
+        self.assertIsInstance(test_command, list, "Expected a List from build_command")
         self.assertTrue(test_command[2], self.test_verb)
 
     def test_build_command_nofile(self):
@@ -141,8 +154,10 @@ class TestGameLauncher(unittest.TestCase):
         result_set_env = None
         test_command = []
         Path(toml_path).touch()
+
         with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
+
         with patch.object(
             gamelauncher,
             "parse_args",
@@ -154,7 +169,17 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             result_set_env = gamelauncher.set_env_toml(self.env, result)
-            self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+            self.assertIsInstance(
+                result_set_env, dict, "Expected a Dictionary from set_env_toml"
+            )
+            # Check for changes after calling
+            self.assertEqual(
+                result_set_env["EXE"],
+                self.test_exe + " " + self.test_file + " " + self.test_file,
+            )
+            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
+            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
+            self.assertEqual(result_set_env["GAMEID"], self.test_file)
 
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
@@ -192,10 +217,13 @@ class TestGameLauncher(unittest.TestCase):
         result = None
         result_set_env = None
         test_command = []
+
         Path(self.test_file + "/proton").touch()
         Path(toml_path).touch()
+
         with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
+
         with patch.object(
             gamelauncher,
             "parse_args",
@@ -207,7 +235,17 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             result_set_env = gamelauncher.set_env_toml(self.env, result)
-            self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+            self.assertIsInstance(
+                result_set_env, dict, "Expected a Dictionary from set_env_toml"
+            )
+            # Check for changes after calling
+            self.assertEqual(
+                result_set_env["EXE"],
+                self.test_exe + " " + self.test_file + " " + self.test_file,
+            )
+            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
+            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
+            self.assertEqual(result_set_env["GAMEID"], self.test_file)
 
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
@@ -224,7 +262,24 @@ class TestGameLauncher(unittest.TestCase):
 
         for key, val in self.env.items():
             os.environ[key] = val
-        gamelauncher.build_command(self.env, test_command, self.test_verb)
+        test_command = gamelauncher.build_command(
+            self.env, test_command, self.test_verb
+        )
+        self.assertIsInstance(test_command, list, "Expected a List from build_command")
+        # Verify contents
+        entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
+        # The entry point dest could change. Just check if there's a value
+        self.assertTrue(entry_point, "Expected an entry point")
+        self.assertEqual(opt1, "--verb", "Expected --verb")
+        self.assertEqual(verb, self.test_verb, "Expected a verb")
+        self.assertEqual(opt2, "--", "Expected --")
+        self.assertEqual(
+            proton,
+            Path(self.env.get("PROTONPATH") + "/proton").as_posix(),
+            "Expected the proton file",
+        )
+        self.assertEqual(verb2, self.test_verb, "Expected a verb")
+        self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
 
     def test_build_command(self):
         """Test build_command.
@@ -233,10 +288,11 @@ class TestGameLauncher(unittest.TestCase):
         """
         result_args = None
         result_check_env = None
-        result = None
         test_command = []
+
         # Mock the /proton file
         Path(self.test_file + "/proton").touch()
+
         # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
         with patch.object(
             gamelauncher,
@@ -251,6 +307,9 @@ class TestGameLauncher(unittest.TestCase):
                 result_args, Namespace, "parse_args did not return a Namespace"
             )
             result_check_env = gamelauncher.check_env(self.env)
+            self.assertIsInstance(
+                result_check_env, dict, "Expected a Dictionary from set_env_toml"
+            )
             self.assertEqual(
                 self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
             )
@@ -260,15 +319,12 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
             )
-            self.assertIsNone(
-                result_check_env,
-                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
-            )
-            result = gamelauncher.set_env(self.env, result_args)
-            self.assertIsNone(
-                result, "Expected None when setting environment variables"
-            )
-            self.assertTrue(self.env.get("EXE"), "Expected EXE to not be empty")
+            result_set_env = gamelauncher.set_env(self.env, result_args)
+
+            # Check for changes after calling
+            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
+            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
+            self.assertEqual(result_set_env["GAMEID"], self.test_file)
             # Test for expected EXE with options
             self.assertEqual(
                 self.env.get("EXE"),
@@ -292,7 +348,24 @@ class TestGameLauncher(unittest.TestCase):
         for key, val in self.env.items():
             os.environ[key] = val
 
-        gamelauncher.build_command(self.env, test_command, self.test_verb)
+        test_command = gamelauncher.build_command(
+            self.env, test_command, self.test_verb
+        )
+        self.assertIsInstance(test_command, list, "Expected a List from build_command")
+        # Verify contents
+        entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
+        # The entry point dest could change. Just check if there's a value
+        self.assertTrue(entry_point, "Expected an entry point")
+        self.assertEqual(opt1, "--verb", "Expected --verb")
+        self.assertEqual(verb, self.test_verb, "Expected a verb")
+        self.assertEqual(opt2, "--", "Expected --")
+        self.assertEqual(
+            proton,
+            Path(self.env.get("PROTONPATH") + "/proton").as_posix(),
+            "Expected the proton file",
+        )
+        self.assertEqual(verb2, self.test_verb, "Expected a verb")
+        self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
 
     def test_set_env_toml_config(self):
         """Test set_env_toml when passing a configuration file.
@@ -555,7 +628,9 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             result_set_env = gamelauncher.set_env_toml(self.env, result)
-            self.assertIsNone(result_set_env, "Expected None after parsing TOML")
+            self.assertIsInstance(
+                result_set_env, dict, "Expected a Dictionary from set_env_toml"
+            )
 
     def test_set_env_exe_nofile(self):
         """Test set_env when setting no options via --options and appending options to --exe.
@@ -583,6 +658,9 @@ class TestGameLauncher(unittest.TestCase):
                 result_args, Namespace, "parse_args did not return a Namespace"
             )
             result_check_env = gamelauncher.check_env(self.env)
+            self.assertIsInstance(
+                result_check_env, dict, "Expected a Dictionary from check_env"
+            )
             self.assertEqual(
                 self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
             )
@@ -592,14 +670,9 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
             )
-            self.assertIsNone(
-                result_check_env,
-                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
-            )
             result_set_env = gamelauncher.set_env(self.env, result_args)
-            self.assertIsNone(
-                result_set_env,
-                "Expected None after setting EXE",
+            self.assertIsInstance(
+                result_set_env, dict, "Expected a Dictionary from set_env"
             )
             self.assertEqual(
                 self.env["EXE"],
@@ -640,6 +713,9 @@ class TestGameLauncher(unittest.TestCase):
                 result_args, Namespace, "parse_args did not return a Namespace"
             )
             result_check_env = gamelauncher.check_env(self.env)
+            self.assertIsInstance(
+                result_check_env, dict, "Expected a Dictionary from check_env"
+            )
             self.assertEqual(
                 self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
             )
@@ -649,14 +725,9 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
             )
-            self.assertIsNone(
-                result_check_env,
-                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
-            )
             result_set_env = gamelauncher.set_env(self.env, result_args)
-            self.assertIsNone(
-                result_set_env,
-                "Expected None after setting EXE",
+            self.assertIsInstance(
+                result_set_env, dict, "Expected a Dictionary from set_env"
             )
             self.assertEqual(
                 self.env["EXE"],
@@ -668,8 +739,13 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.env["EXE"]).is_file(),
                 "Expected EXE to not be a file when passing options",
             )
+            # However each part is a file
             self.assertTrue(
                 Path(test_opts_file).is_file(),
+                "Expected a file for this test to be used as an option",
+            )
+            self.assertTrue(
+                Path(self.test_exe).is_file(),
                 "Expected a file for this test to be used as an option",
             )
             Path(test_opts_file).unlink()
@@ -696,6 +772,9 @@ class TestGameLauncher(unittest.TestCase):
                 result_args, Namespace, "parse_args did not return a Namespace"
             )
             result_check_env = gamelauncher.check_env(self.env)
+            self.assertIsInstance(
+                result_check_env, dict, "Expected a Dictionary from check_env"
+            )
             self.assertEqual(
                 self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
             )
@@ -705,14 +784,8 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
             )
-            self.assertIsNone(
-                result_check_env,
-                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
-            )
             result = gamelauncher.set_env(self.env, result_args)
-            self.assertIsNone(
-                result, "Expected None when setting environment variables"
-            )
+            self.assertIsInstance(result, dict, "Expected a Dictionary from set_env")
             self.assertTrue(self.env.get("EXE"), "Expected EXE to not be empty")
             self.assertEqual(
                 self.env.get("EXE"),
@@ -742,6 +815,9 @@ class TestGameLauncher(unittest.TestCase):
                 result_args, Namespace, "parse_args did not return a Namespace"
             )
             result_check_env = gamelauncher.check_env(self.env)
+            self.assertIsInstance(
+                result_check_env, dict, "Expected a Dictionary from check_env"
+            )
             self.assertEqual(
                 self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
             )
@@ -751,14 +827,8 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
             )
-            self.assertIsNone(
-                result_check_env,
-                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
-            )
             result = gamelauncher.set_env(self.env, result_args)
-            self.assertIsNone(
-                result, "Expected None when setting environment variables"
-            )
+            self.assertIsInstance(result, dict, "Expected a Dictionary from set_env")
             self.assertTrue(self.env.get("EXE"), "Expected EXE to not be empty")
 
     def test_set_env(self):
@@ -781,6 +851,9 @@ class TestGameLauncher(unittest.TestCase):
             result_args = gamelauncher.parse_args()
             self.assertIsInstance(result_args, Namespace)
             result_check_env = gamelauncher.check_env(self.env)
+            self.assertIsInstance(
+                result_check_env, dict, "Expected a Dictionary from check_env"
+            )
             self.assertEqual(
                 self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
             )
@@ -790,14 +863,8 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
             )
-            self.assertIsNone(
-                result_check_env,
-                "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set",
-            )
             result = gamelauncher.set_env(self.env, result_args)
-            self.assertIsNone(
-                result, "Expected None when setting environment variables"
-            )
+            self.assertIsInstance(result, dict, "Expected a Dictionary from set_env")
 
     def test_setup_pfx(self):
         """Test _setup_pfx."""
@@ -926,6 +993,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["GAMEID"] = self.test_file
         os.environ["PROTONPATH"] = self.test_file
         result = gamelauncher.check_env(self.env)
+        self.assertIsInstance(result, dict, "Expected a Dictionary from set_env_toml")
         self.assertEqual(
             self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
         )
@@ -934,9 +1002,6 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertEqual(
             self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
-        )
-        self.assertIsNone(
-            result, "Expected None when WINEPREFIX, GAMEID and PROTONPATH are set"
         )
 
     def test_env_vars_proton(self):

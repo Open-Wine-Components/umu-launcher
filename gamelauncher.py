@@ -55,8 +55,11 @@ def _setup_pfx(path: str) -> None:
     Path(path + "/tracked_files").touch()
 
 
-def check_env(env: Dict[str, str]) -> None:
-    """Before executing a game, check for environment variables."""
+def check_env(env: Dict[str, str]) -> Dict[str, str]:
+    """Before executing a game, check for environment variables and set them.
+
+    WINEPREFIX, GAMEID and PROTONPATH are strictly required.
+    """
     if "WINEPREFIX" not in os.environ:
         err: str = "Environment variable not set or not a directory: WINEPREFIX"
         raise ValueError(err)
@@ -77,8 +80,10 @@ def check_env(env: Dict[str, str]) -> None:
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
 
+    return env
 
-def set_env(env: Dict[str, str], args: Namespace) -> None:
+
+def set_env(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
     """Set various environment variables for the Steam RT.
 
     Expects to be invoked if not reading a TOML file
@@ -98,8 +103,10 @@ def set_env(env: Dict[str, str], args: Namespace) -> None:
             # NOTE: assume it's space separated
             env["EXE"] = env["EXE"] + " " + " ".join(val.split(" "))
 
+    return env
 
-def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
+
+def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
     """Read a TOML file then sets the environment variables for the Steam RT.
 
     In the TOML file, certain keys map to Steam RT environment variables. For example:
@@ -164,8 +171,10 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> None:
                     + " ".join(getattr(args, "options", None).split(" "))
                 )
 
+    return env
 
-def build_command(env: Dict[str, str], command: List[str], verb: str) -> None:
+
+def build_command(env: Dict[str, str], command: List[str], verb: str) -> List[str]:
     """Build the command to be executed."""
     # NOTE: We must assume _v2-entry-point (ULWGL) is within the same dir as this launcher
     # Otherwise, an error can be raised
@@ -179,6 +188,8 @@ def build_command(env: Dict[str, str], command: List[str], verb: str) -> None:
     command.extend(
         [Path(env.get("PROTONPATH") + "/proton").as_posix(), verb, env.get("EXE")]
     )
+
+    return command
 
 
 def main() -> None:  # noqa: D103
