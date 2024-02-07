@@ -48,10 +48,11 @@ fi
 
 if [ -z "$PROTONPATH" ]; then
   if [ ! -d "$proton_dir"/$ULWGL_PROTON_VER ]; then
-
     wget "$proton_link".tar.gz -O "$ulwgl_cache/$ULWGL_PROTON_VER".tar.gz
     wget "$proton_link".sha512sum -O "$ulwgl_cache/$ULWGL_PROTON_VER".sha512sum
-    checksum=$(sha512sum "$ulwgl_cache/$ULWGL_PROTON_VER".tar.gz)
+    cd "$ulwgl_cache" || exit
+    checksum=$(sha512sum "$ULWGL_PROTON_VER".tar.gz)
+    cd - || exit
     if [ "$checksum" = "$(cat "$ulwgl_cache/$ULWGL_PROTON_VER".sha512sum)" ]; then
       tar -zxvf "$ulwgl_cache/$ULWGL_PROTON_VER".tar.gz --one-top-level="$proton_dir"
       rm "$ulwgl_cache/$ULWGL_PROTON_VER".tar.gz
@@ -63,7 +64,7 @@ if [ -z "$PROTONPATH" ]; then
       exit 1
     fi
   fi
-  PROTONPATH="$proton_dir/$ULWGL_PROTON_VER"
+  export PROTONPATH="$proton_dir/$ULWGL_PROTON_VER"
 else
   export PROTONPATH="$PROTONPATH"
 fi
