@@ -1,7 +1,7 @@
 // Generated file, do not edit
 "manifest"
 {
-	"commandline" "/_v2-entry-point --verb=%verb% --"
+	"commandline" "/ULWGL --verb=%verb% --"
 	"version" "2"
 	"use_tool_subprocess_reaper" "1"
 	"unlisted" "1"
