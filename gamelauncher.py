@@ -64,7 +64,7 @@ def check_env(env: Dict[str, str]) -> Dict[str, str]:
         err: str = "Environment variable not set or not a directory: WINEPREFIX"
         raise ValueError(err)
 
-    if not Path(os.environ["WINEPREFIX"]).is_dir():
+    if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
         Path(os.environ["WINEPREFIX"]).mkdir(parents=True)
     path = os.environ["WINEPREFIX"]
     env["WINEPREFIX"] = path
@@ -74,7 +74,10 @@ def check_env(env: Dict[str, str]) -> Dict[str, str]:
         raise ValueError(err)
     env["GAMEID"] = os.environ["GAMEID"]
 
-    if "PROTONPATH" not in os.environ or not Path(os.environ["PROTONPATH"]).is_dir():
+    if (
+        "PROTONPATH" not in os.environ
+        or not Path(os.environ["PROTONPATH"]).expanduser().is_dir()
+    ):
         err: str = "Environment variable not set or not a directory: PROTONPATH"
         raise ValueError(err)
     env["PROTONPATH"] = os.environ["PROTONPATH"]
@@ -125,7 +128,7 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
         )
         raise FileNotFoundError(msg)
 
-    with Path(getattr(args, "config", None)).open(mode="rb") as file:
+    with Path(path_config).open(mode="rb") as file:
         toml = tomllib.load(file)
 
     if not (
