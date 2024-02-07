@@ -657,17 +657,26 @@ class TestGameLauncher(unittest.TestCase):
         """
         test_toml = "foo.toml"
         pattern = r"^/home/[a-zA-Z]+"
+
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file
+        path_to_tmp = Path(
+            Path(__file__).cwd().as_posix() + "/" + self.test_file
+        ).as_posix()
+        path_to_exe = Path(
+            Path(__file__).cwd().as_posix() + "/" + self.test_exe
+        ).as_posix()
+
+        # Replace /home/[a-zA-Z]+ substring in path with tilda
         unexpanded_path = re.sub(
             pattern,
             "~",
-            Path(Path(self.test_file).as_posix()).as_posix(),
+            path_to_tmp,
         )
         unexpanded_exe = re.sub(
             pattern,
             "~",
-            Path(Path(self.test_exe).as_posix()).as_posix(),
+            path_to_exe,
         )
         toml_str = f"""
         [ulwgl]
@@ -681,9 +690,9 @@ class TestGameLauncher(unittest.TestCase):
         result = None
         result_set_env = None
 
-        Path(toml_path).touch()
+        Path(toml_path).expanduser().touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).expanduser().open(mode="w") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -1130,6 +1139,38 @@ class TestGameLauncher(unittest.TestCase):
         )
         if Path(os.environ["WINEPREFIX"]).is_dir():
             rmtree(os.environ["WINEPREFIX"])
+
+    def test_env_vars_paths(self):
+        """Test check_env when setting unexpanded paths for $WINEPREFIX and $PROTONPATH."""
+        # Replaces the expanded path to unexpanded
+        # Example: ~/some/path/to/this/file
+        pattern = r"^/home/[a-zA-Z]+"
+        path_to_tmp = Path(
+            Path(__file__).cwd().as_posix() + "/" + self.test_file
+        ).as_posix()
+
+        # Replace /home/[a-zA-Z]+ substring in path with tilda
+        unexpanded_path = re.sub(
+            pattern,
+            "~",
+            path_to_tmp,
+        )
+
+        result = None
+        os.environ["WINEPREFIX"] = unexpanded_path
+        os.environ["GAMEID"] = self.test_file
+        os.environ["PROTONPATH"] = unexpanded_path
+        result = gamelauncher.check_env(self.env)
+        self.assertIsInstance(result, dict, "Expected a Dictionary from set_env_toml")
+        self.assertEqual(
+            self.env["WINEPREFIX"], unexpanded_path, "Expected WINEPREFIX to be set"
+        )
+        self.assertEqual(
+            self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
+        )
+        self.assertEqual(
+            self.env["PROTONPATH"], unexpanded_path, "Expected PROTONPATH to be set"
+        )
 
     def test_env_vars(self):
         """Test check_env when setting $WINEPREFIX, $GAMEID and $PROTONPATH."""
