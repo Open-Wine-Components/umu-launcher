@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 import tomllib
 from typing import Dict, Any, List, Set
-# import gamelauncher_plugins
+import gamelauncher_plugins
 
 # TODO: Only set the environment variables that are not empty
 import subprocess
@@ -244,7 +244,7 @@ def main() -> None:  # noqa: D103
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Game Drive functionality
-    # gamelauncher_plugins.enable_steam_game_drive(env)
+    gamelauncher_plugins.enable_steam_game_drive(env)
 
     # Create an empty Proton prefix when asked
     if not getattr(args, "exe", None) and not getattr(args, "config", None):
