@@ -245,9 +245,7 @@ def main() -> None:  # noqa: D103
     env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.expanduser().as_posix()
     env["EXE"] = Path(env["EXE"]).expanduser().as_posix()
     env["STEAM_COMPAT_TOOL_PATHS"] = (
-        Path(env["PROTONPATH"]).expanduser().as_posix()
-        + ":"
-        + Path(__file__).parent.as_posix()
+        env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
     )
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
