@@ -115,17 +115,23 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
             self.assertEqual(result_set_env["GAMEID"], self.test_file)
 
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
         self.env["SteamGameId"] = self.env["SteamAppId"]
+        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
+        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
         self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
         self.env["STEAM_COMPAT_SHADER_PATH"] = (
             self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
         )
-        self.env["STEAM_COMPAT_INSTALL_PATH"] = Path(self.env["EXE"]).parent.as_posix()
-        self.env["STEAM_COMPAT_TOOL_PATHS"] = Path(
-            self.env["PROTONPATH"]
-        ).parent.as_posix()
+        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
+            Path(self.env["EXE"]).parent.expanduser().as_posix()
+        )
+        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
+        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
+            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
+        )
         self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
 
         # Create an empty Proton prefix when asked
@@ -188,17 +194,23 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
             self.assertEqual(result_set_env["GAMEID"], self.test_file)
 
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
         self.env["SteamGameId"] = self.env["SteamAppId"]
+        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
+        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
         self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
         self.env["STEAM_COMPAT_SHADER_PATH"] = (
             self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
         )
-        self.env["STEAM_COMPAT_INSTALL_PATH"] = Path(self.env["EXE"]).parent.as_posix()
-        self.env["STEAM_COMPAT_TOOL_PATHS"] = Path(
-            self.env["PROTONPATH"]
-        ).parent.as_posix()
+        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
+            Path(self.env["EXE"]).parent.expanduser().as_posix()
+        )
+        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
+        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
+            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
+        )
         self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
 
         # Create an empty Proton prefix when asked
@@ -260,17 +272,23 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
             self.assertEqual(result_set_env["GAMEID"], self.test_file)
 
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
         self.env["SteamGameId"] = self.env["SteamAppId"]
+        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
+        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
         self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
         self.env["STEAM_COMPAT_SHADER_PATH"] = (
             self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
         )
-        self.env["STEAM_COMPAT_INSTALL_PATH"] = Path(self.env["EXE"]).parent.as_posix()
-        self.env["STEAM_COMPAT_TOOL_PATHS"] = Path(
-            self.env["PROTONPATH"]
-        ).parent.as_posix()
+        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
+            Path(self.env["EXE"]).parent.expanduser().as_posix()
+        )
+        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
+        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
+            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
+        )
         self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
 
         # Create an empty Proton prefix when asked
@@ -351,17 +369,24 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected the concat EXE and game options to not have trailing spaces",
             )
 
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
         self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
         self.env["SteamGameId"] = self.env["SteamAppId"]
+        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
+        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
         self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
         self.env["STEAM_COMPAT_SHADER_PATH"] = (
             self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
         )
-        self.env["STEAM_COMPAT_INSTALL_PATH"] = Path(self.env["EXE"]).parent.as_posix()
-        self.env["STEAM_COMPAT_TOOL_PATHS"] = Path(
-            self.env["PROTONPATH"]
-        ).parent.as_posix()
+        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
+            Path(self.env["EXE"]).parent.expanduser().as_posix()
+        )
+        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
+        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
+            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
+        )
         self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
 
         # Create an empty Proton prefix when asked
