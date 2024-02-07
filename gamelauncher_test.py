@@ -963,6 +963,33 @@ class TestGameLauncher(unittest.TestCase):
             result = gamelauncher.set_env(self.env, result_args)
             self.assertIsInstance(result, dict, "Expected a Dictionary from set_env")
 
+    def test_setup_pfx_paths(self):
+        """Test _setup_pfx on unexpanded paths.
+
+        An error should not be raised when passing paths such as ~/path/to/prefix.
+        """
+        result = None
+        pattern = r"^/home/[a-zA-Z]+"
+        unexpanded_path = re.sub(
+            pattern,
+            "~",
+            Path(Path(self.test_file).as_posix()).as_posix(),
+        )
+        result = gamelauncher._setup_pfx(unexpanded_path)
+        # Replaces the expanded path to unexpanded
+        # Example: ~/some/path/to/this/file
+        self.assertIsNone(
+            result,
+            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+        )
+        self.assertTrue(
+            Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
+        )
+        self.assertTrue(
+            Path(self.test_file + "/tracked_files").is_file(),
+            "Expected tracked_files to be a file",
+        )
+
     def test_setup_pfx(self):
         """Test _setup_pfx."""
         result = None
@@ -977,10 +1004,6 @@ class TestGameLauncher(unittest.TestCase):
         self.assertTrue(
             Path(self.test_file + "/tracked_files").is_file(),
             "Expected tracked_files to be a file",
-        )
-        self.assertIsNone(
-            result,
-            "Expected None when creating symbolic link to WINE prefix twice",
         )
 
     def test_parse_args_verb(self):
