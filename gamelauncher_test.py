@@ -7,6 +7,7 @@ from unittest.mock import patch
 from pathlib import Path
 from tomllib import TOMLDecodeError
 from shutil import rmtree
+import re
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -622,6 +623,76 @@ class TestGameLauncher(unittest.TestCase):
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             with self.assertRaisesRegex(KeyError, "ulwgl"):
                 gamelauncher.set_env_toml(self.env, result)
+
+    def test_set_env_toml_paths(self):
+        """Test set_env_toml when specifying unexpanded file path values in the config file.
+
+        Example: ~/Games/foo.exe
+        An error should not be raised when passing unexpanded paths to the config file as well as the prefix, proton and exe keys
+        """
+        test_toml = "foo.toml"
+        pattern = r"^/home/[a-zA-Z]+"
+        # Replaces the expanded path to unexpanded
+        # Example: ~/some/path/to/this/file
+        unexpanded_path = re.sub(
+            pattern,
+            "~",
+            Path(Path(self.test_file).as_posix()).as_posix(),
+        )
+        unexpanded_exe = re.sub(
+            pattern,
+            "~",
+            Path(Path(self.test_exe).as_posix()).as_posix(),
+        )
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{unexpanded_path}"
+        proton = "{unexpanded_path}"
+        game_id = "{unexpanded_path}"
+        exe = "{unexpanded_exe}"
+        """
+        # Path to TOML in unexpanded form
+        toml_path = unexpanded_path + "/" + test_toml
+        result = None
+        result_set_env = None
+
+        Path(toml_path).touch()
+
+        with Path(toml_path).open(mode="w") as file:
+            file.write(toml_str)
+
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            result_set_env = gamelauncher.set_env_toml(self.env, result)
+            self.assertIsInstance(
+                result_set_env, dict, "Expected a Dictionary from set_env_toml"
+            )
+            # Check that the paths are still in the unexpanded form
+            # In main, we only expand them after this function exits to prepare for building the command
+            self.assertEqual(
+                self.env["EXE"], unexpanded_exe, "Expected path not to be expanded"
+            )
+            self.assertEqual(
+                self.env["PROTONPATH"],
+                unexpanded_path,
+                "Expected path not to be expanded",
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"],
+                unexpanded_path,
+                "Expected path not to be expanded",
+            )
+            self.assertEqual(
+                self.env["GAMEID"], unexpanded_path, "Expectd path not to be expanded"
+            )
 
     def test_set_env_toml(self):
         """Test set_env_toml."""

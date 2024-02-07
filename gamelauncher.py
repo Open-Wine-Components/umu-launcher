@@ -50,9 +50,9 @@ def parse_args() -> Namespace:  # noqa: D103
 
 def _setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
-    if not (Path(path + "/pfx")).is_symlink():
-        Path(path + "/pfx").symlink_to(path)
-    Path(path + "/tracked_files").touch()
+    if not (Path(path + "/pfx")).expanduser().is_symlink():
+        Path(path + "/pfx").expanduser().symlink_to(path)
+    Path(path + "/tracked_files").expanduser().touch()
 
 
 def check_env(env: Dict[str, str]) -> Dict[str, str]:
@@ -117,7 +117,7 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
     At the moment we expect the tables: 'ulwgl'
     """
     toml: Dict[str, Any] = None
-    path_config: str = Path(getattr(args, "config", None)).as_posix()
+    path_config: str = Path(getattr(args, "config", None)).expanduser().as_posix()
 
     if not Path(path_config).is_file():
         msg: str = "Path to configuration is not a file: " + getattr(
@@ -129,7 +129,8 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
         toml = tomllib.load(file)
 
     if not (
-        Path(toml["ulwgl"]["prefix"]).is_dir() or Path(toml["ulwgl"]["proton"]).is_dir()
+        Path(toml["ulwgl"]["prefix"]).expanduser().is_dir()
+        or Path(toml["ulwgl"]["proton"]).expanduser().is_dir()
     ):
         err: str = "Value for 'prefix' or 'proton' in TOML is not a directory."
         raise NotADirectoryError(err)
@@ -152,7 +153,7 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
         elif key == "exe":
             # Raise an error for executables that do not exist
             # One case this can happen is when game options are appended at the end of the exe
-            if not Path(val).is_file():
+            if not Path(val).expanduser().is_file():
                 err: str = "Value for key 'exe' in TOML is not a file."
                 raise FileNotFoundError(err)
 
@@ -237,10 +238,17 @@ def main() -> None:  # noqa: D103
     env["STEAM_COMPAT_APP_ID"] = env["GAMEID"]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
-    env["STEAM_COMPAT_DATA_PATH"] = Path(env["WINEPREFIX"]).as_posix()
+    env["WINEPREFIX"] = Path(env["WINEPREFIX"]).expanduser().as_posix()
+    env["PROTONPATH"] = Path(env["PROTONPATH"]).expanduser().as_posix()
+    env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-    env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
-    env["STEAM_COMPAT_TOOL_PATHS"] = Path(env["PROTONPATH"]).parent.as_posix()
+    env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.expanduser().as_posix()
+    env["EXE"] = Path(env["EXE"]).expanduser().as_posix()
+    env["STEAM_COMPAT_TOOL_PATHS"] = (
+        Path(env["PROTONPATH"]).expanduser().as_posix()
+        + ":"
+        + Path(__file__).parent.as_posix()
+    )
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Game Drive functionality
