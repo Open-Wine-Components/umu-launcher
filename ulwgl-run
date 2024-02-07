@@ -3,41 +3,15 @@
 # use for debug only.
 # set -x
 
-if [ -z "$1" ] || [ -z "$WINEPREFIX" ] || [ -z "$GAMEID" ]; then
+if [ -z "$1" ] || [ -z "$WINEPREFIX" ] || [ -z "$GAMEID" ] || [ -z "$PROTONPATH" ]; then
  echo "Usage: WINEPREFIX=<wine-prefix-path> GAMEID=<ulwgl-id> PROTONPATH=<proton-version-path> ./gamelauncher.sh <executable-path> <arguments>"
  echo "Ex:"
  echo "WINEPREFIX=$HOME/Games/epic-games-store GAMEID=egs PROTONPATH=\"$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28\" ./gamelauncher.sh \"$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe\" \"-opengl -SkipBuildPatchPrereq\""
  exit 1
 fi
 
-ULWGL_PROTON_VER="ULWGL-Proton-8.0-5"
-ULWGL_LAUNCHER_VER="0.1-RC3"
-
 me="$(readlink -f "$0")"
-#here="${me%/*}"
-
-# Self-update
-# In flatpak it will check for /app/share/ULWGL/ULWGL-launcher.tar.gz and check version
-# In distro package it will check for /usr/share/ULWGL/ULWGL-launcher.tar.gz and check version
-# If tarball does not exist it will just download it.
-if [ ! -d "$HOME"/.local/share/ULWGL/ ]; then
-  if [ -f "${me%/*/*}"/share/ULWGL/ULWGL-launcher.tar.gz ]; then
-    tar -zxvf "${me%/*/*}"/share/ULWGL/ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
-  else
-    wget https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/$ULWGL_LAUNCHER_VER/ULWGL-launcher.tar.gz
-    tar -zxvf ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
-  fi
-else
-    if [ "$ULWGL_LAUNCHER_VER" != "$(cat "$HOME"/.local/share/ULWGL/ULWGL-VERSION)" ]; then
-      rm -Rf "$HOME"/.local/share/ULWGL/
-      if [ -f "${me%/*/*}"/share/ULWGL/ULWGL-launcher.tar.gz ]; then
-        tar -zxvf "${me%/*/*}"/share/ULWGL/ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
-      else
-        wget https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/$ULWGL_LAUNCHER_VER/ULWGL-launcher.tar.gz
-        tar -zxvf ULWGL-launcher.tar.gz --one-top-level="$HOME"/.local/share/ULWGL
-      fi
-    fi
-fi
+here="${me%/*}"
 
 if [ "$WINEPREFIX" ]; then
    if [ ! -d "$WINEPREFIX" ]; then
@@ -55,32 +29,14 @@ if [ "$WINEPREFIX" ]; then
      ln -s "../drive_c" "$WINEPREFIX/dosdevices/c:" > log 2>&1
    fi
 fi
+
 if [ -n "$PROTONPATH" ]; then
   if [ ! -d "$PROTONPATH" ]; then
     echo "ERROR: $PROTONPATH is invalid, aborting!"    exit 1
     exit 1
   fi
 fi
-if [ -z "$PROTONPATH" ]; then
-  if [ ! -d "$HOME"/.local/share/Steam/compatibilitytools.d/$ULWGL_PROTON_VER ]; then
-    wget https://github.com/Open-Wine-Components/ULWGL-Proton/releases/download/$ULWGL_PROTON_VER/$ULWGL_PROTON_VER.tar.gz
-    wget https://github.com/Open-Wine-Components/ULWGL-Proton/releases/download/$ULWGL_PROTON_VER/$ULWGL_PROTON_VER.sha512sum
-    checksum=$(sha512sum $ULWGL_PROTON_VER.tar.gz)
-    if [ "$checksum" = "$(cat $ULWGL_PROTON_VER.sha512sum)" ]; then
-      tar -zxvf $ULWGL_PROTON_VER.tar.gz --one-top-level="$HOME"/.local/share/Steam/compatibilitytools.d/
-      rm $ULWGL_PROTON_VER.tar.gz
-      rm $ULWGL_PROTON_VER.sha512sum
-    else
-      echo "ERROR: $ULWGL_PROTON_VER.tar.gz checksum does not match $ULWGL_PROTON_VER.sha512sum, aborting!"
-      rm $ULWGL_PROTON_VER.tar.gz
-      rm $ULWGL_PROTON_VER.sha512sum
-      exit 1
-    fi
-  fi
-  PROTONPATH="$HOME"/.local/share/Steam/compatibilitytools.d/$ULWGL_PROTON_VER
-else
-  export PROTONPATH="$PROTONPATH"
-fi
+
 export ULWGL_ID="$GAMEID"
 export STEAM_COMPAT_APP_ID="0"
 numcheck='^[0-9]+$'
@@ -146,8 +102,7 @@ if [ "$EXE" = "createprefix"  ]; then
 fi
 shift 1
 
-export STEAM_COMPAT_TOOL_PATHS="$PROTONPATH:$HOME"/.local/share/ULWGL
-export STEAM_COMPAT_MOUNTS="$PROTONPATH:$HOME"/.local/share/ULWGL
+export STEAM_COMPAT_TOOL_PATHS="$PROTONPATH:$here"
+export STEAM_COMPAT_MOUNTS="$PROTONPATH:$here"
 
-"$HOME"/.local/share/ULWGL/ULWGL "--verb=$PROTON_VERB" -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"
-
+"$here"/ULWGL "--verb=$PROTON_VERB" -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"

@@ -143,11 +143,11 @@ modules:
   - name: ulwgl-run
     buildsystem: simple
     build-commands:
-      - install -D ulwgl-run /app/bin/ulwgl-run
+      - install -D ulwgl-run-cli /app/bin/ulwgl-run
       - install -D ULWGL-launcher.tar.gz /app/share/ULWGL/ULWGL-launcher.tar.gz
     sources:
       - type: file
-        path: ulwgl-run
+        path: ulwgl-run-cli
       - type: file
         url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC3/ULWGL-launcher.tar.gz
         sha256: e25c4dd0636d04e7c8c534cf3c5bbdca5ae0d49f146ee8395306174700899952
