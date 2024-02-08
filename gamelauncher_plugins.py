@@ -12,10 +12,6 @@ def enable_steam_game_drive(env: Dict[str, str]):
     paths: Set[str] = set()
     root: Path = Path("/")
 
-    # We expect this value to be the exe directory
-    if not Path(env["STEAM_COMPAT_INSTALL_PATH"]).is_dir():
-        return env
-
     # Check for mount points going up toward the root
     # NOTE: Subvolumes can be mount points
     for path in Path(env["STEAM_COMPAT_INSTALL_PATH"]).parents:
@@ -30,7 +26,10 @@ def enable_steam_game_drive(env: Dict[str, str]):
 
     if "LD_LIBRARY_PATH" in os.environ:
         paths.add(Path(os.environ["LD_LIBRARY_PATH"]).as_posix())
-    paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
+
+    if env["STEAM_COMPAT_INSTALL_PATH"]:
+        paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
+
     # Hard code for now because these paths seem to be pretty standard
     # This way we avoid shelling to ldconfig
     paths.add("/usr/lib")

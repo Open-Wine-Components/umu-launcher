@@ -253,14 +253,14 @@ def main() -> None:  # noqa: D103
     )
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
-    # Game Drive functionality
-    gamelauncher_plugins.enable_steam_game_drive(env)
-
     # Create an empty Proton prefix when asked
     if not getattr(args, "exe", None) and not getattr(args, "config", None):
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         verb = "waitforexitandrun"
+
+    # Game Drive functionality
+    gamelauncher_plugins.enable_steam_game_drive(env)
 
     # Set all environment variable
     # NOTE: `env` after this block should be read only

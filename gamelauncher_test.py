@@ -8,6 +8,7 @@ from pathlib import Path
 from tomllib import TOMLDecodeError
 from shutil import rmtree
 import re
+import gamelauncher_plugins
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -56,6 +57,121 @@ class TestGameLauncher(unittest.TestCase):
 
         if Path(self.test_file).exists():
             rmtree(self.test_file)
+
+    def test_game_drive_empty(self):
+        """Test enable_steam_game_drive.
+
+        Empty WINE prefixes can be created by passing an empty string to --exe
+        During this process, we attempt to prepare setting up game drive and set the values for STEAM_RUNTIME_LIBRARY_PATH and STEAM_COMPAT_INSTALL_PATHS
+        The resulting value of those variables should be colon delimited string with no leading colons and contain only /usr/lib or /usr/lib32
+        """
+        result = None
+        result_set_env = None
+        result_check_env = None
+        result_gamedrive = None
+        Path(self.test_file + "/proton").touch()
+
+        # Replicate main's execution and test up until enable_steam_game_drive
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(exe=""),
+        ):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            # Parse arguments
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            # Check if required env var are set
+            result_check_env = gamelauncher.check_env(self.env)
+            self.assertIsInstance(
+                result_check_env, dict, "Expected a Dictionary from set_env_toml"
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(
+                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
+            )
+            self.assertEqual(
+                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
+            )
+
+            # Set the required environment variables
+            result_set_env = gamelauncher.set_env(self.env, result)
+            self.assertIsInstance(
+                result_set_env, dict, "Expected a Dictionary from set_env_toml"
+            )
+
+            # Check for expected changes
+            # We only check the required ones
+            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
+            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
+            self.assertEqual(result_set_env["GAMEID"], self.test_file)
+            # Check if the EXE is empty
+            self.assertFalse(result_set_env["EXE"], "Expected EXE to be empty")
+
+        # Set remaining environment variables
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
+        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
+        self.env["SteamGameId"] = self.env["SteamAppId"]
+        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
+        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
+        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
+        self.env["STEAM_COMPAT_SHADER_PATH"] = (
+            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
+        )
+        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
+            Path(self.env["EXE"]).parent.expanduser().as_posix()
+        )
+        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
+        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
+            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
+        )
+        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
+
+        # Create an empty Proton prefix when asked
+        if not getattr(result, "exe", None) and not getattr(result, "config", None):
+            self.env["EXE"] = ""
+            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
+            self.verb = "waitforexitandrun"
+
+        # Game Drive
+        result_gamedrive = gamelauncher_plugins.enable_steam_game_drive(self.env)
+        self.assertIsInstance(
+            result_gamedrive, dict, "Expected a Dictionary from enable_steam_game_drive"
+        )
+        self.assertTrue(result_gamedrive is self.env, "Expected the same reference")
+
+        self.assertTrue(
+            self.env["STEAM_RUNTIME_LIBRARY_PATH"],
+            "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
+        )
+
+        # We just expect /usr/lib and /usr/lib32
+        self.assertEqual(
+            len(self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")),
+            2,
+            "Expected two values in STEAM_RUNTIME_LIBRARY_PATH",
+        )
+
+        # We need to sort the elements because the values were originally in a set
+        str1, str2 = [*sorted(self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":"))]
+
+        # Check that there are no trailing colons or unexpected characters
+        self.assertEqual(str1, "/usr/lib", "Expected /usr/lib")
+        self.assertEqual(str2, "/usr/lib32", "Expected /usr/lib32")
+
+        # Both of these values should be empty still after calling enable_steam_game_drive
+        self.assertFalse(
+            self.env["STEAM_COMPAT_INSTALL_PATH"],
+            "Expected STEAM_COMPAT_INSTALL_PATH to be empty when passing an empty EXE",
+        )
+        self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
 
     def test_build_command_verb(self):
         """Test build_command.
