@@ -68,8 +68,7 @@ def check_env(env: Dict[str, str]) -> Dict[str, str]:
 
     if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
         Path(os.environ["WINEPREFIX"]).mkdir(parents=True)
-    path = os.environ["WINEPREFIX"]
-    env["WINEPREFIX"] = path
+    env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
     if "GAMEID" not in os.environ:
         err: str = "Environment variable not set: GAMEID"
