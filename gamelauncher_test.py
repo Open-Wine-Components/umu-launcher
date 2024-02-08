@@ -997,6 +997,49 @@ class TestGameLauncher(unittest.TestCase):
             result = gamelauncher.set_env(self.env, result_args)
             self.assertIsInstance(result, dict, "Expected a Dictionary from set_env")
 
+    def test_setup_pfx_symlinks(self):
+        """Test _setup_pfx for valid symlinks.
+
+        Ensure that symbolic links to the WINE prefix (pfx) are always in expanded form when passed an unexpanded path.
+        For example:
+        if WINEPREFIX is /home/foo/.wine
+        pfx -> /home/foo/.wine
+
+        We do not want the symbolic link such as:
+        pfx -> ~/.wine
+        """
+        result = None
+        pattern = r"^/home/[a-zA-Z]+"
+        unexpanded_path = re.sub(
+            pattern,
+            "~",
+            Path(
+                Path(self.test_file).cwd().as_posix() + "/" + self.test_file
+            ).as_posix(),
+        )
+        result = gamelauncher._setup_pfx(unexpanded_path)
+        # Replaces the expanded path to unexpanded
+        # Example: ~/some/path/to/this/file
+        self.assertIsNone(
+            result,
+            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+        )
+        self.assertTrue(
+            Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
+        )
+        self.assertTrue(
+            Path(self.test_file + "/tracked_files").is_file(),
+            "Expected tracked_files to be a file",
+        )
+        self.assertTrue(
+            Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
+        )
+        # Check if the symlink is in its unexpanded form
+        self.assertEqual(
+            Path(self.test_file + "/pfx").readlink().as_posix(),
+            Path(unexpanded_path).expanduser().as_posix(),
+        )
+
     def test_setup_pfx_paths(self):
         """Test _setup_pfx on unexpanded paths.
 

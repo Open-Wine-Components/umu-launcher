@@ -51,7 +51,9 @@ def parse_args() -> Namespace:  # noqa: D103
 def _setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
     if not (Path(path + "/pfx")).expanduser().is_symlink():
-        Path(path + "/pfx").expanduser().symlink_to(path)
+        # When creating the symlink, we want it to be in expanded form when passed unexpanded paths
+        # Example: pfx -> /home/.wine
+        Path(path + "/pfx").expanduser().symlink_to(Path(path).expanduser())
     Path(path + "/tracked_files").expanduser().touch()
 
 
