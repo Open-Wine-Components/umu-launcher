@@ -32,7 +32,7 @@ fi
 
 if [ -n "$PROTONPATH" ]; then
   if [ ! -d "$PROTONPATH" ]; then
-    echo "ERROR: $PROTONPATH is invalid, aborting!"    exit 1
+    echo "ERROR: $PROTONPATH is invalid, aborting!"
     exit 1
   fi
 fi
@@ -68,15 +68,15 @@ if [ -z "$STEAM_RUNTIME_LIBRARY_PATH" ]; then
       echo "Warning: An unexpected error occurred while executing \"/sbin/ldconfig -XNv\", the exit status was $exit_status"
   fi
 
-  echo "$ldconfig_output" | while IFS= read -r line; do
+ while read -r line; do
     # If line starts with a leading / and contains :, it's a new path prefix
-    case "$line" in
-    /*:*)
+    case "$line" in /*:*)
         library_path_prefix=$(echo "$line" | cut -d: -f1)
-        host_library_paths="$host_library_paths$library_path_prefix:"
-        ;;
+        host_library_paths=$host_library_paths$library_path_prefix:
     esac
-  done
+  done <<EOLDCONFIG
+$ldconfig_output
+EOLDCONFIG
 
   host_library_paths="${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}$host_library_paths"
   steam_runtime_library_paths="${STEAM_COMPAT_INSTALL_PATH}:${host_library_paths}"
