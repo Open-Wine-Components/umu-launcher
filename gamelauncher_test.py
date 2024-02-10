@@ -37,6 +37,7 @@ class TestGameLauncher(unittest.TestCase):
             "SteamAppId": "",
             "SteamGameId": "",
             "STEAM_RUNTIME_LIBRARY_PATH": "",
+            "ULWGL_ID": "",
         }
         self.test_opts = "-foo -bar"
         # Proton verb
@@ -110,9 +111,14 @@ class TestGameLauncher(unittest.TestCase):
             # Check if the EXE is empty
             self.assertFalse(result_set_env["EXE"], "Expected EXE to be empty")
 
-        # Set remaining environment variables
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["ULWGL_ID"] = self.env["GAMEID"]
+        self.env["STEAM_COMPAT_APP_ID"] = "0"
+
+        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
+            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
+                self.env["ULWGL_ID"].find("-") + 1 :
+            ]
+
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
         self.env["SteamGameId"] = self.env["SteamAppId"]
         self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
@@ -221,8 +227,14 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
             self.assertEqual(result_set_env["GAMEID"], self.test_file)
 
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["ULWGL_ID"] = self.env["GAMEID"]
+        self.env["STEAM_COMPAT_APP_ID"] = "0"
+
+        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
+            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
+                self.env["ULWGL_ID"].find("-") + 1 :
+            ]
+
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
         self.env["SteamGameId"] = self.env["SteamAppId"]
         self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
@@ -298,8 +310,14 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
             self.assertEqual(result_set_env["GAMEID"], self.test_file)
 
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["ULWGL_ID"] = self.env["GAMEID"]
+        self.env["STEAM_COMPAT_APP_ID"] = "0"
+
+        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
+            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
+                self.env["ULWGL_ID"].find("-") + 1 :
+            ]
+
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
         self.env["SteamGameId"] = self.env["SteamAppId"]
         self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
@@ -316,7 +334,6 @@ class TestGameLauncher(unittest.TestCase):
             self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
         )
         self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-
         # Create an empty Proton prefix when asked
         if not getattr(result, "exe", None) and not getattr(result, "config", None):
             self.env["EXE"] = ""
@@ -374,8 +391,14 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
             self.assertEqual(result_set_env["GAMEID"], self.test_file)
 
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["ULWGL_ID"] = self.env["GAMEID"]
+        self.env["STEAM_COMPAT_APP_ID"] = "0"
+
+        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
+            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
+                self.env["ULWGL_ID"].find("-") + 1 :
+            ]
+
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
         self.env["SteamGameId"] = self.env["SteamAppId"]
         self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
@@ -469,9 +492,14 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected the concat EXE and game options to not have trailing spaces",
             )
 
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-        self.env["STEAM_COMPAT_APP_ID"] = self.env["GAMEID"]
+        self.env["ULWGL_ID"] = self.env["GAMEID"]
+        self.env["STEAM_COMPAT_APP_ID"] = "0"
+
+        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
+            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
+                self.env["ULWGL_ID"].find("-") + 1 :
+            ]
+
         self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
         self.env["SteamGameId"] = self.env["SteamAppId"]
         self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()

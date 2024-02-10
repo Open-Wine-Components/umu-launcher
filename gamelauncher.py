@@ -8,6 +8,7 @@ from pathlib import Path
 import tomllib
 from typing import Dict, Any, List, Set
 import gamelauncher_plugins
+from re import match
 
 # TODO: Only set the environment variables that are not empty
 import subprocess
@@ -239,7 +240,12 @@ def main() -> None:  # noqa: D103
     if getattr(args, "verb", None) and getattr(args, "verb", None) in verbs:
         verb = getattr(args, "verb", None)
 
-    env["STEAM_COMPAT_APP_ID"] = env["GAMEID"]
+    env["ULWGL_ID"] = env["GAMEID"]
+    env["STEAM_COMPAT_APP_ID"] = "0"
+
+    if match(r"^ulwgl-[\d\w]+$", env["ULWGL_ID"]):
+        env["STEAM_COMPAT_APP_ID"] = env["ULWGL_ID"][env["ULWGL_ID"].find("-") + 1 :]
+
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
     env["WINEPREFIX"] = Path(env["WINEPREFIX"]).expanduser().as_posix()
