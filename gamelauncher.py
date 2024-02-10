@@ -15,15 +15,26 @@ import subprocess
 
 
 def parse_args() -> Namespace:  # noqa: D103
+    stores: List[str] = [
+        "amazon",
+        "battlenet",
+        "ea",
+        "egs",
+        "gog",
+        "humble",
+        "itchio",
+        "ubisoft",
+    ]
     exe: str = Path(__file__).name
     usage: str = """
-  example usage:
+example usage:
   {} --config example.toml
   {} --config /home/foo/example.toml --options '-opengl'
   WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --options '-opengl'
+  WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --store gog
   WINEPREFIX= GAMEID= PROTONPATH= {} --exe ""
   WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --verb waitforexitandrun
-    """.format(exe, exe, exe, exe, exe)
+    """.format(exe, exe, exe, exe, exe, exe)
 
     parser: ArgumentParser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
@@ -45,6 +56,10 @@ def parse_args() -> Namespace:  # noqa: D103
         "--options",
         help="launch options for game executable\nNOTE: options must be wrapped in quotes",
     )
+    parser.add_argument(
+        "--store",
+        help=f"the store of the game executable\nNOTE: will override the store specified in config\nexamples: {stores}",
+    )
 
     return parser.parse_args(sys.argv[1:])
 
@@ -54,6 +69,7 @@ def _setup_pfx(path: str) -> None:
     if not (Path(path + "/pfx")).expanduser().is_symlink():
         # When creating the symlink, we want it to be in expanded form when passed unexpanded paths
         # Example: pfx -> /home/.wine
+        # NOTE: When parsing a config file, an error can be raised if the prefix doesn't already exist
         Path(path + "/pfx").expanduser().symlink_to(Path(path).expanduser())
     Path(path + "/tracked_files").expanduser().touch()
 
@@ -145,7 +161,7 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
     for key, val in toml["ulwgl"].items():
         # Handle cases for empty values
         if not val and isinstance(val, str):
-            err: str = "Value is empty for key in TOML: " + key
+            err: str = f'Value is empty for key in TOML: {key}\nPlease specify a value or remove the following entry:\n{key} = "{val}"'
             raise ValueError(err)
         if key == "prefix":
             env["WINEPREFIX"] = val
@@ -155,6 +171,8 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
         elif key == "proton":
             env["PROTONPATH"] = val
             env["STEAM_COMPAT_INSTALL_PATH"] = val
+        elif key == "store":
+            env["STORE"] = val
         elif key == "exe":
             # Raise an error for executables that do not exist
             # One case this can happen is when game options are appended at the end of the exe
@@ -217,6 +235,7 @@ def main() -> None:  # noqa: D103
         "SteamAppId": "",
         "SteamGameId": "",
         "STEAM_RUNTIME_LIBRARY_PATH": "",
+        "STORE": "",
     }
     command: List[str] = []
     verb: str = "waitforexitandrun"
@@ -239,6 +258,9 @@ def main() -> None:  # noqa: D103
 
     if getattr(args, "verb", None) and getattr(args, "verb", None) in verbs:
         verb = getattr(args, "verb", None)
+
+    if getattr(args, "store", None):
+        env["STORE"] = getattr(args, "store", None)
 
     env["ULWGL_ID"] = env["GAMEID"]
     env["STEAM_COMPAT_APP_ID"] = "0"

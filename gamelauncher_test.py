@@ -1213,6 +1213,24 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected the same value when setting --verb",
             )
 
+    def test_parse_args_store(self):
+        """Test parse_args --store."""
+        test_store = "gog"
+        with patch.object(
+            gamelauncher,
+            "parse_args",
+            return_value=argparse.Namespace(exe=self.test_exe, store=test_store),
+        ):
+            result = gamelauncher.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertEqual(
+                result.store,
+                test_store,
+                "Expected the same value when setting --store",
+            )
+
     def test_parse_args_options(self):
         """Test parse_args --options."""
         with patch.object(
