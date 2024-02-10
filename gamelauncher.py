@@ -200,9 +200,26 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
 
 def build_command(env: Dict[str, str], command: List[str], verb: str) -> List[str]:
     """Build the command to be executed."""
-    # NOTE: We must assume _v2-entry-point (ULWGL) is within the same dir as this launcher
-    # Otherwise, an error can be raised
-    entry_point: str = Path(Path(__file__).cwd().as_posix() + "/ULWGL").as_posix()
+    paths: List[Path] = [
+        Path(Path().home().as_posix() + "/.local/share/ULWGL/ULWGL"),
+        Path(Path(__file__).cwd().as_posix() + "/ULWGL"),
+    ]
+    entry_point: str = ""
+
+    # Find the ULWGL script in $HOME/.local/share then cwd
+    for path in paths:
+        if path.is_file():
+            entry_point = path.as_posix()
+            break
+
+    # Raise an error if the _v2-entry-point cannot be found
+    if not entry_point:
+        home: str = Path().home().as_posix()
+        dir: str = Path(__file__).cwd().as_posix()
+        msg: str = (
+            f"Path to _v2-entry-point cannot be found in: {home}/.local/share or {dir}"
+        )
+        raise FileNotFoundError(msg)
 
     if not Path(env.get("PROTONPATH") + "/proton").is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
