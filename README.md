@@ -24,20 +24,23 @@ The first part `/home/tcrider/.local/share/Steam/steamapps/common/SteamLinuxRunt
 
 The second part `_v2-entry-point` is just a bash script which loads proton into the container and runs the game.
 
-So, ULWGL is basically a copy paste of SteamLinuxRuntime_sniper, which is a compiled version of steam-runtime-tools. We've renamed _v2-entry-point to ULWGL and added `gamelauncher.sh` to replace steam-launch-wrapper.
+So, ULWGL is basically a copy paste of SteamLinuxRuntime_sniper, which is a compiled version of steam-runtime-tools. We've renamed _v2-entry-point to ULWGL and added `ulwgl-run` to replace steam-launch-wrapper.
 
-When you use `gamelauncher.sh` to run a game, it uses the specified WINEPREFIX, proton version, executable, and arguements passed to it to run the game in proton, inside steam's runtime container JUST like if you were running the game through Steam, except now you're no longer limited to Steam's game library or forced to add the game to Steam's library, in fact, you don't even have to have steam installed.
+When you use `ulwgl-run` to run a game, it uses the specified WINEPREFIX, proton version, executable, and arguements passed to it to run the game in proton, inside steam's runtime container JUST like if you were running the game through Steam, except now you're no longer limited to Steam's game library or forced to add the game to Steam's library, in fact, you don't even have to have steam installed.
 
 # HOW DO I USE IT?
 
 Usage:
 
-  `WINEPREFIX=<wine-prefix-path> GAMEID=<ulwgl-id> PROTONPATH=<proton-version-path> ./gamelauncher.sh <executable-path> <arguements>`
+  `WINEPREFIX=<wine-prefix-path> GAMEID=<ulwgl-id> PROTONPATH=<proton-version-path> ./ulwgl-run <executable-path> <arguements>`
 
 Ex:
 
-  `WINEPREFIX=$HOME/Games/epic-games-store GAMEID=egs PROTONPATH="$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28" ./gamelauncher.sh "$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe" "-opengl -SkipBuildPatchPrereq"`
+  `WINEPREFIX=$HOME/Games/epic-games-store GAMEID=ulwgl-dauntless PROTONPATH="$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28" ./ulwgl-run "$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe" "-opengl -SkipBuildPatchPrereq"`
 
+Optional (used mainly for protonfixes): `STORE`
+
+  `WINEPREFIX=$HOME/Games/epic-games-store GAMEID=ulwgl-dauntless STORE=egs PROTONPATH="$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28" ./ulwgl-run "$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe" "-opengl -SkipBuildPatchPrereq"`
 
 # WHAT DOES THIS MEAN FOR OTHER LAUNCHERS (lutris/bottles/heroic/legendary,etc):
 
@@ -48,13 +51,13 @@ Ex:
 
 right now protonfixes packages a folder of 'gamefixes' however it could likely be recoded to pull from online quite easily
 
-The idea is to get all of these tools using this same `gamelauncher.sh` and just feeding their envvars into it. That way any changes that need to happen can happen in proton-ge and/or protonfixes, or a 'unified proton' build based off GE, or whatever they want.
+The idea is to get all of these tools using this same `ulwgl-run` and just feeding their envvars into it. That way any changes that need to happen can happen in proton-ge and/or protonfixes, or a 'unified proton' build based off GE, or whatever they want.
 
 # WHAT IS THE BASIC PLAN OF PUTTING THIS INTO ACTION?
 
 1. We build a database containing various game titles, their IDs from different stores, and their correlating ULWGL ID.
-2. Various launchers then search the database to pull the ULWGL ID, and feed it as the game ID to gamelauncher.sh alongside the store type, proton version, wine prefix, game executable, and launch arguements.
-3. When the game gets launched from gamelauncher.sh, protonfixes picks up the store type and ULWGL ID and finds the appropriate fix script for it, then applies it before running the game.
+2. Various launchers then search the database to pull the ULWGL ID, and feed it as the game ID to ulwgl-run alongside the store type, proton version, wine prefix, game executable, and launch arguements.
+3. When the game gets launched from ulwgl-run, protonfixes picks up the store type and ULWGL ID and finds the appropriate fix script for it, then applies it before running the game.
 4. protonfixes has folders separated for each store type. The ULWGL ID for a game remains the exact same across multiple stores, the only difference being it can have store specific scripts OR it can just symlink to another existing script that already has the fixes it needs.
 
 Example:
@@ -63,7 +66,7 @@ Borderlands 3 from EGS store.
 1. Generally a launcher is going to know which store it is using already, so that is easy enough to determine and feed the STORE variable to the launcher.
 2. To determine the game title, EGS has various codenames such as 'Catnip'. The launcher would see "ok store is egs and codename is Catnip, let's search the ULWGL database for those"
 3. In our ULWGL unified database, we create a 'title' column, 'store' column, 'codename' column, 'ULWGL-ID' column. We add a line for Borderlands 3 and fill in the details for each column.
-4. Now the launcher can search 'Catnip' and 'egs' as the codename and store in the database and correlate it with Borderlands 3 and ULWGL-12345. It can then feed ULWGL-12345 to the gamelauncher.sh script.
+4. Now the launcher can search 'Catnip' and 'egs' as the codename and store in the database and correlate it with Borderlands 3 and ULWGL-12345. It can then feed ULWGL-12345 to the ulwgl-run script.
 
 
 README notes from Valve's steam-runtime-tools:
