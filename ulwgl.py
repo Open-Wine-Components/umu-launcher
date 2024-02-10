@@ -7,10 +7,9 @@ import sys
 from pathlib import Path
 import tomllib
 from typing import Dict, Any, List, Set
-import gamelauncher_plugins
+import ulwgl_plugins
 from re import match
-
-# TODO: Only set the environment variables that are not empty
+from io import TextIOWrapper
 import subprocess
 
 
@@ -26,39 +25,41 @@ def parse_args() -> Namespace:  # noqa: D103
         "ubisoft",
     ]
     exe: str = Path(__file__).name
-    usage: str = """
+    usage: str = f"""
 example usage:
-  {} --config example.toml
-  {} --config /home/foo/example.toml --options '-opengl'
-  WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --options '-opengl'
-  WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --store gog
-  WINEPREFIX= GAMEID= PROTONPATH= {} --exe ""
-  WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --verb waitforexitandrun
-    """.format(exe, exe, exe, exe, exe, exe)
+  {exe} --config example.toml
+  {exe} --config /home/foo/example.toml --options '-opengl'
+  WINEPREFIX= GAMEID= PROTONPATH= {exe} --exe /home/foo/example.exe --options '-opengl'
+  WINEPREFIX= GAMEID= PROTONPATH= {exe} --exe /home/foo/example.exe --store gog
+  WINEPREFIX= GAMEID= PROTONPATH= {exe} --exe ""
+  WINEPREFIX= GAMEID= PROTONPATH= {exe} --exe /home/foo/example.exe --verb waitforexitandrun
+    """
 
     parser: ArgumentParser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog=usage,
         formatter_class=argparse.RawTextHelpFormatter,
     )
+
     group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--config", help="path to TOML file")
     group.add_argument(
         "--exe",
         help="path to game executable\npass an empty string to create a prefix",
         default=None,
     )
-    parser.add_argument(
-        "--verb",
-        help="a verb to pass to Proton (default: waitforexitandrun)",
-    )
+    group.add_argument("--config", help="path to TOML file")
+
     parser.add_argument(
         "--options",
         help="launch options for game executable\nNOTE: options must be wrapped in quotes",
     )
     parser.add_argument(
         "--store",
-        help=f"the store of the game executable\nNOTE: will override the store specified in config\nexamples: {stores}",
+        help=f"distribution platform of the executable\nNOTE: will override the store specified in config\nexamples: {stores}",
+    )
+    parser.add_argument(
+        "--verb",
+        help="a verb to pass to Proton (default: waitforexitandrun)",
     )
 
     return parser.parse_args(sys.argv[1:])
@@ -200,37 +201,64 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
 
 def build_command(env: Dict[str, str], command: List[str], verb: str) -> List[str]:
     """Build the command to be executed."""
+    steamrt_interface: str = "/pressure-vessel/bin/steam-runtime-launcher-interface-0"
+    pv: str = "/pressure-vessel/bin/pressure-vessel-unruntime"
+    LD_PRELOAD: str = os.environ.get("LD_PRELOAD")
     paths: List[Path] = [
-        Path(Path().home().as_posix() + "/.local/share/ULWGL/ULWGL"),
-        Path(Path(__file__).cwd().as_posix() + "/ULWGL"),
+        Path(Path().home().as_posix() + "/.local/share/ULWGL"),
+        Path(Path(__file__).cwd().as_posix()),
     ]
-    entry_point: str = ""
+    path: str = ""
 
-    # Find the ULWGL script in $HOME/.local/share then cwd
-    for path in paths:
-        if path.is_file():
-            entry_point = path.as_posix()
-            break
-
-    # Raise an error if the _v2-entry-point cannot be found
-    if not entry_point:
-        home: str = Path().home().as_posix()
-        dir: str = Path(__file__).cwd().as_posix()
-        msg: str = (
-            f"Path to _v2-entry-point cannot be found in: {home}/.local/share or {dir}"
-        )
-        raise FileNotFoundError(msg)
-
+    # Confirm proton exists
     if not Path(env.get("PROTONPATH") + "/proton").is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
-    command.extend([entry_point, "--verb", verb, "--"])
+    # Confirm pressure vessel exists
+    for path in paths:
+        print(path.as_posix() + "/pressure-vessel")
+        if (
+            Path(path.as_posix() + "/pressure-vessel").is_dir()
+            or Path(path.as_posix() + "/pressure-vessel").is_symlink()
+        ):
+            path = path.expanduser().as_posix()
+            break
+
+    if not path:
+        err: str = "Path to pressure-vessel not found in: " + [*paths]
+        raise FileNotFoundError(err)
+
+    # Build the command
+    if not LD_PRELOAD:
+        command.extend([path + pv, "--"])
+    else:
+        print(f"Unsetting enviroment variable: LD_PRELOAD={LD_PRELOAD}")
+        os.environ.pop("LD_PRELOAD")
+        command.extend(
+            [
+                path + pv,
+                "--env-if-host=LD_PRELOAD=",
+                LD_PRELOAD,
+                "--ld-preloads",
+                LD_PRELOAD,
+                "--",
+            ]
+        )
+    command.extend([path + steamrt_interface, "container-runtime"])
+    command.extend(
+        [Path(env.get("PROTONPATH") + "/proton").as_posix(), verb, env.get("EXE")]
+    )
     command.extend(
         [Path(env.get("PROTONPATH") + "/proton").as_posix(), verb, env.get("EXE")]
     )
 
     return command
+
+
+def _pre_exit_routine(file: TextIOWrapper) -> None:
+    if file:
+        file.close()
 
 
 def main() -> None:  # noqa: D103
@@ -305,17 +333,26 @@ def main() -> None:  # noqa: D103
         verb = "waitforexitandrun"
 
     # Game Drive functionality
-    gamelauncher_plugins.enable_steam_game_drive(env)
+    ulwgl_plugins.enable_steam_game_drive(env)
 
-    # Set all environment variable
-    # NOTE: `env` after this block should be read only
-    for key, val in env.items():
-        print(f"Setting environment variable: {key}={val}")
-        os.environ[key] = val
+    try:
+        # If we're enabling logs, we need to remember to close this object
+        # This appears to be controlled via STEAM_LINUX_RUNTIME_LOG
+        file: TextIOWrapper = None
+        env, file = ulwgl_plugins.enable_pressure_vessel(env)
 
-    build_command(env, command, verb)
-    print(f"The following command will be executed: {command}")
-    subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
+        # Set all environment variables
+        # NOTE: `env` after this block should be read only
+        for key, val in env.items():
+            print(f"Setting environment variable: {key}={val}")
+            os.environ[key] = val
+
+        build_command(env, command, verb)
+        print(f"The following command will be executed: {command}")
+        subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
+        _pre_exit_routine(file)
+    except KeyboardInterrupt:
+        _pre_exit_routine(file)
 
 
 if __name__ == "__main__":
