@@ -52,11 +52,52 @@ def setup_pfx(path: str) -> None:
     Path(path + "/tracked_files").expanduser().touch()
 
 
-def check_env(env: Dict[str, str]) -> Dict[str, str]:
+def check_env(
+    env: Dict[str, str], toml: Dict[str, Any] = None
+) -> Union[Dict[str, str], Dict[str, Any]]:
     """Before executing a game, check for environment variables and set them.
 
     WINEPREFIX, GAMEID and PROTONPATH are strictly required.
     """
+    if toml:
+        # Check for required or empty key/value pairs when reading a TOML config
+        # NOTE: Casing matters in the config and we don't check if the game id is set
+        table: str = "ulwgl"
+        required_keys: List[str] = ["proton", "prefix", "exe"]
+
+        if table not in toml:
+            err: str = f"Table '{table}' in TOML is not defined."
+            raise ValueError(err)
+
+        for key in required_keys:
+            if key not in toml[table]:
+                err: str = f"The following key in table '{table}' is required: {key}"
+                raise ValueError(err)
+
+            # Raise an error for executables that do not exist
+            # One case this can happen is when game options are appended at the end of the exe
+            # Users should use launch_args for that
+            if key == "exe" and not Path(toml[table][key]).expanduser().is_file():
+                val: str = toml[table][key]
+                err: str = f"Value for key '{key}' in TOML is not a file: {val}"
+                raise FileNotFoundError(err)
+
+            # The proton and wine prefix need to be folders
+            if (
+                key == "proton" and not Path(toml[table][key]).expanduser().is_dir()
+            ) or (key == "prefix" and not Path(toml[table][key]).expanduser().is_dir()):
+                dir: str = Path(toml[table][key]).expanduser().as_posix()
+                err: str = f"Value for key '{key}' in TOML is not a directory: {dir}"
+                raise NotADirectoryError(err)
+
+        # Check for empty keys
+        for key, val in toml[table].items():
+            if not val and isinstance(val, str):
+                err: str = f"Value is empty for '{key}' in TOML.\nPlease specify a value or remove the following entry:\n{key} = {val}"
+                raise ValueError(err)
+
+        return toml
+
     if "WINEPREFIX" not in os.environ:
         err: str = "Environment variable not set or not a directory: WINEPREFIX"
         raise ValueError(err)
@@ -77,7 +118,6 @@ def check_env(env: Dict[str, str]) -> Dict[str, str]:
         err: str = "Environment variable not set or not a directory: PROTONPATH"
         raise ValueError(err)
     env["PROTONPATH"] = os.environ["PROTONPATH"]
-    env["STEAM_COMPAT_INSTALL_PATH"] = os.environ["PROTONPATH"]
 
     return env
 
@@ -164,51 +204,22 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
     with Path(path_config).open(mode="rb") as file:
         toml = tomllib.load(file)
 
-    if not (
-        Path(toml["ulwgl"]["prefix"]).expanduser().is_dir()
-        or Path(toml["ulwgl"]["proton"]).expanduser().is_dir()
-    ):
-        err: str = "Value for 'prefix' or 'proton' in TOML is not a directory."
-        raise NotADirectoryError(err)
+    check_env(env, toml)
 
-    # Set the values read from TOML to environment variables
-    # If necessary, raise an error on invalid inputs
     for key, val in toml["ulwgl"].items():
-        # Handle cases for empty values
-        if not val and isinstance(val, str):
-            err: str = f'Value is empty for key in TOML: {key}\nPlease specify a value or remove the following entry:\n{key} = "{val}"'
-            raise ValueError(err)
         if key == "prefix":
             env["WINEPREFIX"] = val
         elif key == "game_id":
             env["GAMEID"] = val
         elif key == "proton":
             env["PROTONPATH"] = val
-            env["STEAM_COMPAT_INSTALL_PATH"] = val
         elif key == "store":
             env["STORE"] = val
         elif key == "exe":
-            # Raise an error for executables that do not exist
-            # One case this can happen is when game options are appended at the end of the exe
-            if not Path(val).expanduser().is_file():
-                err: str = "Value for key 'exe' in TOML is not a file."
-                raise FileNotFoundError(err)
-
-            # It's possible for users to pass values to --options
-            # Add any if they exist
             if toml.get("ulwgl").get("launch_args"):
                 env["EXE"] = val + " " + " ".join(toml.get("ulwgl").get("launch_args"))
             else:
                 env["EXE"] = val
-
-            if getattr(args, "options", None):
-                # Assume space separated options and just trust it
-                env["EXE"] = (
-                    env["EXE"]
-                    + " "
-                    + " ".join(getattr(args, "options", None).split(" "))
-                )
-
     return env
 
 
