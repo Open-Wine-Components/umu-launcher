@@ -214,13 +214,14 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
     return env
 
 
-def build_command(env: Dict[str, str], command: List[str], verb: str) -> List[str]:
+def build_command(env: Dict[str, str], command: List[str]) -> List[str]:
     """Build the command to be executed."""
     paths: List[Path] = [
         Path(Path().home().as_posix() + "/.local/share/ULWGL/ULWGL"),
         Path(Path(__file__).cwd().as_posix() + "/ULWGL"),
     ]
     entry_point: str = ""
+    verb: str = env["PROTON_VERB"]
 
     # Find the ULWGL script in $HOME/.local/share then cwd
     for path in paths:
@@ -292,7 +293,7 @@ def main() -> None:  # noqa: D103
         print(f"Setting environment variable: {key}={val}")
         os.environ[key] = val
 
-    build_command(env, command, verb)
+    build_command(env, command)
     print(f"The following command will be executed: {command}")
     subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
 
