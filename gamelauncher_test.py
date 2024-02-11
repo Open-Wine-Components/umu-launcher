@@ -38,6 +38,8 @@ class TestGameLauncher(unittest.TestCase):
             "SteamGameId": "",
             "STEAM_RUNTIME_LIBRARY_PATH": "",
             "ULWGL_ID": "",
+            "STORE": "",
+            "PROTON_VERB": "",
         }
         self.test_opts = "-foo -bar"
         # Proton verb
@@ -66,85 +68,32 @@ class TestGameLauncher(unittest.TestCase):
         During this process, we attempt to prepare setting up game drive and set the values for STEAM_RUNTIME_LIBRARY_PATH and STEAM_COMPAT_INSTALL_PATHS
         The resulting value of those variables should be colon delimited string with no leading colons and contain only /usr/lib or /usr/lib32
         """
-        result = None
-        result_set_env = None
-        result_check_env = None
+        args = None
         result_gamedrive = None
         Path(self.test_file + "/proton").touch()
 
         # Replicate main's execution and test up until enable_steam_game_drive
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=""),
-        ):
+        with patch("sys.argv", ["", ""]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
-            # Parse arguments
-            result = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            # Check if required env var are set
-            result_check_env = gamelauncher.check_env(self.env)
-            self.assertTrue(result_check_env is self.env, "Expected the same reference")
-            self.assertEqual(
-                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
-            )
-            self.assertEqual(
-                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
-            )
-            self.assertEqual(
-                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
-            )
+            os.environ["STORE"] = self.test_file
+            # Args
+            args = gamelauncher.parse_args()
+            # Config
+            gamelauncher.check_env(self.env)
+            # Prefix
+            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            gamelauncher.set_env(self.env, args)
+            # Game drive
+            result_gamedrive = gamelauncher_plugins.enable_steam_game_drive(self.env)
 
-            # Set the required environment variables
-            result_set_env = gamelauncher.set_env(self.env, result)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
+        for key, val in self.env.items():
+            os.environ[key] = val
 
-            # Check for expected changes
-            # We only check the required ones
-            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
-            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
-            self.assertEqual(result_set_env["GAMEID"], self.test_file)
-            # Check if the EXE is empty
-            self.assertFalse(result_set_env["EXE"], "Expected EXE to be empty")
-
-        self.env["ULWGL_ID"] = self.env["GAMEID"]
-        self.env["STEAM_COMPAT_APP_ID"] = "0"
-
-        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
-            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
-                self.env["ULWGL_ID"].find("-") + 1 :
-            ]
-
-        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
-        self.env["SteamGameId"] = self.env["SteamAppId"]
-        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
-        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
-        self.env["STEAM_COMPAT_SHADER_PATH"] = (
-            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-        )
-        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
-            Path(self.env["EXE"]).parent.expanduser().as_posix()
-        )
-        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
-            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
-        )
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-
-        if not getattr(result, "exe", None) and not getattr(result, "config", None):
-            self.env["EXE"] = ""
-            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
-            self.verb = "waitforexitandrun"
-
-        # Game Drive
-        result_gamedrive = gamelauncher_plugins.enable_steam_game_drive(self.env)
+        # Game drive
         self.assertTrue(result_gamedrive is self.env, "Expected the same reference")
-
         self.assertTrue(
             self.env["STEAM_RUNTIME_LIBRARY_PATH"],
             "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
@@ -171,105 +120,11 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
 
-    def test_build_command_verb(self):
-        """Test build_command.
-
-        An error should not be raised if we pass a Proton verb we don't expect
-        By default, we use "waitforexitandrun" for a verb we don't expect
-        Currently we only expect:
-            "waitforexitandrun"
-            "run"
-            "runinprefix"
-            "destroyprefix"
-            "getcompatpath"
-            "getnativepath"
-        """
-        test_toml = "foo.toml"
-        toml_str = f"""
-        [ulwgl]
-        prefix = "{self.test_file}"
-        proton = "{self.test_file}"
-        game_id = "{self.test_file}"
-        launch_args = ["{self.test_file}", "{self.test_file}"]
-        exe = "{self.test_exe}"
-        """
-        toml_path = self.test_file + "/" + test_toml
-        result = None
-        result_set_env = None
-        test_command = []
-        test_verb = "foo"
-        Path(self.test_file + "/proton").touch()
-        Path(toml_path).touch()
-
-        with Path(toml_path).open(mode="w") as file:
-            file.write(toml_str)
-
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(config=toml_path, verb=test_verb),
-        ):
-            result = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
-            # Check if a verb was passed
-            self.assertTrue(vars(result).get("verb"), "Expected a value for --verb")
-            result_set_env = gamelauncher.set_env_toml(self.env, result)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
-            # Check for changes after calling
-            self.assertEqual(
-                result_set_env["EXE"],
-                self.test_exe + " " + self.test_file + " " + self.test_file,
-            )
-            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
-            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
-            self.assertEqual(result_set_env["GAMEID"], self.test_file)
-
-        self.env["ULWGL_ID"] = self.env["GAMEID"]
-        self.env["STEAM_COMPAT_APP_ID"] = "0"
-
-        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
-            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
-                self.env["ULWGL_ID"].find("-") + 1 :
-            ]
-
-        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
-        self.env["SteamGameId"] = self.env["SteamAppId"]
-        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
-        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
-        self.env["STEAM_COMPAT_SHADER_PATH"] = (
-            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-        )
-        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
-            Path(self.env["EXE"]).parent.expanduser().as_posix()
-        )
-        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
-            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
-        )
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-
-        # Create an empty Proton prefix when asked
-        if not getattr(result, "exe", None) and not getattr(result, "config", None):
-            self.env["EXE"] = ""
-            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
-            self.verb = "waitforexitandrun"
-
-        for key, val in self.env.items():
-            os.environ[key] = val
-        test_command = gamelauncher.build_command(self.env, test_command, test_verb)
-        # The verb should be 2nd in the array
-        self.assertIsInstance(test_command, list, "Expected a List from build_command")
-        self.assertTrue(test_command[2], self.test_verb)
-
     def test_build_command_nofile(self):
         """Test build_command.
 
         A FileNotFoundError should be raised if $PROTONPATH/proton does not exist
-        Just test the TOML case for the coverage
+        NOTE: Also, FileNotFoundError will be raised if the _v2-entry-point (ULWGL) is not in $HOME/.local/share/ULWGL or in cwd
         """
         test_toml = "foo.toml"
         toml_str = f"""
@@ -277,12 +132,11 @@ class TestGameLauncher(unittest.TestCase):
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
-        launch_args = ["{self.test_file}", "{self.test_file}"]
+        launch_args = ["{self.test_file}"]
         exe = "{self.test_exe}"
         """
         toml_path = self.test_file + "/" + test_toml
         result = None
-        result_set_env = None
         test_command = []
         Path(toml_path).touch()
 
@@ -294,56 +148,23 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            # Args
             result = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
-            result_set_env = gamelauncher.set_env_toml(self.env, result)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
-            # Check for changes after calling
-            self.assertEqual(
-                result_set_env["EXE"],
-                self.test_exe + " " + self.test_file + " " + self.test_file,
-            )
-            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
-            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
-            self.assertEqual(result_set_env["GAMEID"], self.test_file)
-
-        self.env["ULWGL_ID"] = self.env["GAMEID"]
-        self.env["STEAM_COMPAT_APP_ID"] = "0"
-
-        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
-            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
-                self.env["ULWGL_ID"].find("-") + 1 :
-            ]
-
-        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
-        self.env["SteamGameId"] = self.env["SteamAppId"]
-        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
-        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
-        self.env["STEAM_COMPAT_SHADER_PATH"] = (
-            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-        )
-        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
-            Path(self.env["EXE"]).parent.expanduser().as_posix()
-        )
-        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
-            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
-        )
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-        # Create an empty Proton prefix when asked
-        if not getattr(result, "exe", None) and not getattr(result, "config", None):
-            self.env["EXE"] = ""
-            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
-            self.verb = "waitforexitandrun"
+            # Config
+            gamelauncher.set_env_toml(self.env, result)
+            # Prefix
+            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            gamelauncher.set_env(self.env, result)
+            # Game drive
+            gamelauncher_plugins.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
+
+        # Build
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            gamelauncher.build_command(self.env, test_command, self.test_verb)
+            gamelauncher.build_command(self.env, test_command)
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -361,8 +182,8 @@ class TestGameLauncher(unittest.TestCase):
         """
         toml_path = self.test_file + "/" + test_toml
         result = None
-        result_set_env = None
         test_command = []
+        test_command_result = None
 
         Path(self.test_file + "/proton").touch()
         Path(toml_path).touch()
@@ -375,60 +196,27 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            # Args
             result = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
-            result_set_env = gamelauncher.set_env_toml(self.env, result)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
-            # Check for changes after calling
-            self.assertEqual(
-                result_set_env["EXE"],
-                self.test_exe + " " + self.test_file + " " + self.test_file,
-            )
-            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
-            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
-            self.assertEqual(result_set_env["GAMEID"], self.test_file)
-
-        self.env["ULWGL_ID"] = self.env["GAMEID"]
-        self.env["STEAM_COMPAT_APP_ID"] = "0"
-
-        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
-            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
-                self.env["ULWGL_ID"].find("-") + 1 :
-            ]
-
-        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
-        self.env["SteamGameId"] = self.env["SteamAppId"]
-        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
-        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
-        self.env["STEAM_COMPAT_SHADER_PATH"] = (
-            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-        )
-        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
-            Path(self.env["EXE"]).parent.expanduser().as_posix()
-        )
-        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
-            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
-        )
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-
-        # Create an empty Proton prefix when asked
-        if not getattr(result, "exe", None) and not getattr(result, "config", None):
-            self.env["EXE"] = ""
-            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
-            self.verb = "waitforexitandrun"
+            # Config
+            gamelauncher.set_env_toml(self.env, result)
+            # Prefix
+            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            gamelauncher.set_env(self.env, result)
+            # Game drive
+            gamelauncher_plugins.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
-        test_command = gamelauncher.build_command(
-            self.env, test_command, self.test_verb
+
+        # Build
+        test_command_result = gamelauncher.build_command(self.env, test_command)
+        self.assertTrue(
+            test_command_result is test_command, "Expected the same reference"
         )
-        self.assertIsInstance(test_command, list, "Expected a List from build_command")
-        # Verify contents
+
+        # Verify contents of the command
         entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
@@ -447,90 +235,35 @@ class TestGameLauncher(unittest.TestCase):
         """Test build_command.
 
         After parsing valid environment variables set by the user, be sure we do not raise a FileNotFoundError
+        NOTE: Also, FileNotFoundError will be raised if the _v2-entry-point (ULWGL) is not in $HOME/.local/share/ULWGL or in cwd
         """
         result_args = None
-        result_check_env = None
         test_command = []
 
         # Mock the /proton file
         Path(self.test_file + "/proton").touch()
 
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe, options=self.test_opts),
-        ):
+        with patch("sys.argv", ["", self.test_exe]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
+            os.environ["STORE"] = self.test_file
+            # Args
             result_args = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result_args, Namespace, "parse_args did not return a Namespace"
-            )
-            result_check_env = gamelauncher.check_env(self.env)
-            self.assertTrue(result_check_env is self.env, "Expected the same reference")
-            self.assertEqual(
-                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
-            )
-            self.assertEqual(
-                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
-            )
-            self.assertEqual(
-                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
-            )
-            result_set_env = gamelauncher.set_env(self.env, result_args)
-
-            # Check for changes after calling
-            self.assertEqual(result_set_env["WINEPREFIX"], self.test_file)
-            self.assertEqual(result_set_env["PROTONPATH"], self.test_file)
-            self.assertEqual(result_set_env["GAMEID"], self.test_file)
-            # Test for expected EXE with options
-            self.assertEqual(
-                self.env.get("EXE"),
-                "{} {}".format(self.test_exe, self.test_opts),
-                "Expected the concat EXE and game options to not have trailing spaces",
-            )
-
-        self.env["ULWGL_ID"] = self.env["GAMEID"]
-        self.env["STEAM_COMPAT_APP_ID"] = "0"
-
-        if re.match(r"^ulwgl-[\d\w]+$", self.env["ULWGL_ID"]):
-            self.env["STEAM_COMPAT_APP_ID"] = self.env["ULWGL_ID"][
-                self.env["ULWGL_ID"].find("-") + 1 :
-            ]
-
-        self.env["SteamAppId"] = self.env["STEAM_COMPAT_APP_ID"]
-        self.env["SteamGameId"] = self.env["SteamAppId"]
-        self.env["WINEPREFIX"] = Path(self.env["WINEPREFIX"]).expanduser().as_posix()
-        self.env["PROTONPATH"] = Path(self.env["PROTONPATH"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_DATA_PATH"] = self.env["WINEPREFIX"]
-        self.env["STEAM_COMPAT_SHADER_PATH"] = (
-            self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-        )
-        self.env["STEAM_COMPAT_INSTALL_PATH"] = (
-            Path(self.env["EXE"]).parent.expanduser().as_posix()
-        )
-        self.env["EXE"] = Path(self.env["EXE"]).expanduser().as_posix()
-        self.env["STEAM_COMPAT_TOOL_PATHS"] = (
-            self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
-        )
-        self.env["STEAM_COMPAT_MOUNTS"] = self.env["STEAM_COMPAT_TOOL_PATHS"]
-
-        # Create an empty Proton prefix when asked
-        if not getattr(result_args, "exe", None) and not getattr(
-            result_args, "config", None
-        ):
-            self.env["EXE"] = ""
-            self.env["STEAM_COMPAT_INSTALL_PATH"] = ""
-            self.verb = "waitforexitandrun"
+            # Config
+            gamelauncher.check_env(self.env)
+            # Prefix
+            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            gamelauncher.set_env(self.env, result_args)
+            # Game drive
+            gamelauncher_plugins.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
 
-        test_command = gamelauncher.build_command(
-            self.env, test_command, self.test_verb
-        )
+        # Build
+        test_command = gamelauncher.build_command(self.env, test_command)
         self.assertIsInstance(test_command, list, "Expected a List from build_command")
         self.assertEqual(
             len(test_command), 7, "Expected 7 elements in the list from build_command"
@@ -561,11 +294,13 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=test_file),
         ):
+            # Args
             result = gamelauncher.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            # Env
             with self.assertRaisesRegex(FileNotFoundError, test_file):
                 gamelauncher.set_env_toml(self.env, result)
 
@@ -597,13 +332,16 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            # Args
             result = gamelauncher.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            # Env
             gamelauncher.set_env_toml(self.env, result)
-            # Check if the TOML file we just created
+
+            # Check if its the TOML file we just created
             self.assertTrue(
                 Path(self.env["EXE"].split(" ")[1]).is_file(),
                 "Expected a file to be appended to the executable",
@@ -636,47 +374,14 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            # Args
             result = gamelauncher.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            # Env
             with self.assertRaisesRegex(FileNotFoundError, "exe"):
-                gamelauncher.set_env_toml(self.env, result)
-
-    def test_set_env_toml_empty(self):
-        """Test set_env_toml for empty values not required by parse_args.
-
-        A ValueError should be thrown if 'game_id' is empty
-        """
-        test_toml = "foo.toml"
-        toml_str = f"""
-        [ulwgl]
-        prefix = "{self.test_file}"
-        proton = "{self.test_file}"
-        game_id = ""
-        launch_args = ["{self.test_file}", "{self.test_file}"]
-        exe = "{self.test_file}"
-        """
-        toml_path = self.test_file + "/" + test_toml
-        result = None
-
-        Path(toml_path).touch()
-
-        with Path(toml_path).open(mode="w") as file:
-            file.write(toml_str)
-
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(config=toml_path),
-        ):
-            result = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
-            with self.assertRaisesRegex(ValueError, "game_id"):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_err(self):
@@ -705,17 +410,19 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            # Args
             result = gamelauncher.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
+            # Env
             with self.assertRaisesRegex(TOMLDecodeError, "Invalid"):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_nodir(self):
         """Test set_env_toml if certain key/value are not a dir.
 
-        An IsDirectoryError should be raised if proton or prefix are not directories
+        An IsDirectoryError should be raised if the following keys are not dir: proton, prefix
         """
         test_toml = "foo.toml"
         toml_str = f"""
@@ -738,18 +445,20 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            # Args
             result = gamelauncher.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
-            with self.assertRaisesRegex(NotADirectoryError, "prefix"):
+            # Env
+            with self.assertRaisesRegex(NotADirectoryError, "proton"):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_tables(self):
         """Test set_env_toml for expected tables.
 
-        A KeyError should be raised if the table 'ulwgl' is absent
+        A ValueError should be raised if the following tables are absent: ulwgl
         """
         test_toml = "foo.toml"
         toml_str = f"""
@@ -772,12 +481,14 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            # Args
             result = gamelauncher.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
-            with self.assertRaisesRegex(KeyError, "ulwgl"):
+            # Env
+            with self.assertRaisesRegex(ValueError, "ulwgl"):
                 gamelauncher.set_env_toml(self.env, result)
 
     def test_set_env_toml_paths(self):
@@ -790,7 +501,7 @@ class TestGameLauncher(unittest.TestCase):
         pattern = r"^/home/[a-zA-Z]+"
 
         # Replaces the expanded path to unexpanded
-        # Example: ~/some/path/to/this/file
+        # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
         path_to_tmp = Path(
             Path(__file__).cwd().as_posix() + "/" + self.test_file
         ).as_posix()
@@ -831,14 +542,17 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            # Args
             result = gamelauncher.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            # Env
             result_set_env = gamelauncher.set_env_toml(self.env, result)
             self.assertTrue(result_set_env is self.env, "Expected the same reference")
-            # Check that the paths are still in the unexpanded form
+
+            # Check that the paths are still in the unexpanded form after setting the env
             # In main, we only expand them after this function exits to prepare for building the command
             self.assertEqual(
                 self.env["EXE"], unexpanded_exe, "Expected path not to be expanded"
@@ -882,233 +596,81 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            # Args
             result = gamelauncher.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            # Env
             result_set_env = gamelauncher.set_env_toml(self.env, result)
             self.assertTrue(result_set_env is self.env, "Expected the same reference")
-
-    def test_set_env_exe_nofile(self):
-        """Test set_env when setting no options via --options and appending options to --exe.
-
-        gamelauncher.py --exe "foo -bar"
-        Options can be appended at the end of the exe if wrapping the value in quotes
-        No error should be raised if the --exe passed by the user doesn't exist
-        We trust the user that its legit and only validate the EXE in the TOML case
-        """
-        result_args = None
-        result_check_env = None
-        result_set_env = None
-
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe + " foo"),
-        ):
-            os.environ["WINEPREFIX"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
-            os.environ["GAMEID"] = self.test_file
-            result_args = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result_args, Namespace, "parse_args did not return a Namespace"
-            )
-            result_check_env = gamelauncher.check_env(self.env)
-            self.assertTrue(result_check_env is self.env, "Expected the same reference")
-            self.assertEqual(
-                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
-            )
-            self.assertEqual(
-                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
-            )
-            self.assertEqual(
-                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
-            )
-            result_set_env = gamelauncher.set_env(self.env, result_args)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
+            self.assertTrue(self.env["EXE"], "Expected EXE to be set")
             self.assertEqual(
                 self.env["EXE"],
-                self.test_exe + " foo",
-                "Expected EXE to be set after passing garbage",
-            )
-            self.assertTrue(Path(self.test_exe).exists(), "Expected the EXE to exist")
-            self.assertFalse(
-                Path(self.test_exe + " foo").exists(),
-                "Expected the concat of EXE and options to not exist",
-            )
-
-    def test_set_env_opts_nofile(self):
-        """Test set_env when an exe's options is a file.
-
-        We allow options that may or may not be legit
-        No error should be raised in this case and we just check if options are a file
-        """
-        result_args = None
-        result_check_env = None
-        result_set_env = None
-
-        # File that will be passed as an option to the exe
-        test_opts_file = "baz"
-        Path(test_opts_file).touch()
-
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe, options=test_opts_file),
-        ):
-            os.environ["WINEPREFIX"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
-            os.environ["GAMEID"] = self.test_file
-            result_args = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result_args, Namespace, "parse_args did not return a Namespace"
-            )
-            result_check_env = gamelauncher.check_env(self.env)
-            self.assertTrue(result_check_env is self.env, "Expected the same reference")
-            self.assertEqual(
-                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
+                self.test_exe + " " + " ".join([self.test_file, self.test_file]),
+                "Expectd GAMEID to be set",
             )
             self.assertEqual(
-                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
+                self.env["PROTONPATH"],
+                self.test_file,
+                "Expected PROTONPATH to be set",
             )
             self.assertEqual(
-                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
-            )
-            result_set_env = gamelauncher.set_env(self.env, result_args)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
-            self.assertEqual(
-                self.env["EXE"],
-                self.test_exe + " " + test_opts_file,
-                "Expected EXE to be set after appending a file as an option",
-            )
-            # The concat of exe and options shouldn't be a file
-            self.assertFalse(
-                Path(self.env["EXE"]).is_file(),
-                "Expected EXE to not be a file when passing options",
-            )
-            # However each part is a file
-            self.assertTrue(
-                Path(test_opts_file).is_file(),
-                "Expected a file for this test to be used as an option",
-            )
-            self.assertTrue(
-                Path(self.test_exe).is_file(),
-                "Expected a file for this test to be used as an option",
-            )
-            Path(test_opts_file).unlink()
-
-    def test_set_env_opts(self):
-        """Test set_env.
-
-        Ensure no failures and verify that $EXE is set with options passed
-        """
-        result_args = None
-        result_check_env = None
-        result = None
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe, options=self.test_opts),
-        ):
-            os.environ["WINEPREFIX"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
-            os.environ["GAMEID"] = self.test_file
-            result_args = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result_args, Namespace, "parse_args did not return a Namespace"
-            )
-            result_check_env = gamelauncher.check_env(self.env)
-            self.assertTrue(result_check_env is self.env, "Expected the same reference")
-            self.assertEqual(
-                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
+                self.env["WINEPREFIX"],
+                self.test_file,
+                "Expected WINEPREFIX to be set",
             )
             self.assertEqual(
-                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
+                self.env["GAMEID"], self.test_file, "Expectd GAMEID to be set"
             )
-            self.assertEqual(
-                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
-            )
-            result = gamelauncher.set_env(self.env, result_args)
-            self.assertIsInstance(result, dict, "Expected a Dictionary from set_env")
-            self.assertTrue(self.env.get("EXE"), "Expected EXE to not be empty")
-            self.assertEqual(
-                self.env.get("EXE"),
-                self.test_exe + " " + self.test_opts,
-                "Expected EXE to not have trailing spaces",
-            )
-
-    def test_set_env_exe(self):
-        """Test set_env.
-
-        Ensure no failures and verify that $EXE
-        """
-        result_args = None
-        result_check_env = None
-        result = None
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe),
-        ):
-            os.environ["WINEPREFIX"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
-            os.environ["GAMEID"] = self.test_file
-            result_args = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result_args, Namespace, "parse_args did not return a Namespace"
-            )
-            result_check_env = gamelauncher.check_env(self.env)
-            self.assertTrue(result_check_env is self.env, "Expected the same reference")
-            self.assertEqual(
-                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
-            )
-            self.assertEqual(
-                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
-            )
-            self.assertEqual(
-                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
-            )
-            result = gamelauncher.set_env(self.env, result_args)
-            self.assertTrue(result is self.env, "Expected the same reference")
-            self.assertTrue(self.env.get("EXE"), "Expected EXE to not be empty")
 
     def test_set_env(self):
         """Test set_env.
 
-        Ensure no failures when passing --exe and setting $WINEPREFIX and $PROTONPATH
+        Ensure no failures and verify that $EXE
         """
-        result_args = None
-        result_check_env = None
         result = None
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= gamelauncher --exe=...
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(game=self.test_file),
-        ):
+        test_str = "foo"
+
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= gamelauncher ...
+        with patch("sys.argv", ["", self.test_exe]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
-            os.environ["GAMEID"] = self.test_file
-            result_args = gamelauncher.parse_args()
-            self.assertIsInstance(result_args, Namespace)
-            result_check_env = gamelauncher.check_env(self.env)
-            self.assertTrue(result_check_env is self.env, "Expected the same reference")
+            os.environ["GAMEID"] = test_str
+            os.environ["STORE"] = test_str
+            os.environ["PROTON_VERB"] = self.test_verb
+            # Args
+            result = gamelauncher.parse_args()
             self.assertEqual(
-                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
+                result[0:], "./tmp.WMYQiPb9A/foo", "Expected EXE to be unexpanded"
             )
-            self.assertEqual(
-                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
-            )
-            self.assertEqual(
-                self.env["PROTONPATH"], self.test_file, "Expected PROTONPATH to be set"
-            )
-            result = gamelauncher.set_env(self.env, result_args)
+            # Check
+            gamelauncher.check_env(self.env)
+            # Prefix
+            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            result = gamelauncher.set_env(self.env, result[0:])
             self.assertTrue(result is self.env, "Expected the same reference")
+
+            path_exe = Path(self.test_exe).expanduser().as_posix()
+            path_file = Path(self.test_file).expanduser().as_posix()
+
+            # After calling set_env all paths should be expanded POSIX form
+            self.assertEqual(self.env["EXE"], path_exe, "Expected EXE to be expanded")
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
+            self.assertEqual(
+                self.env["PROTONPATH"], path_file, "Expected PROTONPATH to be set"
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"], path_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
+            self.assertEqual(
+                self.env["PROTON_VERB"],
+                self.test_verb,
+                "Expected PROTON_VERB to be set",
+            )
 
     def test_setup_pfx_symlinks(self):
         """Test _setup_pfx for valid symlinks.
@@ -1130,9 +692,10 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_file).cwd().as_posix() + "/" + self.test_file
             ).as_posix(),
         )
-        result = gamelauncher._setup_pfx(unexpanded_path)
+        result = gamelauncher.setup_pfx(unexpanded_path)
+
         # Replaces the expanded path to unexpanded
-        # Example: ~/some/path/to/this/file
+        # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and tracked_files file",
@@ -1147,6 +710,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
         )
+
         # Check if the symlink is in its unexpanded form
         self.assertEqual(
             Path(self.test_file + "/pfx").readlink().as_posix(),
@@ -1154,7 +718,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_setup_pfx_paths(self):
-        """Test _setup_pfx on unexpanded paths.
+        """Test setup_pfx on unexpanded paths.
 
         An error should not be raised when passing paths such as ~/path/to/prefix.
         """
@@ -1165,9 +729,10 @@ class TestGameLauncher(unittest.TestCase):
             "~",
             Path(Path(self.test_file).as_posix()).as_posix(),
         )
-        result = gamelauncher._setup_pfx(unexpanded_path)
+        result = gamelauncher.setup_pfx(unexpanded_path)
+
         # Replaces the expanded path to unexpanded
-        # Example: ~/some/path/to/this/file
+        # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and tracked_files file",
@@ -1181,9 +746,9 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_setup_pfx(self):
-        """Test _setup_pfx."""
+        """Test setup_pfx."""
         result = None
-        result = gamelauncher._setup_pfx(self.test_file)
+        result = gamelauncher.setup_pfx(self.test_file)
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and tracked_files file",
@@ -1195,58 +760,6 @@ class TestGameLauncher(unittest.TestCase):
             Path(self.test_file + "/tracked_files").is_file(),
             "Expected tracked_files to be a file",
         )
-
-    def test_parse_args_verb(self):
-        """Test parse_args --verb."""
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe, verb=self.test_verb),
-        ):
-            result = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            self.assertEqual(
-                result.verb,
-                self.test_verb,
-                "Expected the same value when setting --verb",
-            )
-
-    def test_parse_args_store(self):
-        """Test parse_args --store."""
-        test_store = "gog"
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe, store=test_store),
-        ):
-            result = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            self.assertEqual(
-                result.store,
-                test_store,
-                "Expected the same value when setting --store",
-            )
-
-    def test_parse_args_options(self):
-        """Test parse_args --options."""
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=self.test_exe, options=self.test_opts),
-        ):
-            result = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            self.assertEqual(
-                result.options,
-                self.test_opts,
-                "Expected the same value when setting --options",
-            )
 
     def test_parse_args(self):
         """Test parse_args with no options.
@@ -1264,18 +777,6 @@ class TestGameLauncher(unittest.TestCase):
             gamelauncher,
             "parse_args",
             return_value=argparse.Namespace(config=self.test_file),
-        ):
-            result = gamelauncher.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-
-    def test_parse_args_game(self):
-        """Test parse_args --exe."""
-        with patch.object(
-            gamelauncher,
-            "parse_args",
-            return_value=argparse.Namespace(exe=self.test_file),
         ):
             result = gamelauncher.parse_args()
             self.assertIsInstance(
@@ -1316,8 +817,6 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_env_vars_paths(self):
         """Test check_env when setting unexpanded paths for $WINEPREFIX and $PROTONPATH."""
-        # Replaces the expanded path to unexpanded
-        # Example: ~/some/path/to/this/file
         pattern = r"^/home/[a-zA-Z]+"
         path_to_tmp = Path(
             Path(__file__).cwd().as_posix() + "/" + self.test_file
@@ -1370,21 +869,12 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             gamelauncher.check_env(self.env)
-            self.assertEqual(
-                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
-            )
-            self.assertEqual(
-                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
-            )
 
     def test_env_vars_wine(self):
         """Test check_env when setting only $WINEPREFIX."""
         with self.assertRaisesRegex(ValueError, "GAMEID"):
             os.environ["WINEPREFIX"] = self.test_file
             gamelauncher.check_env(self.env)
-            self.assertEqual(
-                self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
-            )
 
     def test_env_vars_none(self):
         """Tests check_env when setting no env vars."""
