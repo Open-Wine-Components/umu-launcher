@@ -84,24 +84,62 @@ def check_env(env: Dict[str, str]) -> Dict[str, str]:
     return env
 
 
-def set_env(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
+def set_env(env: Dict[str, str], args: Union[Namespace, str]) -> Dict[str, str]:
     """Set various environment variables for the Steam RT.
 
-    Expects to be invoked if not reading a TOML file
+    Filesystem paths will be formatted and expanded as POSIX
     """
-    is_create_prefix: bool = False
+    verbs: Set[str] = {
+        "waitforexitandrun",
+        "run",
+        "runinprefix",
+        "destroyprefix",
+        "getcompatpath",
+        "getnativepath",
+    }
 
-    if not getattr(args, "exe", None):
-        is_create_prefix = True
+    # PROTON_VERB
+    # For invalid Proton verbs, just assign the waitforexitandrun
+    if "PROTON_VERB" in os.environ and os.environ["PROTON_VERB"] in verbs:
+        env["PROTON_VERB"] = os.environ["PROTON_VERB"]
+    else:
+        env["PROTON_VERB"] = "waitforexitandrun"
 
-    # Sets the environment variables: EXE
-    for arg, val in vars(args).items():
-        if arg == "exe" and not is_create_prefix:
-            # NOTE: options can possibly be appended at the end
-            env["EXE"] = val
-        elif arg == "options" and val and not is_create_prefix:
-            # NOTE: assume it's space separated
-            env["EXE"] = env["EXE"] + " " + " ".join(val.split(" "))
+    # EXE
+    # Empty string for EXE will be used to create a prefix
+    if isinstance(args, str) and not args:
+        env["EXE"] = ""
+        env["STEAM_COMPAT_INSTALL_PATH"] = ""
+        env["PROTON_VERB"] = "waitforexitandrun"
+    elif isinstance(args, str):
+        env["EXE"] = Path(args).expanduser().as_posix()
+        env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
+    else:
+        # Config branch
+        env["EXE"] = Path(env["EXE"]).expanduser().as_posix()
+        env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
+
+    if "STORE" in os.environ:
+        env["STORE"] = os.environ["STORE"]
+
+    # ULWGL_ID
+    env["ULWGL_ID"] = env["GAMEID"]
+    env["STEAM_COMPAT_APP_ID"] = "0"
+
+    if match(r"^ulwgl-[\d\w]+$", env["ULWGL_ID"]):
+        env["STEAM_COMPAT_APP_ID"] = env["ULWGL_ID"][env["ULWGL_ID"].find("-") + 1 :]
+    env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
+    env["SteamGameId"] = env["SteamAppId"]
+
+    # PATHS
+    env["WINEPREFIX"] = Path(env["WINEPREFIX"]).expanduser().as_posix()
+    env["PROTONPATH"] = Path(env["PROTONPATH"]).expanduser().as_posix()
+    env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
+    env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
+    env["STEAM_COMPAT_TOOL_PATHS"] = (
+        env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
+    )
+    env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     return env
 
@@ -231,57 +269,19 @@ def main() -> None:  # noqa: D103
         "SteamGameId": "",
         "STEAM_RUNTIME_LIBRARY_PATH": "",
         "STORE": "",
+        "PROTON_VERB": "",
     }
     command: List[str] = []
-    verb: str = "waitforexitandrun"
     # Represents a valid list of current supported Proton verbs
-    verbs: Set[str] = {
-        "waitforexitandrun",
-        "run",
-        "runinprefix",
-        "destroyprefix",
-        "getcompatpath",
-        "getnativepath",
-    }
-    args: Namespace = parse_args()
+    args: Union[Namespace, str] = parse_args()
 
-    if getattr(args, "config", None):
+    if isinstance(args, Namespace):
         set_env_toml(env, args)
     else:
         check_env(env)
-        set_env(env, args)
 
-    if getattr(args, "verb", None) and getattr(args, "verb", None) in verbs:
-        verb = getattr(args, "verb", None)
-
-    if getattr(args, "store", None):
-        env["STORE"] = getattr(args, "store", None)
-
-    env["ULWGL_ID"] = env["GAMEID"]
-    env["STEAM_COMPAT_APP_ID"] = "0"
-
-    if match(r"^ulwgl-[\d\w]+$", env["ULWGL_ID"]):
-        env["STEAM_COMPAT_APP_ID"] = env["ULWGL_ID"][env["ULWGL_ID"].find("-") + 1 :]
-
-    env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
-    env["SteamGameId"] = env["SteamAppId"]
-    env["WINEPREFIX"] = Path(env["WINEPREFIX"]).expanduser().as_posix()
-    env["PROTONPATH"] = Path(env["PROTONPATH"]).expanduser().as_posix()
-    env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
-    env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-    env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.expanduser().as_posix()
-    env["EXE"] = Path(env["EXE"]).expanduser().as_posix()
-    env["STEAM_COMPAT_TOOL_PATHS"] = (
-        env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
-    )
-    env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
-
-    # Create an empty Proton prefix when asked
-    if not getattr(args, "exe", None) and not getattr(args, "config", None):
-        env["EXE"] = ""
-        env["STEAM_COMPAT_INSTALL_PATH"] = ""
-        verb = "waitforexitandrun"
     setup_pfx(env["WINEPREFIX"])
+    set_env(env, args)
 
     # Game Drive functionality
     gamelauncher_plugins.enable_steam_game_drive(env)
