@@ -46,7 +46,7 @@ def setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
     if not (Path(path + "/pfx")).expanduser().is_symlink():
         # When creating the symlink, we want it to be in expanded form when passed unexpanded paths
-        # Example: pfx -> /home/.wine
+        # Example: pfx -> /home/foo/.wine
         # NOTE: When parsing a config file, an error can be raised if the prefix doesn't already exist
         Path(path + "/pfx").expanduser().symlink_to(Path(path).expanduser())
     Path(path + "/tracked_files").expanduser().touch()
