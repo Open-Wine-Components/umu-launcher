@@ -2,11 +2,11 @@
 
 import os
 import argparse
-from argparse import ArgumentParser, _ArgumentGroup, Namespace
+from argparse import ArgumentParser, Namespace
 import sys
 from pathlib import Path
 import tomllib
-from typing import Dict, Any, List, Set
+from typing import Dict, Any, List, Set, Union
 import gamelauncher_plugins
 from re import match
 
@@ -14,57 +14,35 @@ from re import match
 import subprocess
 
 
-def parse_args() -> Namespace:  # noqa: D103
-    stores: List[str] = [
-        "amazon",
-        "battlenet",
-        "ea",
-        "egs",
-        "gog",
-        "humble",
-        "itchio",
-        "ubisoft",
-    ]
+def parse_args() -> Union[Namespace, str]:  # noqa: D103
+    opt_args: Set[str] = {"--help", "-h", "--config"}
     exe: str = Path(__file__).name
-    usage: str = """
+    usage: str = f"""
 example usage:
-  {} --config example.toml
-  {} --config /home/foo/example.toml --options '-opengl'
-  WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --options '-opengl'
-  WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --store gog
-  WINEPREFIX= GAMEID= PROTONPATH= {} --exe ""
-  WINEPREFIX= GAMEID= PROTONPATH= {} --exe /home/foo/example.exe --verb waitforexitandrun
-    """.format(exe, exe, exe, exe, exe, exe)
-
+  WINEPREFIX= GAMEID= PROTONPATH= {exe} /home/foo/example.exe
+  WINEPREFIX= GAMEID= PROTONPATH= {exe} /home/foo/example.exe -opengl
+  WINEPREFIX= GAMEID= PROTONPATH= {exe} ""
+  WINEPREFIX= GAMEID= PROTONPATH= PROTON_VERB= {exe} /home/foo/example.exe
+  WINEPREFIX= GAMEID= PROTONPATH= STORE= {exe} /home/foo/example.exe
+  {exe} --config /home/foo/example.toml
+    """
     parser: ArgumentParser = argparse.ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog=usage,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    group: _ArgumentGroup = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--config", help="path to TOML file")
-    group.add_argument(
-        "--exe",
-        help="path to game executable\npass an empty string to create a prefix",
-        default=None,
-    )
-    parser.add_argument(
-        "--verb",
-        help="a verb to pass to Proton (default: waitforexitandrun)",
-    )
-    parser.add_argument(
-        "--options",
-        help="launch options for game executable\nNOTE: options must be wrapped in quotes",
-    )
-    parser.add_argument(
-        "--store",
-        help=f"the store of the game executable\nNOTE: will override the store specified in config\nexamples: {stores}",
-    )
+    parser.add_argument("--config", help="path to TOML file")
 
-    return parser.parse_args(sys.argv[1:])
+    if not sys.argv[1:]:
+        err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/ULWGL-launcher"
+        parser.print_help()
+        raise SystemExit(err)
 
+    if sys.argv[1:][0] in opt_args:
+        return parser.parse_args(sys.argv[1:])
 
 def _setup_pfx(path: str) -> None:
+    return sys.argv[1:][0]
     """Create a symlink to the WINE prefix and tracked_files file."""
     if not (Path(path + "/pfx")).expanduser().is_symlink():
         # When creating the symlink, we want it to be in expanded form when passed unexpanded paths
