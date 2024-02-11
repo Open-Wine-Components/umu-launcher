@@ -9,8 +9,6 @@ import tomllib
 from typing import Dict, Any, List, Set, Union
 import gamelauncher_plugins
 from re import match
-
-# TODO: Only set the environment variables that are not empty
 import subprocess
 
 
@@ -284,10 +282,10 @@ def main() -> None:  # noqa: D103
     setup_pfx(env["WINEPREFIX"])
     set_env(env, args)
 
-    # Game Drive functionality
+    # Game Drive
     gamelauncher_plugins.enable_steam_game_drive(env)
 
-    # Set all environment variable
+    # Set all environment variables
     # NOTE: `env` after this block should be read only
     for key, val in env.items():
         print(f"Setting environment variable: {key}={val}")
