@@ -41,8 +41,10 @@ example usage:
     if sys.argv[1:][0] in opt_args:
         return parser.parse_args(sys.argv[1:])
 
-def _setup_pfx(path: str) -> None:
     return sys.argv[1:][0]
+
+
+def setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
     if not (Path(path + "/pfx")).expanduser().is_symlink():
         # When creating the symlink, we want it to be in expanded form when passed unexpanded paths
@@ -87,7 +89,6 @@ def set_env(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
 
     Expects to be invoked if not reading a TOML file
     """
-    _setup_pfx(env["WINEPREFIX"])
     is_create_prefix: bool = False
 
     if not getattr(args, "exe", None):
@@ -143,7 +144,6 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
             raise ValueError(err)
         if key == "prefix":
             env["WINEPREFIX"] = val
-            _setup_pfx(val)
         elif key == "game_id":
             env["GAMEID"] = val
         elif key == "proton":
@@ -281,6 +281,7 @@ def main() -> None:  # noqa: D103
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         verb = "waitforexitandrun"
+    setup_pfx(env["WINEPREFIX"])
 
     # Game Drive functionality
     gamelauncher_plugins.enable_steam_game_drive(env)
