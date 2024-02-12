@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 import tomllib
 from typing import Dict, Any, List, Set, Union
-import gamelauncher_plugins
+import ulwgl_plugins
 from re import match
 import subprocess
 
@@ -294,7 +294,7 @@ def main() -> None:  # noqa: D103
     set_env(env, args)
 
     # Game Drive
-    gamelauncher_plugins.enable_steam_game_drive(env)
+    ulwgl_plugins.enable_steam_game_drive(env)
 
     # Set all environment variables
     # NOTE: `env` after this block should be read only

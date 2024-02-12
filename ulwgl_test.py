@@ -1,5 +1,5 @@
 import unittest
-import gamelauncher
+import ulwgl_run
 import os
 import argparse
 from argparse import Namespace
@@ -8,11 +8,11 @@ from pathlib import Path
 from tomllib import TOMLDecodeError
 from shutil import rmtree
 import re
-import gamelauncher_plugins
+import ulwgl_plugins
 
 
 class TestGameLauncher(unittest.TestCase):
-    """Test suite for gamelauncher.py.
+    """Test suite for ulwgl_run.py.
 
     TODO: test for mutually exclusive options
     """
@@ -79,15 +79,15 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
-            args = gamelauncher.parse_args()
+            args = ulwgl_run.parse_args()
             # Config
-            gamelauncher.check_env(self.env)
+            ulwgl_run.check_env(self.env)
             # Prefix
-            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            gamelauncher.set_env(self.env, args)
+            ulwgl_run.set_env(self.env, args)
             # Game drive
-            result_gamedrive = gamelauncher_plugins.enable_steam_game_drive(self.env)
+            result_gamedrive = ulwgl_plugins.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
@@ -144,27 +144,27 @@ class TestGameLauncher(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             # Config
-            gamelauncher.set_env_toml(self.env, result)
+            ulwgl_run.set_env_toml(self.env, result)
             # Prefix
-            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            gamelauncher.set_env(self.env, result)
+            ulwgl_run.set_env(self.env, result)
             # Game drive
-            gamelauncher_plugins.enable_steam_game_drive(self.env)
+            ulwgl_plugins.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            gamelauncher.build_command(self.env, test_command)
+            ulwgl_run.build_command(self.env, test_command)
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -192,26 +192,26 @@ class TestGameLauncher(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             # Config
-            gamelauncher.set_env_toml(self.env, result)
+            ulwgl_run.set_env_toml(self.env, result)
             # Prefix
-            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            gamelauncher.set_env(self.env, result)
+            ulwgl_run.set_env(self.env, result)
             # Game drive
-            gamelauncher_plugins.enable_steam_game_drive(self.env)
+            ulwgl_plugins.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
 
         # Build
-        test_command_result = gamelauncher.build_command(self.env, test_command)
+        test_command_result = ulwgl_run.build_command(self.env, test_command)
         self.assertTrue(
             test_command_result is test_command, "Expected the same reference"
         )
@@ -249,21 +249,21 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
-            result_args = gamelauncher.parse_args()
+            result_args = ulwgl_run.parse_args()
             # Config
-            gamelauncher.check_env(self.env)
+            ulwgl_run.check_env(self.env)
             # Prefix
-            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            gamelauncher.set_env(self.env, result_args)
+            ulwgl_run.set_env(self.env, result_args)
             # Game drive
-            gamelauncher_plugins.enable_steam_game_drive(self.env)
+            ulwgl_plugins.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
 
         # Build
-        test_command = gamelauncher.build_command(self.env, test_command)
+        test_command = ulwgl_run.build_command(self.env, test_command)
         self.assertIsInstance(test_command, list, "Expected a List from build_command")
         self.assertEqual(
             len(test_command), 7, "Expected 7 elements in the list from build_command"
@@ -290,19 +290,19 @@ class TestGameLauncher(unittest.TestCase):
         """
         test_file = "foo.toml"
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=test_file),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             with self.assertRaisesRegex(FileNotFoundError, test_file):
-                gamelauncher.set_env_toml(self.env, result)
+                ulwgl_run.set_env_toml(self.env, result)
 
     def test_set_env_toml_opts_nofile(self):
         """Test set_env_toml for options that are a file.
@@ -328,18 +328,18 @@ class TestGameLauncher(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
-            gamelauncher.set_env_toml(self.env, result)
+            ulwgl_run.set_env_toml(self.env, result)
 
             # Check if its the TOML file we just created
             self.assertTrue(
@@ -370,19 +370,19 @@ class TestGameLauncher(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             with self.assertRaisesRegex(FileNotFoundError, "exe"):
-                gamelauncher.set_env_toml(self.env, result)
+                ulwgl_run.set_env_toml(self.env, result)
 
     def test_set_env_toml_err(self):
         """Test set_env_toml for valid TOML.
@@ -406,18 +406,18 @@ class TestGameLauncher(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             # Env
             with self.assertRaisesRegex(TOMLDecodeError, "Invalid"):
-                gamelauncher.set_env_toml(self.env, result)
+                ulwgl_run.set_env_toml(self.env, result)
 
     def test_set_env_toml_nodir(self):
         """Test set_env_toml if certain key/value are not a dir.
@@ -441,19 +441,19 @@ class TestGameLauncher(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             with self.assertRaisesRegex(NotADirectoryError, "proton"):
-                gamelauncher.set_env_toml(self.env, result)
+                ulwgl_run.set_env_toml(self.env, result)
 
     def test_set_env_toml_tables(self):
         """Test set_env_toml for expected tables.
@@ -477,19 +477,19 @@ class TestGameLauncher(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             with self.assertRaisesRegex(ValueError, "ulwgl"):
-                gamelauncher.set_env_toml(self.env, result)
+                ulwgl_run.set_env_toml(self.env, result)
 
     def test_set_env_toml_paths(self):
         """Test set_env_toml when specifying unexpanded file path values in the config file.
@@ -538,18 +538,18 @@ class TestGameLauncher(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
-            result_set_env = gamelauncher.set_env_toml(self.env, result)
+            result_set_env = ulwgl_run.set_env_toml(self.env, result)
             self.assertTrue(result_set_env is self.env, "Expected the same reference")
 
             # Check that the paths are still in the unexpanded form after setting the env
@@ -592,18 +592,18 @@ class TestGameLauncher(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
-            result_set_env = gamelauncher.set_env_toml(self.env, result)
+            result_set_env = ulwgl_run.set_env_toml(self.env, result)
             self.assertTrue(result_set_env is self.env, "Expected the same reference")
             self.assertTrue(self.env["EXE"], "Expected EXE to be set")
             self.assertEqual(
@@ -633,7 +633,7 @@ class TestGameLauncher(unittest.TestCase):
         result = None
         test_str = "foo"
 
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= gamelauncher ...
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run ...
         with patch("sys.argv", ["", self.test_exe]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -641,16 +641,16 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertEqual(
                 result[0:], "./tmp.WMYQiPb9A/foo", "Expected EXE to be unexpanded"
             )
             # Check
-            gamelauncher.check_env(self.env)
+            ulwgl_run.check_env(self.env)
             # Prefix
-            gamelauncher.setup_pfx(self.env["WINEPREFIX"])
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            result = gamelauncher.set_env(self.env, result[0:])
+            result = ulwgl_run.set_env(self.env, result[0:])
             self.assertTrue(result is self.env, "Expected the same reference")
 
             path_exe = Path(self.test_exe).expanduser().as_posix()
@@ -692,7 +692,7 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_file).cwd().as_posix() + "/" + self.test_file
             ).as_posix(),
         )
-        result = gamelauncher.setup_pfx(unexpanded_path)
+        result = ulwgl_run.setup_pfx(unexpanded_path)
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -729,7 +729,7 @@ class TestGameLauncher(unittest.TestCase):
             "~",
             Path(Path(self.test_file).as_posix()).as_posix(),
         )
-        result = gamelauncher.setup_pfx(unexpanded_path)
+        result = ulwgl_run.setup_pfx(unexpanded_path)
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -748,7 +748,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_setup_pfx(self):
         """Test setup_pfx."""
         result = None
-        result = gamelauncher.setup_pfx(self.test_file)
+        result = ulwgl_run.setup_pfx(self.test_file)
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and tracked_files file",
@@ -766,19 +766,19 @@ class TestGameLauncher(unittest.TestCase):
 
         There's a requirement to create an empty prefix
         A SystemExit should be raised in this case:
-        ./gamelauncher.py
+        ./ulwgl_run.py
         """
         with self.assertRaises(SystemExit):
-            gamelauncher.parse_args()
+            ulwgl_run.parse_args()
 
     def test_parse_args_config(self):
         """Test parse_args --config."""
         with patch.object(
-            gamelauncher,
+            ulwgl_run,
             "parse_args",
             return_value=argparse.Namespace(config=self.test_file),
         ):
-            result = gamelauncher.parse_args()
+            result = ulwgl_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -792,7 +792,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["PROTONPATH"] = "./foo"
-            gamelauncher.check_env(self.env)
+            ulwgl_run.check_env(self.env)
             self.assertFalse(
                 Path(os.environ["PROTONPATH"]).is_dir(),
                 "Expected PROTONPATH to not be a directory",
@@ -806,7 +806,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["WINEPREFIX"] = "./foo"
         os.environ["GAMEID"] = self.test_file
         os.environ["PROTONPATH"] = self.test_file
-        gamelauncher.check_env(self.env)
+        ulwgl_run.check_env(self.env)
         self.assertEqual(
             Path(os.environ["WINEPREFIX"]).is_dir(),
             True,
@@ -833,7 +833,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["WINEPREFIX"] = unexpanded_path
         os.environ["GAMEID"] = self.test_file
         os.environ["PROTONPATH"] = unexpanded_path
-        result = gamelauncher.check_env(self.env)
+        result = ulwgl_run.check_env(self.env)
         self.assertTrue(result is self.env, "Expected the same reference")
         self.assertEqual(
             self.env["WINEPREFIX"], unexpanded_path, "Expected WINEPREFIX to be set"
@@ -851,7 +851,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["WINEPREFIX"] = self.test_file
         os.environ["GAMEID"] = self.test_file
         os.environ["PROTONPATH"] = self.test_file
-        result = gamelauncher.check_env(self.env)
+        result = ulwgl_run.check_env(self.env)
         self.assertTrue(result is self.env, "Expected the same reference")
         self.assertEqual(
             self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
@@ -868,18 +868,18 @@ class TestGameLauncher(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "PROTONPATH"):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
-            gamelauncher.check_env(self.env)
+            ulwgl_run.check_env(self.env)
 
     def test_env_vars_wine(self):
         """Test check_env when setting only $WINEPREFIX."""
         with self.assertRaisesRegex(ValueError, "GAMEID"):
             os.environ["WINEPREFIX"] = self.test_file
-            gamelauncher.check_env(self.env)
+            ulwgl_run.check_env(self.env)
 
     def test_env_vars_none(self):
         """Tests check_env when setting no env vars."""
         with self.assertRaisesRegex(ValueError, "WINEPREFIX"):
-            gamelauncher.check_env(self.env)
+            ulwgl_run.check_env(self.env)
 
 
 if __name__ == "__main__":
