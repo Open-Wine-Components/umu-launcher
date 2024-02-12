@@ -3,7 +3,7 @@
 # use for debug only.
 # set -x
 
-ULWGL_PROTON_VER="ULWGL-Proton-8.0-5-2"
+ULWGL_PROTON_VER="ULWGL-Proton-8.0-5-3"
 ULWGL_LAUNCHER_VER="0.1-RC3"
 
 me="$(readlink -f "$0")"
