@@ -39,7 +39,7 @@ example usage:
     if sys.argv[1:][0] in opt_args:
         return parser.parse_args(sys.argv[1:])
 
-    return sys.argv[1:][0]
+    return " ".join(sys.argv[1:])
 
 
 def setup_pfx(path: str) -> None:
