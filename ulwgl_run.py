@@ -299,11 +299,9 @@ def main() -> None:  # noqa: D103
     # Set all environment variables
     # NOTE: `env` after this block should be read only
     for key, val in env.items():
-        print(f"Setting environment variable: {key}={val}")
         os.environ[key] = val
 
     build_command(env, command)
-    print(f"The following command will be executed: {command}")
     subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
 
 
