@@ -628,7 +628,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_set_env_opts(self):
         """Test set_env.
 
-        Ensure no failures and verify options are passed
+        Ensure no failures and verify that an option is passed to the executable
         """
         result = None
         test_str = "foo"
@@ -643,11 +643,15 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result = ulwgl_run.parse_args()
             self.assertIsInstance(result, tuple, "Expected a tuple")
+            self.assertIsInstance(result[0], str, "Expected a string")
+            self.assertIsInstance(result[1], list, "Expected a list as options")
             self.assertEqual(
                 result[0], "./tmp.WMYQiPb9A/foo", "Expected EXE to be unexpanded"
             )
             self.assertEqual(
-                *result[1], test_str, "Expected the test string when passed as an option"
+                *result[1],
+                test_str,
+                "Expected the test string when passed as an option",
             )
             # Check
             ulwgl_run.check_env(self.env)
@@ -676,7 +680,6 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected PROTON_VERB to be set",
             )
 
-
     def test_set_env(self):
         """Test set_env.
 
@@ -695,6 +698,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result = ulwgl_run.parse_args()
             self.assertIsInstance(result, tuple, "Expected a tuple")
+            self.assertIsInstance(result[0], str, "Expected a string")
+            self.assertIsInstance(result[1], list, "Expected a list as options")
             self.assertEqual(
                 result[0], "./tmp.WMYQiPb9A/foo", "Expected EXE to be unexpanded"
             )
