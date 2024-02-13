@@ -6,13 +6,13 @@ from argparse import ArgumentParser, Namespace
 import sys
 from pathlib import Path
 import tomllib
-from typing import Dict, Any, List, Set, Union
+from typing import Dict, Any, List, Set, Union, Tuple
 import ulwgl_plugins
 from re import match
 import subprocess
 
 
-def parse_args() -> Union[Namespace, str]:  # noqa: D103
+def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     opt_args: Set[str] = {"--help", "-h", "--config"}
     exe: str = Path(__file__).name
     usage: str = f"""
@@ -39,7 +39,7 @@ example usage:
     if sys.argv[1:][0] in opt_args:
         return parser.parse_args(sys.argv[1:])
 
-    return " ".join(sys.argv[1:])
+    return (sys.argv[1], sys.argv[2:])
 
 
 def setup_pfx(path: str) -> None:
@@ -122,7 +122,9 @@ def check_env(
     return env
 
 
-def set_env(env: Dict[str, str], args: Union[Namespace, str]) -> Dict[str, str]:
+def set_env(
+    env: Dict[str, str], args: Union[Namespace, Tuple[str, List[str]]]
+) -> Dict[str, str]:
     """Set various environment variables for the Steam RT.
 
     Filesystem paths will be formatted and expanded as POSIX
@@ -145,12 +147,12 @@ def set_env(env: Dict[str, str], args: Union[Namespace, str]) -> Dict[str, str]:
 
     # EXE
     # Empty string for EXE will be used to create a prefix
-    if isinstance(args, str) and not args:
+    if isinstance(args, tuple) and isinstance(args[0], str) and not args[0]:
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         env["PROTON_VERB"] = "waitforexitandrun"
-    elif isinstance(args, str):
-        env["EXE"] = Path(args).expanduser().as_posix()
+    elif isinstance(args, tuple):
+        env["EXE"] = Path(args[0]).expanduser().as_posix()
         env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
     else:
         # Config branch
@@ -223,7 +225,9 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
     return env
 
 
-def build_command(env: Dict[str, str], command: List[str]) -> List[str]:
+def build_command(
+    env: Dict[str, str], command: List[str], opts: List[str] = None
+) -> List[str]:
     """Build the command to be executed."""
     paths: List[Path] = [
         Path(Path().home().as_posix() + "/.local/share/ULWGL/ULWGL"),
@@ -256,6 +260,9 @@ def build_command(env: Dict[str, str], command: List[str]) -> List[str]:
         [Path(env.get("PROTONPATH") + "/proton").as_posix(), verb, env.get("EXE")]
     )
 
+    if opts:
+        command.extend([*opts])
+
     return command
 
 
@@ -282,12 +289,14 @@ def main() -> None:  # noqa: D103
         "PROTON_VERB": "",
     }
     command: List[str] = []
-    # Represents a valid list of current supported Proton verbs
-    args: Union[Namespace, str] = parse_args()
+    args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
+    opts: List[str] = None
 
     if isinstance(args, Namespace):
         set_env_toml(env, args)
     else:
+        # Reference the game options
+        opts = args[1]
         check_env(env)
 
     setup_pfx(env["WINEPREFIX"])
@@ -301,7 +310,7 @@ def main() -> None:  # noqa: D103
     for key, val in env.items():
         os.environ[key] = val
 
-    build_command(env, command)
+    build_command(env, command, opts)
     subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
 
 

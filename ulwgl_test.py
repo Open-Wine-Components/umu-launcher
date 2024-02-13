@@ -633,7 +633,7 @@ class TestGameLauncher(unittest.TestCase):
         result = None
         test_str = "foo"
 
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run ...
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run foo.exe
         with patch("sys.argv", ["", self.test_exe]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -642,8 +642,12 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
             result = ulwgl_run.parse_args()
+            self.assertIsInstance(result, tuple, "Expected a tuple")
             self.assertEqual(
-                result[0:], "./tmp.WMYQiPb9A/foo", "Expected EXE to be unexpanded"
+                result[0], "./tmp.WMYQiPb9A/foo", "Expected EXE to be unexpanded"
+            )
+            self.assertFalse(
+                result[1], "Expected an empty list when passing no options"
             )
             # Check
             ulwgl_run.check_env(self.env)
