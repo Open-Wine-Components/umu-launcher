@@ -1,0 +1,13 @@
+"compatibilitytools"
+{
+  "compat_tools"
+  {
+    "ULWGL" // Internal name of this tool
+    {
+      "install_path" "../../ULWGL"
+      "display_name" "Unified Linux Wine Game Launcher"
+      "from_oslist"  "windows"
+      "to_oslist"    "linux"
+    }
+  }
+}
