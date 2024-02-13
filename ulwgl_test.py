@@ -625,6 +625,58 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["GAMEID"], self.test_file, "Expectd GAMEID to be set"
             )
 
+    def test_set_env_opts(self):
+        """Test set_env.
+
+        Ensure no failures and verify options are passed
+        """
+        result = None
+        test_str = "foo"
+
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run foo.exe -foo
+        with patch("sys.argv", ["", self.test_exe, test_str]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = test_str
+            os.environ["STORE"] = test_str
+            os.environ["PROTON_VERB"] = self.test_verb
+            # Args
+            result = ulwgl_run.parse_args()
+            self.assertIsInstance(result, tuple, "Expected a tuple")
+            self.assertEqual(
+                result[0], "./tmp.WMYQiPb9A/foo", "Expected EXE to be unexpanded"
+            )
+            self.assertEqual(
+                *result[1], test_str, "Expected the test string when passed as an option"
+            )
+            # Check
+            ulwgl_run.check_env(self.env)
+            # Prefix
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            result = ulwgl_run.set_env(self.env, result[0:])
+            self.assertTrue(result is self.env, "Expected the same reference")
+
+            path_exe = Path(self.test_exe).expanduser().as_posix()
+            path_file = Path(self.test_file).expanduser().as_posix()
+
+            # After calling set_env all paths should be expanded POSIX form
+            self.assertEqual(self.env["EXE"], path_exe, "Expected EXE to be expanded")
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
+            self.assertEqual(
+                self.env["PROTONPATH"], path_file, "Expected PROTONPATH to be set"
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"], path_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
+            self.assertEqual(
+                self.env["PROTON_VERB"],
+                self.test_verb,
+                "Expected PROTON_VERB to be set",
+            )
+
+
     def test_set_env(self):
         """Test set_env.
 
