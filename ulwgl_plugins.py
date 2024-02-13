@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, Set
 
 
-def enable_steam_game_drive(env: Dict[str, str]):
+def enable_steam_game_drive(env: Dict[str, str]) -> Dict[str, str]:
     """Enable Steam Game Drive functionality.
 
     Expects STEAM_COMPAT_INSTALL_PATH to be set
