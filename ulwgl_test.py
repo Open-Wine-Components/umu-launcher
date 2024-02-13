@@ -680,10 +680,105 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected PROTON_VERB to be set",
             )
 
+    def test_set_env_id(self):
+        """Test set_env.
+
+        Verify that environment variables (dictionary) are set after calling set_env when passing a valid ULWGL_ID
+        When a valid ULWGL_ID is set, the STEAM_COMPAT_APP_ID variables should be the stripped ULWGL_ID
+        """
+        result = None
+        test_str = "foo"
+        ulwgl_id = "ulwgl-271590"
+
+        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run foo.exe
+        with patch("sys.argv", ["", self.test_exe]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = ulwgl_id
+            os.environ["STORE"] = test_str
+            os.environ["PROTON_VERB"] = self.test_verb
+            # Args
+            result = ulwgl_run.parse_args()
+            self.assertIsInstance(result, tuple, "Expected a tuple")
+            self.assertIsInstance(result[0], str, "Expected a string")
+            self.assertIsInstance(result[1], list, "Expected a list as options")
+            self.assertEqual(
+                result[0], "./tmp.WMYQiPb9A/foo", "Expected EXE to be unexpanded"
+            )
+            self.assertFalse(
+                result[1], "Expected an empty list when passing no options"
+            )
+            # Check
+            ulwgl_run.check_env(self.env)
+            # Prefix
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            result = ulwgl_run.set_env(self.env, result[0:])
+            self.assertTrue(result is self.env, "Expected the same reference")
+
+            path_exe = Path(self.test_exe).expanduser().as_posix()
+            path_file = Path(self.test_file).expanduser().as_posix()
+
+            # After calling set_env all paths should be expanded POSIX form
+            self.assertEqual(self.env["EXE"], path_exe, "Expected EXE to be expanded")
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
+            self.assertEqual(
+                self.env["PROTONPATH"], path_file, "Expected PROTONPATH to be set"
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"], path_file, "Expected WINEPREFIX to be set"
+            )
+            self.assertEqual(self.env["GAMEID"], ulwgl_id, "Expected GAMEID to be set")
+            self.assertEqual(
+                self.env["PROTON_VERB"],
+                self.test_verb,
+                "Expected PROTON_VERB to be set",
+            )
+            # ULWGL
+            self.assertEqual(
+                self.env["ULWGL_ID"],
+                self.env["GAMEID"],
+                "Expected ULWGL_ID to be GAMEID",
+            )
+            self.assertEqual(self.env["ULWGL_ID"], ulwgl_id, "Expected ULWGL_ID")
+            # Should be stripped -- everything after the hyphen
+            self.assertEqual(
+                self.env["STEAM_COMPAT_APP_ID"],
+                ulwgl_id[ulwgl_id.find("-") + 1 :],
+                "Expected STEAM_COMPAT_APP_ID to be the stripped ULWGL_ID",
+            )
+            self.assertEqual(
+                self.env["SteamAppId"],
+                self.env["STEAM_COMPAT_APP_ID"],
+                "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
+            )
+            self.assertEqual(
+                self.env["SteamGameId"],
+                self.env["SteamAppId"],
+                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
+            )
+
+            # PATHS
+            self.assertEqual(
+                self.env["STEAM_COMPAT_SHADER_PATH"],
+                self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache",
+                "Expected STEAM_COMPAT_SHADER_PATH to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix(),
+                "Expected STEAM_COMPAT_TOOL_PATHS to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_MOUNTS"],
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                "Expected STEAM_COMPAT_MOUNTS to be set",
+            )
+
     def test_set_env(self):
         """Test set_env.
 
-        Ensure no failures and verify that $EXE
+        Verify that environment variables (dictionary) are set after calling set_env
         """
         result = None
         test_str = "foo"
@@ -731,6 +826,44 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["PROTON_VERB"],
                 self.test_verb,
                 "Expected PROTON_VERB to be set",
+            )
+            # ULWGL
+            self.assertEqual(
+                self.env["ULWGL_ID"],
+                self.env["GAMEID"],
+                "Expected ULWGL_ID to be GAMEID",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_APP_ID"],
+                "0",
+                "Expected STEAM_COMPAT_APP_ID to be 0",
+            )
+            self.assertEqual(
+                self.env["SteamAppId"],
+                self.env["STEAM_COMPAT_APP_ID"],
+                "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
+            )
+            self.assertEqual(
+                self.env["SteamGameId"],
+                self.env["SteamAppId"],
+                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
+            )
+
+            # PATHS
+            self.assertEqual(
+                self.env["STEAM_COMPAT_SHADER_PATH"],
+                self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache",
+                "Expected STEAM_COMPAT_SHADER_PATH to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix(),
+                "Expected STEAM_COMPAT_TOOL_PATHS to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_MOUNTS"],
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                "Expected STEAM_COMPAT_MOUNTS to be set",
             )
 
     def test_setup_pfx_symlinks(self):

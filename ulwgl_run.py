@@ -287,6 +287,7 @@ def main() -> None:  # noqa: D103
         "STEAM_RUNTIME_LIBRARY_PATH": "",
         "STORE": "",
         "PROTON_VERB": "",
+        "ULWGL_ID": "",
     }
     command: List[str] = []
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
