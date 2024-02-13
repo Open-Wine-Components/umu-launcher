@@ -64,7 +64,10 @@ class TestGameLauncher(unittest.TestCase):
     def test_game_drive_empty(self):
         """Test enable_steam_game_drive.
 
-        Empty WINE prefixes can be created by passing an empty string to --exe
+        WINE prefixes can be created by passing an empty string
+        Example:
+        WINEPREFIX= PROTONPATH= GAMEID= ulwgl-run ""
+
         During this process, we attempt to prepare setting up game drive and set the values for STEAM_RUNTIME_LIBRARY_PATH and STEAM_COMPAT_INSTALL_PATHS
         The resulting value of those variables should be colon delimited string with no leading colons and contain only /usr/lib or /usr/lib32
         """
@@ -86,6 +89,12 @@ class TestGameLauncher(unittest.TestCase):
             ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
             ulwgl_run.set_env(self.env, args)
+
+            # Some distributions source this variable (e.g. Ubuntu) and will be added to the result of STEAM_RUNTIME_LIBRARY_PATH
+            # Only test the case without it set
+            if "LD_LIBRARY_PATH" in os.environ:
+                os.environ.pop("LD_LIBRARY_PATH")
+
             # Game drive
             result_gamedrive = ulwgl_plugins.enable_steam_game_drive(self.env)
 
@@ -99,7 +108,7 @@ class TestGameLauncher(unittest.TestCase):
             "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
         )
 
-        # We just expect /usr/lib and /usr/lib32
+        # We just expect /usr/lib and /usr/lib32 since LD_LIBRARY_PATH is unset
         self.assertEqual(
             len(self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")),
             2,
