@@ -44,9 +44,14 @@ example usage:
 
 def setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
-    if Path(path + "/pfx").expanduser().is_symlink():
-        Path(path + "/pfx").expanduser().unlink()
-    Path(path + "/pfx").expanduser().symlink_to(Path(path).expanduser())
+    pfx: Path = Path(path + "/pfx").expanduser()
+
+    if pfx.is_symlink():
+        pfx.unlink()
+
+    if not pfx.is_dir():
+        pfx.symlink_to(Path(path).expanduser())
+
     Path(path + "/tracked_files").expanduser().touch()
 
 
