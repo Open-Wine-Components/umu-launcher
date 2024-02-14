@@ -234,7 +234,7 @@ def build_command(
     """Build the command to be executed."""
     paths: List[Path] = [
         Path(Path().home().as_posix() + "/.local/share/ULWGL/ULWGL"),
-        Path(Path(__file__).cwd().as_posix() + "/ULWGL"),
+        Path(Path(__file__).parent.as_posix() + "/ULWGL"),
     ]
     entry_point: str = ""
     verb: str = env["PROTON_VERB"]
@@ -248,7 +248,7 @@ def build_command(
     # Raise an error if the _v2-entry-point cannot be found
     if not entry_point:
         home: str = Path().home().as_posix()
-        dir: str = Path(__file__).cwd().as_posix()
+        dir: str = Path(__file__).parent.as_posix()
         msg: str = (
             f"Path to _v2-entry-point cannot be found in: {home}/.local/share or {dir}"
         )
