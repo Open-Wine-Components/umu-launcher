@@ -876,6 +876,66 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected STEAM_COMPAT_MOUNTS to be set",
             )
 
+    def test_setup_pfx_mv(self):
+        """Test setup_pfx when moving the WINEPREFIX after creating it.
+
+        After setting up the prefix then moving it to a different path, ensure that the symbolic link points to that new location
+        """
+        result = None
+        pattern = r"^/home/[a-zA-Z]+"
+        unexpanded_path = re.sub(
+            pattern,
+            "~",
+            Path(
+                Path(self.test_file).cwd().as_posix() + "/" + self.test_file
+            ).as_posix(),
+        )
+        result = ulwgl_run.setup_pfx(unexpanded_path)
+
+        # Replaces the expanded path to unexpanded
+        # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
+        self.assertIsNone(
+            result,
+            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+        )
+        self.assertTrue(
+            Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
+        )
+        self.assertTrue(
+            Path(self.test_file + "/tracked_files").is_file(),
+            "Expected tracked_files to be a file",
+        )
+        self.assertTrue(
+            Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
+        )
+
+        # Check if the symlink is in its unexpanded form
+        self.assertEqual(
+            Path(self.test_file + "/pfx").readlink().as_posix(),
+            Path(unexpanded_path).expanduser().as_posix(),
+        )
+
+        old_link = Path(self.test_file + "/pfx").resolve()
+
+        # Rename the dir and replicate passing a new WINEPREFIX
+        new_dir = Path(unexpanded_path).expanduser().rename("foo")
+        new_unexpanded_path = re.sub(
+            pattern,
+            "~",
+            Path(new_dir.cwd().as_posix() + "/" + "foo").as_posix(),
+        )
+
+        ulwgl_run.setup_pfx(new_unexpanded_path)
+
+        new_link = Path("foo" + "/pfx").resolve()
+        self.assertTrue(
+            old_link is not new_link,
+            "Expected the symbolic link to change after moving the WINEPREFIX",
+        )
+
+        if new_link.exists():
+            rmtree(new_link.as_posix())
+
     def test_setup_pfx_symlinks(self):
         """Test _setup_pfx for valid symlinks.
 
