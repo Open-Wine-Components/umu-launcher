@@ -1,0 +1,36 @@
+name: ULWGL-launcher workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        # tomllib requires Python 3.11
+        version: ["3.11", "3.12"]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.version }}
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+    - name: Lint ulwgl_*.py files with Ruff
+      run: |
+        pip install ruff
+        ruff --output-format github ulwgl_*.py
+    - name: Test with unittest
+      run: |
+        python3 ulwgl_test.py
