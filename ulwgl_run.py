@@ -10,6 +10,7 @@ from typing import Dict, Any, List, Set, Union, Tuple
 import ulwgl_plugins
 from re import match
 import subprocess
+import ulwgl_dl_util
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
@@ -118,9 +119,16 @@ def check_env(
         "PROTONPATH" not in os.environ
         or not Path(os.environ["PROTONPATH"]).expanduser().is_dir()
     ):
-        err: str = "Environment variable not set or not a directory: PROTONPATH"
-        raise ValueError(err)
-    env["PROTONPATH"] = os.environ["PROTONPATH"]
+        # Attempt to auto set this env var for the user
+        os.environ["PROTONPATH"] = ""
+        ulwgl_dl_util.get_ulwgl_proton(env)
+    else:
+        env["PROTONPATH"] = os.environ["PROTONPATH"]
+
+    # If download fails/doesn't exist in the system, raise an error
+    if not os.environ["PROTONPATH"]:
+        err: str = "GE-Proton could not be found in cache or compatibilitytools.d\nGE-Proton also failed to be downloaded\nPlease set a Proton directory or visit https://github.com/GloriousEggroll/proton-ge-custom/releases"
+        raise FileNotFoundError(err)
 
     return env
 
