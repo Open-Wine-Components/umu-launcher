@@ -11,6 +11,10 @@ permissions:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        # tomllib requires Python 3.11
+        version: ["3.11", "3.12"]
 
     runs-on: ubuntu-latest
 
@@ -19,8 +23,7 @@ jobs:
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
       with:
-        # tomllib requires Python 3.11
-        python-version: "3.11"
+        python-version: ${{ matrix.version }}
     - name: Install dependencies
       run: |
         python3 -m pip install --upgrade pip
