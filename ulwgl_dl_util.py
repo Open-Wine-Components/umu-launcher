@@ -41,13 +41,13 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     # Check if the latest isn't already in the cache
     # Assumes the tarball is legitimate
     if (
-        files
-        and Path(Path().home().as_posix() + "/.cache/ULWGL" + files[1][0]).is_file()
-    ):
+        files and Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(files[1][0])
+    ).is_file():
         proton: str = files[1][0]
+
         print(f"{proton} found in: {cache.as_posix()}")
         _extract_dir(
-            Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(files[1][0]),
+            Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(proton),
             steam_compat,
         )
 
