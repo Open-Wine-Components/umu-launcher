@@ -44,15 +44,19 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
         files
         and Path(Path().home().as_posix() + "/.cache/ULWGL" + files[1][0]).is_file()
     ):
+        proton: str = files[1][0]
+        print(f"{proton} found in: {cache.as_posix()}")
         _extract_dir(
             Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(files[1][0]),
             steam_compat,
         )
 
         environ["PROTONPATH"] = steam_compat.joinpath(
-            proton.name[: proton.name.find(".")]
+            proton[: proton.find(".")]
         ).as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
+
+        return env
 
     # Download the latest if GE-Proton is not in Steam compat
     # If the digests mismatched, refer to the cache in the next block
