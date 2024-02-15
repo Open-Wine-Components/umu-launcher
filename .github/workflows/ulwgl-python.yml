@@ -28,9 +28,6 @@ jobs:
       run: |
         pip install ruff
         ruff --output-format github ulwgl_plugins.py ulwgl_run.py ulwgl_test.py
-    - name: Format ulwgl_*.py files with Ruff
-      run: |
-        ruff format ulwgl_plugins.py ulwgl_run.py ulwgl_test.py
     - name: Test with unittest
       run: |
         python3 ulwgl_test.py
