@@ -59,28 +59,10 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
             )
 
     # Cache
-    # This point is reached when digests somehow mismatched or user interrupts the extraction process
-    for tarball in cache.glob("GE-Proton*.tar.gz"):
-        # Ignore the mismatched file
-        if files and tarball == cache.joinpath(files[1][0]):
-            continue
-
-        print(f"{tarball.name} found in: {cache.as_posix()}")
-        try:
-            _extract_dir(tarball, steam_compat)
-            environ["PROTONPATH"] = steam_compat.joinpath(
-                tarball.name[: tarball.name.find(".")]
-            ).as_posix()
-            env["PROTONPATH"] = environ["PROTONPATH"]
-
-            return env
-        except KeyboardInterrupt:
-            proton: str = tarball.name[: tarball.name.find(".")]
-
-            if steam_compat.joinpath(proton).is_dir():
-                print(f"Purging {proton} in {steam_compat} ...")
-                rmtree(steam_compat.joinpath(proton).as_posix())
-            raise
+    # Refer to an old version previously installed
+    # Reached on digest mismatch, user interrupt or download failure/no internet
+    if _get_from_cache(env, steam_compat, cache, files, False):
+        return env
 
     # No internet and cache/compat tool is empty, just return and raise an exception from the caller
     return env
@@ -252,3 +234,29 @@ def _get_from_cache(
                 rmtree(steam_compat.joinpath(proton).as_posix())
 
             raise
+
+    # Refer to an old version previously installed
+    # Reached on digest mismatch, user interrupt or download failure/no internet
+    for tarball in cache.glob("GE-Proton*.tar.gz"):
+        # Ignore the mismatched file
+        if files and tarball == cache.joinpath(files[1][0]):
+            continue
+
+        print(f"{tarball.name} found in: {cache.as_posix()}")
+        try:
+            _extract_dir(tarball, steam_compat)
+            environ["PROTONPATH"] = steam_compat.joinpath(
+                tarball.name[: tarball.name.find(".")]
+            ).as_posix()
+            env["PROTONPATH"] = environ["PROTONPATH"]
+
+            break
+        except KeyboardInterrupt:
+            proton: str = tarball.name[: tarball.name.find(".")]
+
+            if steam_compat.joinpath(proton).is_dir():
+                print(f"Purging {proton} in {steam_compat} ...")
+                rmtree(steam_compat.joinpath(proton).as_posix())
+            raise
+
+    return env
