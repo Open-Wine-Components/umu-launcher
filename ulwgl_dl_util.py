@@ -5,6 +5,7 @@ from tarfile import open as tar_open
 from requests import Response
 from typing import Dict, List, Tuple, Any, Union
 from hashlib import sha512
+from shutil import rmtree
 
 
 def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
@@ -43,16 +44,15 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     if (
         files and Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(files[1][0])
     ).is_file():
-        proton: str = files[1][0]
-
-        print(f"{proton} found in: {cache.as_posix()}")
+        print(files[1][0] + " found in: " + cache.as_posix())
         _extract_dir(
-            Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(proton),
+            Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(files[1][0]),
             steam_compat,
         )
 
+        # Set PROTONPATH to .local/share/Steam/GE-Proton*
         environ["PROTONPATH"] = steam_compat.joinpath(
-            proton[: proton.find(".")]
+            files[1][0][: files[1][0].find(".")]
         ).as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
 
@@ -68,7 +68,22 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
 
             return env
         except ValueError as err:
+            # Digest mismatched, which should be rare
+            # In this case, just leave it up to the user to handle it and refer to the cache again
             print(err)
+        except KeyboardInterrupt:
+            tarball: str = files[1][0]
+            proton: str = tarball[: tarball.find(".")]
+
+            # The files may have been left in an incomplete state
+            # Remove the tarball and proton we had extracted
+            print("Keyboard Interrupt received.\nCleaning ...")
+            if cache.joinpath(tarball).is_file():
+                print(f"Purging {tarball} in {cache} ...")
+                cache.joinpath(tarball).unlink()
+            if steam_compat.joinpath(proton).is_dir():
+                print(f"Purging {proton} in {steam_compat} ...")
+                rmtree(steam_compat.joinpath(proton).as_posix())
 
     # Cache
     for proton in cache.glob("GE-Proton*.tar.gz"):
