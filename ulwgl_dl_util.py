@@ -10,10 +10,10 @@ from shutil import rmtree
 
 
 def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
-    """Attempt to find Proton and downloads the latest if PROTONPATH is not set.
+    """Attempt to find existing Proton from the system or downloads the latest if PROTONPATH is not set.
 
-    Only fetches the latest if not first found in the Steam compat
-    Cache is only referred to last
+    Only fetches the latest if not first found in .local/share/Steam/compatibilitytools.d
+    The cache directory, .cache/ULWGL, is referenced next for latest or as fallback
     """
     files: List[Tuple[str, str]] = []
 
