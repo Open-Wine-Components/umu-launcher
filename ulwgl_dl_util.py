@@ -38,25 +38,10 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     if _get_from_cache(env, steam_compat, cache, files, True):
         return env
 
-    # Download the latest if GE-Proton is not in Steam compat
+    # Download the latest if Proton is not in Steam compat
     # If the digests mismatched, refer to the cache in the next block
-    if files:
-        print("Fetching latest release ...")
-        try:
-            _fetch_proton(env, steam_compat, cache, files)
-            env["PROTONPATH"] = environ["PROTONPATH"]
-
-            return env
-        except ValueError:
-            # Digest mismatched branch
-            # In this case, just leave it up to the user to handle it
-            pass
-        except KeyboardInterrupt:
-            # Exit cleanly
-            # Clean up incompleted files/dir
-            _cleanup(
-                files[1][0], files[1][0][: files[1][0].find(".")], cache, steam_compat
-            )
+    if _get_latest(env, steam_compat, cache, files):
+        return env
 
     # Cache
     # Refer to an old version previously installed
@@ -258,5 +243,33 @@ def _get_from_cache(
                 print(f"Purging {proton} in {steam_compat} ...")
                 rmtree(steam_compat.joinpath(proton).as_posix())
             raise
+
+    return env
+
+
+def _get_latest(
+    env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
+) -> Dict[str, str]:
+    """Download the latest Proton for new installs -- empty cache and Steam compat.
+
+    When the digests mismatched or when interrupted, refer to cache for an old version
+    """
+    if files:
+        tarball: str = files[1][0]
+
+        print("Fetching latest release ...")
+        try:
+            _fetch_proton(env, steam_compat, cache, files)
+            env["PROTONPATH"] = environ["PROTONPATH"]
+        except ValueError:
+            # Digest mismatched or download failed
+            # Refer to the cache for old version next
+            return None
+        except KeyboardInterrupt:
+            # Exit cleanly
+            # Clean up extracted data and cache to prevent corruption/errors
+            # Refer to the cache for old version next
+            _cleanup(tarball, tarball[: tarball.find(".")], cache, steam_compat)
+            return None
 
     return env
