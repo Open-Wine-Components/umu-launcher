@@ -1037,20 +1037,27 @@ class TestGameLauncher(unittest.TestCase):
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
 
-    def test_env_proton_dir(self):
-        """Test check_env when $PROTONPATH is not a directory.
+    def test_env_proton_nodir(self):
+        """Test check_env when $PROTONPATH is not set on failing to setting it.
 
-        An ValueError should occur if the value is not a directory
+        An FileNotFoundError should be raised when we fail to set PROTONPATH
         """
-        with self.assertRaisesRegex(ValueError, "PROTONPATH"):
-            os.environ["WINEPREFIX"] = self.test_file
-            os.environ["GAMEID"] = self.test_file
-            os.environ["PROTONPATH"] = "./foo"
-            ulwgl_run.check_env(self.env)
-            self.assertFalse(
-                Path(os.environ["PROTONPATH"]).is_dir(),
-                "Expected PROTONPATH to not be a directory",
-            )
+        result = None
+
+        # Mock getting the Proton
+        with self.assertRaises(FileNotFoundError):
+            with patch.object(
+                ulwgl_run,
+                "get_ulwgl_proton",
+                return_value=self.env,
+            ):
+                os.environ["WINEPREFIX"] = self.test_file
+                os.environ["GAMEID"] = self.test_file
+                result = ulwgl_run.check_env(self.env)
+                # Mock setting it on success
+                os.environ["PROTONPATH"] = self.test_file
+                self.assertTrue(result is self.env, "Expected the same reference")
+                self.assertFalse(os.environ["PROTONPATH"])
 
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
@@ -1119,10 +1126,20 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_env_vars_proton(self):
         """Test check_env when setting only $WINEPREFIX and $GAMEID."""
-        with self.assertRaisesRegex(ValueError, "PROTONPATH"):
+        with self.assertRaisesRegex(FileNotFoundError, "Proton"):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
-            ulwgl_run.check_env(self.env)
+            # Mock getting the Proton
+            with patch.object(
+                ulwgl_run,
+                "get_ulwgl_proton",
+                return_value=self.env,
+            ):
+                os.environ["WINEPREFIX"] = self.test_file
+                os.environ["GAMEID"] = self.test_file
+                result = ulwgl_run.check_env(self.env)
+                self.assertTrue(result is self.env, "Expected the same reference")
+                self.assertFalse(os.environ["PROTONPATH"])
 
     def test_env_vars_wine(self):
         """Test check_env when setting only $WINEPREFIX."""
