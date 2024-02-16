@@ -10,7 +10,7 @@ from typing import Dict, Any, List, Set, Union, Tuple
 import ulwgl_plugins
 from re import match
 import subprocess
-import ulwgl_dl_util
+from ulwgl_dl_util import get_ulwgl_proton
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
@@ -121,7 +121,7 @@ def check_env(
     ):
         # Attempt to auto set this env var for the user
         os.environ["PROTONPATH"] = ""
-        ulwgl_dl_util.get_ulwgl_proton(env)
+        get_ulwgl_proton(env)
     else:
         env["PROTONPATH"] = os.environ["PROTONPATH"]
 
