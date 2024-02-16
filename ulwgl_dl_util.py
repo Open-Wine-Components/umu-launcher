@@ -31,18 +31,7 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     steam_compat.mkdir(exist_ok=True, parents=True)
 
     # Prioritize the Steam compat
-    for proton in steam_compat.glob("GE-Proton*"):
-        print(f"{proton.name} found in: {steam_compat.as_posix()}")
-        environ["PROTONPATH"] = proton.as_posix()
-        env["PROTONPATH"] = environ["PROTONPATH"]
-
-        # Notify the user that they're not using the latest
-        if len(files) == 2 and proton.name != files[1][0][: files[1][0].find(".")]:
-            print(
-                "GE-Proton is outdated and requires manual intervention.\nFor latest release, please download "
-                + files[1][0]
-            )
-
+    if _get_from_steamcompat(env, steam_compat, cache, files):
         return env
 
     # Check if the latest isn't already in the cache
@@ -230,3 +219,24 @@ def _cleanup(tarball, proton, cache, steam_compat) -> None:
     if steam_compat.joinpath(proton).is_dir():
         print(f"Purging {proton} in {steam_compat} ...")
         rmtree(steam_compat.joinpath(proton).as_posix())
+
+
+def _get_from_steamcompat(
+    env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
+) -> Dict[str, str]:
+    """Refer to Steam compat folder for any existing Proton directories."""
+    for proton in steam_compat.glob("GE-Proton*"):
+        print(f"{proton.name} found in: {steam_compat.as_posix()}")
+        environ["PROTONPATH"] = proton.as_posix()
+        env["PROTONPATH"] = environ["PROTONPATH"]
+
+        # Notify the user that they're not using the latest
+        if len(files) == 2 and proton.name != files[1][0][: files[1][0].find(".")]:
+            print(
+                "GE-Proton is outdated and requires manual intervention.\nFor latest release, please download "
+                + files[1][1]
+            )
+
+        return env
+
+    return None
