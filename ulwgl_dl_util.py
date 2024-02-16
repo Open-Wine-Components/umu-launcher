@@ -44,60 +44,73 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     if (
         files and Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(files[1][0])
     ).is_file():
+        tarball: str = files[1][0]
+        proton: str = files[1][0][: files[1][0].find(".")]
+
         print(files[1][0] + " found in: " + cache.as_posix())
-        _extract_dir(
-            Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(files[1][0]),
-            steam_compat,
-        )
-
-        # Set PROTONPATH to .local/share/Steam/GE-Proton*
-        environ["PROTONPATH"] = steam_compat.joinpath(
-            files[1][0][: files[1][0].find(".")]
-        ).as_posix()
-        env["PROTONPATH"] = environ["PROTONPATH"]
-
-        return env
-
-    # Download the latest if GE-Proton is not in Steam compat
-    # If the digests mismatched, refer to the cache in the next block
-    if files:
         try:
-            print("Fetching latest release ...")
-            _fetch_proton(env, steam_compat, cache, files)
+            _extract_dir(
+                Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(tarball),
+                steam_compat,
+            )
+
+            # Set PROTONPATH to .local/share/Steam/compatibilitytools.d/GE-Proton*
+            environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
             env["PROTONPATH"] = environ["PROTONPATH"]
 
             return env
-        except ValueError as err:
-            # Digest mismatched, which should be rare
-            # In this case, just leave it up to the user to handle it and refer to the cache again
-            print(err)
         except KeyboardInterrupt:
-            tarball: str = files[1][0]
-            proton: str = tarball[: tarball.find(".")]
-
-            # The files may have been left in an incomplete state
-            # Remove the tarball and proton we had extracted
-            print("Keyboard Interrupt received.\nCleaning ...")
-            if cache.joinpath(tarball).is_file():
-                print(f"Purging {tarball} in {cache} ...")
-                cache.joinpath(tarball).unlink()
+            # Exit cleanly
+            # Clean up incompleted files/dir
             if steam_compat.joinpath(proton).is_dir():
                 print(f"Purging {proton} in {steam_compat} ...")
                 rmtree(steam_compat.joinpath(proton).as_posix())
 
+            raise
+
+    # Download the latest if GE-Proton is not in Steam compat
+    # If the digests mismatched, refer to the cache in the next block
+    if files:
+        print("Fetching latest release ...")
+        try:
+            _fetch_proton(env, steam_compat, cache, files)
+            env["PROTONPATH"] = environ["PROTONPATH"]
+
+            return env
+        except ValueError:
+            # Digest mismatched branch
+            # In this case, just leave it up to the user to handle it
+            pass
+        except KeyboardInterrupt:
+            # Exit cleanly
+            # Clean up incompleted files/dir
+            _cleanup(
+                files[1][0], files[1][0][: files[1][0].find(".")], cache, steam_compat
+            )
+
     # Cache
-    for proton in cache.glob("GE-Proton*.tar.gz"):
-        print(f"{proton.name} found in: {cache.as_posix()}")
+    # This point is reached when digests somehow mismatched or user interrupts the extraction process
+    for tarball in cache.glob("GE-Proton*.tar.gz"):
+        # Ignore the mismatched file
+        if files and tarball == cache.joinpath(files[1][0]):
+            continue
 
-        # Extract it to Steam compat then set it as Proton
-        _extract_dir(proton, steam_compat)
+        print(f"{tarball.name} found in: {cache.as_posix()}")
+        try:
+            _extract_dir(tarball, steam_compat)
+            environ["PROTONPATH"] = steam_compat.joinpath(
+                tarball.name[: tarball.name.find(".")]
+            ).as_posix()
+            env["PROTONPATH"] = environ["PROTONPATH"]
 
-        environ["PROTONPATH"] = steam_compat.joinpath(
-            proton.name[: proton.name.find(".")]
-        ).as_posix()
-        env["PROTONPATH"] = environ["PROTONPATH"]
+            return env
+        except KeyboardInterrupt:
+            proton: str = tarball.name[: tarball.name.find(".")]
 
-        return env
+            if steam_compat.joinpath(proton).is_dir():
+                print(f"Purging {proton} in {steam_compat} ...")
+                rmtree(steam_compat.joinpath(proton).as_posix())
+            raise
 
     # No internet and cache/compat tool is empty, just return and raise an exception from the caller
     return env
@@ -195,3 +208,18 @@ def _extract_dir(proton: Path, steam_compat: Path) -> None:
     with tar_open(proton.as_posix(), "r:gz") as tar:
         print(f"Extracting {proton} -> {steam_compat.as_posix()} ...")
         tar.extractall(path=steam_compat.as_posix())
+
+
+def _cleanup(tarball, proton, cache, steam_compat) -> None:
+    """Remove files that may have been left in an incomplete state to avoid corruption.
+
+    We want to do this when a download for a new release is interrupted
+    """
+    print("Keyboard Interrupt received.\nCleaning ...")
+
+    if cache.joinpath(tarball).is_file():
+        print(f"Purging {tarball} in {cache} ...")
+        cache.joinpath(tarball).unlink()
+    if steam_compat.joinpath(proton).is_dir():
+        print(f"Purging {proton} in {steam_compat} ...")
+        rmtree(steam_compat.joinpath(proton).as_posix())
