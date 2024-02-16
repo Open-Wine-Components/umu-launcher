@@ -34,34 +34,9 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     if _get_from_steamcompat(env, steam_compat, cache, files):
         return env
 
-    # Check if the latest isn't already in the cache
-    # Assumes the tarball is legitimate
-    if (
-        files and Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(files[1][0])
-    ).is_file():
-        tarball: str = files[1][0]
-        proton: str = files[1][0][: files[1][0].find(".")]
-
-        print(files[1][0] + " found in: " + cache.as_posix())
-        try:
-            _extract_dir(
-                Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(tarball),
-                steam_compat,
-            )
-
-            # Set PROTONPATH to .local/share/Steam/compatibilitytools.d/GE-Proton*
-            environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
-            env["PROTONPATH"] = environ["PROTONPATH"]
-
-            return env
-        except KeyboardInterrupt:
-            # Exit cleanly
-            # Clean up incompleted files/dir
-            if steam_compat.joinpath(proton).is_dir():
-                print(f"Purging {proton} in {steam_compat} ...")
-                rmtree(steam_compat.joinpath(proton).as_posix())
-
-            raise
+    # Use the latest Proton in the cache if it exists
+    if _get_from_cache(env, steam_compat, cache, files, True):
+        return env
 
     # Download the latest if GE-Proton is not in Steam compat
     # If the digests mismatched, refer to the cache in the next block
@@ -240,3 +215,40 @@ def _get_from_steamcompat(
         return env
 
     return None
+
+
+def _get_from_cache(
+    env: Dict[str, str],
+    steam_compat: Path,
+    cache: Path,
+    files: List[Tuple[str, str]],
+    latest=True,
+) -> Dict[str, str]:
+    """Refer to ULWGL cache directory.
+
+    Use the latest in the cache when present. Older Proton versions are only referred to when: digests mismatch, user interrupt, or download failure/no internet
+    """
+    if files and latest:
+        tarball: str = files[1][0]  # GE-Proton*.tar.gz
+        proton: str = tarball[: tarball.find(".")]  # GE-Proton\d+\-\d\d
+
+        print(tarball + " found in: " + cache.as_posix())
+        try:
+            _extract_dir(
+                Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(tarball),
+                steam_compat,
+            )
+
+            # Set PROTONPATH to .local/share/Steam/compatibilitytools.d/GE-Proton*
+            environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
+            env["PROTONPATH"] = environ["PROTONPATH"]
+
+            return env
+        except KeyboardInterrupt:
+            # Exit cleanly
+            # Clean up only the extracted data
+            if steam_compat.joinpath(proton).is_dir():
+                print(f"Purging {proton} in {steam_compat} ...")
+                rmtree(steam_compat.joinpath(proton).as_posix())
+
+            raise
