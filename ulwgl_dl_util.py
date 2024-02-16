@@ -256,8 +256,6 @@ def _get_latest(
     When the digests mismatched or when interrupted, refer to cache for an old version
     """
     if files:
-        tarball: str = files[1][0]
-
         print("Fetching latest release ...")
         try:
             _fetch_proton(env, steam_compat, cache, files)
@@ -267,6 +265,8 @@ def _get_latest(
             # Refer to the cache for old version next
             return None
         except KeyboardInterrupt:
+            tarball: str = files[1][0]
+
             # Exit cleanly
             # Clean up extracted data and cache to prevent corruption/errors
             # Refer to the cache for old version next
