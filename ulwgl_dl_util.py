@@ -3,6 +3,7 @@ from os import environ
 from requests import get
 from tarfile import open as tar_open
 from requests import Response
+from requests import Timeout
 from typing import Dict, List, Tuple, Any, Union
 from hashlib import sha512
 from shutil import rmtree
@@ -14,8 +15,13 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     Only fetches the latest if not first found in the Steam compat
     Cache is only referred to last
     """
-    # TODO: Put this in the background
-    files: List[Tuple[str, str]] = _fetch_releases()
+    files: List[Tuple[str, str]] = []
+
+    try:
+        files = _fetch_releases()
+    except Timeout:
+        print("Offline.\nContinuing ...")
+
     cache: Path = Path(Path().home().as_posix() + "/.cache/ULWGL")
     steam_compat: Path = Path(
         Path().home().as_posix() + "/.local/share/Steam/compatibilitytools.d"
@@ -119,7 +125,8 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
 def _fetch_releases() -> List[Tuple[str, str]]:
     """Fetch the latest releases from the Github API."""
     resp: Response = get(
-        "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
+        "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases",
+        timeout=30,
     )
     # The file name and its URL as one element
     # Checksum will be the first element, GE-Proton second
@@ -168,9 +175,9 @@ def _fetch_proton(
 
     # TODO: Parallelize this
     print(f"Downloading {hash} ...")
-    resp_hash: Response = get(hash_url)
+    resp_hash: Response = get(hash_url, timeout=30)
     print(f"Downloading {proton} ...")
-    resp: Response = get(proton_url)
+    resp: Response = get(proton_url, timeout=150)
     if (
         not resp_hash
         and resp_hash.status_code != 200
