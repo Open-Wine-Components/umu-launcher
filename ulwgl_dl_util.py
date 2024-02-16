@@ -146,6 +146,7 @@ def _extract_dir(proton: Path, steam_compat: Path) -> None:
     with tar_open(proton.as_posix(), "r:gz") as tar:
         print(f"Extracting {proton} -> {steam_compat.as_posix()} ...")
         tar.extractall(path=steam_compat.as_posix())
+        print("Completed.")
 
 
 def _cleanup(tarball, proton, cache, steam_compat) -> None:
