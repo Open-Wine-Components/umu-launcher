@@ -1,12 +1,16 @@
 from pathlib import Path
 from os import environ
-from requests import get
 from tarfile import open as tar_open
-from requests import Response
 from requests import Timeout
 from typing import Dict, List, Tuple, Any, Union
 from hashlib import sha512
 from shutil import rmtree
+from http.client import HTTPSConnection
+from http.client import HTTPConnection
+from http.client import HTTPResponse
+from ssl import create_default_context
+from json import loads as loads_json
+from urllib.request import urlretrieve
 
 
 def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
@@ -55,19 +59,29 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
 
 def _fetch_releases() -> List[Tuple[str, str]]:
     """Fetch the latest releases from the Github API."""
-    resp: Response = get(
-        "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases",
-        timeout=30,
-    )
-    # The file name and its URL as one element
-    # Checksum will be the first element, GE-Proton second
     files: List[Tuple[str, str]] = []
+    resp: HTTPResponse = None
+    conn: HTTPConnection = HTTPSConnection(
+        "api.github.com", timeout=30, context=create_default_context()
+    )
 
-    if not resp or not resp.status_code == 200:
+    conn.request(
+        "GET",
+        "/repos/GloriousEggroll/proton-ge-custom/releases",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "",
+        },
+    )
+
+    resp = conn.getresponse()
+
+    if resp and resp.status != 200:
         return files
 
     # Attempt to acquire the tarball and checksum from the JSON data
-    releases: List[Dict[str, Any]] = resp.json()
+    releases: List[Dict[str, Any]] = loads_json(resp.read().decode("utf-8"))
     for release in releases:
         if "assets" in release:
             assets: List[Dict[str, Any]] = release["assets"]
@@ -102,34 +116,20 @@ def _fetch_proton(
     """Download the latest ULWGL-Proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
     proton, proton_url = files[1]
-    stored_digest: str = ""
 
     # TODO: Parallelize this
     print(f"Downloading {hash} ...")
-    resp_hash: Response = get(hash_url, timeout=30)
+    urlretrieve(hash_url, cache.joinpath(hash).as_posix())
     print(f"Downloading {proton} ...")
-    resp: Response = get(proton_url, timeout=150)
-    if (
-        not resp_hash
-        and resp_hash.status_code != 200
-        and not resp
-        and resp.status_code != 200
-    ):
-        err: str = "Failed.\nFalling back to cache directory ..."
-        raise ValueError(err)
+    urlretrieve(proton_url, cache.joinpath(proton).as_posix())
 
     print("Completed.")
 
-    # Download the hash
-    with Path(f"{cache.as_posix()}/{hash}").open(mode="wb") as file:
-        file.write(resp_hash.content)
-    stored_digest = Path(f"{cache.as_posix()}/{hash}").read_text().split(" ")[0]
-
-    # If checksum fails, raise an error and fallback to the cache
-    with Path(f"{cache.as_posix()}/{proton}").open(mode="wb") as file:
-        file.write(resp.content)
-
-        if sha512(resp.content).hexdigest() != stored_digest:
+    with cache.joinpath(proton).open(mode="rb") as file:
+        if (
+            sha512(file.read()).hexdigest()
+            != cache.joinpath(hash).read_text().split(" ")[0]
+        ):
             err: str = "Digests mismatched.\nFalling back to the cache ..."
             raise ValueError(err)
         print(f"{proton}: SHA512 is OK")
