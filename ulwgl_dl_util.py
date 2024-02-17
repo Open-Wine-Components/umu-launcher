@@ -111,9 +111,7 @@ def _fetch_proton(
     """Download the latest ULWGL-Proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
     proton, proton_url = files[1]
-    proton_dir: str = proton[
-        : proton.find(".tar.gz")
-    ]  # Proton dir without suffixes/dashes
+    proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
 
     # TODO: Parallelize this
     print(f"Downloading {hash} ...")
@@ -169,9 +167,7 @@ def _get_from_steamcompat(
     proton_dir: str = ""  # Latest Proton
 
     if len(files) == 2:
-        proton_dir: str = files[1][0][
-            : files[1][0].find(".tar.gz")
-        ]  # Proton dir without suffixes/dashes
+        proton_dir: str = files[1][0][: files[1][0].find(".tar.gz")]  # Proton dir
 
     for proton in steam_compat.glob("ULWGL-Proton*"):
         print(f"{proton.name} found in: {steam_compat.as_posix()}")
@@ -215,9 +211,7 @@ def _get_from_cache(
         break
 
     if path:
-        proton_dir: str = name[
-            : name.find(".tar.gz")
-        ]  # Proton dir without suffixes/dashes
+        proton_dir: str = name[: name.find(".tar.gz")]  # Proton dir
 
         try:
             _extract_dir(path, steam_compat)
@@ -252,9 +246,7 @@ def _get_latest(
             return None
         except KeyboardInterrupt:
             tarball: str = files[1][0]
-            proton_dir: str = tarball[
-                : tarball.find(".tar.gz")
-            ]  # Proton dir without suffixes/dashes
+            proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
 
             # Exit cleanly
             # Clean up extracted data and cache to prevent corruption/errors
