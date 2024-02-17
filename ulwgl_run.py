@@ -127,7 +127,7 @@ def check_env(
 
     # If download fails/doesn't exist in the system, raise an error
     if not os.environ["PROTONPATH"]:
-        err: str = "GE-Proton could not be found in cache or compatibilitytools.d\nGE-Proton also failed to be downloaded\nPlease set a Proton directory or visit https://github.com/GloriousEggroll/proton-ge-custom/releases"
+        err: str = "Download failed.\nProton could not be found in cache or compatibilitytools.d\nPlease set $PROTONPATH or visit https://github.com/Open-Wine-Components/ULWGL-Proton/releases"
         raise FileNotFoundError(err)
 
     return env
