@@ -100,6 +100,81 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_proton_dir.exists():
             rmtree(self.test_proton_dir.as_posix())
 
+    def test_cleanup_no_exists(self):
+        """Test _cleanup when passed files that do not exist.
+
+        In the event of an interrupt during the download/extract process, we only want to clean the files that exist
+        NOTE: This is **extremely** important, as we do **not** want to delete anything else but the files we downloaded/extracted -- the incomplete tarball/extracted dir
+        """
+        result = None
+
+        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+
+        # Before cleaning
+        # On setUp, an archive is created and a dir should exist in compat after extraction
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).exists(),
+            "Expected proton dir to exist in compat before cleaning",
+        )
+        self.assertTrue(
+            self.test_archive.exists(),
+            "Expected archive to exist in cache before cleaning",
+        )
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).joinpath("proton").exists(),
+            "Expected 'proton' to exist before cleaning",
+        )
+
+        # Pass files that do not exist
+        result = ulwgl_dl_util._cleanup(
+            "foo.tar.gz",
+            "foo",
+            self.test_cache,
+            self.test_compat,
+        )
+
+        # Verify state of cache and compat after cleaning
+        self.assertFalse(result, "Expected None after cleaning")
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).exists(),
+            "Expected proton dir to still exist after cleaning",
+        )
+        self.assertTrue(
+            self.test_archive.exists(),
+            "Expected archive to still exist after cleaning",
+        )
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).joinpath("proton").exists(),
+            "Expected 'proton' to still exist after cleaning",
+        )
+
+    def test_cleanup(self):
+        """Test _cleanup.
+
+        In the event of an interrupt during the download/extract process, we want to clean the cache or the extracted dir in Steam compat to avoid incomplete files
+        """
+        result = None
+
+        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+        result = ulwgl_dl_util._cleanup(
+            self.test_proton_dir.as_posix() + ".tar.gz",
+            self.test_proton_dir.as_posix(),
+            self.test_cache,
+            self.test_compat,
+        )
+        self.assertFalse(result, "Expected None after cleaning")
+        self.assertFalse(
+            self.test_compat.joinpath(self.test_proton_dir).exists(),
+            "Expected proton dir to be cleaned in compat",
+        )
+        self.assertFalse(
+            self.test_archive.exists(),
+            "Expected archive to be cleaned in cache",
+        )
+        self.assertFalse(
+            self.test_compat.joinpath(self.test_proton_dir).joinpath("proton").exists(),
+            "Expected 'proton' to not exist after cleaned",
+        )
 
     def test_extract_err(self):
         """Test _extract_dir when passed a non-gzip compressed archive.
