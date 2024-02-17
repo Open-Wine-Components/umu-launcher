@@ -1,13 +1,13 @@
 from pathlib import Path
 from os import environ
 from tarfile import open as tar_open
-from requests import Timeout
 from typing import Dict, List, Tuple, Any, Union
 from hashlib import sha512
 from shutil import rmtree
 from http.client import HTTPSConnection
 from http.client import HTTPConnection
 from http.client import HTTPResponse
+from http.client import HTTPException
 from ssl import create_default_context
 from json import loads as loads_json
 from urllib.request import urlretrieve
@@ -23,7 +23,7 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
 
     try:
         files = _fetch_releases()
-    except Timeout:
+    except HTTPException:
         print("Offline.\nContinuing ...")
 
     cache: Path = Path.home().joinpath(".cache/ULWGL")
