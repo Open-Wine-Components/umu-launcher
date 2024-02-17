@@ -9,6 +9,8 @@ from tomllib import TOMLDecodeError
 from shutil import rmtree
 import re
 import ulwgl_plugins
+import ulwgl_dl_util
+import tarfile
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -49,6 +51,34 @@ class TestGameLauncher(unittest.TestCase):
         self.test_file = "./tmp.WMYQiPb9A"
         # Executable
         self.test_exe = self.test_file + "/" + "foo"
+        # Cache
+        self.test_cache = Path("./tmp.5HYdpddgvs")
+        # Steam compat dir
+        self.test_compat = Path("./tmp.ZssGZoiNod")
+        # ULWGL-Proton dir
+        self.test_proton_dir = Path("ULWGL-Proton-5HYdpddgvs")
+        # ULWGL-Proton release
+        self.test_archive = Path(self.test_cache).joinpath(
+            f"{self.test_proton_dir}.tar.gz"
+        )
+
+        self.test_cache.mkdir(exist_ok=True)
+        self.test_compat.mkdir(exist_ok=True)
+        self.test_proton_dir.mkdir(exist_ok=True)
+
+        # Mock the proton file in the dir
+        self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
+
+        # Mock the release downloaded in the cache: tmp.5HYdpddgvs/ULWGL-Proton-5HYdpddgvs.tar.gz
+        # Expected directory structure within the archive:
+        #
+        # +-- ULWGL-Proton-5HYdpddgvs (root directory)
+        # |   +-- proton              (normal file)
+        with tarfile.open(self.test_archive.as_posix(), "w:gz") as tar:
+            tar.add(
+                self.test_proton_dir.as_posix(), arcname=self.test_proton_dir.as_posix()
+            )
+
         Path(self.test_file).mkdir(exist_ok=True)
         Path(self.test_exe).touch()
 
@@ -60,6 +90,52 @@ class TestGameLauncher(unittest.TestCase):
 
         if Path(self.test_file).exists():
             rmtree(self.test_file)
+
+        if self.test_cache.exists():
+            rmtree(self.test_cache.as_posix())
+
+        if self.test_compat.exists():
+            rmtree(self.test_compat.as_posix())
+
+        if self.test_proton_dir.exists():
+            rmtree(self.test_proton_dir.as_posix())
+
+
+    def test_extract_err(self):
+        """Test _extract_dir when passed a non-gzip compressed archive.
+
+        An error should be raised as we only expect .tar.gz releases
+        """
+        test_archive = self.test_cache.joinpath(f"{self.test_proton_dir}.tar")
+        # Do not apply compression
+        with tarfile.open(test_archive.as_posix(), "w") as tar:
+            tar.add(
+                self.test_proton_dir.as_posix(), arcname=self.test_proton_dir.as_posix()
+            )
+
+        with self.assertRaisesRegex(tarfile.ReadError, "gzip"):
+            ulwgl_dl_util._extract_dir(test_archive, self.test_compat)
+
+        if test_archive.exists():
+            test_archive.unlink()
+
+    def test_extract(self):
+        """Test _extract_dir.
+
+        An error should not be raised when the Proton release is extracted to the Steam compat dir
+        """
+        result = None
+
+        result = ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+        self.assertFalse(result, "Expected None after extracting")
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).exists(),
+            "Expected proton dir to exists in compat",
+        )
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).joinpath("proton").exists(),
+            "Expected 'proton' file to exists in the proton dir",
+        )
 
     def test_game_drive_empty(self):
         """Test enable_steam_game_drive.
