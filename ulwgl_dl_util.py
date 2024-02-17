@@ -26,10 +26,8 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     except Timeout:
         print("Offline.\nContinuing ...")
 
-    cache: Path = Path(Path().home().as_posix() + "/.cache/ULWGL")
-    steam_compat: Path = Path(
-        Path().home().as_posix() + "/.local/share/Steam/compatibilitytools.d"
-    )
+    cache: Path = Path.home().joinpath(".cache/ULWGL")
+    steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
 
     cache.mkdir(exist_ok=True, parents=True)
     steam_compat.mkdir(exist_ok=True, parents=True)
@@ -134,7 +132,7 @@ def _fetch_proton(
             raise ValueError(err)
         print(f"{proton}: SHA512 is OK")
 
-    _extract_dir(Path(f"{cache.as_posix()}/{proton}"), steam_compat)
+    _extract_dir(cache.joinpath(proton), steam_compat)
     environ["PROTONPATH"] = steam_compat.joinpath(proton[: proton.find(".")]).as_posix()
     env["PROTONPATH"] = environ["PROTONPATH"]
 
