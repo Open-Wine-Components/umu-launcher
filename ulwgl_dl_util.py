@@ -62,7 +62,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 
     conn.request(
         "GET",
-        "/repos/GloriousEggroll/proton-ge-custom/releases",
+        "/repos/Open-Wine-Components/ULWGL-Proton/releases",
         headers={
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
@@ -88,7 +88,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
                         asset["name"].endswith("sum")
                         or (
                             asset["name"].endswith("tar.gz")
-                            and asset["name"].startswith("GE-Proton")
+                            and asset["name"].startswith("ULWGL-Proton")
                         )
                     )
                     and "browser_download_url" in asset
@@ -164,6 +164,8 @@ def _get_from_steamcompat(
 ) -> Dict[str, str]:
     """Refer to Steam compat folder for any existing Proton directories."""
     for proton in steam_compat.glob("GE-Proton*"):
+
+    for proton in steam_compat.glob("ULWGL-Proton*"):
         print(f"{proton.name} found in: {steam_compat.as_posix()}")
         environ["PROTONPATH"] = proton.as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
@@ -171,7 +173,7 @@ def _get_from_steamcompat(
         # Notify the user that they're not using the latest
         if len(files) == 2 and proton.name != files[1][0][: files[1][0].find(".")]:
             print(
-                "GE-Proton is outdated and requires manual intervention.\nFor latest release, please download "
+                "ULWGL-Proton is outdated.\nFor latest release, please download "
                 + files[1][1]
             )
 
@@ -194,7 +196,7 @@ def _get_from_cache(
     path: Path = None
     name: str = ""
 
-    for tarball in cache.glob("GE-Proton*.tar.gz"):
+    for tarball in cache.glob("ULWGL-Proton*.tar.gz"):
         if files and tarball == cache.joinpath(files[1][0]) and use_latest:
             path = tarball
             name = tarball.name
