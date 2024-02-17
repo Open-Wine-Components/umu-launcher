@@ -111,6 +111,9 @@ def _fetch_proton(
     """Download the latest ULWGL-Proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
     proton, proton_url = files[1]
+    proton_dir: str = proton[
+        : proton.find(".tar.gz")
+    ]  # Proton dir without suffixes/dashes
 
     # TODO: Parallelize this
     print(f"Downloading {hash} ...")
@@ -130,7 +133,7 @@ def _fetch_proton(
         print(f"{proton}: SHA512 is OK")
 
     _extract_dir(cache.joinpath(proton), steam_compat)
-    environ["PROTONPATH"] = steam_compat.joinpath(proton[: proton.find(".")]).as_posix()
+    environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
     env["PROTONPATH"] = environ["PROTONPATH"]
 
     return env
@@ -163,7 +166,12 @@ def _get_from_steamcompat(
     env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
 ) -> Dict[str, str]:
     """Refer to Steam compat folder for any existing Proton directories."""
-    for proton in steam_compat.glob("GE-Proton*"):
+    proton_dir: str = ""  # Latest Proton
+
+    if len(files) == 2:
+        proton_dir: str = files[1][0][
+            : files[1][0].find(".tar.gz")
+        ]  # Proton dir without suffixes/dashes
 
     for proton in steam_compat.glob("ULWGL-Proton*"):
         print(f"{proton.name} found in: {steam_compat.as_posix()}")
@@ -171,7 +179,7 @@ def _get_from_steamcompat(
         env["PROTONPATH"] = environ["PROTONPATH"]
 
         # Notify the user that they're not using the latest
-        if len(files) == 2 and proton.name != files[1][0][: files[1][0].find(".")]:
+        if proton_dir and proton.name != proton_dir:
             print(
                 "ULWGL-Proton is outdated.\nFor latest release, please download "
                 + files[1][1]
@@ -207,20 +215,20 @@ def _get_from_cache(
         break
 
     if path:
+        proton_dir: str = name[
+            : name.find(".tar.gz")
+        ]  # Proton dir without suffixes/dashes
+
         try:
             _extract_dir(path, steam_compat)
-            environ["PROTONPATH"] = steam_compat.joinpath(
-                name[: name.find(".")]
-            ).as_posix()
+            environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
             env["PROTONPATH"] = environ["PROTONPATH"]
 
             return env
         except KeyboardInterrupt:
-            proton: str = name[: name.find(".")]
-
-            if steam_compat.joinpath(proton).is_dir():
-                print(f"Purging {proton} in {steam_compat} ...")
-                rmtree(steam_compat.joinpath(proton).as_posix())
+            if steam_compat.joinpath(proton_dir).is_dir():
+                print(f"Purging {proton_dir} in {steam_compat} ...")
+                rmtree(steam_compat.joinpath(proton_dir).as_posix())
             raise
 
     return None
@@ -244,11 +252,14 @@ def _get_latest(
             return None
         except KeyboardInterrupt:
             tarball: str = files[1][0]
+            proton_dir: str = tarball[
+                : tarball.find(".tar.gz")
+            ]  # Proton dir without suffixes/dashes
 
             # Exit cleanly
             # Clean up extracted data and cache to prevent corruption/errors
             # Refer to the cache for old version next
-            _cleanup(tarball, tarball[: tarball.find(".")], cache, steam_compat)
+            _cleanup(tarball, proton_dir, cache, steam_compat)
             return None
 
     return env
