@@ -110,11 +110,19 @@ class TestGameLauncher(unittest.TestCase):
 
         ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
 
+        # Create a file in the cache and compat
+        self.test_cache.joinpath("foo").touch()
+        self.test_compat.joinpath("foo").touch()
+
         # Before cleaning
         # On setUp, an archive is created and a dir should exist in compat after extraction
         self.assertTrue(
-            self.test_compat.joinpath(self.test_proton_dir).exists(),
-            "Expected proton dir to exist in compat before cleaning",
+            self.test_compat.joinpath("foo").exists(),
+            "Expected test file to exist in compat before cleaning",
+        )
+        self.assertTrue(
+            self.test_cache.joinpath("foo").exists(),
+            "Expected test file to exist in cache before cleaning",
         )
         self.assertTrue(
             self.test_archive.exists(),
@@ -135,6 +143,14 @@ class TestGameLauncher(unittest.TestCase):
 
         # Verify state of cache and compat after cleaning
         self.assertFalse(result, "Expected None after cleaning")
+        self.assertTrue(
+            self.test_compat.joinpath("foo").exists(),
+            "Expected test file to exist in compat after cleaning",
+        )
+        self.assertTrue(
+            self.test_cache.joinpath("foo").exists(),
+            "Expected test file to exist in cache after cleaning",
+        )
         self.assertTrue(
             self.test_compat.joinpath(self.test_proton_dir).exists(),
             "Expected proton dir to still exist after cleaning",
