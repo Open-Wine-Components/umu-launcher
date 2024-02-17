@@ -190,62 +190,43 @@ def _get_from_cache(
     steam_compat: Path,
     cache: Path,
     files: List[Tuple[str, str]],
-    latest=True,
+    use_latest=True,
 ) -> Dict[str, str]:
     """Refer to ULWGL cache directory.
 
     Use the latest in the cache when present. Older Proton versions are only referred to when: digests mismatch, user interrupt, or download failure/no internet
     """
-    if files and latest:
-        tarball: str = files[1][0]  # GE-Proton*.tar.gz
-        proton: str = tarball[: tarball.find(".")]  # GE-Proton\d+\-\d\d
+    path: Path = None
+    name: str = ""
 
-        print(tarball + " found in: " + cache.as_posix())
+    for tarball in cache.glob("GE-Proton*.tar.gz"):
+        if files and tarball == cache.joinpath(files[1][0]) and use_latest:
+            path = tarball
+            name = tarball.name
+        elif not use_latest:
+            path = tarball
+            name = tarball.name
+        print(f"{tarball.name} found in: {cache.as_posix()}")
+        break
+
+    if path:
         try:
-            _extract_dir(
-                Path(Path().home().as_posix() + "/.cache/ULWGL").joinpath(tarball),
-                steam_compat,
-            )
-
-            # Set PROTONPATH to .local/share/Steam/compatibilitytools.d/GE-Proton*
-            environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
+            _extract_dir(path, steam_compat)
+            environ["PROTONPATH"] = steam_compat.joinpath(
+                name[: name.find(".")]
+            ).as_posix()
             env["PROTONPATH"] = environ["PROTONPATH"]
 
             return env
         except KeyboardInterrupt:
-            # Exit cleanly
-            # Clean up only the extracted data
-            if steam_compat.joinpath(proton).is_dir():
-                print(f"Purging {proton} in {steam_compat} ...")
-                rmtree(steam_compat.joinpath(proton).as_posix())
-
-            raise
-
-    # Refer to an old version previously installed
-    # Reached on digest mismatch, user interrupt or download failure/no internet
-    for tarball in cache.glob("GE-Proton*.tar.gz"):
-        # Ignore the mismatched file
-        if files and tarball == cache.joinpath(files[1][0]):
-            continue
-
-        print(f"{tarball.name} found in: {cache.as_posix()}")
-        try:
-            _extract_dir(tarball, steam_compat)
-            environ["PROTONPATH"] = steam_compat.joinpath(
-                tarball.name[: tarball.name.find(".")]
-            ).as_posix()
-            env["PROTONPATH"] = environ["PROTONPATH"]
-
-            break
-        except KeyboardInterrupt:
-            proton: str = tarball.name[: tarball.name.find(".")]
+            proton: str = name[: name.find(".")]
 
             if steam_compat.joinpath(proton).is_dir():
                 print(f"Purging {proton} in {steam_compat} ...")
                 rmtree(steam_compat.joinpath(proton).as_posix())
             raise
 
-    return env
+    return None
 
 
 def _get_latest(
