@@ -10,7 +10,7 @@ from json import loads as loads_json
 from urllib.request import urlretrieve
 
 
-def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
+def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     """Attempt to find existing Proton from the system or downloads the latest if PROTONPATH is not set.
 
     Only fetches the latest if not first found in .local/share/Steam/compatibilitytools.d
@@ -161,7 +161,7 @@ def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None
 
 def _get_from_steamcompat(
     env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
-) -> Dict[str, str]:
+) -> Union[Dict[str, str], None]:
     """Refer to Steam compat folder for any existing Proton directories."""
     proton_dir: str = ""  # Latest Proton
 
@@ -191,7 +191,7 @@ def _get_from_cache(
     cache: Path,
     files: List[Tuple[str, str]],
     use_latest=True,
-) -> Dict[str, str]:
+) -> Union[Dict[str, str], None]:
     """Refer to ULWGL cache directory.
 
     Use the latest in the cache when present. When download fails, use an old version
@@ -231,7 +231,7 @@ def _get_from_cache(
 
 def _get_latest(
     env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
-) -> Dict[str, str]:
+) -> Union[Dict[str, str], None]:
     """Download the latest Proton for new installs -- empty cache and Steam compat.
 
     When the digests mismatched or when interrupted, refer to cache for an old version
