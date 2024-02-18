@@ -145,7 +145,7 @@ def _extract_dir(proton: Path, steam_compat: Path) -> None:
         print("Completed.")
 
 
-def _cleanup(tarball, proton, cache, steam_compat) -> None:
+def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None:
     """Remove files that may have been left in an incomplete state to avoid corruption.
 
     We want to do this when a download for a new release is interrupted
