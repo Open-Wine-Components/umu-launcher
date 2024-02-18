@@ -210,11 +210,10 @@ def _get_from_cache(
             name = tarball.name
             break
 
-    print(f"{name} found in: {path}")
-
     if path:
         proton_dir: str = name[: name.find(".tar.gz")]  # Proton dir
 
+        print(f"{name} found in: {path}")
         try:
             _extract_dir(path, steam_compat)
             environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
