@@ -100,10 +100,78 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_proton_dir.exists():
             rmtree(self.test_proton_dir.as_posix())
 
-    def test_cache_interrupt(self):
-        """Test _get_from_cache on keyboard interrupt."""
+    def test_latest_interrupt(self):
+        """Test _get_latest in the event the user interrupts the download/extraction process.
+
+        Assumes a file is being downloaded or extracted in this case.
+        A KeyboardInterrupt should be raised, and the cache/compat dir should be cleaned afterwards.
+        """
         result = None
         # In the real usage, should be populated after successful callout for latest Proton releases
+        # In this case, assume the test variable will be downloaded
+        files = [("", ""), (self.test_archive.name, "")]
+
+        # In the event of an interrupt, both the cache/compat dir will be checked for the latest release for removal
+        # We do this since the extraction process can be interrupted as well
+        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+
+        with patch("ulwgl_dl_util._fetch_proton") as mock_function:
+            # Mock the interrupt
+            # We want the dir we tried to extract to be cleaned
+            mock_function.side_effect = KeyboardInterrupt
+            result = ulwgl_dl_util._get_latest(
+                self.env, self.test_compat, self.test_cache, files
+            )
+            self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
+            self.assertFalse(result, "Expected None when a ValueError occurs")
+
+            # Verify the state of the compat dir/cache
+            self.assertFalse(
+                self.test_compat.joinpath(
+                    self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
+                ).exists(),
+                "Expected Proton dir in compat to be cleaned",
+            )
+            self.assertFalse(
+                self.test_cache.joinpath(self.test_archive.name).exists(),
+                "Expected Proton dir in compat to be cleaned",
+            )
+
+    def test_latest_val_err(self):
+        """Test _get_latest in the event something goes wrong in the download process for the latest Proton.
+
+        Assumes a file is being downloaded in this case.
+        A ValueError should be raised, and one case it can happen is if the digests mismatched for some reason
+        """
+        result = None
+        # In the real usage, should be populated after successful callout for latest Proton releases
+        # When empty, it means the callout failed for some reason (e.g. no internet)
+        files = [("", ""), (self.test_archive.name, "")]
+
+        with patch("ulwgl_dl_util._fetch_proton") as mock_function:
+            # Mock the interrupt
+            mock_function.side_effect = ValueError
+            result = ulwgl_dl_util._get_latest(
+                self.env, self.test_compat, self.test_cache, files
+            )
+            self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
+            self.assertFalse(result, "Expected None when a ValueError occurs")
+
+    def test_latest_offline(self):
+        """Test _get_latest when the user doesn't have internet."""
+        result = None
+        # In the real usage, should be populated after successful callout for latest Proton releases
+        # When empty, it means the callout failed for some reason (e.g. no internet)
+        files = []
+
+        os.environ["PROTONPATH"] = ""
+
+        with patch("ulwgl_dl_util._fetch_proton"):
+            result = ulwgl_dl_util._get_latest(
+                self.env, self.test_compat, self.test_cache, files
+            )
+            self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
+            self.assertTrue(result is self.env, "Expected the same reference")
 
     def test_cache_interrupt(self):
         """Test _get_from_cache on keyboard interrupt on extraction from the cache to the compat dir."""
