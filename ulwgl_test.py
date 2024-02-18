@@ -104,10 +104,13 @@ class TestGameLauncher(unittest.TestCase):
         """Test _get_from_cache on keyboard interrupt."""
         result = None
         # In the real usage, should be populated after successful callout for latest Proton releases
+
+    def test_cache_interrupt(self):
+        """Test _get_from_cache on keyboard interrupt on extraction from the cache to the compat dir."""
+        # In the real usage, should be populated after successful callout for latest Proton releases
         # Just mock it and assumes its the latest
         files = [("", ""), (self.test_archive.name, "")]
 
-        # Populate the Steam compat dir by extracting the tarball
         ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
 
         self.assertTrue(
@@ -120,17 +123,15 @@ class TestGameLauncher(unittest.TestCase):
         with patch("ulwgl_dl_util._extract_dir") as mock_function:
             with self.assertRaisesRegex(KeyboardInterrupt, ""):
                 # Mock the interrupt
+                # We want to simulate an interrupt mid-extraction in this case
                 # We want the dir we tried to extract to be cleaned
                 mock_function.side_effect = KeyboardInterrupt
-                result = ulwgl_dl_util._get_from_cache(
+                ulwgl_dl_util._get_from_cache(
                     self.env, self.test_compat, self.test_cache, files, True
                 )
 
-                self.assertFalse(result, "Expected None on keyboard interrupt")
-                self.assertFalse(
-                    self.env["PROTONPATH"],
-                    "Expected PROTONPATH to be empty when the cache is empty",
-                )
+                # After interrupt, we attempt to clean the compat dir for the file we tried to extract because it could be in an incomplete state
+                # Verify that the dir we tried to extract from cache is removed to avoid corruption on next launch
                 self.assertFalse(
                     self.test_compat.joinpath(
                         self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
