@@ -45,7 +45,7 @@ example usage:
 
 def setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
-    pfx: Path = Path(path + "/pfx").expanduser()
+    pfx: Path = Path(path).joinpath("pfx").expanduser()
 
     if pfx.is_symlink():
         pfx.unlink()
@@ -53,7 +53,7 @@ def setup_pfx(path: str) -> None:
     if not pfx.is_dir():
         pfx.symlink_to(Path(path).expanduser())
 
-    Path(path + "/tracked_files").expanduser().touch()
+    Path(path).joinpath("tracked_files").expanduser().touch()
 
 
 def check_env(
@@ -241,8 +241,8 @@ def build_command(
 ) -> List[str]:
     """Build the command to be executed."""
     paths: List[Path] = [
-        Path(Path().home().as_posix() + "/.local/share/ULWGL/ULWGL"),
-        Path(Path(__file__).parent.as_posix() + "/ULWGL"),
+        Path.home().joinpath(".local/share/ULWGL/ULWGL"),
+        Path(__file__).parent.joinpath("ULWGL"),
     ]
     entry_point: str = ""
     verb: str = env["PROTON_VERB"]
@@ -255,20 +255,24 @@ def build_command(
 
     # Raise an error if the _v2-entry-point cannot be found
     if not entry_point:
-        home: str = Path().home().as_posix()
+        home: str = Path.home().as_posix()
         dir: str = Path(__file__).parent.as_posix()
         msg: str = (
             f"Path to _v2-entry-point cannot be found in: {home}/.local/share or {dir}"
         )
         raise FileNotFoundError(msg)
 
-    if not Path(env.get("PROTONPATH") + "/proton").is_file():
+    if not Path(env.get("PROTONPATH")).joinpath("proton").is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
     command.extend([entry_point, "--verb", verb, "--"])
     command.extend(
-        [Path(env.get("PROTONPATH") + "/proton").as_posix(), verb, env.get("EXE")]
+        [
+            Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
+            verb,
+            env.get("EXE"),
+        ]
     )
 
     if opts:
