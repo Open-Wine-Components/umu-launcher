@@ -100,6 +100,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
                 if len(files) == 2:
                     break
         break
+    conn.close()
 
     return files
 
