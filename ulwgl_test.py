@@ -9,6 +9,8 @@ from tomllib import TOMLDecodeError
 from shutil import rmtree
 import re
 import ulwgl_plugins
+import ulwgl_dl_util
+import tarfile
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -49,6 +51,34 @@ class TestGameLauncher(unittest.TestCase):
         self.test_file = "./tmp.WMYQiPb9A"
         # Executable
         self.test_exe = self.test_file + "/" + "foo"
+        # Cache
+        self.test_cache = Path("./tmp.5HYdpddgvs")
+        # Steam compat dir
+        self.test_compat = Path("./tmp.ZssGZoiNod")
+        # ULWGL-Proton dir
+        self.test_proton_dir = Path("ULWGL-Proton-5HYdpddgvs")
+        # ULWGL-Proton release
+        self.test_archive = Path(self.test_cache).joinpath(
+            f"{self.test_proton_dir}.tar.gz"
+        )
+
+        self.test_cache.mkdir(exist_ok=True)
+        self.test_compat.mkdir(exist_ok=True)
+        self.test_proton_dir.mkdir(exist_ok=True)
+
+        # Mock the proton file in the dir
+        self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
+
+        # Mock the release downloaded in the cache: tmp.5HYdpddgvs/ULWGL-Proton-5HYdpddgvs.tar.gz
+        # Expected directory structure within the archive:
+        #
+        # +-- ULWGL-Proton-5HYdpddgvs (root directory)
+        # |   +-- proton              (normal file)
+        with tarfile.open(self.test_archive.as_posix(), "w:gz") as tar:
+            tar.add(
+                self.test_proton_dir.as_posix(), arcname=self.test_proton_dir.as_posix()
+            )
+
         Path(self.test_file).mkdir(exist_ok=True)
         Path(self.test_exe).touch()
 
@@ -60,6 +90,365 @@ class TestGameLauncher(unittest.TestCase):
 
         if Path(self.test_file).exists():
             rmtree(self.test_file)
+
+        if self.test_cache.exists():
+            rmtree(self.test_cache.as_posix())
+
+        if self.test_compat.exists():
+            rmtree(self.test_compat.as_posix())
+
+        if self.test_proton_dir.exists():
+            rmtree(self.test_proton_dir.as_posix())
+
+    def test_latest_interrupt(self):
+        """Test _get_latest in the event the user interrupts the download/extraction process.
+
+        Assumes a file is being downloaded or extracted in this case.
+        A KeyboardInterrupt should be raised, and the cache/compat dir should be cleaned afterwards.
+        """
+        result = None
+        # In the real usage, should be populated after successful callout for latest Proton releases
+        # In this case, assume the test variable will be downloaded
+        files = [("", ""), (self.test_archive.name, "")]
+
+        # In the event of an interrupt, both the cache/compat dir will be checked for the latest release for removal
+        # We do this since the extraction process can be interrupted as well
+        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+
+        with patch("ulwgl_dl_util._fetch_proton") as mock_function:
+            # Mock the interrupt
+            # We want the dir we tried to extract to be cleaned
+            mock_function.side_effect = KeyboardInterrupt
+            result = ulwgl_dl_util._get_latest(
+                self.env, self.test_compat, self.test_cache, files
+            )
+            self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
+            self.assertFalse(result, "Expected None when a ValueError occurs")
+
+            # Verify the state of the compat dir/cache
+            self.assertFalse(
+                self.test_compat.joinpath(
+                    self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
+                ).exists(),
+                "Expected Proton dir in compat to be cleaned",
+            )
+            self.assertFalse(
+                self.test_cache.joinpath(self.test_archive.name).exists(),
+                "Expected Proton dir in compat to be cleaned",
+            )
+
+    def test_latest_val_err(self):
+        """Test _get_latest in the event something goes wrong in the download process for the latest Proton.
+
+        Assumes a file is being downloaded in this case.
+        A ValueError should be raised, and one case it can happen is if the digests mismatched for some reason
+        """
+        result = None
+        # In the real usage, should be populated after successful callout for latest Proton releases
+        # When empty, it means the callout failed for some reason (e.g. no internet)
+        files = [("", ""), (self.test_archive.name, "")]
+
+        with patch("ulwgl_dl_util._fetch_proton") as mock_function:
+            # Mock the interrupt
+            mock_function.side_effect = ValueError
+            result = ulwgl_dl_util._get_latest(
+                self.env, self.test_compat, self.test_cache, files
+            )
+            self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
+            self.assertFalse(result, "Expected None when a ValueError occurs")
+
+    def test_latest_offline(self):
+        """Test _get_latest when the user doesn't have internet."""
+        result = None
+        # In the real usage, should be populated after successful callout for latest Proton releases
+        # When empty, it means the callout failed for some reason (e.g. no internet)
+        files = []
+
+        os.environ["PROTONPATH"] = ""
+
+        with patch("ulwgl_dl_util._fetch_proton"):
+            result = ulwgl_dl_util._get_latest(
+                self.env, self.test_compat, self.test_cache, files
+            )
+            self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
+            self.assertTrue(result is self.env, "Expected the same reference")
+
+    def test_cache_interrupt(self):
+        """Test _get_from_cache on keyboard interrupt on extraction from the cache to the compat dir."""
+        # In the real usage, should be populated after successful callout for latest Proton releases
+        # Just mock it and assumes its the latest
+        files = [("", ""), (self.test_archive.name, "")]
+
+        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+
+        self.assertTrue(
+            self.test_compat.joinpath(
+                self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
+            ).exists(),
+            "Expected Proton dir to exist in compat",
+        )
+
+        with patch("ulwgl_dl_util._extract_dir") as mock_function:
+            with self.assertRaisesRegex(KeyboardInterrupt, ""):
+                # Mock the interrupt
+                # We want to simulate an interrupt mid-extraction in this case
+                # We want the dir we tried to extract to be cleaned
+                mock_function.side_effect = KeyboardInterrupt
+                ulwgl_dl_util._get_from_cache(
+                    self.env, self.test_compat, self.test_cache, files, True
+                )
+
+                # After interrupt, we attempt to clean the compat dir for the file we tried to extract because it could be in an incomplete state
+                # Verify that the dir we tried to extract from cache is removed to avoid corruption on next launch
+                self.assertFalse(
+                    self.test_compat.joinpath(
+                        self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
+                    ).exists(),
+                    "Expected Proton dir in compat to be cleaned",
+                )
+
+    def test_cache_old(self):
+        """Test _get_from_cache when the cache is empty.
+
+        In real usage, this only happens as a last resort when: download fails, digests mismatched, etc.
+        """
+        result = None
+        # In the real usage, should be populated after successful callout for latest Proton releases
+        # Just mock it and assumes its the latest
+        files = [("", ""), (self.test_archive.name, "")]
+
+        # Mock old Proton versions in the cache
+        test_proton_dir = Path("ULWGL-Proton-foo")
+        test_proton_dir.mkdir(exist_ok=True)
+        test_archive = Path(self.test_cache).joinpath(
+            f"{test_proton_dir.as_posix()}.tar.gz"
+        )
+
+        with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
+            tar.add(test_proton_dir.as_posix(), arcname=test_proton_dir.as_posix())
+
+        result = ulwgl_dl_util._get_from_cache(
+            self.env, self.test_compat, self.test_cache, files, False
+        )
+
+        # Verify that the old Proton was assigned
+        self.assertTrue(result is self.env, "Expected the same reference")
+        self.assertEqual(
+            self.env["PROTONPATH"],
+            self.test_compat.joinpath(
+                test_archive.name[: test_archive.name.find(".tar.gz")]
+            ).as_posix(),
+            "Expected PROTONPATH to be proton dir in compat",
+        )
+
+        test_archive.unlink()
+        test_proton_dir.rmdir()
+
+    def test_cache_empty(self):
+        """Test _get_from_cache when the cache is empty."""
+        result = None
+        # In the real usage, should be populated after successful callout for latest Proton releases
+        # Just mock it and assumes its the latest
+        files = [("", ""), (self.test_archive.name, "")]
+
+        self.test_archive.unlink()
+
+        result = ulwgl_dl_util._get_from_cache(
+            self.env, self.test_compat, self.test_cache, files, True
+        )
+        self.assertFalse(result, "Expected None when calling _get_from_cache")
+        self.assertFalse(
+            self.env["PROTONPATH"],
+            "Expected PROTONPATH to be empty when the cache is empty",
+        )
+
+    def test_cache(self):
+        """Test _get_from_cache.
+
+        Tests the case when the latest Proton already exists in the cache
+        """
+        result = None
+        # In the real usage, should be populated after successful callout for latest Proton releases
+        # Just mock it and assumes its the latest
+        files = [("", ""), (self.test_archive.name, "")]
+
+        result = ulwgl_dl_util._get_from_cache(
+            self.env, self.test_compat, self.test_cache, files, True
+        )
+        self.assertTrue(result is self.env, "Expected the same reference")
+        self.assertEqual(
+            self.env["PROTONPATH"],
+            self.test_compat.joinpath(
+                self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
+            ).as_posix(),
+            "Expected PROTONPATH to be proton dir in compat",
+        )
+
+    def test_steamcompat_nodir(self):
+        """Test _get_from_steamcompat when a Proton doesn't exist in the Steam compat dir.
+
+        In this case, the None should be returned to signal that we should continue with downloading the latest Proton
+        """
+        result = None
+        files = [("", ""), (self.test_archive.name, "")]
+
+        result = ulwgl_dl_util._get_from_steamcompat(
+            self.env, self.test_compat, self.test_cache, files
+        )
+
+        self.assertFalse(result, "Expected None after calling _get_from_steamcompat")
+        self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to not be set")
+
+    def test_steamcompat(self):
+        """Test _get_from_steamcompat.
+
+        When a Proton exist in .local/share/Steam/compatibilitytools.d, use it when PROTONPATH is unset
+        """
+        result = None
+        files = [("", ""), (self.test_archive.name, "")]
+
+        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+
+        result = ulwgl_dl_util._get_from_steamcompat(
+            self.env, self.test_compat, self.test_cache, files
+        )
+
+        self.assertTrue(result is self.env, "Expected the same reference")
+        self.assertEqual(
+            self.env["PROTONPATH"],
+            self.test_compat.joinpath(
+                self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
+            ).as_posix(),
+            "Expected PROTONPATH to be proton dir in compat",
+        )
+
+    def test_cleanup_no_exists(self):
+        """Test _cleanup when passed files that do not exist.
+
+        In the event of an interrupt during the download/extract process, we only want to clean the files that exist
+        NOTE: This is **extremely** important, as we do **not** want to delete anything else but the files we downloaded/extracted -- the incomplete tarball/extracted dir
+        """
+        result = None
+
+        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+
+        # Create a file in the cache and compat
+        self.test_cache.joinpath("foo").touch()
+        self.test_compat.joinpath("foo").touch()
+
+        # Before cleaning
+        # On setUp, an archive is created and a dir should exist in compat after extraction
+        self.assertTrue(
+            self.test_compat.joinpath("foo").exists(),
+            "Expected test file to exist in compat before cleaning",
+        )
+        self.assertTrue(
+            self.test_cache.joinpath("foo").exists(),
+            "Expected test file to exist in cache before cleaning",
+        )
+        self.assertTrue(
+            self.test_archive.exists(),
+            "Expected archive to exist in cache before cleaning",
+        )
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).joinpath("proton").exists(),
+            "Expected 'proton' to exist before cleaning",
+        )
+
+        # Pass files that do not exist
+        result = ulwgl_dl_util._cleanup(
+            "foo.tar.gz",
+            "foo",
+            self.test_cache,
+            self.test_compat,
+        )
+
+        # Verify state of cache and compat after cleaning
+        self.assertFalse(result, "Expected None after cleaning")
+        self.assertTrue(
+            self.test_compat.joinpath("foo").exists(),
+            "Expected test file to exist in compat after cleaning",
+        )
+        self.assertTrue(
+            self.test_cache.joinpath("foo").exists(),
+            "Expected test file to exist in cache after cleaning",
+        )
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).exists(),
+            "Expected proton dir to still exist after cleaning",
+        )
+        self.assertTrue(
+            self.test_archive.exists(),
+            "Expected archive to still exist after cleaning",
+        )
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).joinpath("proton").exists(),
+            "Expected 'proton' to still exist after cleaning",
+        )
+
+    def test_cleanup(self):
+        """Test _cleanup.
+
+        In the event of an interrupt during the download/extract process, we want to clean the cache or the extracted dir in Steam compat to avoid incomplete files
+        """
+        result = None
+
+        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+        result = ulwgl_dl_util._cleanup(
+            self.test_proton_dir.as_posix() + ".tar.gz",
+            self.test_proton_dir.as_posix(),
+            self.test_cache,
+            self.test_compat,
+        )
+        self.assertFalse(result, "Expected None after cleaning")
+        self.assertFalse(
+            self.test_compat.joinpath(self.test_proton_dir).exists(),
+            "Expected proton dir to be cleaned in compat",
+        )
+        self.assertFalse(
+            self.test_archive.exists(),
+            "Expected archive to be cleaned in cache",
+        )
+        self.assertFalse(
+            self.test_compat.joinpath(self.test_proton_dir).joinpath("proton").exists(),
+            "Expected 'proton' to not exist after cleaned",
+        )
+
+    def test_extract_err(self):
+        """Test _extract_dir when passed a non-gzip compressed archive.
+
+        An error should be raised as we only expect .tar.gz releases
+        """
+        test_archive = self.test_cache.joinpath(f"{self.test_proton_dir}.tar")
+        # Do not apply compression
+        with tarfile.open(test_archive.as_posix(), "w") as tar:
+            tar.add(
+                self.test_proton_dir.as_posix(), arcname=self.test_proton_dir.as_posix()
+            )
+
+        with self.assertRaisesRegex(tarfile.ReadError, "gzip"):
+            ulwgl_dl_util._extract_dir(test_archive, self.test_compat)
+
+        if test_archive.exists():
+            test_archive.unlink()
+
+    def test_extract(self):
+        """Test _extract_dir.
+
+        An error should not be raised when the Proton release is extracted to the Steam compat dir
+        """
+        result = None
+
+        result = ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+        self.assertFalse(result, "Expected None after extracting")
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).exists(),
+            "Expected proton dir to exists in compat",
+        )
+        self.assertTrue(
+            self.test_compat.joinpath(self.test_proton_dir).joinpath("proton").exists(),
+            "Expected 'proton' file to exists in the proton dir",
+        )
 
     def test_game_drive_empty(self):
         """Test enable_steam_game_drive.
@@ -1053,20 +1442,27 @@ class TestGameLauncher(unittest.TestCase):
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
 
-    def test_env_proton_dir(self):
-        """Test check_env when $PROTONPATH is not a directory.
+    def test_env_proton_nodir(self):
+        """Test check_env when $PROTONPATH is not set on failing to setting it.
 
-        An ValueError should occur if the value is not a directory
+        An FileNotFoundError should be raised when we fail to set PROTONPATH
         """
-        with self.assertRaisesRegex(ValueError, "PROTONPATH"):
-            os.environ["WINEPREFIX"] = self.test_file
-            os.environ["GAMEID"] = self.test_file
-            os.environ["PROTONPATH"] = "./foo"
-            ulwgl_run.check_env(self.env)
-            self.assertFalse(
-                Path(os.environ["PROTONPATH"]).is_dir(),
-                "Expected PROTONPATH to not be a directory",
-            )
+        result = None
+
+        # Mock getting the Proton
+        with self.assertRaises(FileNotFoundError):
+            with patch.object(
+                ulwgl_run,
+                "get_ulwgl_proton",
+                return_value=self.env,
+            ):
+                os.environ["WINEPREFIX"] = self.test_file
+                os.environ["GAMEID"] = self.test_file
+                result = ulwgl_run.check_env(self.env)
+                # Mock setting it on success
+                os.environ["PROTONPATH"] = self.test_file
+                self.assertTrue(result is self.env, "Expected the same reference")
+                self.assertFalse(os.environ["PROTONPATH"])
 
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
@@ -1135,10 +1531,20 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_env_vars_proton(self):
         """Test check_env when setting only $WINEPREFIX and $GAMEID."""
-        with self.assertRaisesRegex(ValueError, "PROTONPATH"):
+        with self.assertRaisesRegex(FileNotFoundError, "Proton"):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
-            ulwgl_run.check_env(self.env)
+            # Mock getting the Proton
+            with patch.object(
+                ulwgl_run,
+                "get_ulwgl_proton",
+                return_value=self.env,
+            ):
+                os.environ["WINEPREFIX"] = self.test_file
+                os.environ["GAMEID"] = self.test_file
+                result = ulwgl_run.check_env(self.env)
+                self.assertTrue(result is self.env, "Expected the same reference")
+                self.assertFalse(os.environ["PROTONPATH"])
 
     def test_env_vars_wine(self):
         """Test check_env when setting only $WINEPREFIX."""
