@@ -204,11 +204,13 @@ def _get_from_cache(
         if files and tarball == cache.joinpath(files[1][0]) and use_latest:
             path = tarball
             name = tarball.name
-        elif not use_latest:
+            break
+        if tarball != cache.joinpath(files[1][0]) and not use_latest:
             path = tarball
             name = tarball.name
-        print(f"{tarball.name} found in: {cache.as_posix()}")
-        break
+            break
+
+    print(f"{name} found in: {path}")
 
     if path:
         proton_dir: str = name[: name.find(".tar.gz")]  # Proton dir
