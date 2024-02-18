@@ -14,7 +14,7 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     """Attempt to find existing Proton from the system or downloads the latest if PROTONPATH is not set.
 
     Only fetches the latest if not first found in .local/share/Steam/compatibilitytools.d
-    The cache directory, .cache/ULWGL, is referenced next for latest or as fallback
+    .cache/ULWGL is referenced for the latest then as fallback
     """
     files: List[Tuple[str, str]] = []
 
@@ -42,8 +42,7 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str], None]:
     if _get_latest(env, steam_compat, cache, files):
         return env
 
-    # Cache
-    # Refer to an old version previously installed
+    # Refer to an old version previously downloaded
     # Reached on digest mismatch, user interrupt or download failure/no internet
     if _get_from_cache(env, steam_compat, cache, files, False):
         return env
@@ -126,7 +125,7 @@ def _fetch_proton(
             sha512(file.read()).hexdigest()
             != cache.joinpath(hash).read_text().split(" ")[0]
         ):
-            err: str = "Digests mismatched.\nFalling back to the cache ..."
+            err: str = "Digests mismatched.\nFalling back to cache ..."
             raise ValueError(err)
         print(f"{proton}: SHA512 is OK")
 
@@ -138,7 +137,7 @@ def _fetch_proton(
 
 
 def _extract_dir(proton: Path, steam_compat: Path) -> None:
-    """Extract from the cache and to another location."""
+    """Extract from the cache to another location."""
     with tar_open(proton.as_posix(), "r:gz") as tar:
         print(f"Extracting {proton} -> {steam_compat.as_posix()} ...")
         tar.extractall(path=steam_compat.as_posix())
@@ -150,7 +149,7 @@ def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None
 
     We want to do this when a download for a new release is interrupted
     """
-    print("Keyboard Interrupt received.\nCleaning ...")
+    print("Keyboard Interrupt.\nCleaning ...")
 
     if cache.joinpath(tarball).is_file():
         print(f"Purging {tarball} in {cache} ...")
@@ -167,7 +166,7 @@ def _get_from_steamcompat(
     proton_dir: str = ""  # Latest Proton
 
     if len(files) == 2:
-        proton_dir: str = files[1][0][: files[1][0].find(".tar.gz")]  # Proton dir
+        proton_dir: str = files[1][0][: files[1][0].find(".tar.gz")]
 
     for proton in steam_compat.glob("ULWGL-Proton*"):
         print(f"{proton.name} found in: {steam_compat.as_posix()}")
@@ -195,7 +194,8 @@ def _get_from_cache(
 ) -> Dict[str, str]:
     """Refer to ULWGL cache directory.
 
-    Use the latest in the cache when present. Older Proton versions are only referred to when: digests mismatch, user interrupt, or download failure/no internet
+    Use the latest in the cache when present. When download fails, use an old version
+    Older Proton versions are only referred to when: digests mismatch, user interrupt, or download failure/no internet
     """
     path: Path = None
     name: str = ""
