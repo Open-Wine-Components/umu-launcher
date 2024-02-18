@@ -100,6 +100,45 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_proton_dir.exists():
             rmtree(self.test_proton_dir.as_posix())
 
+
+    def test_steamcompat_nodir(self):
+        """Test _get_from_steamcompat when a Proton doesn't exist in the Steam compat dir.
+
+        In this case, the None should be returned to signal that we should continue with downloading the latest Proton
+        """
+        result = None
+        files = [("", ""), (self.test_archive.name, "")]
+
+        result = ulwgl_dl_util._get_from_steamcompat(
+            self.env, self.test_compat, self.test_cache, files
+        )
+
+        self.assertFalse(result, "Expected None after calling _get_from_steamcompat")
+        self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to not be set")
+
+    def test_steamcompat(self):
+        """Test _get_from_steamcompat.
+
+        When a Proton exist in .local/share/Steam/compatibilitytools.d, use it when PROTONPATH is unset
+        """
+        result = None
+        files = [("", ""), (self.test_archive.name, "")]
+
+        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+
+        result = ulwgl_dl_util._get_from_steamcompat(
+            self.env, self.test_compat, self.test_cache, files
+        )
+
+        self.assertTrue(result is self.env, "Expected the same reference")
+        self.assertEqual(
+            self.env["PROTONPATH"],
+            self.test_compat.joinpath(
+                self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
+            ).as_posix(),
+            "Expected PROTONPATH to be proton dir in compat",
+        )
+
     def test_cleanup_no_exists(self):
         """Test _cleanup when passed files that do not exist.
 
