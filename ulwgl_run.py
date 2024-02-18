@@ -323,7 +323,7 @@ def main() -> None:  # noqa: D103
         os.environ[key] = val
 
     build_command(env, command, opts)
-    subprocess.run(command)
+    subprocess.run(command, check=True, stdout=subprocess.PIPE, text=True)
 
 
 if __name__ == "__main__":
