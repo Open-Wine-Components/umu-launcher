@@ -2,6 +2,7 @@
 
 import os
 import argparse
+from traceback import print_exception
 from argparse import ArgumentParser, Namespace
 import sys
 from pathlib import Path
@@ -281,7 +282,7 @@ def build_command(
     return command
 
 
-def main() -> None:  # noqa: D103
+def main() -> int:  # noqa: D103
     env: Dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
@@ -327,8 +328,12 @@ def main() -> None:  # noqa: D103
         os.environ[key] = val
 
     build_command(env, command, opts)
-    subprocess.run(command)
+    return subprocess.run(command).returncode
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.exit(main())
+    except Exception as e:  # noqa: BLE001
+        print_exception(e)
+        sys.exit(1)
