@@ -8,6 +8,7 @@ from http.client import HTTPSConnection, HTTPResponse, HTTPException, HTTPConnec
 from ssl import create_default_context
 from json import loads as loads_json
 from urllib.request import urlretrieve
+from sys import stderr
 
 
 def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
@@ -21,7 +22,7 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     try:
         files = _fetch_releases()
     except HTTPException:
-        print("Offline.\nContinuing ...")
+        print("Offline.\nContinuing ...", file=stderr)
 
     cache: Path = Path.home().joinpath(".cache/ULWGL")
     steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
@@ -114,12 +115,12 @@ def _fetch_proton(
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
 
     # TODO: Parallelize this
-    print(f"Downloading {hash} ...")
+    print(f"Downloading {hash} ...", file=stderr)
     urlretrieve(hash_url, cache.joinpath(hash).as_posix())
-    print(f"Downloading {proton} ...")
+    print(f"Downloading {proton} ...", file=stderr)
     urlretrieve(proton_url, cache.joinpath(proton).as_posix())
 
-    print("Completed.")
+    print("Completed.", file=stderr)
 
     with cache.joinpath(proton).open(mode="rb") as file:
         if (
@@ -128,7 +129,7 @@ def _fetch_proton(
         ):
             err: str = "Digests mismatched.\nFalling back to cache ..."
             raise ValueError(err)
-        print(f"{proton}: SHA512 is OK")
+        print(f"{proton}: SHA512 is OK", file=stderr)
 
     _extract_dir(cache.joinpath(proton), steam_compat)
     environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
@@ -140,9 +141,9 @@ def _fetch_proton(
 def _extract_dir(proton: Path, steam_compat: Path) -> None:
     """Extract from the cache to another location."""
     with tar_open(proton.as_posix(), "r:gz") as tar:
-        print(f"Extracting {proton} -> {steam_compat.as_posix()} ...")
+        print(f"Extracting {proton} -> {steam_compat.as_posix()} ...", file=stderr)
         tar.extractall(path=steam_compat.as_posix())
-        print("Completed.")
+        print("Completed.", file=stderr)
 
 
 def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None:
@@ -150,13 +151,13 @@ def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None
 
     We want to do this when a download for a new release is interrupted
     """
-    print("Keyboard Interrupt.\nCleaning ...")
+    print("Keyboard Interrupt.\nCleaning ...", file=stderr)
 
     if cache.joinpath(tarball).is_file():
-        print(f"Purging {tarball} in {cache} ...")
+        print(f"Purging {tarball} in {cache} ...", file=stderr)
         cache.joinpath(tarball).unlink()
     if steam_compat.joinpath(proton).is_dir():
-        print(f"Purging {proton} in {steam_compat} ...")
+        print(f"Purging {proton} in {steam_compat} ...", file=stderr)
         rmtree(steam_compat.joinpath(proton).as_posix())
 
 
@@ -170,7 +171,7 @@ def _get_from_steamcompat(
         proton_dir: str = files[1][0][: files[1][0].find(".tar.gz")]
 
     for proton in steam_compat.glob("ULWGL-Proton*"):
-        print(f"{proton.name} found in: {steam_compat.as_posix()}")
+        print(f"{proton.name} found in: {steam_compat.as_posix()}", file=stderr)
         environ["PROTONPATH"] = proton.as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
 
@@ -178,7 +179,8 @@ def _get_from_steamcompat(
         if proton_dir and proton.name != proton_dir:
             print(
                 "ULWGL-Proton is outdated.\nFor latest release, please download "
-                + files[1][1]
+                + files[1][1],
+                file=stderr,
             )
 
         return env
@@ -214,7 +216,7 @@ def _get_from_cache(
     if path:
         proton_dir: str = name[: name.find(".tar.gz")]  # Proton dir
 
-        print(f"{name} found in: {path}")
+        print(f"{name} found in: {path}", file=stderr)
         try:
             _extract_dir(path, steam_compat)
             environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
@@ -223,7 +225,7 @@ def _get_from_cache(
             return env
         except KeyboardInterrupt:
             if steam_compat.joinpath(proton_dir).is_dir():
-                print(f"Purging {proton_dir} in {steam_compat} ...")
+                print(f"Purging {proton_dir} in {steam_compat} ...", file=stderr)
                 rmtree(steam_compat.joinpath(proton_dir).as_posix())
             raise
 
@@ -238,7 +240,7 @@ def _get_latest(
     When the digests mismatched or when interrupted, refer to cache for an old version
     """
     if files:
-        print("Fetching latest release ...")
+        print("Fetching latest release ...", file=stderr)
         try:
             _fetch_proton(env, steam_compat, cache, files)
             env["PROTONPATH"] = environ["PROTONPATH"]
