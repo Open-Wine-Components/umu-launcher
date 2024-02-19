@@ -35,13 +35,13 @@ example usage:
 
     if not sys.argv[1:]:
         err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/ULWGL-launcher"
-        parser.print_help()
+        parser.print_help(sys.stderr)
         raise SystemExit(err)
 
     if sys.argv[1:][0] in opt_args:
         return parser.parse_args(sys.argv[1:])
 
-    return (sys.argv[1], sys.argv[2:])
+    return sys.argv[1], sys.argv[2:]
 
 
 def setup_pfx(path: str) -> None:
