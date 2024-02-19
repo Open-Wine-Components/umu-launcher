@@ -116,15 +116,18 @@ def check_env(
         raise ValueError(err)
     env["GAMEID"] = os.environ["GAMEID"]
 
-    if (
-        "PROTONPATH" not in os.environ
-        or not Path(os.environ["PROTONPATH"]).expanduser().is_dir()
-    ):
-        # Attempt to auto set this env var for the user
+    if "PROTONPATH" not in os.environ:
+        os.environ["PROTONPATH"] = ""
+        get_ulwgl_proton(env)
+    elif Path("~/.local/share/Steam/compatibilitytools.d/" + os.environ["PROTONPATH"]).expanduser().is_dir():
+        env["PROTONPATH"] = Path("~/.local/share/Steam/compatibilitytools.d/").expanduser().joinpath(os.environ["PROTONPATH"])
+    elif not Path(os.environ["PROTONPATH"]).expanduser().is_dir():
         os.environ["PROTONPATH"] = ""
         get_ulwgl_proton(env)
     else:
         env["PROTONPATH"] = os.environ["PROTONPATH"]
+
+    print(env["PROTONPATH"])
 
     # If download fails/doesn't exist in the system, raise an error
     if not os.environ["PROTONPATH"]:
