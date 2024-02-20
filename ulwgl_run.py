@@ -13,6 +13,15 @@ from re import match
 import subprocess
 from ulwgl_dl_util import get_ulwgl_proton
 
+verbs: Set[str] = {
+    "waitforexitandrun",
+    "run",
+    "runinprefix",
+    "destroyprefix",
+    "getcompatpath",
+    "getnativepath",
+}
+
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     opt_args: Set[str] = {"--help", "-h", "--config"}
@@ -42,6 +51,11 @@ example usage:
 
     if sys.argv[1:][0] in opt_args:
         return parser.parse_args(sys.argv[1:])
+
+    if sys.argv[1] in verbs:
+        if "PROTON_VERB" not in os.environ:
+            os.environ["PROTON_VERB"] = sys.argv[1]
+        sys.argv.pop(1)
 
     return sys.argv[1], sys.argv[2:]
 
@@ -135,7 +149,7 @@ def check_env(
         env["PROTONPATH"] = (
             Path("~/.local/share/Steam/compatibilitytools.d/")
             .expanduser()
-            .joinpath(os.environ["PROTONPATH"])
+            .joinpath(os.environ["PROTONPATH"]).as_posix()
         )
     elif not Path(os.environ["PROTONPATH"]).expanduser().is_dir():
         os.environ["PROTONPATH"] = ""
@@ -143,7 +157,7 @@ def check_env(
     else:
         env["PROTONPATH"] = os.environ["PROTONPATH"]
 
-    print(env["PROTONPATH"])
+    print(env["PROTONPATH"], file=sys.stderr)
 
     # If download fails/doesn't exist in the system, raise an error
     if not os.environ["PROTONPATH"]:
@@ -160,15 +174,6 @@ def set_env(
 
     Filesystem paths will be formatted and expanded as POSIX
     """
-    verbs: Set[str] = {
-        "waitforexitandrun",
-        "run",
-        "runinprefix",
-        "destroyprefix",
-        "getcompatpath",
-        "getnativepath",
-    }
-
     # PROTON_VERB
     # For invalid Proton verbs, just assign the waitforexitandrun
     if "PROTON_VERB" in os.environ and os.environ["PROTON_VERB"] in verbs:

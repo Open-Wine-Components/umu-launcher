@@ -1,0 +1,13 @@
+"compatibilitytools"
+{
+  "compat_tools"
+  {
+    "ULWGL-Runner" // Internal name of this tool
+    {
+      "install_path" "."
+      "display_name" "ULWGL-Runner"
+      "from_oslist"  "windows"
+      "to_oslist"    "linux"
+    }
+  }
+}
