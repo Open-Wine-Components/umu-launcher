@@ -903,7 +903,7 @@ class TestGameLauncher(unittest.TestCase):
         An error should not be raised when passing unexpanded paths to the config file as well as the prefix, proton and exe keys
         """
         test_toml = "foo.toml"
-        pattern = r"^/home/[a-zA-Z]+"
+        pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -1277,7 +1277,7 @@ class TestGameLauncher(unittest.TestCase):
         After setting up the prefix then moving it to a different path, ensure that the symbolic link points to that new location
         """
         result = None
-        pattern = r"^/home/[a-zA-Z]+"
+        pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
         unexpanded_path = re.sub(
             pattern,
             "~",
@@ -1343,7 +1343,7 @@ class TestGameLauncher(unittest.TestCase):
         pfx -> ~/.wine
         """
         result = None
-        pattern = r"^/home/[a-zA-Z]+"
+        pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
         unexpanded_path = re.sub(
             pattern,
             "~",
@@ -1382,7 +1382,7 @@ class TestGameLauncher(unittest.TestCase):
         An error should not be raised when passing paths such as ~/path/to/prefix.
         """
         result = None
-        pattern = r"^/home/[a-zA-Z]+"
+        pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
         unexpanded_path = re.sub(
             pattern,
             "~",
@@ -1483,7 +1483,7 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_env_vars_paths(self):
         """Test check_env when setting unexpanded paths for $WINEPREFIX and $PROTONPATH."""
-        pattern = r"^/home/[a-zA-Z]+"
+        pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
         path_to_tmp = Path(
             Path(__file__).cwd().as_posix() + "/" + self.test_file
         ).as_posix()
