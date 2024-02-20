@@ -19,6 +19,8 @@ def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     exe: str = Path(__file__).name
     usage: str = f"""
 example usage:
+  GAMEID= {exe} /home/foo/example.exe
+  WINEPREFIX= GAMEID= {exe} /home/foo/example.exe
   WINEPREFIX= GAMEID= PROTONPATH= {exe} /home/foo/example.exe
   WINEPREFIX= GAMEID= PROTONPATH= {exe} /home/foo/example.exe -opengl
   WINEPREFIX= GAMEID= PROTONPATH= {exe} ""
@@ -103,24 +105,38 @@ def check_env(
 
         return toml
 
-    if "WINEPREFIX" not in os.environ:
-        err: str = "Environment variable not set or not a directory: WINEPREFIX"
-        raise ValueError(err)
-
-    if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
-        Path(os.environ["WINEPREFIX"]).mkdir(parents=True)
-    env["WINEPREFIX"] = os.environ["WINEPREFIX"]
-
     if "GAMEID" not in os.environ:
         err: str = "Environment variable not set: GAMEID"
         raise ValueError(err)
     env["GAMEID"] = os.environ["GAMEID"]
 
+    if (
+        "WINEPREFIX" not in os.environ
+        or not Path(os.environ["WINEPREFIX"]).expanduser().is_dir()
+    ):
+        # Automatically create a prefix for the user if WINEPREFIX is not set
+        # The GAMEID will be the name of the dir
+        pfx: Path = Path.home().joinpath("Games/ULWGL/" + env["GAMEID"])
+
+        pfx.mkdir(parents=True, exist_ok=True)
+        os.environ["WINEPREFIX"] = pfx.as_posix()
+        env["WINEPREFIX"] = os.environ["WINEPREFIX"]
+    else:
+        env["WINEPREFIX"] = os.environ["WINEPREFIX"]
+
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
         get_ulwgl_proton(env)
-    elif Path("~/.local/share/Steam/compatibilitytools.d/" + os.environ["PROTONPATH"]).expanduser().is_dir():
-        env["PROTONPATH"] = Path("~/.local/share/Steam/compatibilitytools.d/").expanduser().joinpath(os.environ["PROTONPATH"])
+    elif (
+        Path("~/.local/share/Steam/compatibilitytools.d/" + os.environ["PROTONPATH"])
+        .expanduser()
+        .is_dir()
+    ):
+        env["PROTONPATH"] = (
+            Path("~/.local/share/Steam/compatibilitytools.d/")
+            .expanduser()
+            .joinpath(os.environ["PROTONPATH"])
+        )
     elif not Path(os.environ["PROTONPATH"]).expanduser().is_dir():
         os.environ["PROTONPATH"] = ""
         get_ulwgl_proton(env)
