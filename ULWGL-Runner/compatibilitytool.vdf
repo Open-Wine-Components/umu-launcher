@@ -2,10 +2,10 @@
 {
   "compat_tools"
   {
-    "ULWGL" // Internal name of this tool
+    "ULWGL-Runner" // Internal name of this tool
     {
       "install_path" "."
-      "display_name" "Unified Linux Wine Game Launcher"
+      "display_name" "ULWGL-Runner"
       "from_oslist"  "windows"
       "to_oslist"    "linux"
     }

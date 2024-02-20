@@ -4,5 +4,5 @@
 	"commandline" "/ulwgl-run %verb%"
 	"version" "2"
 	"use_tool_subprocess_reaper" "1"
-	"compatmanager_layer_name" "ulwgl"
+	"compatmanager_layer_name" "ulwgl-runner"
 }
