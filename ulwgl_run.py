@@ -7,7 +7,7 @@ from argparse import ArgumentParser, Namespace
 import sys
 from pathlib import Path
 import tomllib
-from typing import Dict, Any, List, Set, Union, Tuple, NoReturn
+from typing import Dict, Any, List, Set, Union, Tuple
 import ulwgl_plugins
 from re import match
 import subprocess
@@ -45,8 +45,8 @@ example usage:
     return sys.argv[1], sys.argv[2:]
 
 
-def print_versions(paths: List[Path]) -> NoReturn:
-    """Print the versions of this launcher and all of its associated tools declared in the config file.
+def get_versions(paths: List[Path]) -> str:
+    """Return the version of this launcher and all of its associated tools declared in the config file.
 
     NOTE: The following table is required: [ulwgl.versions]
     """
@@ -77,7 +77,7 @@ def print_versions(paths: List[Path]) -> NoReturn:
 
                 break
 
-    raise SystemExit(version)
+    return version
 
 
 def setup_pfx(path: str) -> None:
@@ -353,7 +353,10 @@ def main() -> int:  # noqa: D103
             Path(__file__).parent.joinpath("ULWGL_VERSIONS.toml"),
             Path("/usr/share/ULWGL/ULWGL_VERSIONS.toml"),
         ]
-        print_versions(paths)
+
+        print(get_versions(paths), file=sys.stderr)
+
+        return 0
 
     if isinstance(args, Namespace):
         set_env_toml(env, args)
