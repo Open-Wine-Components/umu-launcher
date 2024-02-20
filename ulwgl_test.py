@@ -1486,13 +1486,10 @@ class TestGameLauncher(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(version=self.test_file),
         ):
-            with patch("ulwgl_run.print_versions"):
-                # Mock the print_version call
-                # The VM will probably not have the dirs/ULWGL_VERSIONS.toml file created
-                result = ulwgl_run.parse_args()
-                self.assertIsInstance(
-                    result, Namespace, "Expected a Namespace from parse_arg"
-                )
+            result = ulwgl_run.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
 
     def test_env_proton_nodir(self):
         """Test check_env when $PROTONPATH is not set on failing to setting it.
