@@ -59,7 +59,11 @@ def print_versions(paths: List[Path]) -> NoReturn:
             with path.open(mode="rb") as file:
                 toml = tomllib.load(file)
 
-            if "ulwgl" in toml and "versions" in toml["ulwgl"]:
+            if (
+                "ulwgl" in toml
+                and "versions" in toml["ulwgl"]
+                and "launcher" in toml["ulwgl"]["versions"]
+            ):
                 exe: str = Path(__file__).name
                 launcher: str = toml["ulwgl"]["versions"]["launcher"]
                 tools: str = "\n".join(
