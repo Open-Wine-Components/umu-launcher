@@ -125,8 +125,16 @@ def check_env(
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
         get_ulwgl_proton(env)
-    elif Path("~/.local/share/Steam/compatibilitytools.d/" + os.environ["PROTONPATH"]).expanduser().is_dir():
-        env["PROTONPATH"] = Path("~/.local/share/Steam/compatibilitytools.d/").expanduser().joinpath(os.environ["PROTONPATH"])
+    elif (
+        Path("~/.local/share/Steam/compatibilitytools.d/" + os.environ["PROTONPATH"])
+        .expanduser()
+        .is_dir()
+    ):
+        env["PROTONPATH"] = (
+            Path("~/.local/share/Steam/compatibilitytools.d/")
+            .expanduser()
+            .joinpath(os.environ["PROTONPATH"])
+        )
     elif not Path(os.environ["PROTONPATH"]).expanduser().is_dir():
         os.environ["PROTONPATH"] = ""
         get_ulwgl_proton(env)
