@@ -100,12 +100,37 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_proton_dir.exists():
             rmtree(self.test_proton_dir.as_posix())
 
-    def test_print_versions(self):
-        """Test print_versions.
+    def test_versions_err(self):
+        """Test get_versions when for values we do not expect.
+
+        We expect: [ulwgl.versions] and launcher
+        Otherwise, we return an empty string
+        """
+        test_toml = "ULWGL_VERSIONS.toml"
+        result = ""
+        toml_str = """
+        [foo]
+        launcher = "foo"
+        runtime = "foo"
+        """
+        toml_path = self.test_file + "/" + test_toml
+        Path(toml_path).touch()
+
+        with Path(toml_path).open(mode="w") as file:
+            file.write(toml_str)
+
+        result = ulwgl_run.get_versions(
+            [Path(self.test_file).joinpath("ULWGL_VERSIONS.toml")]
+        )
+        self.assertFalse(result, "Expected an empty string for version")
+
+    def test_versions(self):
+        """Test get_versions.
 
         In the real usage, we search /usr/share/ULWGL or the current script's dir for the config.
         """
         test_toml = "ULWGL_VERSIONS.toml"
+        result = ""
         toml_str = """
         [ulwgl.versions]
         launcher = "foo"
@@ -117,10 +142,10 @@ class TestGameLauncher(unittest.TestCase):
         with Path(toml_path).open(mode="w") as file:
             file.write(toml_str)
 
-        with self.assertRaises(SystemExit):
-            ulwgl_run.print_versions(
-                [Path(self.test_file).joinpath("ULWGL_VERSIONS.toml")]
-            )
+        result = ulwgl_run.get_versions(
+            [Path(self.test_file).joinpath("ULWGL_VERSIONS.toml")]
+        )
+        self.assertTrue(result, "Expected a non-empty string for version")
 
     def test_latest_interrupt(self):
         """Test _get_latest in the event the user interrupts the download/extraction process.
