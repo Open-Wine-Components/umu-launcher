@@ -103,18 +103,24 @@ def check_env(
 
         return toml
 
-    if "WINEPREFIX" not in os.environ:
-        err: str = "Environment variable not set or not a directory: WINEPREFIX"
-        raise ValueError(err)
-
-    if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
-        Path(os.environ["WINEPREFIX"]).mkdir(parents=True)
-    env["WINEPREFIX"] = os.environ["WINEPREFIX"]
-
     if "GAMEID" not in os.environ:
         err: str = "Environment variable not set: GAMEID"
         raise ValueError(err)
     env["GAMEID"] = os.environ["GAMEID"]
+
+    if (
+        "WINEPREFIX" not in os.environ
+        or not Path(os.environ["WINEPREFIX"]).expanduser().is_dir()
+    ):
+        # Automatically create a prefix for the user if WINEPREFIX is not set
+        # The GAMEID will be the name of the dir
+        pfx: Path = Path.home().joinpath("Games/ULWGL/" + env["GAMEID"])
+
+        pfx.mkdir(parents=True, exist_ok=True)
+        os.environ["WINEPREFIX"] = pfx.as_posix()
+        env["WINEPREFIX"] = os.environ["WINEPREFIX"]
+    else:
+        env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
