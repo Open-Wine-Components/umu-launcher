@@ -7,7 +7,7 @@ from argparse import ArgumentParser, Namespace
 import sys
 from pathlib import Path
 import tomllib
-from typing import Dict, Any, List, Set, Union, Tuple
+from typing import Dict, Any, List, Set, Union, Tuple, NoReturn
 import ulwgl_plugins
 from re import match
 import subprocess
@@ -15,7 +15,7 @@ from ulwgl_dl_util import get_ulwgl_proton
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
-    opt_args: Set[str] = {"--help", "-h", "--config"}
+    opt_args: Set[str] = {"--help", "-h", "--config", "-v", "--version"}
     exe: str = Path(__file__).name
     usage: str = f"""
 example usage:
@@ -32,6 +32,7 @@ example usage:
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("--config", help="path to TOML file")
+    parser.add_argument("-v", "--version", action="store_true", help="print version")
 
     if not sys.argv[1:]:
         err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/ULWGL-launcher"
@@ -42,6 +43,37 @@ example usage:
         return parser.parse_args(sys.argv[1:])
 
     return sys.argv[1], sys.argv[2:]
+
+
+def print_versions(paths: List[Path]) -> NoReturn:
+    """Print the versions of this launcher and all of its associated tools declared in the config file.
+
+    NOTE: The following table is required: [ulwgl.versions]
+    """
+    version: str = ""
+
+    for path in paths:
+        if path.is_file():
+            toml: Dict[str, Any] = None
+
+            with path.open(mode="rb") as file:
+                toml = tomllib.load(file)
+
+            if "ulwgl" in toml and "versions" in toml["ulwgl"]:
+                exe: str = Path(__file__).name
+                launcher: str = toml["ulwgl"]["versions"]["launcher"]
+                tools: str = "\n".join(
+                    [
+                        f"{key}: {val}"
+                        for key, val in toml["ulwgl"]["versions"].items()
+                        if key != "launcher"
+                    ]
+                )
+                version = f"{exe} {launcher}\n\n{tools}"
+
+                break
+
+    raise SystemExit(version)
 
 
 def setup_pfx(path: str) -> None:
@@ -311,6 +343,13 @@ def main() -> int:  # noqa: D103
     command: List[str] = []
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
     opts: List[str] = None
+
+    if isinstance(args, Namespace) and getattr(args, "version", None):
+        paths: List[Path] = [
+            Path(__file__).parent.joinpath("ULWGL_VERSIONS.toml"),
+            Path("/usr/share/ULWGL/ULWGL_VERSIONS.toml"),
+        ]
+        print_versions(paths)
 
     if isinstance(args, Namespace):
         set_env_toml(env, args)

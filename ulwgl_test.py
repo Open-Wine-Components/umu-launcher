@@ -100,6 +100,28 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_proton_dir.exists():
             rmtree(self.test_proton_dir.as_posix())
 
+    def test_print_versions(self):
+        """Test print_versions.
+
+        In the real usage, we search /usr/share/ULWGL or the current script's dir for the config.
+        """
+        test_toml = "ULWGL_VERSIONS.toml"
+        toml_str = """
+        [ulwgl.versions]
+        launcher = "foo"
+        runtime = "foo"
+        """
+        toml_path = self.test_file + "/" + test_toml
+        Path(toml_path).touch()
+
+        with Path(toml_path).open(mode="w") as file:
+            file.write(toml_str)
+
+        with self.assertRaises(SystemExit):
+            ulwgl_run.print_versions(
+                [Path(self.test_file).joinpath("ULWGL_VERSIONS.toml")]
+            )
+
     def test_latest_interrupt(self):
         """Test _get_latest in the event the user interrupts the download/extraction process.
 
@@ -1441,6 +1463,36 @@ class TestGameLauncher(unittest.TestCase):
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
+
+    def test_parse_args_version(self):
+        """Test parse_args --version.
+
+        An SystemExit should be raised after printing the version
+        """
+        test_toml = "foo.toml"
+        toml_str = """
+        [ulwgl.versions]
+        launcher = 'foo'
+        """
+        result = None
+        toml_path = self.test_file + "/" + test_toml
+        Path(toml_path).touch()
+
+        with Path(toml_path).open(mode="w") as file:
+            file.write(toml_str)
+
+        with patch.object(
+            ulwgl_run,
+            "parse_args",
+            return_value=argparse.Namespace(version=self.test_file),
+        ):
+            with patch("ulwgl_run.print_versions"):
+                # Mock the print_version call
+                # The VM will probably not have the dirs/ULWGL_VERSIONS.toml file created
+                result = ulwgl_run.parse_args()
+                self.assertIsInstance(
+                    result, Namespace, "Expected a Namespace from parse_arg"
+                )
 
     def test_env_proton_nodir(self):
         """Test check_env when $PROTONPATH is not set on failing to setting it.
