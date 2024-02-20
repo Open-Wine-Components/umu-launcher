@@ -128,15 +128,17 @@ def check_env(
         "WINEPREFIX" not in os.environ
         or not Path(os.environ["WINEPREFIX"]).expanduser().is_dir()
     ):
-        # Automatically create a prefix for the user if WINEPREFIX is not set
-        # The GAMEID will be the name of the dir
-        pfx: Path = Path.home().joinpath("Games/ULWGL/" + env["GAMEID"])
+        if "WINEPREFIX" not in os.environ:
+            # Automatically create a prefix for the user if WINEPREFIX is not set
+            # The GAMEID will be the name of the dir
+            pfx: Path = Path.home().joinpath("Games/ULWGL/" + env["GAMEID"])
+        else:
+            pfx: Path = Path(os.environ["WINEPREFIX"])
 
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = pfx.as_posix()
-        env["WINEPREFIX"] = os.environ["WINEPREFIX"]
-    else:
-        env["WINEPREFIX"] = os.environ["WINEPREFIX"]
+
+    env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
