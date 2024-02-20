@@ -19,6 +19,8 @@ def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     exe: str = Path(__file__).name
     usage: str = f"""
 example usage:
+  GAMEID= {exe} /home/foo/example.exe
+  WINEPREFIX= GAMEID= {exe} /home/foo/example.exe
   WINEPREFIX= GAMEID= PROTONPATH= {exe} /home/foo/example.exe
   WINEPREFIX= GAMEID= PROTONPATH= {exe} /home/foo/example.exe -opengl
   WINEPREFIX= GAMEID= PROTONPATH= {exe} ""
