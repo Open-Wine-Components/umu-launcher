@@ -1553,8 +1553,11 @@ class TestGameLauncher(unittest.TestCase):
             ulwgl_run.check_env(self.env)
 
     def test_env_vars_none(self):
-        """Tests check_env when setting no env vars."""
-        with self.assertRaisesRegex(ValueError, "WINEPREFIX"):
+        """Tests check_env when setting no env vars.
+
+        GAMEID should be the only strictly required env var
+        """
+        with self.assertRaisesRegex(ValueError, "GAMEID"):
             ulwgl_run.check_env(self.env)
 
 
