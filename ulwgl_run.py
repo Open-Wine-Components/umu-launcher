@@ -146,7 +146,8 @@ def check_env(
         env["PROTONPATH"] = (
             Path("~/.local/share/Steam/compatibilitytools.d/")
             .expanduser()
-            .joinpath(os.environ["PROTONPATH"]).as_posix()
+            .joinpath(os.environ["PROTONPATH"])
+            .as_posix()
         )
     elif not Path(os.environ["PROTONPATH"]).expanduser().is_dir():
         os.environ["PROTONPATH"] = ""
