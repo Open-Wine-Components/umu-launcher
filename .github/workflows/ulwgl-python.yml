@@ -14,13 +14,14 @@ jobs:
     strategy:
       matrix:
         # tomllib requires Python 3.11
-        version: ["3.11", "3.12"]
+        # Ubuntu latest (Jammy) provides Python 3.10
+        version: ["3.10", "3.11", "3.12"]
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python 3.11
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.version }}
@@ -32,5 +33,7 @@ jobs:
         pip install ruff
         ruff --output-format github ulwgl_*.py
     - name: Test with unittest
-      run: |
-        python3 ulwgl_test.py
+      run: python3 ulwgl_test.py
+    - name: Test with unittest for plugins
+      if: ${{ matrix.version == '3.11' || matrix.version == '3.12' }}
+      run: python3 ulwgl_test_plugins.py
