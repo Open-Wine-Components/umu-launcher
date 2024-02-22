@@ -6,9 +6,8 @@ from traceback import print_exception
 from argparse import ArgumentParser, Namespace
 import sys
 from pathlib import Path
-import tomllib
 from typing import Dict, Any, List, Set, Union, Tuple
-import ulwgl_plugins
+from ulwgl_plugins import enable_steam_game_drive, set_env_toml
 from re import match
 import subprocess
 from ulwgl_dl_util import get_ulwgl_proton
@@ -42,7 +41,7 @@ example usage:
         epilog=usage,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument("--config", help="path to TOML file")
+    parser.add_argument("--config", help="path to TOML file (requires Python 3.11)")
 
     if not sys.argv[1:]:
         err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/ULWGL-launcher"
@@ -80,45 +79,6 @@ def check_env(
 
     WINEPREFIX, GAMEID and PROTONPATH are strictly required.
     """
-    if toml:
-        # Check for required or empty key/value pairs when reading a TOML config
-        # NOTE: Casing matters in the config and we don't check if the game id is set
-        table: str = "ulwgl"
-        required_keys: List[str] = ["proton", "prefix", "exe"]
-
-        if table not in toml:
-            err: str = f"Table '{table}' in TOML is not defined."
-            raise ValueError(err)
-
-        for key in required_keys:
-            if key not in toml[table]:
-                err: str = f"The following key in table '{table}' is required: {key}"
-                raise ValueError(err)
-
-            # Raise an error for executables that do not exist
-            # One case this can happen is when game options are appended at the end of the exe
-            # Users should use launch_args for that
-            if key == "exe" and not Path(toml[table][key]).expanduser().is_file():
-                val: str = toml[table][key]
-                err: str = f"Value for key '{key}' in TOML is not a file: {val}"
-                raise FileNotFoundError(err)
-
-            # The proton and wine prefix need to be folders
-            if (
-                key == "proton" and not Path(toml[table][key]).expanduser().is_dir()
-            ) or (key == "prefix" and not Path(toml[table][key]).expanduser().is_dir()):
-                dir: str = Path(toml[table][key]).expanduser().as_posix()
-                err: str = f"Value for key '{key}' in TOML is not a directory: {dir}"
-                raise NotADirectoryError(err)
-
-        # Check for empty keys
-        for key, val in toml[table].items():
-            if not val and isinstance(val, str):
-                err: str = f"Value is empty for '{key}' in TOML.\nPlease specify a value or remove the following entry:\n{key} = {val}"
-                raise ValueError(err)
-
-        return toml
-
     if "GAMEID" not in os.environ:
         err: str = "Environment variable not set: GAMEID"
         raise ValueError(err)
@@ -218,47 +178,6 @@ def set_env(
     return env
 
 
-def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
-    """Read a TOML file then sets the environment variables for the Steam RT.
-
-    In the TOML file, certain keys map to Steam RT environment variables. For example:
-          proton -> $PROTONPATH
-          prefix -> $WINEPREFIX
-          game_id -> $GAMEID
-          exe -> $EXE
-    At the moment we expect the tables: 'ulwgl'
-    """
-    toml: Dict[str, Any] = None
-    path_config: str = Path(getattr(args, "config", None)).expanduser().as_posix()
-
-    if not Path(path_config).is_file():
-        msg: str = "Path to configuration is not a file: " + getattr(
-            args, "config", None
-        )
-        raise FileNotFoundError(msg)
-
-    with Path(path_config).open(mode="rb") as file:
-        toml = tomllib.load(file)
-
-    check_env(env, toml)
-
-    for key, val in toml["ulwgl"].items():
-        if key == "prefix":
-            env["WINEPREFIX"] = val
-        elif key == "game_id":
-            env["GAMEID"] = val
-        elif key == "proton":
-            env["PROTONPATH"] = val
-        elif key == "store":
-            env["STORE"] = val
-        elif key == "exe":
-            if toml.get("ulwgl").get("launch_args"):
-                env["EXE"] = val + " " + " ".join(toml.get("ulwgl").get("launch_args"))
-            else:
-                env["EXE"] = val
-    return env
-
-
 def build_command(
     env: Dict[str, str], command: List[str], opts: List[str] = None
 ) -> List[str]:
@@ -331,7 +250,7 @@ def main() -> int:  # noqa: D103
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
     opts: List[str] = None
 
-    if isinstance(args, Namespace):
+    if isinstance(args, Namespace) and getattr(args, "config", None):
         set_env_toml(env, args)
     else:
         # Reference the game options
@@ -342,7 +261,7 @@ def main() -> int:  # noqa: D103
     set_env(env, args)
 
     # Game Drive
-    ulwgl_plugins.enable_steam_game_drive(env)
+    enable_steam_game_drive(env)
 
     # Set all environment variables
     # NOTE: `env` after this block should be read only
