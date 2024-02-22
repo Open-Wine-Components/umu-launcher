@@ -1,0 +1,58 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: libdecor
+Source: https://gitlab.freedesktop.org/libdecor/libdecor
+
+Files:     *
+Copyright: 2010 Intel Corporation
+           2011 Benjamin Franzke
+           2017-2018 Red Hat Inc.
+           2018-2019 Jonas Ådahl
+           2019-2021 Christian Rauch
+License:   Expat
+
+Files:     src/plugins/common/libdecor-cairo-blur.*
+Copyright: 2008 Kristian Høgsberg
+           2012 Intel Corporation
+License:   Expat
+
+Files:     debian/*
+Copyright: 2021 Christian Rauch
+           2021-2024 Collabora Ltd.
+License:   Expat
+
+Files:     debian/tests/run-with-display
+Copyright: 2021 Marco Trevisan
+License:   GPL-3.0+
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+License: GPL-3.0+
+ SPDX license expression "GPL-3.0-or-later":
+ https://spdx.org/licenses/GPL-3.0-or-later.html
+ .
+ This license identifier refers to the choice to use code under
+ GPL-3.0-or-later (i.e., GPL-3.0 or some later version), as distinguished
+ from use of code under GPL-3.0-only. The license notice (as seen in the
+ Standard License Header field below) states which of these applies the
+ code in the file. The example in the exhibit to the license shows the
+ license notice for the "or later" approach.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in "/usr/share/common-licenses/GPL-3.0".

@@ -7,7 +7,7 @@ me="$(readlink -f "$0")"
 here="${me%/*}"
 me="${me##*/}"
 
-dir=sniper_platform_0.20231211.70175
+dir=sniper_platform_0.20240125.75305
 pressure_vessel="${PRESSURE_VESSEL_PREFIX:-"${here}/pressure-vessel"}"
 
 export PRESSURE_VESSEL_COPY_RUNTIME=1
