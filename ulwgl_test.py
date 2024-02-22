@@ -1467,19 +1467,34 @@ class TestGameLauncher(unittest.TestCase):
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
 
-        An error should not be raised if a WINEPREFIX is set but the path has not been created.
+        When the user specifies a WINEPREFIX that doesn't exist, make the dirs on their behalf and set it
+        An error should not be raised in the process
         """
+        # Set a path does not exist
         os.environ["WINEPREFIX"] = "./foo"
         os.environ["GAMEID"] = self.test_file
         os.environ["PROTONPATH"] = self.test_file
-        ulwgl_run.check_env(self.env)
-        self.assertEqual(
-            Path(os.environ["WINEPREFIX"]).is_dir(),
-            True,
-            "Expected WINEPREFIX to be created if not already exist",
+
+        self.assertFalse(
+            Path(os.environ["WINEPREFIX"]).exists(),
+            "Expected WINEPREFIX to not exist before check_env",
         )
-        if Path(os.environ["WINEPREFIX"]).is_dir():
-            rmtree(os.environ["WINEPREFIX"])
+
+        ulwgl_run.check_env(self.env)
+
+        # After this, the WINEPREFIX and new dirs should be created for the user
+        self.assertTrue(
+            Path(self.env["WINEPREFIX"]).exists(),
+            "Expected WINEPREFIX to exist after check_env",
+        )
+        self.assertEqual(
+            self.env["WINEPREFIX"],
+            os.environ["WINEPREFIX"],
+            "Expected the WINEPREFIX to be set",
+        )
+
+        if Path(self.env["WINEPREFIX"]).is_dir():
+            Path(self.env["WINEPREFIX"]).rmdir()
 
     def test_env_vars_paths(self):
         """Test check_env when setting unexpanded paths for $WINEPREFIX and $PROTONPATH."""
