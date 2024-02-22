@@ -907,12 +907,8 @@ class TestGameLauncher(unittest.TestCase):
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
-        path_to_tmp = Path(
-            Path(__file__).cwd().as_posix() + "/" + self.test_file
-        ).as_posix()
-        path_to_exe = Path(
-            Path(__file__).cwd().as_posix() + "/" + self.test_exe
-        ).as_posix()
+        path_to_tmp = Path(__file__).cwd().joinpath(self.test_file).as_posix()
+        path_to_exe = Path(__file__).cwd().joinpath(self.test_exe).as_posix()
 
         # Replace /home/[a-zA-Z]+ substring in path with tilda
         unexpanded_path = re.sub(
@@ -1281,9 +1277,7 @@ class TestGameLauncher(unittest.TestCase):
         unexpanded_path = re.sub(
             pattern,
             "~",
-            Path(
-                Path(self.test_file).cwd().as_posix() + "/" + self.test_file
-            ).as_posix(),
+            Path(self.test_file).cwd().joinpath(self.test_file).as_posix(),
         )
         result = ulwgl_run.setup_pfx(unexpanded_path)
 
@@ -1317,12 +1311,12 @@ class TestGameLauncher(unittest.TestCase):
         new_unexpanded_path = re.sub(
             pattern,
             "~",
-            Path(new_dir.cwd().as_posix() + "/" + "foo").as_posix(),
+            new_dir.cwd().joinpath("foo").as_posix(),
         )
 
         ulwgl_run.setup_pfx(new_unexpanded_path)
 
-        new_link = Path("foo" + "/pfx").resolve()
+        new_link = Path("foo/pfx").resolve()
         self.assertTrue(
             old_link is not new_link,
             "Expected the symbolic link to change after moving the WINEPREFIX",
@@ -1347,9 +1341,7 @@ class TestGameLauncher(unittest.TestCase):
         unexpanded_path = re.sub(
             pattern,
             "~",
-            Path(
-                Path(self.test_file).cwd().as_posix() + "/" + self.test_file
-            ).as_posix(),
+            Path(self.test_file).cwd().joinpath(self.test_file).as_posix(),
         )
         result = ulwgl_run.setup_pfx(unexpanded_path)
 
@@ -1386,7 +1378,7 @@ class TestGameLauncher(unittest.TestCase):
         unexpanded_path = re.sub(
             pattern,
             "~",
-            Path(Path(self.test_file).as_posix()).as_posix(),
+            Path(self.test_file).as_posix(),
         )
         result = ulwgl_run.setup_pfx(unexpanded_path)
 
@@ -1493,9 +1485,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_env_vars_paths(self):
         """Test check_env when setting unexpanded paths for $WINEPREFIX and $PROTONPATH."""
         pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
-        path_to_tmp = Path(
-            Path(__file__).cwd().as_posix() + "/" + self.test_file
-        ).as_posix()
+        path_to_tmp = Path(__file__).cwd().joinpath(self.test_file).as_posix()
 
         # Replace /home/[a-zA-Z]+ substring in path with tilda
         unexpanded_path = re.sub(
