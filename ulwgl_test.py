@@ -1443,12 +1443,10 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_env_proton_nodir(self):
-        """Test check_env when $PROTONPATH is not set on failing to setting it.
+        """Test check_env when $PROTONPATH in the case we failed to set it.
 
         An FileNotFoundError should be raised when we fail to set PROTONPATH
         """
-        result = None
-
         # Mock getting the Proton
         with self.assertRaises(FileNotFoundError):
             with patch.object(
@@ -1458,11 +1456,7 @@ class TestGameLauncher(unittest.TestCase):
             ):
                 os.environ["WINEPREFIX"] = self.test_file
                 os.environ["GAMEID"] = self.test_file
-                result = ulwgl_run.check_env(self.env)
-                # Mock setting it on success
-                os.environ["PROTONPATH"] = self.test_file
-                self.assertTrue(result is self.env, "Expected the same reference")
-                self.assertFalse(os.environ["PROTONPATH"])
+                ulwgl_run.check_env(self.env)
 
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
