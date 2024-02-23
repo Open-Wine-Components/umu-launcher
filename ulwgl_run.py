@@ -11,6 +11,9 @@ from ulwgl_plugins import enable_steam_game_drive, set_env_toml
 from re import match
 import subprocess
 from ulwgl_dl_util import get_ulwgl_proton
+from ulwgl_consts import Level
+from ulwgl_util import msg
+from ulwgl_log import log, console_handler, debug_formatter
 
 verbs: Set[str] = {
     "waitforexitandrun",
@@ -34,6 +37,7 @@ example usage:
   WINEPREFIX= GAMEID= PROTONPATH= {exe} ""
   WINEPREFIX= GAMEID= PROTONPATH= PROTON_VERB= {exe} /home/foo/example.exe
   WINEPREFIX= GAMEID= PROTONPATH= STORE= {exe} /home/foo/example.exe
+  ULWGL_LOG= GAMEID= {exe} /home/foo/example.exe
   {exe} --config /home/foo/example.toml
     """
     parser: ArgumentParser = argparse.ArgumentParser(
@@ -57,6 +61,27 @@ example usage:
         sys.argv.pop(1)
 
     return sys.argv[1], sys.argv[2:]
+
+
+def set_log() -> None:
+    """Adjust the log level for the logger."""
+    levels: Set[str] = {"1", "warn", "debug"}
+
+    if os.environ["ULWGL_LOG"] not in levels:
+        return
+
+    if os.environ["ULWGL_LOG"] == "1":
+        # Show the envvars and command at this level
+        log.setLevel(level=Level.INFO.value)
+    elif os.environ["ULWGL_LOG"] == "warn":
+        log.setLevel(level=Level.WARNING.value)
+    elif os.environ["ULWGL_LOG"] == "debug":
+        # Show all logs
+        console_handler.setFormatter(debug_formatter)
+        log.addHandler(console_handler)
+        log.setLevel(level=Level.DEBUG.value)
+
+    os.environ.pop("ULWGL_LOG")
 
 
 def setup_pfx(path: str) -> None:
@@ -114,8 +139,6 @@ def check_env(
         get_ulwgl_proton(env)
     else:
         env["PROTONPATH"] = os.environ["PROTONPATH"]
-
-    print(env["PROTONPATH"], file=sys.stderr)
 
     # If download fails/doesn't exist in the system, raise an error
     if not os.environ["PROTONPATH"]:
@@ -250,6 +273,9 @@ def main() -> int:  # noqa: D103
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
     opts: List[str] = None
 
+    if "ULWGL_LOG" in os.environ:
+        set_log()
+
     if isinstance(args, Namespace) and getattr(args, "config", None):
         set_env_toml(env, args)
     else:
@@ -266,15 +292,21 @@ def main() -> int:  # noqa: D103
     # Set all environment variables
     # NOTE: `env` after this block should be read only
     for key, val in env.items():
+        log.info(msg(f"{key}={val}", Level.INFO))
         os.environ[key] = val
 
     build_command(env, command, opts)
+    log.debug(msg(command, Level.DEBUG))
     return subprocess.run(command).returncode
 
 
 if __name__ == "__main__":
     try:
         sys.exit(main())
+    except KeyboardInterrupt:
+        # Until Reaper is part of the command sequence, spawned process may still be alive afterwards
+        log.warning(msg("Keyboard Interrupt", Level.WARNING))
+        sys.exit(1)
     except Exception as e:  # noqa: BLE001
         print_exception(e)
         sys.exit(1)
