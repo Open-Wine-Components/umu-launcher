@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
 from ulwgl_plugins import enable_steam_game_drive, set_env_toml
 from re import match
-import subprocess
+from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
 from ulwgl_consts import Level
 from ulwgl_util import msg
@@ -300,7 +300,7 @@ def main() -> int:  # noqa: D103
 
     build_command(env, command, opts)
     log.debug(msg(command, Level.DEBUG))
-    return subprocess.run(command).returncode
+    return run(command).returncode
 
 
 if __name__ == "__main__":
