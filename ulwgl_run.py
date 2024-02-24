@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-from traceback import print_exception
 import sys
+from traceback import print_exception
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
