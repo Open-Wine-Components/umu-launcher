@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import argparse
 from traceback import print_exception
-from argparse import ArgumentParser, Namespace
 import sys
+from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
 from ulwgl_plugins import enable_steam_game_drive, set_env_toml
@@ -40,10 +39,10 @@ example usage:
   ULWGL_LOG= GAMEID= {exe} /home/foo/example.exe
   {exe} --config /home/foo/example.toml
     """
-    parser: ArgumentParser = argparse.ArgumentParser(
+    parser: ArgumentParser = ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog=usage,
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=RawTextHelpFormatter,
     )
     parser.add_argument("--config", help="path to TOML file (requires Python 3.11)")
 
