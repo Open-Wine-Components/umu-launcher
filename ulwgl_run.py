@@ -120,25 +120,29 @@ def check_env(
 
     env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
-    if "PROTONPATH" not in os.environ:
-        os.environ["PROTONPATH"] = ""
-        get_ulwgl_proton(env)
-    elif (
-        Path("~/.local/share/Steam/compatibilitytools.d/" + os.environ["PROTONPATH"])
+    # Proton Version
+    if (
+        "PROTONPATH" in os.environ
+        and os.environ["PROTONPATH"]
+        and Path(
+            "~/.local/share/Steam/compatibilitytools.d/" + os.environ["PROTONPATH"]
+        )
         .expanduser()
         .is_dir()
     ):
-        env["PROTONPATH"] = (
-            Path("~/.local/share/Steam/compatibilitytools.d/")
-            .expanduser()
+        log.debug(msg("Proton version selected", Level.DEBUG))
+        os.environ["PROTONPATH"] = (
+            Path("~/.local/share/Steam/compatibilitytools.d")
             .joinpath(os.environ["PROTONPATH"])
+            .expanduser()
             .as_posix()
         )
-    elif not Path(os.environ["PROTONPATH"]).expanduser().is_dir():
+
+    if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
         get_ulwgl_proton(env)
-    else:
-        env["PROTONPATH"] = os.environ["PROTONPATH"]
+
+    env["PROTONPATH"] = os.environ["PROTONPATH"]
 
     # If download fails/doesn't exist in the system, raise an error
     if not os.environ["PROTONPATH"]:
