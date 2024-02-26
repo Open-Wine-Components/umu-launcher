@@ -889,6 +889,84 @@ class TestGameLauncher(unittest.TestCase):
             "Expected metadata to be equal",
         )
 
+    def test_get_json_err(self):
+        """Test _get_json when specifying a corrupted ULWGL_VERSION.json file.
+
+        A ValueError should be raised because we expect 'ulwgl' and 'version' keys to exist
+        """
+        test_config = """
+        {
+            "foo": {
+                "versions": {
+                    "launcher": "0.1-RC3",
+                    "runner": "0.1-RC3",
+                    "runtime_platform": "sniper_platform_0.20240125.75305",
+                    "reaper": "1.0",
+                    "pressure_vessel": "v0.20240212.0"
+                }
+            }
+        }
+        """
+        test_config2 = """
+        {
+            "ulwgl": {
+                "foo": {
+                    "launcher": "0.1-RC3",
+                    "runner": "0.1-RC3",
+                    "runtime_platform": "sniper_platform_0.20240125.75305",
+                    "reaper": "1.0",
+                    "pressure_vessel": "v0.20240212.0"
+                }
+            }
+        }
+        """
+        # Remove the valid config created at setup
+        Path(self.test_user_share, "ULWGL_VERSION.json").unlink(missing_ok=True)
+
+        Path(self.test_user_share, "ULWGL_VERSION.json").touch()
+        with Path(self.test_user_share, "ULWGL_VERSION.json").open(mode="w") as file:
+            file.write(test_config)
+
+        # Test when "ulwgl" doesn't exist
+        with self.assertRaisesRegex(ValueError, "load"):
+            ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+
+        # Test when "versions" doesn't exist
+        Path(self.test_user_share, "ULWGL_VERSION.json").unlink(missing_ok=True)
+
+        Path(self.test_user_share, "ULWGL_VERSION.json").touch()
+        with Path(self.test_user_share, "ULWGL_VERSION.json").open(mode="w") as file:
+            file.write(test_config2)
+
+        with self.assertRaisesRegex(ValueError, "load"):
+            ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+
+    def test_get_json_foo(self):
+        """Test _get_json when not specifying ULWGL_VERSION.json as the second argument.
+
+        A FileNotFoundError should be raised
+        """
+        with self.assertRaisesRegex(FileNotFoundError, "configuration"):
+            ulwgl_util._get_json(self.test_user_share, "foo")
+
+    def test_get_json(self):
+        """Test _get_json.
+
+        This function is used to verify the existence and integrity of ULWGL_VERSION.json file during the setup process
+        ULWGL_VERSION.json is used to synchronize the state of two directories, namely: /usr/share/ULWGL and ~/.local/share/ULWGL
+
+        An error should not be raised when passed a JSON we expect
+        """
+        result = None
+
+        self.assertTrue(
+            self.test_user_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to exist",
+        )
+
+        result = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+        self.assertIsInstance(result, dict, "Expected a dict")
+
     def test_latest_interrupt(self):
         """Test _get_latest in the event the user interrupts the download/extraction process.
 
