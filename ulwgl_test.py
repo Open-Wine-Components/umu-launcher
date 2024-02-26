@@ -607,6 +607,109 @@ class TestGameLauncher(unittest.TestCase):
                     err = "Files did not get updated"
                     raise AssertionError(err)
 
+    def test_install_ulwgl(self):
+        """Test _install_ulwgl by mocking a first launch.
+
+        At first launch, the directory /usr/share/ULWGL is expected to be populated by distribution's package manager
+        This function is expected to be run when ~/.local/share/ULWGL is empty
+        The contents of ~/.local/share/ULWGL should be nearly identical to /usr/share/ULWGL, with the exception of the ULWGL-Runner files
+        ULWGL-Runner is expcted to be copied to compatibilitytools.d
+        """
+        result = None
+        runner_files = {"compatibilitytool.vdf", "toolmanifest.vdf", "ulwgl-run"}
+        py_files = {
+            "ulwgl_consts.py",
+            "ulwgl_dl_util.py",
+            "ulwgl_log.py",
+            "ulwgl_plugins.py",
+            "ulwgl_run.py",
+            "ulwgl_test.py",
+            "ulwgl_util.py",
+        }
+        json = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+
+        result = ulwgl_util._install_ulwgl(
+            self.test_user_share, self.test_local_share, self.test_compat, json
+        )
+
+        # Verify the state of the local share directory
+        self.assertFalse(result, "Expected None after calling _install_ulwgl")
+
+        # Config
+        self.assertTrue(
+            Path(self.test_user_share, "ULWGL_VERSION.json").is_file(),
+            "Expected ULWGL_VERSION.json to exist",
+        )
+
+        # ULWGL-Runner
+        self.assertTrue(
+            Path(self.test_user_share, "ULWGL-Runner").is_dir(),
+            "Expected ULWGL-Runner to exist",
+        )
+        for file in Path(self.test_compat, "ULWGL-Runner").glob("*"):
+            if file.name not in runner_files:
+                err = "A non-runner file was copied"
+                raise AssertionError(err)
+            if file in runner_files and file.is_symlink():
+                self.assertEqual(
+                    file.readlink(),
+                    Path("../../../ulwgl-run"),
+                    "Expected ulwgl-run symlink to exist",
+                )
+
+        # Pressure Vessel
+        self.assertTrue(
+            Path(self.test_user_share, "pressure-vessel").is_dir(),
+            "Expected pressure vessel to exist",
+        )
+        self.assertTrue(
+            Path(self.test_user_share, "pressure-vessel", "foo").is_file(),
+            "Expected foo to exist in Pressure Vessel dir",
+        )
+
+        # Runtime
+        self.assertTrue(
+            Path(self.test_local_share, "sniper_platform_0.20240125.75305").is_dir(),
+            "Expected runtime to exist",
+        )
+        self.assertTrue(
+            Path(
+                self.test_local_share, "sniper_platform_0.20240125.75305", "foo"
+            ).is_file(),
+            "Expected foo to exist in runtime",
+        )
+        self.assertTrue(
+            Path(self.test_local_share, "run").is_file(), "Expected run to exist"
+        )
+        self.assertTrue(
+            Path(self.test_local_share, "run-in-sniper").is_file(),
+            "Expected other run to exist",
+        )
+        self.assertTrue(
+            Path(self.test_local_share, "ULWGL").is_file(), "Expected ULWGL to exist"
+        )
+
+        # Python files
+        self.assertTrue(
+            list(self.test_local_share.glob("*.py")),
+            "Expected Python files to exist",
+        )
+        for file in self.test_local_share.glob("*.py"):
+            if file.name not in py_files:
+                err = "A non-launcher file was copied"
+                raise AssertionError(err)
+
+        # Symlink
+        self.assertTrue(
+            Path(self.test_local_share, "ulwgl-run").is_symlink(),
+            "Expected ULWGL to exist",
+        )
+        self.assertEqual(
+            Path(self.test_local_share, "ulwgl-run").readlink(),
+            Path("ulwgl_run.py"),
+            "Expected ulwgl-run -> ulwgl_run.py",
+        )
+
     def test_latest_interrupt(self):
         """Test _get_latest in the event the user interrupts the download/extraction process.
 
