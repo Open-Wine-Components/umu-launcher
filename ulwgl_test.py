@@ -11,6 +11,9 @@ import ulwgl_plugins
 import ulwgl_dl_util
 import tarfile
 import ulwgl_util
+import hashlib
+import errno
+import json
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -58,10 +61,64 @@ class TestGameLauncher(unittest.TestCase):
         self.test_archive = Path(self.test_cache).joinpath(
             f"{self.test_proton_dir}.tar.gz"
         )
+        # /usr/share/ULWGL
+        self.test_user_share = Path("./tmp.BXk2NnvW2m")
+        # ~/.local/share/Steam/compatibilitytools.d
+        self.test_local_share = Path("./tmp.aDl73CbQCP")
 
+        # Dictionary that represents the ULWGL_VERSIONS.json
+        self.root_config = {
+            "ulwgl": {
+                "versions": {
+                    "launcher": "0.1-RC3",
+                    "runner": "0.1-RC3",
+                    "runtime_platform": "sniper_platform_0.20240125.75305",
+                    "reaper": "1.0",
+                    "pressure_vessel": "v0.20240212.0",
+                }
+            }
+        }
+        # ULWGL_VERSION.json
+        self.test_config = json.dumps(self.root_config, indent=4)
+
+        self.test_user_share.mkdir(exist_ok=True)
+        self.test_local_share.mkdir(exist_ok=True)
         self.test_cache.mkdir(exist_ok=True)
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
+
+        # Mock a valid configuration file at /usr/share/ULWGL: tmp.BXk2NnvW2m/ULWGL_VERSION.json
+        Path(self.test_user_share, "ULWGL_VERSION.json").touch()
+        with Path(self.test_user_share, "ULWGL_VERSION.json").open(mode="w") as file:
+            file.write(self.test_config)
+
+        # Mock the launcher files
+        Path(self.test_user_share, "ulwgl_consts.py").touch()
+        Path(self.test_user_share, "ulwgl_dl_util.py").touch()
+        Path(self.test_user_share, "ulwgl_log.py").touch()
+        Path(self.test_user_share, "ulwgl_plugins.py").touch()
+        Path(self.test_user_share, "ulwgl_run.py").touch()
+        Path(self.test_user_share, "ulwgl_util.py").touch()
+        Path(self.test_user_share, "ulwgl-run").symlink_to("ulwgl_run.py")
+
+        # Mock the runtime files
+        Path(self.test_user_share, "sniper_platform_0.20240125.75305").mkdir()
+        Path(self.test_user_share, "sniper_platform_0.20240125.75305", "foo").touch()
+        Path(self.test_user_share, "run").touch()
+        Path(self.test_user_share, "run-in-sniper").touch()
+        Path(self.test_user_share, "ULWGL").touch()
+
+        # Mock pressure vessel
+        Path(self.test_user_share, "pressure-vessel").mkdir()
+        Path(self.test_user_share, "pressure-vessel", "foo").touch()
+
+        # Mock ULWGL-Runner
+        Path(self.test_user_share, "ULWGL-Runner").mkdir()
+        Path(self.test_user_share, "ULWGL-Runner", "compatibilitytool.vdf").touch()
+        Path(self.test_user_share, "ULWGL-Runner", "toolmanifest.vdf").touch()
+        Path(self.test_user_share, "ULWGL-Runner", "ulwgl-run").symlink_to(
+            "../../../ulwgl-run"
+        )
 
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
@@ -96,6 +153,177 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_proton_dir.exists():
             rmtree(self.test_proton_dir.as_posix())
+
+        if self.test_user_share.exists():
+            rmtree(self.test_user_share.as_posix())
+
+        if self.test_local_share.exists():
+            rmtree(self.test_local_share.as_posix())
+
+    def test_update_ulwgl_empty(self):
+        """Test _update_ulwgl by mocking an update to the runtime tools for missing dirs.
+
+        In this case, we simply re-copy the directory and no removal is performed
+        NOTE: This depends on ULWGL_VERSION.json to exist
+        """
+        result = None
+        json_local = None
+        json_root = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+        # Mock an update-to-date config file
+        config = {
+            "ulwgl": {
+                "versions": {
+                    "launcher": "0.1-RC3",
+                    "runner": "0.1-RC3",
+                    "runtime_platform": "sniper_platform_0.20240125.75305",
+                    "reaper": "1.0",
+                    "pressure_vessel": "v0.20240212.0",
+                }
+            }
+        }
+        data = json.dumps(config, indent=4)
+
+        # Do not mock the tools in .local/share/ULWGL
+        # Leave all of the tool dirs missing except the config
+
+        # Config
+        self.test_local_share.joinpath("ULWGL_VERSION.json").touch()
+        with self.test_local_share.joinpath("ULWGL_VERSION.json").open(
+            mode="w"
+        ) as file:
+            file.write(data)
+        json_local = ulwgl_util._get_json(self.test_local_share, "ULWGL_VERSION.json")
+
+        self.assertTrue(
+            self.test_local_share.joinpath("ULWGL_VERSION.json").is_file(),
+            "Expected ULWGL_VERSION.json to be in local share",
+        )
+
+        # Update
+        result = ulwgl_util._update_ulwgl(
+            self.test_user_share,
+            self.test_local_share,
+            self.test_compat,
+            json_root,
+            json_local,
+        )
+
+        self.assertFalse(result, "Expected None when calling _update_ulwgl")
+
+        # Now, check the state of .local/share/ULWGL
+        # We expect the relevant files to be restored
+
+        # Check if the configuration files are equal because we update this on every update of the tools
+        with self.test_user_share.joinpath("ULWGL_VERSION.json").open(
+            mode="rb"
+        ) as file1:
+            root = file1.read()
+            local = b""
+            with self.test_local_share.joinpath("ULWGL_VERSION.json").open(
+                mode="rb"
+            ) as file2:
+                local = file2.read()
+            self.assertEqual(
+                hashlib.blake2b(root).digest(),
+                hashlib.blake2b(local).digest(),
+                "Expected configuration files to be the same",
+            )
+
+        # Runner
+        self.assertTrue(
+            self.test_compat.joinpath("ULWGL-Runner").is_dir(),
+            "Expected ULWGL-Runner in compat",
+        )
+
+        for file in self.test_compat.joinpath("ULWGL-Runner").glob("*"):
+            src = b""
+            dst = b""
+
+            if file.name == "ulwgl-run":
+                self.assertEqual(
+                    self.test_user_share.joinpath(
+                        "ULWGL-Runner", "ulwgl-run"
+                    ).readlink(),
+                    self.test_compat.joinpath("ULWGL-Runner", "ulwgl-run").readlink(),
+                    "Expected both symlinks to point to same dest",
+                )
+                continue
+
+            with file.open(mode="rb") as filer:
+                dst = filer.read()
+            with self.test_user_share.joinpath("ULWGL-Runner", file.name).open(
+                mode="rb"
+            ) as filer:
+                src = filer.read()
+
+            self.assertEqual(
+                hashlib.blake2b(src).digest(),
+                hashlib.blake2b(dst).digest(),
+                "Expected files to be equal",
+            )
+
+        # Launcher
+        for file in self.test_local_share.glob("*.py"):
+            if not file.name.startswith("ulwgl_test"):
+                src = b""
+                dst = b""
+
+                with file.open(mode="rb") as filer:
+                    dst = filer.read()
+                with self.test_user_share.joinpath(file.name).open(mode="rb") as filer:
+                    src = filer.read()
+
+                if hashlib.blake2b(src).digest() != hashlib.blake2b(dst).digest():
+                    err = "Files did not get updated"
+                    raise AssertionError(err)
+
+        # Runtime Platform
+        self.assertTrue(
+            self.test_local_share.joinpath(
+                json_local["ulwgl"]["versions"]["runtime_platform"]
+            ).is_dir(),
+            "Expected runtime to in local share",
+        )
+
+        for file in self.test_local_share.joinpath(
+            json_local["ulwgl"]["versions"]["runtime_platform"]
+        ).glob("*"):
+            if file.is_file():
+                src = b""
+                dst = b""
+
+                with file.open(mode="rb") as filer:
+                    dst = filer.read()
+                with self.test_user_share.joinpath(
+                    json_root["ulwgl"]["versions"]["runtime_platform"], file.name
+                ).open(mode="rb") as filer:
+                    src = filer.read()
+
+                if hashlib.blake2b(src).digest() != hashlib.blake2b(dst).digest():
+                    err = "Files did not get updated"
+                    raise AssertionError(err)
+
+        # Pressure Vessel
+        self.assertTrue(
+            self.test_local_share.joinpath("pressure-vessel").is_dir(),
+            "Expected pressure vessel to in local share",
+        )
+
+        for file in self.test_local_share.joinpath("pressure-vessel").glob("*"):
+            if file.is_file():
+                src = b""
+                dst = b""
+
+                with file.open(mode="rb") as filer:
+                    dst = filer.read()
+                with self.test_user_share.joinpath("pressure-vessel", file.name).open(
+                    mode="rb"
+                ) as filer:
+                    src = filer.read()
+
+                if hashlib.blake2b(src).digest() != hashlib.blake2b(dst).digest():
+                    err = "Files did not get updated"
+                    raise AssertionError(err)
 
     def test_latest_interrupt(self):
         """Test _get_latest in the event the user interrupts the download/extraction process.
