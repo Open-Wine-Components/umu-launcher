@@ -873,7 +873,7 @@ class TestGameLauncher(unittest.TestCase):
             rmtree(new_link.as_posix())
 
     def test_setup_pfx_symlinks(self):
-        """Test _setup_pfx for valid symlinks.
+        """Test setup_pfx for valid symlinks.
 
         Ensure that symbolic links to the WINE prefix (pfx) are always in expanded form when passed an unexpanded path.
         For example:
@@ -946,6 +946,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_setup_pfx(self):
         """Test setup_pfx."""
         result = None
+        user = ulwgl_util.UnixUser()
         result = ulwgl_run.setup_pfx(self.test_file)
         self.assertIsNone(
             result,
@@ -957,6 +958,17 @@ class TestGameLauncher(unittest.TestCase):
         self.assertTrue(
             Path(self.test_file + "/tracked_files").is_file(),
             "Expected tracked_files to be a file",
+        )
+        # For new prefixes, steamuser should exist and a user symlink
+        self.assertTrue(
+            Path(self.test_file + "/drive_c/users/steamuser").is_dir(),
+            "Expected steamuser to be created",
+        )
+        self.assertTrue(
+            Path(self.test_file + "/drive_c/users/" + user.get_user())
+            .expanduser()
+            .is_symlink(),
+            "Expected symlink of username -> steamuser",
         )
 
     def test_parse_args(self):
