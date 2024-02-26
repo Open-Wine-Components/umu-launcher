@@ -753,6 +753,142 @@ class TestGameLauncher(unittest.TestCase):
             test_dir.joinpath("ULWGL_VERSION.json").unlink()
             test_dir.rmdir()
 
+    def test_copy_err(self):
+        """Test copyfile_reflink for error.
+
+        An OSError is expected to be raised if the error number is not: EXDEV, ENOSYS, EINVAL
+        """
+        self.assertTrue(
+            self.test_user_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to exist in test /usr/share/ULWGL",
+        )
+
+        with patch("os.copy_file_range") as mock_function:
+            # Mock the OS error that is not EXDEV ENOSYS EINVAL
+            # We want to fallback to normal copy
+            mock_function.side_effect = OSError(errno.EPERM, "")
+
+            with self.assertRaisesRegex(OSError, "Errno 1"):
+                ulwgl_util.copyfile_reflink(
+                    self.test_user_share.joinpath("ULWGL_VERSION.json"),
+                    self.test_local_share.joinpath("ULWGL_VERSION.json"),
+                )
+
+    def test_copy_fallback(self):
+        """Test copyfile_reflink in the case of error.
+
+        For systems that do not support copy_file_range, we fallback to normal copy
+        """
+        result = None
+        src = b""
+        dst = b""
+
+        self.assertTrue(
+            self.test_user_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to exist in test /usr/share/ULWGL",
+        )
+        self.assertFalse(
+            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to not exist in test .local/share/ULWGL",
+        )
+
+        with patch("os.copy_file_range") as mock_function:
+            # Mock the OS error
+            # We want to fallback to normal copy
+            mock_function.side_effect = OSError(errno.ENOSYS, "")
+
+            # Copy ULWGL_VERSION.json to the mocked .local/share/ULWGL
+            result = ulwgl_util.copyfile_reflink(
+                self.test_user_share.joinpath("ULWGL_VERSION.json"),
+                self.test_local_share.joinpath("ULWGL_VERSION.json"),
+            )
+
+        self.assertFalse(result, "Expected None when calling copyfile_reflink")
+        self.assertTrue(
+            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to be copied to local share",
+        )
+
+        # Verify the integrity of data and metadata
+        with self.test_user_share.joinpath("ULWGL_VERSION.json").open(
+            mode="rb"
+        ) as file:
+            src = file.read()
+
+        with self.test_local_share.joinpath("ULWGL_VERSION.json").open(
+            mode="rb"
+        ) as file:
+            dst = file.read()
+
+        self.assertEqual(
+            hashlib.blake2b(src).digest(),
+            hashlib.blake2b(dst).digest(),
+            "Expected the same files",
+        )
+        self.assertEqual(
+            self.test_user_share.joinpath("ULWGL_VERSION.json").stat().st_mode,
+            self.test_local_share.joinpath("ULWGL_VERSION.json").stat().st_mode,
+            "Expected metadata to be equal",
+        )
+
+    def test_copy(self):
+        """Test copyfile_reflink.
+
+        If the filesystem supports reflink, we try to create a shallow copy of files. Otherwise, we fallback to normal copy
+        An error should not be raised in the process of copying a source file to a destination
+        The test assumes that there is only one filesystem on the host.
+        However, in the real usage, it's possible for the root partition filesystem to be different than the home partition (e.g. Steam Deck)
+
+        NOTE: We do not test if the file is a shallow copy as it's not easily verifiable through Python and depends on the user's system
+        Therefore, when running the test locally, most likely only one branch is effectively tested
+        """
+        result = None
+        src = b""
+        dst = b""
+
+        self.assertTrue(
+            self.test_user_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to exist in test /usr/share/ULWGL",
+        )
+        self.assertFalse(
+            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to not exist in test .local/share/ULWGL",
+        )
+
+        # Copy ULWGL_VERSION.json to the mocked .local/share/ULWGL
+        result = ulwgl_util.copyfile_reflink(
+            self.test_user_share.joinpath("ULWGL_VERSION.json"),
+            self.test_local_share.joinpath("ULWGL_VERSION.json"),
+        )
+
+        self.assertFalse(result, "Expected None when calling copyfile_reflink")
+        self.assertTrue(
+            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to be copied to local share",
+        )
+
+        # Verify the integrity
+        with self.test_user_share.joinpath("ULWGL_VERSION.json").open(
+            mode="rb"
+        ) as file:
+            src = file.read()
+
+        with self.test_local_share.joinpath("ULWGL_VERSION.json").open(
+            mode="rb"
+        ) as file:
+            dst = file.read()
+
+        self.assertEqual(
+            hashlib.blake2b(src).digest(),
+            hashlib.blake2b(dst).digest(),
+            "Expected the same files",
+        )
+        self.assertEqual(
+            self.test_user_share.joinpath("ULWGL_VERSION.json").stat().st_mode,
+            self.test_local_share.joinpath("ULWGL_VERSION.json").stat().st_mode,
+            "Expected metadata to be equal",
+        )
+
     def test_latest_interrupt(self):
         """Test _get_latest in the event the user interrupts the download/extraction process.
 
