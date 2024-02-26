@@ -11,7 +11,7 @@ from re import match
 from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
 from ulwgl_consts import Level
-from ulwgl_util import msg
+from ulwgl_util import msg, setup_ulwgl
 from ulwgl_log import log, console_handler, debug_formatter
 from ulwgl_util import UnixUser
 
@@ -313,11 +313,19 @@ def main() -> int:  # noqa: D103
         "ULWGL_ID": "",
     }
     command: List[str] = []
-    args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
     opts: List[str] = None
+    # Expected files in this dir: pressure vessel, launcher files, runtime platform, runner, config
+    # root: Path = Path("/usr/share/ULWGL")
+    root: Path = Path(__file__).parent
+    # Expects this dir to be in sync with root
+    # On update, files will be selectively updated
+    local: Path = Path.home().joinpath(".local/share/ULWGL")
+    args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
 
     if "ULWGL_LOG" in os.environ:
         set_log()
+
+    setup_ulwgl(root, local)
 
     if isinstance(args, Namespace) and getattr(args, "config", None):
         set_env_toml(env, args)
@@ -353,3 +361,6 @@ if __name__ == "__main__":
     except Exception as e:  # noqa: BLE001
         print_exception(e)
         sys.exit(1)
+    finally:
+        # Cleanup .ref file on every exit
+        Path.home().joinpath(".local/share/ULWGL/.ref").unlink(missing_ok=True)
