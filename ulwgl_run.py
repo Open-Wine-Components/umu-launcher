@@ -13,6 +13,7 @@ from ulwgl_dl_util import get_ulwgl_proton
 from ulwgl_consts import Level
 from ulwgl_util import msg
 from ulwgl_log import log, console_handler, debug_formatter
+from ulwgl_util import UnixUser
 
 verbs: Set[str] = {
     "waitforexitandrun",
@@ -86,6 +87,11 @@ def set_log() -> None:
 def setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
     pfx: Path = Path(path).joinpath("pfx").expanduser()
+    steam: Path = Path(path).expanduser().joinpath("drive_c/users/steamuser")
+    user: UnixUser = UnixUser()
+    wineuser: Path = (
+        Path(path).expanduser().joinpath(f"drive_c/users/{user.get_user()}")
+    )
 
     if pfx.is_symlink():
         pfx.unlink()
@@ -94,6 +100,40 @@ def setup_pfx(path: str) -> None:
         pfx.symlink_to(Path(path).expanduser())
 
     Path(path).joinpath("tracked_files").expanduser().touch()
+
+    # Create a symlink of the current user to the steamuser dir or vice versa
+    # Default for a new prefix is: unixuser -> steamuser
+    if (
+        not wineuser.is_dir()
+        and not steam.is_dir()
+        and not (wineuser.is_symlink() or steam.is_symlink())
+    ):
+        # For new prefixes with our Proton: user -> steamuser
+        steam.mkdir(parents=True)
+        wineuser.unlink(missing_ok=True)
+        wineuser.symlink_to("steamuser")
+    elif wineuser.is_dir() and not steam.is_dir() and not steam.is_symlink():
+        # When there's a user dir: steamuser -> user
+        # Be sure it's relative
+        steam.unlink(missing_ok=True)
+        steam.symlink_to(user.get_user())
+    elif not wineuser.exists() and not wineuser.is_symlink() and steam.is_dir():
+        wineuser.unlink(missing_ok=True)
+        wineuser.symlink_to("steamuser")
+    else:
+        paths: List[str] = [steam.as_posix(), wineuser.as_posix()]
+        log.warning(
+            msg(
+                f"Skipping link creation for prefix: {pfx}",
+                Level.WARNING,
+            )
+        )
+        log.warning(
+            msg(
+                f"Following paths already exist: {paths}",
+                Level.WARNING,
+            )
+        )
 
 
 def check_env(

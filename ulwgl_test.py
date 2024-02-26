@@ -10,6 +10,7 @@ import re
 import ulwgl_plugins
 import ulwgl_dl_util
 import tarfile
+import ulwgl_util
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -845,35 +846,132 @@ class TestGameLauncher(unittest.TestCase):
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
         )
 
-        # Check if the symlink is in its unexpanded form
-        self.assertEqual(
-            Path(self.test_file + "/pfx").readlink().as_posix(),
-            Path(unexpanded_path).expanduser().as_posix(),
-        )
+    def test_setup_pfx_symlinks_else(self):
+        """Test setup_pfx in the case both steamuser and unixuser exist in some form.
 
-        old_link = Path(self.test_file + "/pfx").resolve()
-
-        # Rename the dir and replicate passing a new WINEPREFIX
-        new_dir = Path(unexpanded_path).expanduser().rename("foo")
-        new_unexpanded_path = re.sub(
+        Tests the case when they are symlinks
+        An error should not be raised and we should just do nothing
+        """
+        result = None
+        pattern = r"^/home/[\w\d]+"
+        user = ulwgl_util.UnixUser()
+        unexpanded_path = re.sub(
             pattern,
             "~",
-            new_dir.cwd().joinpath("foo").as_posix(),
+            Path(
+                Path(self.test_file).cwd().as_posix() + "/" + self.test_file
+            ).as_posix(),
         )
 
-        ulwgl_run.setup_pfx(new_unexpanded_path)
+        # Create only the dir
+        Path(unexpanded_path).joinpath("drive_c/users").expanduser().mkdir(
+            parents=True, exist_ok=True
+        )
 
-        new_link = Path("foo/pfx").resolve()
+        # Create the symlink to the test file itself
+        Path(unexpanded_path).joinpath("drive_c/users").joinpath(
+            user.get_user()
+        ).expanduser().symlink_to(Path(self.test_file).absolute())
+        Path(unexpanded_path).joinpath("drive_c/users").joinpath(
+            "steamuser"
+        ).expanduser().symlink_to(Path(self.test_file).absolute())
+
+        result = ulwgl_run.setup_pfx(unexpanded_path)
+
+        self.assertIsNone(
+            result,
+            "Expected None when calling setup_pfx",
+        )
+
+    def test_setup_pfx_symlinks_unixuser(self):
+        """Test setup_pfx for symbolic link to steamuser.
+
+        Tests the case when the steamuser dir does not exist and user dir exists
+        In this case, create: steamuser -> user
+        """
+        result = None
+        pattern = r"^/home/[\w\d]+"
+        user = ulwgl_util.UnixUser()
+        unexpanded_path = re.sub(
+            pattern,
+            "~",
+            Path(
+                Path(self.test_file).cwd().as_posix() + "/" + self.test_file
+            ).as_posix(),
+        )
+
+        # Create only the user dir
+        Path(unexpanded_path).joinpath("drive_c/users").joinpath(
+            user.get_user()
+        ).expanduser().mkdir(parents=True, exist_ok=True)
+
+        result = ulwgl_run.setup_pfx(unexpanded_path)
+
+        self.assertIsNone(
+            result,
+            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+        )
+
+        # Verify steamuser -> unix user
         self.assertTrue(
-            old_link is not new_link,
-            "Expected the symbolic link to change after moving the WINEPREFIX",
+            Path(self.test_file).joinpath("drive_c/users/steamuser").is_symlink(),
+            "Expected steamuser to be a symbolic link",
+        )
+        self.assertEqual(
+            Path(self.test_file).joinpath("drive_c/users/steamuser").readlink(),
+            Path(user.get_user()),
+            "Expected steamuser -> user",
         )
 
-        if new_link.exists():
-            rmtree(new_link.as_posix())
+    def test_setup_pfx_symlinks_steamuser(self):
+        """Test setup_pfx for symbolic link to wine.
+
+        Tests the case when only steamuser exist and the user dir does not exist
+        """
+        result = None
+        user = ulwgl_util.UnixUser()
+        pattern = r"^/home/[\w\d]+"
+        unexpanded_path = re.sub(
+            pattern,
+            "~",
+            Path(
+                Path(self.test_file).cwd().as_posix() + "/" + self.test_file
+            ).as_posix(),
+        )
+
+        # Create the steamuser dir
+        Path(unexpanded_path + "/drive_c/users/steamuser").expanduser().mkdir(
+            parents=True, exist_ok=True
+        )
+
+        result = ulwgl_run.setup_pfx(unexpanded_path)
+
+        self.assertIsNone(
+            result,
+            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+        )
+
+        # Verify unixuser -> steamuser
+        self.assertTrue(
+            Path(self.test_file + "/drive_c/users/steamuser").is_dir(),
+            "Expected steamuser to be created",
+        )
+        self.assertTrue(
+            Path(unexpanded_path + "/drive_c/users/" + user.get_user())
+            .expanduser()
+            .is_symlink(),
+            "Expected symbolic link for unixuser",
+        )
+        self.assertEqual(
+            Path(self.test_file)
+            .joinpath(f"drive_c/users/{user.get_user()}")
+            .readlink(),
+            Path("steamuser"),
+            "Expected unixuser -> steamuser",
+        )
 
     def test_setup_pfx_symlinks(self):
-        """Test _setup_pfx for valid symlinks.
+        """Test setup_pfx for valid symlinks.
 
         Ensure that symbolic links to the WINE prefix (pfx) are always in expanded form when passed an unexpanded path.
         For example:
@@ -946,6 +1044,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_setup_pfx(self):
         """Test setup_pfx."""
         result = None
+        user = ulwgl_util.UnixUser()
         result = ulwgl_run.setup_pfx(self.test_file)
         self.assertIsNone(
             result,
@@ -957,6 +1056,17 @@ class TestGameLauncher(unittest.TestCase):
         self.assertTrue(
             Path(self.test_file + "/tracked_files").is_file(),
             "Expected tracked_files to be a file",
+        )
+        # For new prefixes, steamuser should exist and a user symlink
+        self.assertTrue(
+            Path(self.test_file + "/drive_c/users/steamuser").is_dir(),
+            "Expected steamuser to be created",
+        )
+        self.assertTrue(
+            Path(self.test_file + "/drive_c/users/" + user.get_user())
+            .expanduser()
+            .is_symlink(),
+            "Expected symlink of username -> steamuser",
         )
 
     def test_parse_args(self):
