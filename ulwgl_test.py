@@ -710,6 +710,49 @@ class TestGameLauncher(unittest.TestCase):
             "Expected ulwgl-run -> ulwgl_run.py",
         )
 
+    def test_copy_tree(self):
+        """Test copyfile_tree.
+
+        An error should not be raised in the process of a simple copy transaction nor during recursion -- infinite recursion or callstack limit.
+        """
+        result = False
+        test_dir = Path("tmp.RkjsKEm8pZ")
+
+        test_dir.mkdir(exist_ok=True)
+        test_dir.joinpath("ULWGL_VERSION.json").touch()
+        with test_dir.joinpath("ULWGL_VERSION.json").open(mode="w") as file:
+            file.write(self.test_config)
+
+        self.assertTrue(
+            test_dir.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to exist in test /usr/share/ULWGL",
+        )
+        self.assertFalse(
+            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to not exist in test .local/share/ULWGL",
+        )
+
+        # Copy the test dir contents into the other test dir
+        result = ulwgl_util.copyfile_tree(test_dir, self.test_local_share)
+
+        # Confirm the state of the dest dir
+        self.assertFalse(result, "Expected False after calling copyfile_tree")
+        self.assertTrue(
+            any(self.test_local_share.iterdir()),
+            "Expected destination dir to not be empty",
+        )
+        self.assertEqual(
+            len(list(self.test_local_share.glob("*"))), 1, "Expected only one file"
+        )
+        self.assertTrue(
+            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to be copied",
+        )
+
+        if test_dir.exists():
+            test_dir.joinpath("ULWGL_VERSION.json").unlink()
+            test_dir.rmdir()
+
     def test_latest_interrupt(self):
         """Test _get_latest in the event the user interrupts the download/extraction process.
 
