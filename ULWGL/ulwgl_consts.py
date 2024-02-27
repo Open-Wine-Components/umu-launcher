@@ -5,6 +5,8 @@ SIMPLE_FORMAT = "%(levelname)s:  %(message)s"
 
 DEBUG_FORMAT = "%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:%(message)s"
 
+CONFIG = "ULWGL_VERSION.json"
+
 
 class Level(Enum):
     """Represent the Log level values for the logger module."""
