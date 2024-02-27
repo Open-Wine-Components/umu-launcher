@@ -94,7 +94,9 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
         raise FileNotFoundError(err)
 
     # Execute the command and pipe the output to Zenity
-    with subprocess.Popen(download_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
+    with subprocess.Popen(
+        download_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    ) as proc:
         # Start Zenity with a pipe to its standard input
         zenity_proc: subprocess.Popen = subprocess.Popen(
             [
@@ -107,15 +109,15 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
             stdin=subprocess.PIPE,
         )
 
-        for line in iter(proc.stdout.readline, b''):
+        for line in iter(proc.stdout.readline, b""):
             # Parse the output to extract the progress percentage
-            if b'%' in line:
-                line_str = line.decode('utf-8')
-                match = re.search(r'(\d+)%', line_str)
+            if b"%" in line:
+                line_str = line.decode("utf-8")
+                match = re.search(r"(\d+)%", line_str)
                 if match:
                     percentage = match.group(1)
                     # Send the percentage to Zenity's standard input
-                    zenity_proc.stdin.write(percentage.encode('utf-8') + b'\n')
+                    zenity_proc.stdin.write(percentage.encode("utf-8") + b"\n")
                     zenity_proc.stdin.flush()
 
         # Close the Zenity process's standard input
@@ -248,8 +250,8 @@ def _install_ulwgl(
     dest_path.mkdir(parents=True, exist_ok=True)
 
     copyfile_tree(
-                    root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
-                )
+        root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
+    )
 
     print("Completed.", file=stderr)
 
@@ -403,7 +405,8 @@ def _update_ulwgl(
                 )
 
                 copyfile_tree(
-                    root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
+                    root.joinpath("ULWGL-Launcher"),
+                    steam_compat.joinpath("ULWGL-Launcher"),
                 )
             elif steam_compat.joinpath("ULWGL-Launcher").is_dir() and val != runner:
                 # Update
@@ -411,7 +414,8 @@ def _update_ulwgl(
 
                 rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
                 copyfile_tree(
-                    root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
+                    root.joinpath("ULWGL-Launcher"),
+                    steam_compat.joinpath("ULWGL-Launcher"),
                 )
 
                 json_local["ulwgl"]["versions"]["runner"] = val
