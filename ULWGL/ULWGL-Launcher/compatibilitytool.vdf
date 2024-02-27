@@ -2,10 +2,10 @@
 {
   "compat_tools"
   {
-    "ULWGL-Runner" // Internal name of this tool
+    "ULWGL-Launcher" // Internal name of this tool
     {
       "install_path" "."
-      "display_name" "ULWGL-Runner"
+      "display_name" "ULWGL-Launcher"
       "from_oslist"  "windows"
       "to_oslist"    "linux"
     }

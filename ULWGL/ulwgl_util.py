@@ -148,8 +148,8 @@ def setup_ulwgl(root: Path, local: Path) -> None:
 
     Parameters are expected to be /usr/share/ULWGL and ~/.local/share/ULWGL respectively
     Performs full copies of tools on new installs and selectively on new updates
-    The tools that will be copied are: Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the ULWGL-Runner
-    The ULWGL-Runner will be copied to .local/share/Steam/compatibilitytools.d
+    The tools that will be copied are: Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the ULWGL-Launcher
+    The ULWGL-Launcher will be copied to .local/share/Steam/compatibilitytools.d
     """
     log.debug(msg(f"Root: {root}", Level.DEBUG))
     log.debug(msg(f"Local: {local}", Level.DEBUG))
@@ -183,7 +183,7 @@ def _install_ulwgl(
     """For new installations, copy all of the ULWGL tools at a user-writable location.
 
     The designated locations to copy to will be: ~/.local/share/ULWGL, ~/.local/share/Steam/compatibilitytools.d
-    The tools that will be copied are: SteamRT, Pressure Vessel, ULWGL-Runner, ULWGL Launcher files, Reaper and ULWGL_VERSION.json
+    The tools that will be copied are: SteamRT, Pressure Vessel, ULWGL-Launcher, ULWGL Launcher files, Reaper and ULWGL_VERSION.json
     """
     cp: Callable[Path, Path] = None
 
@@ -219,18 +219,18 @@ def _install_ulwgl(
     # Runner
     steam_compat.mkdir(parents=True, exist_ok=True)
 
-    print(f"Copying ULWGL-Runner -> {steam_compat} ...", file=stderr)
+    print(f"Copying ULWGL-Launcher -> {steam_compat} ...", file=stderr)
     
     # Remove existing files if they exist -- this is a clean install.
-    if steam_compat.joinpath("ULWGL-Runner").is_dir():
-        rmtree(steam_compat.joinpath("ULWGL-Runner").as_posix())
+    if steam_compat.joinpath("ULWGL-Launcher").is_dir():
+        rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
     
     # Ensure the destination directory exists
-    dest_path = Path('/home/tcrider/.local/share/Steam/compatibilitytools.d/ULWGL-Runner')
+    dest_path = Path('/home/tcrider/.local/share/Steam/compatibilitytools.d/ULWGL-Launcher')
     dest_path.mkdir(parents=True, exist_ok=True)
 
     copyfile_tree(
-                    root.joinpath("ULWGL-Runner"), steam_compat.joinpath("ULWGL-Runner")
+                    root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
                 )
 
     print("Completed.", file=stderr)
@@ -378,22 +378,22 @@ def _update_ulwgl(
             runner: str = json_local["ulwgl"]["versions"]["runner"]
 
             # Directory is absent
-            if not steam_compat.joinpath("ULWGL-Runner").is_dir():
+            if not steam_compat.joinpath("ULWGL-Launcher").is_dir():
                 print(
-                    f"ULWGL-Runner not found\nCopying ULWGL-Runner -> {steam_compat} ...",
+                    f"ULWGL-Launcher not found\nCopying ULWGL-Launcher -> {steam_compat} ...",
                     file=stderr,
                 )
 
                 copyfile_tree(
-                    root.joinpath("ULWGL-Runner"), steam_compat.joinpath("ULWGL-Runner")
+                    root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
                 )
-            elif steam_compat.joinpath("ULWGL-Runner").is_dir() and val != runner:
+            elif steam_compat.joinpath("ULWGL-Launcher").is_dir() and val != runner:
                 # Update
                 print(f"Updating {key} to {val} ...", file=stderr)
 
-                rmtree(steam_compat.joinpath("ULWGL-Runner").as_posix())
+                rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
                 copyfile_tree(
-                    root.joinpath("ULWGL-Runner"), steam_compat.joinpath("ULWGL-Runner")
+                    root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
                 )
 
                 json_local["ulwgl"]["versions"]["runner"] = val

@@ -112,11 +112,11 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "pressure-vessel").mkdir()
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
 
-        # Mock ULWGL-Runner
-        Path(self.test_user_share, "ULWGL-Runner").mkdir()
-        Path(self.test_user_share, "ULWGL-Runner", "compatibilitytool.vdf").touch()
-        Path(self.test_user_share, "ULWGL-Runner", "toolmanifest.vdf").touch()
-        Path(self.test_user_share, "ULWGL-Runner", "ulwgl-run").symlink_to(
+        # Mock ULWGL-Launcher
+        Path(self.test_user_share, "ULWGL-Launcher").mkdir()
+        Path(self.test_user_share, "ULWGL-Launcher", "compatibilitytool.vdf").touch()
+        Path(self.test_user_share, "ULWGL-Launcher", "toolmanifest.vdf").touch()
+        Path(self.test_user_share, "ULWGL-Launcher", "ulwgl-run").symlink_to(
             "../../../ulwgl-run"
         )
 
@@ -234,27 +234,27 @@ class TestGameLauncher(unittest.TestCase):
 
         # Runner
         self.assertTrue(
-            self.test_compat.joinpath("ULWGL-Runner").is_dir(),
-            "Expected ULWGL-Runner in compat",
+            self.test_compat.joinpath("ULWGL-Launcher").is_dir(),
+            "Expected ULWGL-Launcher in compat",
         )
 
-        for file in self.test_compat.joinpath("ULWGL-Runner").glob("*"):
+        for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*"):
             src = b""
             dst = b""
 
             if file.name == "ulwgl-run":
                 self.assertEqual(
                     self.test_user_share.joinpath(
-                        "ULWGL-Runner", "ulwgl-run"
+                        "ULWGL-Launcher", "ulwgl-run"
                     ).readlink(),
-                    self.test_compat.joinpath("ULWGL-Runner", "ulwgl-run").readlink(),
+                    self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
 
             with file.open(mode="rb") as filer:
                 dst = filer.read()
-            with self.test_user_share.joinpath("ULWGL-Runner", file.name).open(
+            with self.test_user_share.joinpath("ULWGL-Launcher", file.name).open(
                 mode="rb"
             ) as filer:
                 src = filer.read()
@@ -429,8 +429,8 @@ class TestGameLauncher(unittest.TestCase):
         self.test_local_share.joinpath("pressure-vessel").mkdir()
         self.test_local_share.joinpath("pressure-vessel", "bar").touch()
 
-        # Mock ULWGL-Runner
-        self.test_compat.joinpath("ULWGL-Runner").mkdir()
+        # Mock ULWGL-Launcher
+        self.test_compat.joinpath("ULWGL-Launcher").mkdir()
         for file in runner_files:
             if file == "ulwgl-run":
                 self.test_compat.joinpath("ulwgl-run").symlink_to("../../../ulwgl-run")
@@ -503,40 +503,40 @@ class TestGameLauncher(unittest.TestCase):
         # Runner
         # The hashes should be compared because we written data in the mocked files
         self.assertTrue(
-            self.test_compat.joinpath("ULWGL-Runner").is_dir(),
-            "Expected ULWGL-Runner in compat",
+            self.test_compat.joinpath("ULWGL-Launcher").is_dir(),
+            "Expected ULWGL-Launcher in compat",
         )
 
-        # Verify the count for .local/share/Steam/ULWGL-Runner
+        # Verify the count for .local/share/Steam/ULWGL-Launcher
         num_share = len(
-            [file for file in self.test_user_share.joinpath("ULWGL-Runner").glob("*")]
+            [file for file in self.test_user_share.joinpath("ULWGL-Launcher").glob("*")]
         )
         num_local = len(
-            [file for file in self.test_compat.joinpath("ULWGL-Runner").glob("*")]
+            [file for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*")]
         )
         self.assertEqual(
             num_share,
             num_local,
-            "Expected .local/share/Steam/compatibilitytools.d/ULWGL-Runner and /usr/share/ULWGL/ULWGL-Runner to contain same files",
+            "Expected .local/share/Steam/compatibilitytools.d/ULWGL-Launcher and /usr/share/ULWGL/ULWGL-Launcher to contain same files",
         )
 
-        for file in self.test_compat.joinpath("ULWGL-Runner").glob("*"):
+        for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*"):
             src = b""
             dst = b""
 
             if file.name == "ulwgl-run":
                 self.assertEqual(
                     self.test_user_share.joinpath(
-                        "ULWGL-Runner", "ulwgl-run"
+                        "ULWGL-Launcher", "ulwgl-run"
                     ).readlink(),
-                    self.test_compat.joinpath("ULWGL-Runner", "ulwgl-run").readlink(),
+                    self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
 
             with file.open(mode="rb") as filer:
                 dst = filer.read()
-            with self.test_user_share.joinpath("ULWGL-Runner", file.name).open(
+            with self.test_user_share.joinpath("ULWGL-Launcher", file.name).open(
                 mode="rb"
             ) as filer:
                 src = filer.read()
@@ -615,8 +615,8 @@ class TestGameLauncher(unittest.TestCase):
 
         At first launch, the directory /usr/share/ULWGL is expected to be populated by distribution's package manager
         This function is expected to be run when ~/.local/share/ULWGL is empty
-        The contents of ~/.local/share/ULWGL should be nearly identical to /usr/share/ULWGL, with the exception of the ULWGL-Runner files
-        ULWGL-Runner is expcted to be copied to compatibilitytools.d
+        The contents of ~/.local/share/ULWGL should be nearly identical to /usr/share/ULWGL, with the exception of the ULWGL-Launcher files
+        ULWGL-Launcher is expcted to be copied to compatibilitytools.d
         """
         result = None
         runner_files = {"compatibilitytool.vdf", "toolmanifest.vdf", "ulwgl-run"}
@@ -644,12 +644,12 @@ class TestGameLauncher(unittest.TestCase):
             "Expected ULWGL_VERSION.json to exist",
         )
 
-        # ULWGL-Runner
+        # ULWGL-Launcher
         self.assertTrue(
-            Path(self.test_user_share, "ULWGL-Runner").is_dir(),
-            "Expected ULWGL-Runner to exist",
+            Path(self.test_user_share, "ULWGL-Launcher").is_dir(),
+            "Expected ULWGL-Launcher to exist",
         )
-        for file in Path(self.test_compat, "ULWGL-Runner").glob("*"):
+        for file in Path(self.test_compat, "ULWGL-Launcher").glob("*"):
             if file.name not in runner_files:
                 err = "A non-runner file was copied"
                 raise AssertionError(err)
