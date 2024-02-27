@@ -1,1 +1,3 @@
-/usr/share/ULWGL/ulwgl_run.py
+#!/usr/bin/env bash
+/usr/share/ULWGL/ulwgl_run.py "$@"
+
