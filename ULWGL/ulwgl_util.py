@@ -120,10 +120,10 @@ def setup_runtime(root: Path) -> None:
         # Extract the 'depot' folder to the target directory
         for member in tar.getmembers():
             if member.name.startswith("steam-container-runtime/depot/"):
-                tar.extract(member, path=os.path.expanduser("~/.local/share/ULWGL/"))
+                tar.extract(member, path=os.path.expanduser("/tmp/"))
 
         # Step  4: move the files to the correct location
-        source_dir = os.path.expanduser("~/.local/share/ULWGL/steam-container-runtime/depot/")
+        source_dir = os.path.expanduser("/tmp/steam-container-runtime/depot/")
         destination_dir = os.path.expanduser("~/.local/share/ULWGL/")
 
         # List all files in the source directory
@@ -140,7 +140,7 @@ def setup_runtime(root: Path) -> None:
             move(src_file, dest_file)
 
         # Remove the extracted directory and all its contents
-        rmtree(os.path.expanduser("~/.local/share/ULWGL/steam-container-runtime/"))
+        rmtree(os.path.expanduser("/tmp/steam-container-runtime/"))
         force_rename(os.path.join(destination_dir, "_v2-entry-point"), os.path.join(destination_dir, "ULWGL"))
 
 def setup_ulwgl(root: Path, local: Path) -> None:
