@@ -1434,11 +1434,13 @@ class TestGameLauncher(unittest.TestCase):
         )
         # DEBUG [ulwgl_run.main:352]:['/home/celsius/.local/share/ULWGL/reaper', 'ULWGL_ID=0', '--', '/home/celsius/.local/share/ULWGL/ULWGL', '--verb', 'waitforexitandrun', '--', '/home/celsius/Proton/GE-Proton8-30/proton', 'waitforexitandrun', '/home/celsius/Games/aiyoku-no-eustia/Aiyoku no Eustia/BGI.exe']
         # Verify contents
-        reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
+        reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [
+            *test_command
+        ]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(reaper, "Expected reaper")
         self.assertTrue(id, "Expected a tag for reaper")
-        self.assertTrue(id, "Expected --")
+        self.assertTrue(opt0, "Expected --")
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")
