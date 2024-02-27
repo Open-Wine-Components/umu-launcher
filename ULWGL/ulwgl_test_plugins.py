@@ -96,7 +96,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
         if self.test_proton_dir.exists():
             rmtree(self.test_proton_dir.as_posix())
 
-
     def test_set_env_toml_nofile(self):
         """Test set_env_toml for values that are not a file.
 

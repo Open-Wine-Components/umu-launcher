@@ -631,9 +631,31 @@ class TestGameLauncher(unittest.TestCase):
         }
         json = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
 
-        result = ulwgl_util._install_ulwgl(
-            self.test_user_share, self.test_local_share, self.test_compat, json
-        )
+        # Mock setting up the runtime
+        # In the real usage, we callout to acquire the archive and extract to .local/share/ULWGL
+        with patch.object(
+            ulwgl_util,
+            "setup_runtime",
+            return_value=None,
+        ):
+            result = ulwgl_util._install_ulwgl(
+                self.test_user_share, self.test_local_share, self.test_compat, json
+            )
+            ulwgl_util.copyfile_tree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "ULWGL"),
+                Path(self.test_local_share, "ULWGL"),
+            )
 
         # Verify the state of the local share directory
         self.assertFalse(result, "Expected None after calling _install_ulwgl")
@@ -1394,7 +1416,6 @@ class TestGameLauncher(unittest.TestCase):
             "Expected STEAM_COMPAT_INSTALL_PATH to be empty when passing an empty EXE",
         )
         self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
-
 
     def test_set_env_opts(self):
         """Test set_env.
