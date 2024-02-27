@@ -13,6 +13,7 @@ from pathlib import Path
 from pwd import struct_passwd, getpwuid
 from shutil import rmtree, copy2, move
 
+
 class UnixUser:
     """Represents the User of the system as determined by the password database rather than environment variables or file system paths."""
 
@@ -42,6 +43,7 @@ class UnixUser:
         """Compare the UID passed in to this instance."""
         return uid == self.puid
 
+
 def msg(msg: Any, level: Level):
     """Return a log message depending on the log level.
 
@@ -59,14 +61,15 @@ def msg(msg: Any, level: Level):
 
     return log
 
-def force_rename(src, dst):
-    if os.path.exists(dst):
-        os.remove(dst)  # or os.unlink(dst)
-    os.rename(src, dst)
 
-def setup_runtime(root: Path) -> None:
+def force_rename(src: Path, dst: Path):  # noqa: D103
+    if dst.exists():
+        dst.unlink(missing_ok=True)
+    src.rename(dst)
+
+
     # Open the JSON file and load its content into a Python dictionary
-    with open(root.joinpath(CONFIG), 'r') as file:
+    with root.joinpath(CONFIG).open(mode="r") as file:
         data = load(file)
 
     # Access the 'runtime_platform' value
@@ -114,7 +117,10 @@ def setup_runtime(root: Path) -> None:
     # Open the tar file
     with tarfile.open(tar_path, "r:gz") as tar:
         # Ensure the target directory exists
-        os.makedirs(os.path.expanduser("~/.local/share/ULWGL/"), exist_ok=True)
+        Path.home().joinpath(".local", "share", "ULWGL").mkdir(
+            parents=True, exist_ok=True
+        )
+
         # Extract the 'depot' folder to the target directory
         for member in tar.getmembers():
             if member.name.startswith("steam-container-runtime/depot/"):
@@ -128,18 +134,27 @@ def setup_runtime(root: Path) -> None:
         files = os.listdir(source_dir)
 
         # Move each file to the destination directory, overwriting if it exists
-        for file in files:
-            src_file = os.path.join(source_dir, file)
-            dest_file = os.path.join(destination_dir, file)
-            if os.path.isfile(dest_file) or os.path.islink(dest_file):
-                os.remove(dest_file)  # remove the file
-            elif os.path.isdir(dest_file):
-                rmtree(dest_file)  # remove dir and all contains
-            move(src_file, dest_file)
+        for file in source_dir.glob("*"):
+            src_file: Path = source_dir.joinpath(file.name)
+            dest_file: Path = destination_dir.joinpath(file.name)
+
+            if dest_file.is_file() or dest_file.is_symlink():
+                dest_file.unlink()
+            elif dest_file.is_dir():
+                if dest_file.exists():
+                    rmtree(dest_file.as_posix())  # remove dir and all contains
+
+            move(src_file.as_posix(), dest_file.as_posix())
 
         # Remove the extracted directory and all its contents
-        rmtree(os.path.expanduser("/tmp/steam-container-runtime/"))
-        force_rename(os.path.join(destination_dir, "_v2-entry-point"), os.path.join(destination_dir, "ULWGL"))
+        if Path("/tmp/steam-container-runtime/").exists():
+            rmtree("/tmp/steam-container-runtime/")
+
+        force_rename(
+            destination_dir.joinpath("_v2-entry-point"),
+            destination_dir.joinpath("ULWGL"),
+        )
+
 
 def setup_ulwgl(root: Path, local: Path) -> None:
     """Copy the launcher and its tools to ~/.local/share/ULWGL.
