@@ -88,6 +88,11 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
     download_command: str = f'wget -c "{base_url}" --progress=dot:mega --show-progress -O /tmp/steam-container-runtime-complete.tar.gz'
 
     bin: str = which("zenity")
+
+    if not bin:
+        err: str = "Zenity is not installed in system.\nPlease install zenity"
+        raise FileNotFoundError(err)
+
     # Execute the command and pipe the output to Zenity
     with subprocess.Popen(download_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
         # Start Zenity with a pipe to its standard input
