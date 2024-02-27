@@ -11,7 +11,7 @@ from ulwgl_log import log
 from sys import stderr
 from pathlib import Path
 from pwd import struct_passwd, getpwuid
-from shutil import rmtree, copy2, move
+from shutil import rmtree, move, copyfile, which
 
 
 class UnixUser:
