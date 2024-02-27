@@ -1,7 +1,5 @@
 import os
-import requests
 import tarfile
-import tempfile
 import subprocess
 import re
 
