@@ -92,6 +92,8 @@ A symlink for ulwgl-run should be placed at /usr/bin/ulwgl-run, symlinking to /u
 
 `ln -s /usr/share/ULWGL/ulwgl_run.py /usr/bin/ulwgl-run`  
 
+For the flatpak version, the folders will be /app/share and /app/bin respectively.  
+
 # Usage notes:  
 
 When /usr/bin/ulwgl-run is first run, it will copy the /usr/share/ULWGL folder to ~/.local/share/ULWGL. From that point on the ~/.local/share/ULWGL folder will be used for running ulwgl. It will also perform a version check to make sure that if the contents of /usr/share/ULWGL are updated, that the local version also gets updated.  
