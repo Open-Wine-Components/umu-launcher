@@ -1,9 +1,0 @@
-# $Id: Xsession.options 189 2005-06-11 00:04:27Z branden $
-#
-# configuration options for /etc/X11/Xsession
-# See Xsession.options(5) for an explanation of the available options.
-allow-failsafe
-allow-user-resources
-allow-user-xsession
-use-ssh-agent
-use-session-dbus

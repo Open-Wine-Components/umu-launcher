@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="image/avif">
-  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
-  <comment>AV1 Image File Format (AVIF)</comment>
-  <glob pattern="*.avif"/>
-</mime-type>

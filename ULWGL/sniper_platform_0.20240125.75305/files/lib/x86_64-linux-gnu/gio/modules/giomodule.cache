@@ -1,4 +1,0 @@
-libdconfsettings.so: gsettings-backend
-libgiognomeproxy.so: gio-proxy-resolver
-libgiognutls.so: gio-tls-backend
-libgiolibproxy.so: gio-proxy-resolver

@@ -1,6 +1,0 @@
-# This file is sourced by Xsession(5), not executed.
-
-#Source user defined xsessionrc (locales and other environment variables)
-if [ -r "$USERXSESSIONRC" ]; then
-  . "$USERXSESSIONRC"
-fi
