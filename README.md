@@ -4,7 +4,7 @@ Unified Linux Wine Game Launcher
 
 # WHAT IS THIS?
 
-This is a work in progress POC (proof of concept) for a unified launcher for windows games on linux. It is essentially a copy of the Steam Linux Runtime/Steam Runtime Tools (https://gitlab.steamos.cloud/steamrt/steam-runtime-tools) that Valve uses for proton, with some modifications made so that it can be used outside of Steam.
+This is a unified launcher for windows games on linux. It is essentially a copy of the Steam Linux Runtime/Steam Runtime Tools (https://gitlab.steamos.cloud/steamrt/steam-runtime-tools) that Valve uses for proton, with some modifications made so that it can be used outside of Steam.
 
 # WHAT DOES IT DO?
 
@@ -69,7 +69,40 @@ Borderlands 3 from EGS store.
 4. Now the launcher can search 'Catnip' and 'egs' as the codename and store in the database and correlate it with Borderlands 3 and ULWGL-12345. It can then feed ULWGL-12345 to the ulwgl-run script.
 
 
-README notes from Valve's steam-runtime-tools:
+# Building:
+
+TODO:
+Right now for the steam runtime we are just copying valve's builds. In the future this will be replaced with a proper full build to allow us to customize the runtime.
+
+Reaper:
+
+```
+cd reaper
+meson setup builddir
+cd builddir
+meson compile
+```
+Resulting 'reaper' executable will be inside builddir folder.  
+
+# Packaging:
+
+ULWGL entire folder should be placed at /usr/share/ULWGL  
+
+A symlink for ulwgl-run should be placed at /usr/bin/ulwgl-run, symlinking to /usr/share/ULWGL/ulwgl_run.py:  
+
+`ln -s /usr/share/ULWGL/ulwgl_run.py /usr/bin/ulwgl-run`  
+
+# Usage notes:  
+
+When /usr/bin/ulwgl-run is first run, it will copy the /usr/share/ULWGL folder to ~/.local/share/ULWGL. From that point on the ~/.local/share/ULWGL folder will be used for running ulwgl. It will also perform a version check to make sure that if the contents of /usr/share/ULWGL are updated, that the local version also gets updated.  
+
+When /usr/bin/ulwgl-run is first run, it also copies /usr/share/ULWGL/ULWGL-Runner to ~/.local/share/steam/compatibilitytools.d/ so that it can be used as a compatibility tool in steam for non-steam games the same way Proton is.  
+
+When /usr/bin/ulwgl-run is run, if a PROTONPATH is not specified, it will automatically download and use ULWGL-Proton and place it at ~/.local/share/steam/compatibilitytools.d/  
+
+When /usr/bin/ulwgl-run is run, if a WINEPREFIX is not specified, it will automatically create one using the ulwgl-id at ~/Games/ULWGL/<ulwgl-id>  
+
+# README notes from Valve's steam-runtime-tools:
 
 Steam Linux Runtime 3.0 (sniper)
 ================================
