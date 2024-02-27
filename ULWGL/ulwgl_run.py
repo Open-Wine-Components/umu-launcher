@@ -15,6 +15,15 @@ from ulwgl_util import msg, setup_ulwgl
 from ulwgl_log import log, console_handler, debug_formatter
 from ulwgl_util import UnixUser
 
+def is_musl_system() -> bool:
+    """Check if the system uses musl libc."""
+    # Check for the presence of musl-specific paths in LD_LIBRARY_PATH
+    return 'musl' in os.environ.get('LD_LIBRARY_PATH', '')
+
+if is_musl_system():
+    print("This script is not designed to run on musl-based systems.")
+    sys.exit(1)
+
 verbs: Set[str] = {
     "waitforexitandrun",
     "run",
