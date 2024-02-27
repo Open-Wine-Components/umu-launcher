@@ -384,5 +384,5 @@ def copyfile_tree(src: Path, dest: Path) -> bool:
             dest_subdir.mkdir(parents=True, exist_ok=True)
             copyfile_tree(file, dest_subdir)
         else:
-            shutil.copy2(file, dest / file.name)
+            copyfile_reflink(file, dest / file.name)
     return True
