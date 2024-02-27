@@ -248,12 +248,10 @@ def _install_ulwgl(
     steam_compat.mkdir(parents=True, exist_ok=True)
 
     print(f"Copying ULWGL-Launcher -> {steam_compat} ...", file=stderr)
-    
 
     # Remove existing files if they exist -- this is a clean install.
     if steam_compat.joinpath("ULWGL-Launcher").is_dir():
         rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
-    
 
     copyfile_tree(
         root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
@@ -439,7 +437,6 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
     json: Dict[str, Any] = None
 
     # The file in /usr/share/ULWGL should always exist
-    # TODO Account for multiple root paths because of Flatpak
     if not path.joinpath(config).is_file():
         err: str = f"File not found: {config}\nPlease reinstall the package to recover configuration file"
         raise FileNotFoundError(err)
