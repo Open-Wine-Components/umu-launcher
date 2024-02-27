@@ -249,13 +249,11 @@ def _install_ulwgl(
 
     print(f"Copying ULWGL-Launcher -> {steam_compat} ...", file=stderr)
     
+
     # Remove existing files if they exist -- this is a clean install.
     if steam_compat.joinpath("ULWGL-Launcher").is_dir():
         rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
     
-    # Ensure the destination directory exists
-    dest_path = Path('/home/tcrider/.local/share/Steam/compatibilitytools.d/ULWGL-Launcher')
-    dest_path.mkdir(parents=True, exist_ok=True)
 
     copyfile_tree(
         root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
