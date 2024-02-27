@@ -88,11 +88,14 @@ Resulting 'reaper' executable will be inside builddir folder.
 
 ULWGL entire folder should be placed at /usr/share/ULWGL  
 
-A symlink for ulwgl-run should be placed at /usr/bin/ulwgl-run, symlinking to /usr/share/ULWGL/ulwgl_run.py:  
-
-`ln -s /usr/share/ULWGL/ulwgl_run.py /usr/bin/ulwgl-run`  
+Copy ulwgl-run to /usr/bin/ulwgl-run  
 
 For the flatpak version, the folders will be /app/share and /app/bin respectively.  
+
+TODO:  
+
+We are working on a build script to allow custom INSTALL_PATH so that /usr/share and/or /app/share are not hard-coded required values. The build script will also provide a compiled copy of reaper.  
+
 
 # Usage notes:  
 
