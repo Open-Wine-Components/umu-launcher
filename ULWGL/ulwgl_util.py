@@ -68,6 +68,7 @@ def force_rename(src: Path, dst: Path):  # noqa: D103
     src.rename(dst)
 
 
+def setup_runtime(root: Path) -> None:  # noqa: D103
     # Open the JSON file and load its content into a Python dictionary
     with root.joinpath(CONFIG).open(mode="r") as file:
         data = load(file)
