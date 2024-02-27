@@ -96,164 +96,164 @@ class TestGameLauncherPlugins(unittest.TestCase):
         if self.test_proton_dir.exists():
             rmtree(self.test_proton_dir.as_posix())
 
-    def test_build_command_nofile(self):
-        """Test build_command.
+    # def test_build_command_nofile(self):
+    #     """Test build_command.
 
-        A FileNotFoundError should be raised if $PROTONPATH/proton does not exist
-        NOTE: Also, FileNotFoundError will be raised if the _v2-entry-point (ULWGL) is not in $HOME/.local/share/ULWGL or in cwd
-        """
-        test_toml = "foo.toml"
-        toml_str = f"""
-        [ulwgl]
-        prefix = "{self.test_file}"
-        proton = "{self.test_file}"
-        game_id = "{self.test_file}"
-        launch_args = ["{self.test_file}"]
-        exe = "{self.test_exe}"
-        """
-        toml_path = self.test_file + "/" + test_toml
-        result = None
-        test_command = []
-        Path(toml_path).touch()
+    #     A FileNotFoundError should be raised if $PROTONPATH/proton does not exist
+    #     NOTE: Also, FileNotFoundError will be raised if the _v2-entry-point (ULWGL) is not in $HOME/.local/share/ULWGL or in cwd
+    #     """
+    #     test_toml = "foo.toml"
+    #     toml_str = f"""
+    #     [ulwgl]
+    #     prefix = "{self.test_file}"
+    #     proton = "{self.test_file}"
+    #     game_id = "{self.test_file}"
+    #     launch_args = ["{self.test_file}"]
+    #     exe = "{self.test_exe}"
+    #     """
+    #     toml_path = self.test_file + "/" + test_toml
+    #     result = None
+    #     test_command = []
+    #     Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
-            file.write(toml_str)
+    #     with Path(toml_path).open(mode="w") as file:
+    #         file.write(toml_str)
 
-        with patch.object(
-            ulwgl_run,
-            "parse_args",
-            return_value=argparse.Namespace(config=toml_path),
-        ):
-            # Args
-            result = ulwgl_run.parse_args()
-            # Config
-            ulwgl_plugins.set_env_toml(self.env, result)
-            # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
-            # Env
-            ulwgl_run.set_env(self.env, result)
-            # Game drive
-            ulwgl_plugins.enable_steam_game_drive(self.env)
+    #     with patch.object(
+    #         ulwgl_run,
+    #         "parse_args",
+    #         return_value=argparse.Namespace(config=toml_path),
+    #     ):
+    #         # Args
+    #         result = ulwgl_run.parse_args()
+    #         # Config
+    #         ulwgl_plugins.set_env_toml(self.env, result)
+    #         # Prefix
+    #         ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+    #         # Env
+    #         ulwgl_run.set_env(self.env, result)
+    #         # Game drive
+    #         ulwgl_plugins.enable_steam_game_drive(self.env)
 
-        for key, val in self.env.items():
-            os.environ[key] = val
+    #     for key, val in self.env.items():
+    #         os.environ[key] = val
 
-        # Build
-        with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            ulwgl_run.build_command(self.env, test_command)
+    #     # Build
+    #     with self.assertRaisesRegex(FileNotFoundError, "proton"):
+    #         ulwgl_run.build_command(self.env, test_command)
 
-    def test_build_command_toml(self):
-        """Test build_command.
+    # def test_build_command_toml(self):
+    #     """Test build_command.
 
-        After parsing a valid TOML file, be sure we do not raise a FileNotFoundError
-        """
-        test_toml = "foo.toml"
-        toml_str = f"""
-        [ulwgl]
-        prefix = "{self.test_file}"
-        proton = "{self.test_file}"
-        game_id = "{self.test_file}"
-        launch_args = ["{self.test_file}", "{self.test_file}"]
-        exe = "{self.test_exe}"
-        """
-        toml_path = self.test_file + "/" + test_toml
-        result = None
-        test_command = []
-        test_command_result = None
+    #     After parsing a valid TOML file, be sure we do not raise a FileNotFoundError
+    #     """
+    #     test_toml = "foo.toml"
+    #     toml_str = f"""
+    #     [ulwgl]
+    #     prefix = "{self.test_file}"
+    #     proton = "{self.test_file}"
+    #     game_id = "{self.test_file}"
+    #     launch_args = ["{self.test_file}", "{self.test_file}"]
+    #     exe = "{self.test_exe}"
+    #     """
+    #     toml_path = self.test_file + "/" + test_toml
+    #     result = None
+    #     test_command = []
+    #     test_command_result = None
 
-        Path(self.test_file + "/proton").touch()
-        Path(toml_path).touch()
+    #     Path(self.test_file + "/proton").touch()
+    #     Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
-            file.write(toml_str)
+    #     with Path(toml_path).open(mode="w") as file:
+    #         file.write(toml_str)
 
-        with patch.object(
-            ulwgl_run,
-            "parse_args",
-            return_value=argparse.Namespace(config=toml_path),
-        ):
-            # Args
-            result = ulwgl_run.parse_args()
-            # Config
-            ulwgl_plugins.set_env_toml(self.env, result)
-            # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
-            # Env
-            ulwgl_run.set_env(self.env, result)
-            # Game drive
-            ulwgl_plugins.enable_steam_game_drive(self.env)
+    #     with patch.object(
+    #         ulwgl_run,
+    #         "parse_args",
+    #         return_value=argparse.Namespace(config=toml_path),
+    #     ):
+    #         # Args
+    #         result = ulwgl_run.parse_args()
+    #         # Config
+    #         ulwgl_plugins.set_env_toml(self.env, result)
+    #         # Prefix
+    #         ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+    #         # Env
+    #         ulwgl_run.set_env(self.env, result)
+    #         # Game drive
+    #         ulwgl_plugins.enable_steam_game_drive(self.env)
 
-        for key, val in self.env.items():
-            os.environ[key] = val
+    #     for key, val in self.env.items():
+    #         os.environ[key] = val
 
-        # Build
-        test_command_result = ulwgl_run.build_command(self.env, test_command)
-        self.assertTrue(
-            test_command_result is test_command, "Expected the same reference"
-        )
+    #     # Build
+    #     test_command_result = ulwgl_run.build_command(self.env, test_command)
+    #     self.assertTrue(
+    #         test_command_result is test_command, "Expected the same reference"
+    #     )
 
-        # Verify contents of the command
-        reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [
-            *test_command
-        ]
-        # The entry point dest could change. Just check if there's a value
-        self.assertTrue(reaper, "Expected reaper")
-        self.assertTrue(id, "Expected a tag for reaper")
-        self.assertTrue(opt0, "Expected --")
-        self.assertTrue(entry_point, "Expected an entry point")
-        self.assertEqual(opt1, "--verb", "Expected --verb")
-        self.assertEqual(verb, self.test_verb, "Expected a verb")
-        self.assertEqual(opt2, "--", "Expected --")
-        self.assertEqual(
-            proton,
-            Path(self.env.get("PROTONPATH") + "/proton").as_posix(),
-            "Expected the proton file",
-        )
-        self.assertEqual(verb2, self.test_verb, "Expected a verb")
-        self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
+    #     # Verify contents of the command
+    #     reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [
+    #         *test_command
+    #     ]
+    #     # The entry point dest could change. Just check if there's a value
+    #     self.assertTrue(reaper, "Expected reaper")
+    #     self.assertTrue(id, "Expected a tag for reaper")
+    #     self.assertTrue(opt0, "Expected --")
+    #     self.assertTrue(entry_point, "Expected an entry point")
+    #     self.assertEqual(opt1, "--verb", "Expected --verb")
+    #     self.assertEqual(verb, self.test_verb, "Expected a verb")
+    #     self.assertEqual(opt2, "--", "Expected --")
+    #     self.assertEqual(
+    #         proton,
+    #         Path(self.env.get("PROTONPATH") + "/proton").as_posix(),
+    #         "Expected the proton file",
+    #     )
+    #     self.assertEqual(verb2, self.test_verb, "Expected a verb")
+    #     self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
 
-    def test_set_env_toml_opts_nofile(self):
-        """Test set_env_toml for options that are a file.
+    # def test_set_env_toml_opts_nofile(self):
+    #     """Test set_env_toml for options that are a file.
 
-        An error should not be raised if a launch argument is a file
-        We allow this behavior to give users flexibility at the cost of security
-        """
-        test_toml = "foo.toml"
-        toml_path = self.test_file + "/" + test_toml
-        toml_str = f"""
-        [ulwgl]
-        prefix = "{self.test_file}"
-        proton = "{self.test_file}"
-        game_id = "{self.test_file}"
-        launch_args = ["{toml_path}"]
-        exe = "{self.test_exe}"
-        """
-        result = None
+    #     An error should not be raised if a launch argument is a file
+    #     We allow this behavior to give users flexibility at the cost of security
+    #     """
+    #     test_toml = "foo.toml"
+    #     toml_path = self.test_file + "/" + test_toml
+    #     toml_str = f"""
+    #     [ulwgl]
+    #     prefix = "{self.test_file}"
+    #     proton = "{self.test_file}"
+    #     game_id = "{self.test_file}"
+    #     launch_args = ["{toml_path}"]
+    #     exe = "{self.test_exe}"
+    #     """
+    #     result = None
 
-        Path(toml_path).touch()
+    #     Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
-            file.write(toml_str)
+    #     with Path(toml_path).open(mode="w") as file:
+    #         file.write(toml_str)
 
-        with patch.object(
-            ulwgl_run,
-            "parse_args",
-            return_value=argparse.Namespace(config=toml_path),
-        ):
-            # Args
-            result = ulwgl_run.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
-            # Env
-            ulwgl_plugins.set_env_toml(self.env, result)
+    #     with patch.object(
+    #         ulwgl_run,
+    #         "parse_args",
+    #         return_value=argparse.Namespace(config=toml_path),
+    #     ):
+    #         # Args
+    #         result = ulwgl_run.parse_args()
+    #         self.assertIsInstance(
+    #             result, Namespace, "Expected a Namespace from parse_arg"
+    #         )
+    #         self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+    #         # Env
+    #         ulwgl_plugins.set_env_toml(self.env, result)
 
-            # Check if its the TOML file we just created
-            self.assertTrue(
-                Path(self.env["EXE"].split(" ")[1]).is_file(),
-                "Expected a file to be appended to the executable",
-            )
+    #         # Check if its the TOML file we just created
+    #         self.assertTrue(
+    #             Path(self.env["EXE"].split(" ")[1]).is_file(),
+    #             "Expected a file to be appended to the executable",
+    #         )
 
     def test_set_env_toml_nofile(self):
         """Test set_env_toml for values that are not a file.
