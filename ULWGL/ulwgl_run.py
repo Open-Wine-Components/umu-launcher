@@ -266,7 +266,7 @@ def build_command(
         home: str = Path.home().as_posix()
         dir: str = Path(__file__).parent.as_posix()
         msg: str = (
-            f"Path to _v2-entry-point cannot be found in: {home}/.local/share or {dir}"
+            f"Path to _v2-entry-point cannot be found in: {home}/.local/share or {dir}\nPlease install a Steam Runtime platform"
         )
         raise FileNotFoundError(msg)
 
