@@ -6,7 +6,7 @@ from traceback import print_exception
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
-from ulwgl_plugins import enable_steam_game_drive, set_env_toml
+from ulwgl_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
 from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
@@ -274,6 +274,8 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
+    enable_reaper(env, command, entry_point)
+
     command.extend([entry_point, "--verb", verb, "--"])
     command.extend(
         [
@@ -355,7 +357,6 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except KeyboardInterrupt:
-        # Until Reaper is part of the command sequence, spawned process may still be alive afterwards
         log.warning(msg("Keyboard Interrupt", Level.WARNING))
         sys.exit(1)
     except Exception as e:  # noqa: BLE001

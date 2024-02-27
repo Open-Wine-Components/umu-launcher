@@ -127,3 +127,18 @@ def enable_steam_game_drive(env: Dict[str, str]) -> Dict[str, str]:
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
 
     return env
+
+
+def enable_reaper(
+    env: Dict[str, str], command: List[str], entry_point: str
+) -> List[str]:
+    """Enable Reaper to monitor and keep track of descendent processes."""
+    command.extend(
+        [
+            Path(entry_point).parent.joinpath("reaper").as_posix(),
+            "ULWGL_ID=" + env["ULWGL_ID"],
+            "--",
+        ]
+    )
+
+    return command
