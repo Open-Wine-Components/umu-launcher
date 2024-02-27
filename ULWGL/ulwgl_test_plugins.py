@@ -193,8 +193,13 @@ class TestGameLauncherPlugins(unittest.TestCase):
         )
 
         # Verify contents of the command
-        entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
+        reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [
+            *test_command
+        ]
         # The entry point dest could change. Just check if there's a value
+        self.assertTrue(reaper, "Expected reaper")
+        self.assertTrue(id, "Expected a tag for reaper")
+        self.assertTrue(opt0, "Expected --")
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")

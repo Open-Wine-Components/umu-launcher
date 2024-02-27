@@ -120,6 +120,9 @@ class TestGameLauncher(unittest.TestCase):
             "../../../ulwgl-run"
         )
 
+        # Mock Reaper
+        Path(self.test_user_share, "reaper").touch()
+
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
 
@@ -736,7 +739,7 @@ class TestGameLauncher(unittest.TestCase):
         result = ulwgl_util.copyfile_tree(test_dir, self.test_local_share)
 
         # Confirm the state of the dest dir
-        self.assertFalse(result, "Expected False after calling copyfile_tree")
+        self.assertTrue(result, "Expected False after calling copyfile_tree")
         self.assertTrue(
             any(self.test_local_share.iterdir()),
             "Expected destination dir to not be empty",
@@ -1427,11 +1430,17 @@ class TestGameLauncher(unittest.TestCase):
         test_command = ulwgl_run.build_command(self.env, test_command)
         self.assertIsInstance(test_command, list, "Expected a List from build_command")
         self.assertEqual(
-            len(test_command), 7, "Expected 7 elements in the list from build_command"
+            len(test_command), 10, "Expected 10 elements in the list from build_command"
         )
+        # DEBUG [ulwgl_run.main:352]:['/home/celsius/.local/share/ULWGL/reaper', 'ULWGL_ID=0', '--', '/home/celsius/.local/share/ULWGL/ULWGL', '--verb', 'waitforexitandrun', '--', '/home/celsius/Proton/GE-Proton8-30/proton', 'waitforexitandrun', '/home/celsius/Games/aiyoku-no-eustia/Aiyoku no Eustia/BGI.exe']
         # Verify contents
-        entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
+        reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [
+            *test_command
+        ]
         # The entry point dest could change. Just check if there's a value
+        self.assertTrue(reaper, "Expected reaper")
+        self.assertTrue(id, "Expected a tag for reaper")
+        self.assertTrue(opt0, "Expected --")
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")

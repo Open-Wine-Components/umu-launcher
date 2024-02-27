@@ -87,7 +87,9 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     if not local.exists():
         return _install_ulwgl(ulwgl_path, local, steam_compat, json)
 
-    return _update_ulwgl(ulwgl_path, local, steam_compat, json, _get_json(local, CONFIG))
+    return _update_ulwgl(
+        ulwgl_path, local, steam_compat, json, _get_json(local, CONFIG)
+    )
 
 
 def _install_ulwgl(
@@ -119,8 +121,8 @@ def _install_ulwgl(
     copyfile_tree(root.joinpath("pressure-vessel"), local.joinpath("pressure-vessel"))
 
     # Reaper
-    # print(f"Copying reaper -> {local}", file=stderr)
-    # copytree(root.joinpath("reaper").as_posix(), local.joinpath("reaper"), symlinks=True)
+    print(f"Copying reaper -> {local}", file=stderr)
+    cp(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
     print(f"Copying runtime -> {local} ...", file=stderr)
@@ -182,7 +184,25 @@ def _update_ulwgl(
     # Be lazy and just trust the integrity of local
     for key, val in json_root["ulwgl"]["versions"].items():
         if key == "reaper":
-            pass
+            reaper: str = json_local["ulwgl"]["versions"]["reaper"]
+
+            # Directory is absent
+            if not local.joinpath("reaper").is_file():
+                print(
+                    f"Reaper not found\nCopying {key} -> {local} ...",
+                    file=stderr,
+                )
+
+                cp(root.joinpath("reaper"), local.joinpath("reaper"))
+
+            # Update
+            if val != reaper:
+                print(f"Updating {key} to {reaper} ...", file=stderr)
+
+                local.joinpath("reaper").unlink(missing_ok=True)
+                cp(root.joinpath("reaper"), local.joinpath("reaper"))
+
+                json_local["ulwgl"]["versions"]["reaper"] = val
         elif key == "pressure_vessel":
             # Pressure Vessel
             pv: str = json_local["ulwgl"]["versions"]["pressure_vessel"]
@@ -231,6 +251,10 @@ def _update_ulwgl(
                 for file in local.glob("run*"):
                     file.unlink(missing_ok=True)
                     cp(root.joinpath(file.name), local.joinpath(file.name))
+
+                # Reaper
+                # We copy it as it will ideally be built within the runtime platform
+                cp(root.joinpath("reaper"), local.joinpath("reaper"))
             elif local.joinpath(runtime).is_dir() and val != runtime:
                 # Update
                 print(f"Updating {key} to {val} ...", file=stderr)
@@ -354,6 +378,7 @@ def copyfile_reflink(src: Path, dst: Path) -> None:
 
         dst.chmod(src.stat().st_mode)
 
+
 def copyfile_tree(src: Path, dest: Path) -> bool:
     """Copy the directory tree from a source to a destination, overwriting existing files."""
     for file in src.iterdir():
@@ -362,5 +387,5 @@ def copyfile_tree(src: Path, dest: Path) -> bool:
             dest_subdir.mkdir(parents=True, exist_ok=True)
             copyfile_tree(file, dest_subdir)
         else:
-            shutil.copy2(file, dest / file.name)
+            copyfile_reflink(file, dest / file.name)
     return True
