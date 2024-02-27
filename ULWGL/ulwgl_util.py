@@ -72,14 +72,22 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     json: Dict[str, Any] = None
     steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
 
-    json = _get_json(root, CONFIG)
+    if root.name == "app":
+        ulwgl_path = root / "share/ULWGL"
+    else:
+        ulwgl_path = Path("/usr/share/ULWGL")
+
+    # Ensure the path is absolute
+    ulwgl_path = ulwgl_path.resolve()
+
+    json = _get_json(ulwgl_path, CONFIG)
 
     # New install
     # Be lazy and don't implement fallback mechanisms
-    if not any(local.iterdir()):
-        return _install_ulwgl(root, local, steam_compat, json)
+    if not local.exists():
+        return _install_ulwgl(ulwgl_path, local, steam_compat, json)
 
-    return _update_ulwgl(root, local, steam_compat, json, _get_json(local, CONFIG))
+    return _update_ulwgl(ulwgl_path, local, steam_compat, json, _get_json(local, CONFIG))
 
 
 def _install_ulwgl(
@@ -346,12 +354,13 @@ def copyfile_reflink(src: Path, dst: Path) -> None:
 
         dst.chmod(src.stat().st_mode)
 
-
 def copyfile_tree(src: Path, dest: Path) -> bool:
-    """Copy the directory tree from a source to a destination."""
-    return not [
-        copyfile_tree(file, dest.joinpath(file.name))
-        if file.is_dir()
-        else copyfile_reflink(file, dest.joinpath(file.name))
-        for file in src.iterdir()
-    ]
+    """Copy the directory tree from a source to a destination, overwriting existing files."""
+    for file in src.iterdir():
+        if file.is_dir():
+            dest_subdir = dest / file.name
+            dest_subdir.mkdir(parents=True, exist_ok=True)
+            copyfile_tree(file, dest_subdir)
+        else:
+            shutil.copy2(file, dest / file.name)
+    return True
