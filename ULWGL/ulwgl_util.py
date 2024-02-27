@@ -487,6 +487,7 @@ def copyfile_reflink(src: Path, dst: Path) -> None:
 
         dst.chmod(src.stat().st_mode)
 
+
 def copyfile_tree(src: Path, dest: Path) -> bool:
     """Copy the directory tree from a source to a destination, overwriting existing files and copying symlinks."""
     for file in src.iterdir():
@@ -494,10 +495,7 @@ def copyfile_tree(src: Path, dest: Path) -> bool:
             dest_subdir = dest / file.name
             dest_subdir.mkdir(parents=True, exist_ok=True)
             copyfile_tree(file, dest_subdir)
-        elif file.is_symlink():
-            # Handle symlinks by reading the target and creating a new symlink at the destination
-            link_target = os.readlink(file)
-            os.symlink(link_target, dest / file.name)
         else:
-            copy2(file, dest / file.name)
+            copyfile_reflink(file, dest / file.name)
+
     return True
