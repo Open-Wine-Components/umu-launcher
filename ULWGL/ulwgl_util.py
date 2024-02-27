@@ -146,7 +146,6 @@ def setup_runtime(root: Path) -> None:
 def setup_ulwgl(root: Path, local: Path) -> None:
     """Copy the launcher and its tools to ~/.local/share/ULWGL.
 
-    Parameters are expected to be /usr/share/ULWGL and ~/.local/share/ULWGL respectively
     Performs full copies of tools on new installs and selectively on new updates
     The tools that will be copied are: Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the ULWGL-Launcher
     The ULWGL-Launcher will be copied to .local/share/Steam/compatibilitytools.d
@@ -157,13 +156,8 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     json: Dict[str, Any] = None
     steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
 
-    if root.name == "app":
-        ulwgl_path = root / "share/ULWGL"
-    else:
-        ulwgl_path = Path("/usr/share/ULWGL")
-
     # Ensure the path is absolute
-    ulwgl_path = ulwgl_path.resolve()
+    ulwgl_path = root.resolve()
 
     json = _get_json(ulwgl_path, CONFIG)
 
