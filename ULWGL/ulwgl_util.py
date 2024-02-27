@@ -74,28 +74,33 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
         data = load(file)
 
     # Access the 'runtime_platform' value
-    runtime_platform_value = data['ulwgl']['versions']['runtime_platform']
+    runtime_platform_value: str = data["ulwgl"]["versions"]["runtime_platform"]
 
     # Assuming runtime_platform_value is "sniper_platform_0.20240125.75305"
     # Split the string at 'sniper_platform_'
-    split_value = runtime_platform_value.split('sniper_platform_')
-
-    # The part after 'sniper_platform_' is at index  1, so we access it
-    sniper_version = split_value[1]
+    # TODO Change logic so we don't split on a hardcoded string
+    version: str = runtime_platform_value.split("sniper_platform_")[1]
 
     # Step  1: Define the URL of the file to download
-    base_url = "https://repo.steampowered.com/steamrt3/images/{sniper_version}/steam-container-runtime-complete.tar.gz"
-
-    # Using f-string formatting to insert the variable into the URL
-    url = base_url.format(sniper_version=sniper_version)
+    base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/steam-container-runtime-complete.tar.gz"
 
     # Command to download the file and pipe the progress to Zenity
-    download_command = f'wget -c "{url}" --progress=dot:mega --show-progress -O /tmp/steam-container-runtime-complete.tar.gz'
+    download_command: str = f'wget -c "{base_url}" --progress=dot:mega --show-progress -O /tmp/steam-container-runtime-complete.tar.gz'
 
+    bin: str = which("zenity")
     # Execute the command and pipe the output to Zenity
     with subprocess.Popen(download_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
         # Start Zenity with a pipe to its standard input
-        zenity_proc = subprocess.Popen(['zenity', '--progress', '--auto-close', '--text=Downloading Runtime, please wait...', '--percentage=0'], stdin=subprocess.PIPE)
+        zenity_proc: subprocess.Popen = subprocess.Popen(
+            [
+                f"{bin}",
+                "--progress",
+                "--auto-close",
+                "--text=Downloading Runtime, please wait...",
+                "--percentage=0",
+            ],
+            stdin=subprocess.PIPE,
+        )
 
         for line in iter(proc.stdout.readline, b''):
             # Parse the output to extract the progress percentage
@@ -113,7 +118,7 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
         zenity_proc.wait()
 
     # Assuming the file is downloaded to '/tmp/steam-container-runtime-complete.tar.gz'
-    tar_path = '/tmp/steam-container-runtime-complete.tar.gz'
+    tar_path: str = "/tmp/steam-container-runtime-complete.tar.gz"
 
     # Open the tar file
     with tarfile.open(tar_path, "r:gz") as tar:
@@ -128,8 +133,8 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
                 tar.extract(member, path=os.path.expanduser("/tmp/"))
 
         # Step  4: move the files to the correct location
-        source_dir = os.path.expanduser("/tmp/steam-container-runtime/depot/")
-        destination_dir = os.path.expanduser("~/.local/share/ULWGL/")
+        source_dir: Path = Path("/tmp", "steam-container-runtime", "depot")
+        destination_dir: Path = Path.home().joinpath(".local", "share", "ULWGL")
 
         # List all files in the source directory
         files = os.listdir(source_dir)
@@ -171,7 +176,7 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
 
     # Ensure the path is absolute
-    ulwgl_path = root.resolve()
+    ulwgl_path: Path = root.resolve()
 
     json = _get_json(ulwgl_path, CONFIG)
 
