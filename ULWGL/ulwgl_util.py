@@ -87,7 +87,9 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     if not local.exists():
         return _install_ulwgl(ulwgl_path, local, steam_compat, json)
 
-    return _update_ulwgl(ulwgl_path, local, steam_compat, json, _get_json(local, CONFIG))
+    return _update_ulwgl(
+        ulwgl_path, local, steam_compat, json, _get_json(local, CONFIG)
+    )
 
 
 def _install_ulwgl(
@@ -375,6 +377,7 @@ def copyfile_reflink(src: Path, dst: Path) -> None:
                 copyfile(src.as_posix(), dst.as_posix())
 
         dst.chmod(src.stat().st_mode)
+
 
 def copyfile_tree(src: Path, dest: Path) -> bool:
     """Copy the directory tree from a source to a destination, overwriting existing files."""
