@@ -116,9 +116,6 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "ULWGL-Launcher").mkdir()
         Path(self.test_user_share, "ULWGL-Launcher", "compatibilitytool.vdf").touch()
         Path(self.test_user_share, "ULWGL-Launcher", "toolmanifest.vdf").touch()
-        Path(self.test_user_share, "ULWGL-Launcher", "ulwgl-run").symlink_to(
-            "../../../ulwgl-run"
-        )
 
         # Mock Reaper
         Path(self.test_user_share, "reaper").touch()
@@ -244,10 +241,8 @@ class TestGameLauncher(unittest.TestCase):
 
             if file.name == "ulwgl-run":
                 self.assertEqual(
-                    self.test_user_share.joinpath(
-                        "ULWGL-Launcher", "ulwgl-run"
-                    ).readlink(),
                     self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
+                    Path("../../../ULWGL/ulwgl-run"),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
@@ -514,9 +509,11 @@ class TestGameLauncher(unittest.TestCase):
         num_local = len(
             [file for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*")]
         )
+
+        # Subtract one because a symbolic link is dynamically created
         self.assertEqual(
             num_share,
-            num_local,
+            num_local - 1,
             "Expected .local/share/Steam/compatibilitytools.d/ULWGL-Launcher and /usr/share/ULWGL/ULWGL-Launcher to contain same files",
         )
 
@@ -526,10 +523,8 @@ class TestGameLauncher(unittest.TestCase):
 
             if file.name == "ulwgl-run":
                 self.assertEqual(
-                    self.test_user_share.joinpath(
-                        "ULWGL-Launcher", "ulwgl-run"
-                    ).readlink(),
                     self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
+                    Path("../../../ULWGL/ulwgl-run"),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
@@ -631,9 +626,31 @@ class TestGameLauncher(unittest.TestCase):
         }
         json = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
 
-        result = ulwgl_util._install_ulwgl(
-            self.test_user_share, self.test_local_share, self.test_compat, json
-        )
+        # Mock setting up the runtime
+        # In the real usage, we callout to acquire the archive and extract to .local/share/ULWGL
+        with patch.object(
+            ulwgl_util,
+            "setup_runtime",
+            return_value=None,
+        ):
+            result = ulwgl_util._install_ulwgl(
+                self.test_user_share, self.test_local_share, self.test_compat, json
+            )
+            ulwgl_util.copyfile_tree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "ULWGL"),
+                Path(self.test_local_share, "ULWGL"),
+            )
 
         # Verify the state of the local share directory
         self.assertFalse(result, "Expected None after calling _install_ulwgl")
@@ -1395,7 +1412,6 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
 
-
     def test_set_env_opts(self):
         """Test set_env.
 
@@ -1537,7 +1553,9 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
-                self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix(),
+                self.env["PROTONPATH"]
+                + ":"
+                + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -1628,7 +1646,9 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
-                self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix(),
+                self.env["PROTONPATH"]
+                + ":"
+                + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
