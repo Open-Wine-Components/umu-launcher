@@ -68,13 +68,9 @@ def force_rename(src: Path, dst: Path):  # noqa: D103
     src.rename(dst)
 
 
-def setup_runtime(root: Path) -> None:  # noqa: D103
-    # Open the JSON file and load its content into a Python dictionary
-    with root.joinpath(CONFIG).open(mode="r") as file:
-        data = load(file)
-
+def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     # Access the 'runtime_platform' value
-    runtime_platform_value: str = data["ulwgl"]["versions"]["runtime_platform"]
+    runtime_platform_value: str = json["ulwgl"]["versions"]["runtime_platform"]
 
     # Assuming runtime_platform_value is "sniper_platform_0.20240125.75305"
     # Split the string at 'sniper_platform_'
@@ -232,7 +228,7 @@ def _install_ulwgl(
     cp(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
-    setup_runtime(root)
+    setup_runtime(root, json)
 
     # Launcher files
     for file in root.glob("*.py"):
