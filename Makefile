@@ -25,7 +25,7 @@ ulwgl-dist-install:
 	install -Dm 644 ULWGL/ulwgl_dl_util.py   -t $(DESTDIR)$(DATADIR)/$(PROJECT)
 	install -Dm 644 ULWGL/ulwgl_log.py       -t $(DESTDIR)$(DATADIR)/$(PROJECT)
 	install -Dm 644 ULWGL/ulwgl_plugins.py   -t $(DESTDIR)$(DATADIR)/$(PROJECT)
-	install -Dm 644 ULWGL/ulwgl_run.py     	 -t $(DESTDIR)$(DATADIR)/$(PROJECT)
+	install -Dm 755 ULWGL/ulwgl_run.py     	 -t $(DESTDIR)$(DATADIR)/$(PROJECT)
 	install -Dm 644 ULWGL/ulwgl_util.py      -t $(DESTDIR)$(DATADIR)/$(PROJECT)
 	install -Dm 644 ULWGL/ULWGL_VERSION.json -t $(DESTDIR)$(DATADIR)/$(PROJECT)
 
