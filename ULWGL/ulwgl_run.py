@@ -327,7 +327,7 @@ def main() -> int:  # noqa: D103
     opts: List[str] = None
     # Expected files in this dir: pressure vessel, launcher files, runtime platform, runner, config
     # root: Path = Path("/usr/share/ULWGL")
-    root: Path = Path(__file__).parent
+    root: Path = Path(__file__).resolve().parent
     # Expects this dir to be in sync with root
     # On update, files will be selectively updated
     local: Path = Path.home().joinpath(".local/share/ULWGL")

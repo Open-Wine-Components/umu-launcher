@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-/usr/share/ULWGL/ulwgl_run.py "$@"
-
