@@ -241,7 +241,6 @@ def build_command(
     env: Dict[str, str], local: Path, command: List[str], opts: List[str] = None
 ) -> List[str]:
     """Build the command to be executed."""
-    entry_point: str = ""
     verb: str = env["PROTON_VERB"]
 
     # Raise an error if the _v2-entry-point cannot be found
@@ -251,15 +250,13 @@ def build_command(
         msg: str = f"Path to _v2-entry-point cannot be found in: {home}/.local/share or {dir}\nPlease install a Steam Runtime platform"
         raise FileNotFoundError(msg)
 
-    entry_point = local.as_posix()
-
     if not Path(env.get("PROTONPATH")).joinpath("proton").is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
-    enable_reaper(env, command, entry_point)
+    enable_reaper(env, command, local)
 
-    command.extend([entry_point + "/ULWGL", "--verb", verb, "--"])
+    command.extend([local.joinpath("ULWGL").as_posix(), "--verb", verb, "--"])
     command.extend(
         [
             Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
