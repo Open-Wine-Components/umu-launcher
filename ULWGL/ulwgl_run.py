@@ -16,15 +16,6 @@ from ulwgl_log import log, console_handler, debug_formatter
 from ulwgl_util import UnixUser
 
 
-def is_musl_system() -> bool:
-    """Check if the system uses musl libc."""
-    # Check for the presence of musl-specific paths in LD_LIBRARY_PATH
-    return "musl" in os.environ.get("LD_LIBRARY_PATH", "")
-
-
-if is_musl_system():
-    print("This script is not designed to run on musl-based systems.")
-    sys.exit(1)
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     opt_args: Set[str] = {"--help", "-h", "--config"}
     exe: str = Path(__file__).name
@@ -315,6 +306,10 @@ def main() -> int:  # noqa: D103
     # On update, files will be selectively updated
     local: Path = Path.home().joinpath(".local/share/ULWGL")
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
+
+    if "musl" in os.environ.get("LD_LIBRARY_PATH", ""):
+        err: str = "This script is not designed to run on musl-based systems"
+        raise SystemExit(err)
 
     if "ULWGL_LOG" in os.environ:
         set_log()
