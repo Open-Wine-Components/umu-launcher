@@ -1,12 +1,15 @@
 PROJECT := ulwgl
 
-OBJDIR ?= build
-DESTDIR ?=
+OBJDIR := build
 
 PREFIX ?= /usr
 BINDIR := $(PREFIX)/bin
 LIBDIR := $(PREFIX)/lib
 DATADIR := $(PREFIX)/share
+
+DESTDIR ?=
+USERINSTALL ?= xfalse
+
 
 .PHONY: all
 all: reaper ulwgl ulwgl-launcher
@@ -17,6 +20,7 @@ $(OBJDIR)/.build-ulwgl: | $(OBJDIR)
 	sed 's|##INSTALL_PATH##|$(DATADIR)/$(PROJECT)|g' ULWGL/ulwgl-run.in > $(OBJDIR)/ulwgl-run
 	touch $(@)
 
+.PHONY: ulwgl
 ulwgl: $(OBJDIR)/.build-ulwgl
 
 ulwgl-bin-install: ulwgl
@@ -45,6 +49,7 @@ $(OBJDIR)/.build-ulwgl-launcher: | $(OBJDIR)
 	sed 's|##INSTALL_PATH##|$(DATADIR)/$(PROJECT)|g' ULWGL/ULWGL-Launcher/ulwgl-run.in > $(OBJDIR)/ulwgl-launcher-run
 	touch $(@)
 
+.PHONY: ulwgl-launcher
 ulwgl-launcher: $(OBJDIR)/.build-ulwgl-launcher
 
 ulwgl-launcher-bin-install: ulwgl-launcher
@@ -69,6 +74,7 @@ $(OBJDIR)/.build-reaper: | $(OBJDIR)
 	ninja -C $(OBJDIR)/reaper -v
 	touch $(@)
 
+.PHONY: reaper
 reaper: $(OBJDIR)/.build-reaper
 
 reaper-install: reaper
@@ -81,13 +87,22 @@ $(OBJDIR):
 	@mkdir -p $(OBJDIR)
 
 
+.PHONY: clean
 clean:
 	rm -rf $(OBJDIR)
 
-.PHONY: install-user
-install-user:
+
+.PHONY: user-install
+user-install:
+	$(info :: ---)
+	$(info :: Installed under user-only location $(DATADIR)/$(PROJECT))
+	$(info :: To run you need to make sure "$(BINDIR)" in your PATH)
 
 .PHONY: install
+ifeq ($(USERINSTALL), xtrue)
+install: reaper-install ulwgl-install ulwgl-launcher-install user-install
+else
 install: reaper-install ulwgl-install ulwgl-launcher-install
+endif
 
 # vim: ft=make
