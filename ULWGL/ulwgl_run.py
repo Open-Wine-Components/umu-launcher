@@ -259,7 +259,7 @@ def build_command(
 
     enable_reaper(env, command, entry_point)
 
-    command.extend([entry_point, "--verb", verb, "--"])
+    command.extend([entry_point + "/ULWGL", "--verb", verb, "--"])
     command.extend(
         [
             Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
