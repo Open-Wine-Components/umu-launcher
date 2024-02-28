@@ -116,9 +116,6 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "ULWGL-Launcher").mkdir()
         Path(self.test_user_share, "ULWGL-Launcher", "compatibilitytool.vdf").touch()
         Path(self.test_user_share, "ULWGL-Launcher", "toolmanifest.vdf").touch()
-        Path(self.test_user_share, "ULWGL-Launcher", "ulwgl-run").symlink_to(
-            "../../../ulwgl-run"
-        )
 
         # Mock Reaper
         Path(self.test_user_share, "reaper").touch()
@@ -244,10 +241,10 @@ class TestGameLauncher(unittest.TestCase):
 
             if file.name == "ulwgl-run":
                 self.assertEqual(
-                    self.test_user_share.joinpath(
+                    self.test_compat.joinpath(
                         "ULWGL-Launcher", "ulwgl-run"
                     ).readlink(),
-                    self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
+                    Path("../../../ULWGL/ulwgl-run"),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
@@ -514,9 +511,11 @@ class TestGameLauncher(unittest.TestCase):
         num_local = len(
             [file for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*")]
         )
+
+        # Subtract one because a symbolic link is dynamically created
         self.assertEqual(
             num_share,
-            num_local,
+            num_local - 1,
             "Expected .local/share/Steam/compatibilitytools.d/ULWGL-Launcher and /usr/share/ULWGL/ULWGL-Launcher to contain same files",
         )
 
@@ -526,10 +525,10 @@ class TestGameLauncher(unittest.TestCase):
 
             if file.name == "ulwgl-run":
                 self.assertEqual(
-                    self.test_user_share.joinpath(
+                    self.test_compat.joinpath(
                         "ULWGL-Launcher", "ulwgl-run"
                     ).readlink(),
-                    self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
+                    Path("../../../ULWGL/ulwgl-run"),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
