@@ -258,28 +258,20 @@ def set_env(
 
 
 def build_command(
-    env: Dict[str, str], command: List[str], opts: List[str] = None
+    env: Dict[str, str], local: Path, command: List[str], opts: List[str] = None
 ) -> List[str]:
     """Build the command to be executed."""
-    paths: List[Path] = [
-        Path.home().joinpath(".local/share/ULWGL/ULWGL"),
-        Path(__file__).parent.joinpath("ULWGL"),
-    ]
     entry_point: str = ""
     verb: str = env["PROTON_VERB"]
 
-    # Find the ULWGL script in $HOME/.local/share then cwd
-    for path in paths:
-        if path.is_file():
-            entry_point = path.as_posix()
-            break
-
     # Raise an error if the _v2-entry-point cannot be found
-    if not entry_point:
+    if not local.joinpath("ULWGL").is_file():
         home: str = Path.home().as_posix()
         dir: str = Path(__file__).parent.as_posix()
         msg: str = f"Path to _v2-entry-point cannot be found in: {home}/.local/share or {dir}\nPlease install a Steam Runtime platform"
         raise FileNotFoundError(msg)
+
+    entry_point = local.as_posix()
 
     if not Path(env.get("PROTONPATH")).joinpath("proton").is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
@@ -359,7 +351,7 @@ def main() -> int:  # noqa: D103
         log.info(msg(f"{key}={val}", Level.INFO))
         os.environ[key] = val
 
-    build_command(env, command, opts)
+    build_command(env, local, command, opts)
     log.debug(msg(command, Level.DEBUG))
     return run(command).returncode
 
