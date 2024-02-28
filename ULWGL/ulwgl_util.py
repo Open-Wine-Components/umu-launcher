@@ -87,7 +87,7 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
     log.debug(msg(f"Url: {base_url}", Level.DEBUG))
 
     # Command to download the file and pipe the progress to Zenity
-    download_command: str = f'curl -LJ --progress-bar https://repo.steampowered.com/steamrt3/images/0.20240125.75305/steam-container-runtime-complete.tar.gz -o /tmp/steam-container-runtime-complete.tar.gz'
+    download_command: str = "curl -LJ --progress-bar https://repo.steampowered.com/steamrt3/images/0.20240125.75305/steam-container-runtime-complete.tar.gz -o /tmp/steam-container-runtime-complete.tar.gz"
     log.debug(msg(f"Download: {download_command}", Level.DEBUG))
 
     bin: str = which("zenity")
@@ -140,7 +140,7 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
         )
 
         # Extract the 'depot' folder to the target directory
-        log.debug(msg(f"Extracting archive files -> /tmp", Level.DEBUG))
+        log.debug(msg("Extracting archive files -> /tmp", Level.DEBUG))
         for member in tar.getmembers():
             if member.name.startswith("steam-container-runtime/depot/"):
                 tar.extract(member, path="/tmp")
@@ -200,9 +200,7 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     if not local.exists():
         return _install_ulwgl(root, local, steam_compat, json)
 
-    return _update_ulwgl(
-        ulwgl_path, local, steam_compat, json, _get_json(local, CONFIG)
-    )
+    return _update_ulwgl(root, local, steam_compat, json, _get_json(local, CONFIG))
 
 
 def _install_ulwgl(
@@ -257,7 +255,9 @@ def _install_ulwgl(
         root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
     )
 
-    steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to("../../../ULWGL/ulwgl-run")
+    steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
+        "../../../ULWGL/ulwgl-run"
+    )
 
     print("Completed.", file=stderr)
 
@@ -411,7 +411,9 @@ def _update_ulwgl(
                     steam_compat.joinpath("ULWGL-Launcher"),
                 )
 
-                steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to("../../../ULWGL/ulwgl-run")
+                steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
+                    "../../../ULWGL/ulwgl-run"
+                )
             elif steam_compat.joinpath("ULWGL-Launcher").is_dir() and val != runner:
                 # Update
                 print(f"Updating {key} to {val} ...", file=stderr)
@@ -422,7 +424,9 @@ def _update_ulwgl(
                     steam_compat.joinpath("ULWGL-Launcher"),
                 )
 
-                steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to("../../../ULWGL/ulwgl-run")
+                steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
+                    "../../../ULWGL/ulwgl-run"
+                )
 
                 json_local["ulwgl"]["versions"]["runner"] = val
 
