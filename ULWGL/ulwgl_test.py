@@ -1557,7 +1557,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
-                self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix(),
+                self.env["PROTONPATH"] + ":" + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -1648,7 +1648,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
-                self.env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix(),
+                self.env["PROTONPATH"] + ":" + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
