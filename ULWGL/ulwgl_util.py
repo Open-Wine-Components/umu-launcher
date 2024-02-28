@@ -80,12 +80,15 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
     # Split the string at 'sniper_platform_'
     # TODO Change logic so we don't split on a hardcoded string
     version: str = runtime_platform_value.split("sniper_platform_")[1]
+    log.debug(msg(f"Version: {version}", Level.DEBUG))
 
     # Step  1: Define the URL of the file to download
     base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/steam-container-runtime-complete.tar.gz"
+    log.debug(msg(f"Url: {base_url}", Level.DEBUG))
 
     # Command to download the file and pipe the progress to Zenity
     download_command: str = f'curl -LJ --progress-bar https://repo.steampowered.com/steamrt3/images/0.20240125.75305/steam-container-runtime-complete.tar.gz -o /tmp/steam-container-runtime-complete.tar.gz'
+    log.debug(msg(f"Download: {download_command}", Level.DEBUG))
 
     bin: str = which("zenity")
 
@@ -137,9 +140,9 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
         )
 
         # Extract the 'depot' folder to the target directory
+        log.debug(msg(f"Extracting archive files -> /tmp", Level.DEBUG))
         for member in tar.getmembers():
             if member.name.startswith("steam-container-runtime/depot/"):
-                log.debug(msg(f"Extracting: {member} -> /tmp", Level.DEBUG))
                 tar.extract(member, path="/tmp")
 
         # Step  4: move the files to the correct location
