@@ -85,7 +85,7 @@ def setup_runtime(root: Path) -> None:  # noqa: D103
     base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/steam-container-runtime-complete.tar.gz"
 
     # Command to download the file and pipe the progress to Zenity
-    download_command: str = f'wget -c "{base_url}" --progress=dot:mega --show-progress -O /tmp/steam-container-runtime-complete.tar.gz'
+    download_command: str = f'curl -LJ --progress-bar https://repo.steampowered.com/steamrt3/images/0.20240125.75305/steam-container-runtime-complete.tar.gz -o /tmp/steam-container-runtime-complete.tar.gz'
 
     bin: str = which("zenity")
 
