@@ -83,7 +83,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     log.debug(msg(f"Url: {base_url}", Level.DEBUG))
 
     # Command to download the file and pipe the progress to Zenity
-    download_command: str = "curl -LJ --progress-bar https://repo.steampowered.com/steamrt3/images/0.20240125.75305/steam-container-runtime-complete.tar.gz -o /tmp/steam-container-runtime-complete.tar.gz"
+    download_command: str = f"curl -LJ --progress-bar {base_url} -o /tmp/steam-container-runtime-complete.tar.gz"
     log.debug(msg(f"Download: {download_command}", Level.DEBUG))
 
     bin: str = which("zenity")
