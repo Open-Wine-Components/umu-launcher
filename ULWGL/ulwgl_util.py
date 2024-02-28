@@ -355,10 +355,6 @@ def _update_ulwgl(
                 for file in local.glob("run*"):
                     file.unlink(missing_ok=True)
                     cp(root.joinpath(file.name), local.joinpath(file.name))
-
-                # Reaper
-                # We copy it as it will ideally be built within the runtime platform
-                cp(root.joinpath("reaper"), local.joinpath("reaper"))
             elif local.joinpath(runtime).is_dir() and val != runtime:
                 # Update
                 print(f"Updating {key} to {val} ...", file=stderr)
