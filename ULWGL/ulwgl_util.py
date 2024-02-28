@@ -193,12 +193,12 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     json: Dict[str, Any] = None
     steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
 
-    json = _get_json(ulwgl_path, CONFIG)
+    json = _get_json(root, CONFIG)
 
     # New install
     # Be lazy and don't implement fallback mechanisms
     if not local.exists():
-        return _install_ulwgl(ulwgl_path, local, steam_compat, json)
+        return _install_ulwgl(root, local, steam_compat, json)
 
     return _update_ulwgl(
         ulwgl_path, local, steam_compat, json, _get_json(local, CONFIG)
