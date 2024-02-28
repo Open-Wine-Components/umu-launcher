@@ -90,3 +90,4 @@ install-user:
 .PHONY: install
 install: reaper-install ulwgl-install ulwgl-launcher-install
 
+# vim: ft=make
