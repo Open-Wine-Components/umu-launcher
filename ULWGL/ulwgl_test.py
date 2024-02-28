@@ -241,9 +241,7 @@ class TestGameLauncher(unittest.TestCase):
 
             if file.name == "ulwgl-run":
                 self.assertEqual(
-                    self.test_compat.joinpath(
-                        "ULWGL-Launcher", "ulwgl-run"
-                    ).readlink(),
+                    self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
                     Path("../../../ULWGL/ulwgl-run"),
                     "Expected both symlinks to point to same dest",
                 )
@@ -525,9 +523,7 @@ class TestGameLauncher(unittest.TestCase):
 
             if file.name == "ulwgl-run":
                 self.assertEqual(
-                    self.test_compat.joinpath(
-                        "ULWGL-Launcher", "ulwgl-run"
-                    ).readlink(),
+                    self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
                     Path("../../../ULWGL/ulwgl-run"),
                     "Expected both symlinks to point to same dest",
                 )
@@ -1557,7 +1553,9 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
-                self.env["PROTONPATH"] + ":" + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
+                self.env["PROTONPATH"]
+                + ":"
+                + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -1648,7 +1646,9 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
-                self.env["PROTONPATH"] + ":" + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
+                self.env["PROTONPATH"]
+                + ":"
+                + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
