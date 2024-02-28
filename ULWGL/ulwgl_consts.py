@@ -7,6 +7,15 @@ DEBUG_FORMAT = "%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:%(message)s"
 
 CONFIG = "ULWGL_VERSION.json"
 
+PROTON_VERBS = {
+    "waitforexitandrun",
+    "run",
+    "runinprefix",
+    "destroyprefix",
+    "getcompatpath",
+    "getnativepath",
+}
+
 
 class Level(Enum):
     """Represent the Log level values for the logger module."""

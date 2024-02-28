@@ -10,7 +10,7 @@ from ulwgl_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
 from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
-from ulwgl_consts import Level
+from ulwgl_consts import Level, PROTON_VERBS
 from ulwgl_util import msg, setup_ulwgl
 from ulwgl_log import log, console_handler, debug_formatter
 from ulwgl_util import UnixUser
@@ -25,17 +25,6 @@ def is_musl_system() -> bool:
 if is_musl_system():
     print("This script is not designed to run on musl-based systems.")
     sys.exit(1)
-
-verbs: Set[str] = {
-    "waitforexitandrun",
-    "run",
-    "runinprefix",
-    "destroyprefix",
-    "getcompatpath",
-    "getnativepath",
-}
-
-
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     opt_args: Set[str] = {"--help", "-h", "--config"}
     exe: str = Path(__file__).name
@@ -66,7 +55,7 @@ example usage:
     if sys.argv[1:][0] in opt_args:
         return parser.parse_args(sys.argv[1:])
 
-    if sys.argv[1] in verbs:
+    if sys.argv[1] in PROTON_VERBS:
         if "PROTON_VERB" not in os.environ:
             os.environ["PROTON_VERB"] = sys.argv[1]
         sys.argv.pop(1)
@@ -211,7 +200,7 @@ def set_env(
     """
     # PROTON_VERB
     # For invalid Proton verbs, just assign the waitforexitandrun
-    if "PROTON_VERB" in os.environ and os.environ["PROTON_VERB"] in verbs:
+    if "PROTON_VERB" in os.environ and os.environ["PROTON_VERB"] in PROTON_VERBS:
         env["PROTON_VERB"] = os.environ["PROTON_VERB"]
     else:
         env["PROTON_VERB"] = "waitforexitandrun"
