@@ -135,7 +135,7 @@ def enable_reaper(
     """Enable Reaper to monitor and keep track of descendent processes."""
     command.extend(
         [
-            Path(entry_point).parent.joinpath("reaper").as_posix(),
+            Path(entry_point).joinpath("reaper").as_posix(),
             "ULWGL_ID=" + env["ULWGL_ID"],
             "--",
         ]
