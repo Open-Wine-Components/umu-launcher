@@ -1,6 +1,6 @@
 PROJECT := ulwgl
 
-BUILDDIR ?= build
+OBJDIR ?= build
 DESTDIR ?=
 
 PREFIX ?= /usr
@@ -11,15 +11,20 @@ DATADIR := $(PREFIX)/share
 .PHONY: all
 all: reaper ulwgl ulwgl-launcher
 
-ulwgl-run:
-	$(info :: Building $@)
-	sed 's|##INSTALL_PATH##|$(DATADIR)/$(PROJECT)|g' ULWGL/ulwgl-run.in > $(BUILDDIR)/$@
 
-ulwgl-bin-install: ulwgl-run
+$(OBJDIR)/.build-ulwgl: | $(OBJDIR)
+	$(info :: Building ulwgl )
+	sed 's|##INSTALL_PATH##|$(DATADIR)/$(PROJECT)|g' ULWGL/ulwgl-run.in > $(OBJDIR)/ulwgl-run
+	touch $(@)
+
+ulwgl: $(OBJDIR)/.build-ulwgl
+
+ulwgl-bin-install: ulwgl
 	install -d $(DESTDIR)$(DATADIR)/$(PROJECT)
-	install -Dm 755 $(BUILDDIR)/$< $(DESTDIR)$(BINDIR)/ulwgl-run
+	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(BINDIR)/ulwgl-run
 
 ulwgl-dist-install:
+	$(info :: Installing ulwgl )
 	install -d $(DESTDIR)$(DATADIR)/$(PROJECT)
 	install -Dm 644 ULWGL/ulwgl_consts.py    -t $(DESTDIR)$(DATADIR)/$(PROJECT)
 	install -Dm 644 ULWGL/ulwgl_dl_util.py   -t $(DESTDIR)$(DATADIR)/$(PROJECT)
@@ -35,15 +40,19 @@ ulwgl-install: ulwgl-dist-install ulwgl-bin-install
 #ulwgl-install: ulwgl-dist-install
 
 
-ulwgl-launcher-run:
-	$(info :: Building $@)
-	sed 's|##INSTALL_PATH##|$(DATADIR)/$(PROJECT)|g' ULWGL/ULWGL-Launcher/ulwgl-run.in > $(BUILDDIR)/$@
+$(OBJDIR)/.build-ulwgl-launcher: | $(OBJDIR)
+	$(info :: Building ulwgl-launcher )
+	sed 's|##INSTALL_PATH##|$(DATADIR)/$(PROJECT)|g' ULWGL/ULWGL-Launcher/ulwgl-run.in > $(OBJDIR)/ulwgl-launcher-run
+	touch $(@)
 
-ulwgl-launcher-bin-install: ulwgl-launcher-run
+ulwgl-launcher: $(OBJDIR)/.build-ulwgl-launcher
+
+ulwgl-launcher-bin-install: ulwgl-launcher
 	install -d $(DESTDIR)$(DATADIR)/$(PROJECT)/ULWGL-Launcher
-	install -Dm 755 $(BUILDDIR)/$< $(DESTDIR)$(DATADIR)/$(PROJECT)/ULWGL-Launcher/ulwgl-run
+	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(DATADIR)/$(PROJECT)/ULWGL-Launcher/ulwgl-run
 
 ulwgl-launcher-dist-install:
+	$(info :: Installing ulwgl-launcher )
 	install -d $(DESTDIR)$(DATADIR)/$(PROJECT)/ULWGL-Launcher
 	install -Dm 644 ULWGL/ULWGL-Launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(PROJECT)/ULWGL-Launcher
 	install -Dm 644 ULWGL/ULWGL-Launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(PROJECT)/ULWGL-Launcher
@@ -54,17 +63,26 @@ ulwgl-launcher-install: ulwgl-launcher-dist-install ulwgl-launcher-bin-install
 #ulwgl-launcher-install: ulwgl-launcher-dist-install
 
 
-reaper:
-	$(info :: Building $@)
-	meson setup $(BUILDDIR)/$@ subprojects/$@
-	ninja -C $(BUILDDIR)/$@ -v
+$(OBJDIR)/.build-reaper: | $(OBJDIR)
+	$(info :: Building reaper )
+	meson setup $(OBJDIR)/reaper subprojects/reaper
+	ninja -C $(OBJDIR)/reaper -v
+	touch $(@)
+
+reaper: $(OBJDIR)/.build-reaper
 
 reaper-install: reaper
-	install -Dm 755 $(BUILDDIR)/$</$< -t $(DESTDIR)$(DATADIR)/$(PROJECT)
+	$(info :: Installing reaper )
+	install -Dm 755 $(OBJDIR)/$</$< -t $(DESTDIR)$(DATADIR)/$(PROJECT)
+
+
+.PHONY: $(OBJDIR)
+$(OBJDIR):
+	@mkdir -p $(OBJDIR)
 
 
 clean:
-	rm -rf $(BUILDDIR)
+	rm -rf $(OBJDIR)
 
 .PHONY: install-user
 install-user:
