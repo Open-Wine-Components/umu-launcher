@@ -1457,6 +1457,89 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
 
+    def test_build_command(self):
+        """Test build command.
+
+        After parsing valid environment variables set by the user, be sure we do not raise a FileNotFoundError
+        NOTE: Also, FileNotFoundError will be raised if the _v2-entry-point (ULWGL) is not in $HOME/.local/share/ULWGL
+        """
+        result_args = None
+        test_command = []
+
+        # Mock the proton file
+        Path(self.test_file, "proton").touch()
+
+        with patch("sys.argv", ["", self.test_exe]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["STORE"] = self.test_file
+            # Args
+            result_args = ulwgl_run.parse_args()
+            # Config
+            ulwgl_run.check_env(self.env)
+            # Prefix
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            ulwgl_run.set_env(self.env, result_args)
+            # Game drive
+            ulwgl_plugins.enable_steam_game_drive(self.env)
+
+        for key, val in self.env.items():
+            os.environ[key] = val
+
+        # Mock setting up the runtime
+        with patch.object(
+            ulwgl_util,
+            "setup_runtime",
+            return_value=None,
+        ):
+            ulwgl_util._install_ulwgl(
+                self.test_user_share, self.test_local_share, self.test_compat, json
+            )
+            ulwgl_util.copyfile_tree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "ULWGL"),
+                Path(self.test_local_share, "ULWGL"),
+            )
+
+        # Build
+        test_command = ulwgl_run.build_command(
+            self.env, self.test_local_share, test_command
+        )
+        self.assertIsInstance(test_command, list, "Expected a List from build_command")
+        self.assertEqual(
+            len(test_command), 10, "Expected 10 elements in the list from build_command"
+        )
+        reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [
+            *test_command
+        ]
+        # The entry point dest could change. Just check if there's a value
+        self.assertTrue(reaper, "Expected reaper")
+        self.assertTrue(id, "Expected a tag for reaper")
+        self.assertTrue(opt0, "Expected --")
+        self.assertTrue(entry_point, "Expected an entry point")
+        self.assertEqual(opt1, "--verb", "Expected --verb")
+        self.assertEqual(verb, self.test_verb, "Expected a verb")
+        self.assertEqual(opt2, "--", "Expected --")
+        self.assertEqual(
+            proton,
+            Path(self.env.get("PROTONPATH") + "/proton").as_posix(),
+            "Expected the proton file",
+        )
+        self.assertEqual(verb2, self.test_verb, "Expected a verb")
+        self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
+
     def test_set_env_opts(self):
         """Test set_env.
 
