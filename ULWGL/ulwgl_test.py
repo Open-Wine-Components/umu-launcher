@@ -730,6 +730,51 @@ class TestGameLauncher(unittest.TestCase):
             "Expected ulwgl-run -> ulwgl_run.py",
         )
 
+    def test_copy_tree_link(self):
+        """Test copyfile_tree for symbolic links.
+
+        An error should not be raised in the process of copying symbolic links within a directory.
+        """
+        result = False
+        test_dir = Path("tmp.IVz99WdYA6")
+
+        test_dir.mkdir(exist_ok=True)
+
+        # Symlink to the config
+        test_dir.joinpath("ULWGL_VERSION.json").symlink_to(
+            self.test_user_share.joinpath("ULWGL_VERSION.json")
+        )
+
+        self.assertTrue(
+            test_dir.joinpath("ULWGL_VERSION.json").is_symlink(),
+            "Expected ULWGL_VERSION.json to exist in test /usr/share/ULWGL",
+        )
+        self.assertFalse(
+            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
+            "Expected ULWGL_VERSION.json to not exist in test .local/share/ULWGL",
+        )
+
+        # Copy the dir with the symlink to the local share dir
+        result = ulwgl_util.copyfile_tree(test_dir, self.test_local_share)
+
+        # Confirm the state of the dest dir
+        self.assertTrue(result, "Expected False after calling copyfile_tree")
+        self.assertTrue(
+            any(self.test_local_share.iterdir()),
+            "Expected destination dir to not be empty",
+        )
+        self.assertEqual(
+            len(list(self.test_local_share.glob("*"))), 1, "Expected only one file"
+        )
+        self.assertTrue(
+            self.test_local_share.joinpath("ULWGL_VERSION.json").is_symlink(),
+            "Expected ULWGL_VERSION.json to be copied",
+        )
+
+        if test_dir.exists():
+            test_dir.joinpath("ULWGL_VERSION.json").unlink()
+            test_dir.rmdir()
+
     def test_copy_tree(self):
         """Test copyfile_tree.
 
