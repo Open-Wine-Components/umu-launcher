@@ -200,13 +200,33 @@ class TestGameLauncher(unittest.TestCase):
         )
 
         # Update
-        result = ulwgl_util._update_ulwgl(
-            self.test_user_share,
-            self.test_local_share,
-            self.test_compat,
-            json_root,
-            json_local,
-        )
+        with patch.object(
+            ulwgl_util,
+            "setup_runtime",
+            return_value=None,
+        ):
+            result = ulwgl_util._update_ulwgl(
+                self.test_user_share,
+                self.test_local_share,
+                self.test_compat,
+                json_root,
+                json_local,
+            )
+            ulwgl_util.copyfile_tree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "ULWGL"),
+                Path(self.test_local_share, "ULWGL"),
+            )
 
         self.assertFalse(result, "Expected None when calling _update_ulwgl")
 
@@ -434,13 +454,33 @@ class TestGameLauncher(unittest.TestCase):
                     filer.write("foo")
 
         # Update
-        result = ulwgl_util._update_ulwgl(
-            self.test_user_share,
-            self.test_local_share,
-            self.test_compat,
-            json_root,
-            json_local,
-        )
+        with patch.object(
+            ulwgl_util,
+            "setup_runtime",
+            return_value=None,
+        ):
+            result = ulwgl_util._update_ulwgl(
+                self.test_user_share,
+                self.test_local_share,
+                self.test_compat,
+                json_root,
+                json_local,
+            )
+            ulwgl_util.copyfile_tree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "ULWGL"),
+                Path(self.test_local_share, "ULWGL"),
+            )
 
         self.assertFalse(result, "Expected None when calling _update_ulwgl")
 
