@@ -341,35 +341,14 @@ def _update_ulwgl(
                     file=stderr,
                 )
 
-                copyfile_tree(
-                    root.joinpath(json_root["ulwgl"]["versions"]["runtime_platform"]),
-                    local.joinpath(json_root["ulwgl"]["versions"]["runtime_platform"]),
-                )
-
-                # _v2-entry-point
-                local.joinpath("ULWGL").unlink(missing_ok=True)
-                cp(root.joinpath("ULWGL"), local.joinpath("ULWGL"))
-
-                # Auto-generated files
-                for file in local.glob("run*"):
-                    file.unlink(missing_ok=True)
-                    cp(root.joinpath(file.name), local.joinpath(file.name))
+                # Download the runtime from the official source
+                setup_runtime(root, json_root)
             elif local.joinpath(runtime).is_dir() and val != runtime:
                 # Update
                 print(f"Updating {key} to {val} ...", file=stderr)
 
                 rmtree(local.joinpath(runtime).as_posix())
-                copyfile_tree(
-                    root.joinpath(val),
-                    local.joinpath(val),
-                )
-
-                local.joinpath("ULWGL").unlink(missing_ok=True)
-                cp(root.joinpath("ULWGL"), local.joinpath("ULWGL"))
-
-                for file in local.glob("run*"):
-                    file.unlink(missing_ok=True)
-                    cp(root.joinpath(file.name), local.joinpath(file.name))
+                setup_runtime(root, json_root)
 
                 json_local["ulwgl"]["versions"]["runtime_platform"] = val
         elif key == "launcher":
