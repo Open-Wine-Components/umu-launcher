@@ -248,7 +248,7 @@ def set_env(
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
     env["STEAM_COMPAT_TOOL_PATHS"] = (
-        env["PROTONPATH"] + ":" + Path(__file__).parent.as_posix()
+        env["PROTONPATH"] + ":" + Path.home().joinpath(".local", "share", "ULWGL").as_posix()
     )
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
