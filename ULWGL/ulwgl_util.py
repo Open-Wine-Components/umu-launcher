@@ -4,7 +4,7 @@ import subprocess
 import re
 
 from errno import EXDEV, ENOSYS, EINVAL
-from ulwgl_consts import Color, Level, CONFIG
+from ulwgl_consts import CONFIG
 from typing import Any, Callable, Dict
 from json import load, dump
 from ulwgl_log import log
@@ -42,24 +42,6 @@ class UnixUser:
     def is_user(self, uid: int) -> bool:
         """Compare the UID passed in to this instance."""
         return uid == self.puid
-
-
-def msg(msg: Any, level: Level):
-    """Return a log message depending on the log level.
-
-    The message will bolden the typeface and apply a color.
-    Expects the first parameter to be a string or implement __str__
-    """
-    log: str = ""
-
-    if level == Level.INFO:
-        log = f"{Color.BOLD.value}{Color.INFO.value}{msg}{Color.RESET.value}"
-    elif level == Level.WARNING:
-        log = f"{Color.BOLD.value}{Color.WARNING.value}{msg}{Color.RESET.value}"
-    elif level == Level.DEBUG:
-        log = f"{Color.BOLD.value}{Color.DEBUG.value}{msg}{Color.RESET.value}"
-
-    return log
 
 
 def force_rename(src: Path, dst: Path):  # noqa: D103

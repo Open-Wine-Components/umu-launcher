@@ -1,29 +1,4 @@
 from enum import Enum
-from logging import INFO, WARNING, DEBUG, ERROR
-
-SIMPLE_FORMAT = "%(levelname)s:  %(message)s"
-
-DEBUG_FORMAT = "%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:%(message)s"
-
-CONFIG = "ULWGL_VERSION.json"
-
-PROTON_VERBS = {
-    "waitforexitandrun",
-    "run",
-    "runinprefix",
-    "destroyprefix",
-    "getcompatpath",
-    "getnativepath",
-}
-
-
-class Level(Enum):
-    """Represent the Log level values for the logger module."""
-
-    INFO = INFO
-    WARNING = WARNING
-    DEBUG = DEBUG
-    ERROR = ERROR
 
 
 class Color(Enum):
@@ -35,3 +10,19 @@ class Color(Enum):
     ERROR = "\033[31m"
     BOLD = "\033[1m"
     DEBUG = "\u001b[35m"
+
+
+SIMPLE_FORMAT = f"%(levelname)s:  {Color.BOLD.value}%(message)s{Color.RESET.value}"
+
+DEBUG_FORMAT = f"%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:{Color.BOLD.value}%(message)s{Color.RESET.value}"
+
+CONFIG = "ULWGL_VERSION.json"
+
+PROTON_VERBS = {
+    "waitforexitandrun",
+    "run",
+    "runinprefix",
+    "destroyprefix",
+    "getcompatpath",
+    "getnativepath",
+}

@@ -10,10 +10,11 @@ from ulwgl_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
 from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
-from ulwgl_consts import Level, PROTON_VERBS
-from ulwgl_util import msg, setup_ulwgl
-from ulwgl_log import log, console_handler, debug_formatter
+from ulwgl_consts import PROTON_VERBS, USAGE, DEBUG_FORMAT
+from ulwgl_util import setup_ulwgl
+from ulwgl_log import log, console_handler, Formatter
 from ulwgl_util import UnixUser
+from logging import INFO, WARNING, DEBUG
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
@@ -63,14 +64,14 @@ def set_log() -> None:
 
     if os.environ["ULWGL_LOG"] == "1":
         # Show the envvars and command at this level
-        log.setLevel(level=Level.INFO.value)
+        log.setLevel(level=INFO)
     elif os.environ["ULWGL_LOG"] == "warn":
-        log.setLevel(level=Level.WARNING.value)
+        log.setLevel(level=WARNING)
     elif os.environ["ULWGL_LOG"] == "debug":
         # Show all logs
-        console_handler.setFormatter(debug_formatter)
+        console_handler.setFormatter(Formatter(DEBUG_FORMAT))
         log.addHandler(console_handler)
-        log.setLevel(level=Level.DEBUG.value)
+        log.setLevel(level=DEBUG)
 
     os.environ.pop("ULWGL_LOG")
 
