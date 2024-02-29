@@ -101,18 +101,8 @@ def setup_pfx(path: str) -> None:
         wineuser.symlink_to("steamuser")
     else:
         paths: List[str] = [steam.as_posix(), wineuser.as_posix()]
-        log.warning(
-            msg(
-                f"Skipping link creation for prefix: {pfx}",
-                Level.WARNING,
-            )
-        )
-        log.warning(
-            msg(
-                f"Following paths already exist: {paths}",
-                Level.WARNING,
-            )
-        )
+        log.warning(f"Skipping link creation for prefix: {pfx.parent}")
+        log.warning(f"Following paths already exist: {paths}")
 
 
 def check_env(
@@ -148,7 +138,7 @@ def check_env(
         .expanduser()
         .is_dir()
     ):
-        log.debug(msg("Proton version selected", Level.DEBUG))
+        log.debug("Proton version selected")
         os.environ["PROTONPATH"] = (
             Path("~/.local/share/Steam/compatibilitytools.d")
             .joinpath(os.environ["PROTONPATH"])
@@ -317,11 +307,12 @@ def main() -> int:  # noqa: D103
     # Set all environment variables
     # NOTE: `env` after this block should be read only
     for key, val in env.items():
-        log.info(msg(f"{key}={val}", Level.INFO))
+        log.info(f"{key}={val}")
         os.environ[key] = val
 
     build_command(env, local, command, opts)
-    log.debug(msg(command, Level.DEBUG))
+    log.debug(command)
+
     return run(command).returncode
 
 
@@ -329,7 +320,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except KeyboardInterrupt:
-        log.warning(msg("Keyboard Interrupt", Level.WARNING))
+        log.warning("Keyboard Interrupt")
         sys.exit(1)
     except Exception as e:  # noqa: BLE001
         print_exception(e)

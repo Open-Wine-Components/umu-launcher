@@ -58,15 +58,15 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     # Split the string at 'sniper_platform_'
     # TODO Change logic so we don't split on a hardcoded string
     version: str = runtime_platform_value.split("sniper_platform_")[1]
-    log.debug(msg(f"Version: {version}", Level.DEBUG))
+    log.debug(f"Version: {version}")
 
     # Step  1: Define the URL of the file to download
     base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/steam-container-runtime-complete.tar.gz"
-    log.debug(msg(f"Url: {base_url}", Level.DEBUG))
+    log.debug(f"URL: {base_url}")
 
     # Command to download the file and pipe the progress to Zenity
     download_command: str = f"curl -LJ --progress-bar {base_url} -o /tmp/steam-container-runtime-complete.tar.gz"
-    log.debug(msg(f"Download: {download_command}", Level.DEBUG))
+    log.debug(f"Download: {download_command}")
 
     bin: str = which("zenity")
 
@@ -108,7 +108,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     # Assuming the file is downloaded to '/tmp/steam-container-runtime-complete.tar.gz'
     tar_path: str = "/tmp/steam-container-runtime-complete.tar.gz"
 
-    log.debug(msg(f"Opening: {tar_path}", Level.DEBUG))
+    log.debug(f"Opening: {tar_path}")
 
     # Open the tar file
     with tarfile.open(tar_path, "r:gz") as tar:
@@ -118,7 +118,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         )
 
         # Extract the 'depot' folder to the target directory
-        log.debug(msg("Extracting archive files -> /tmp", Level.DEBUG))
+        log.debug("Extracting archive files -> /tmp")
         for member in tar.getmembers():
             if member.name.startswith("steam-container-runtime/depot/"):
                 tar.extract(member, path="/tmp")
@@ -127,8 +127,8 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         source_dir: Path = Path("/tmp", "steam-container-runtime", "depot")
         destination_dir: Path = Path.home().joinpath(".local", "share", "ULWGL")
 
-        log.debug(msg(f"Source: {source_dir}", Level.DEBUG))
-        log.debug(msg(f"Dest: {destination_dir}", Level.DEBUG))
+        log.debug(f"Source: {source_dir}")
+        log.debug(f"Destination: {destination_dir}")
 
         # Move each file to the destination directory, overwriting if it exists
         for file in source_dir.glob("*"):
@@ -136,22 +136,22 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
             dest_file: Path = destination_dir.joinpath(file.name)
 
             if dest_file.is_file() or dest_file.is_symlink():
-                log.debug(msg(f"Removing file: {dest_file}", Level.DEBUG))
+                log.debug(f"Removing file: {dest_file}")
                 dest_file.unlink()
             elif dest_file.is_dir():
-                log.debug(msg(f"Removing directory: {dest_file}", Level.DEBUG))
+                log.debug(f"Removing directory: {dest_file}")
                 if dest_file.exists():
                     rmtree(dest_file.as_posix())  # remove dir and all contains
 
-            log.debug(msg(f"Moving {src_file} -> {dest_file}", Level.DEBUG))
+            log.debug(f"Moving {src_file} -> {dest_file}")
             move(src_file.as_posix(), dest_file.as_posix())
 
         # Remove the extracted directory and all its contents
-        log.debug(msg("Removing: /tmp/steam-container-runtime", Level.DEBUG))
+        log.debug("Removing: /tmp/steam-container-runtime")
         if Path("/tmp/steam-container-runtime/").exists():
             rmtree("/tmp/steam-container-runtime/")
 
-        log.debug(msg("Renaming: _v2-entry-point -> ULWGL", Level.DEBUG))
+        log.debug("Renaming: _v2-entry-point -> ULWGL")
         force_rename(
             destination_dir.joinpath("_v2-entry-point"),
             destination_dir.joinpath("ULWGL"),
@@ -165,8 +165,8 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     The tools that will be copied are: Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the ULWGL-Launcher
     The ULWGL-Launcher will be copied to .local/share/Steam/compatibilitytools.d
     """
-    log.debug(msg(f"Root: {root}", Level.DEBUG))
-    log.debug(msg(f"Local: {local}", Level.DEBUG))
+    log.debug(f"Root: {root}")
+    log.debug(f"Local: {local}")
 
     json: Dict[str, Any] = None
     steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
@@ -192,12 +192,12 @@ def _install_ulwgl(
     cp: Callable[Path, Path] = None
 
     if hasattr(os, "copy_file_range"):
-        log.debug(msg("CoW filesystem detected", Level.DEBUG))
+        log.debug("CoW filesystem detected")
         cp = copyfile_reflink
     else:
         cp = copyfile
 
-    log.debug(msg("New install detected", Level.DEBUG))
+    log.debug("New install detected")
 
     local.mkdir(parents=True, exist_ok=True)
 
@@ -256,12 +256,12 @@ def _update_ulwgl(
     cp: Callable[Path, Path] = None
 
     if hasattr(os, "copy_file_range"):
-        log.debug(msg("CoW filesystem detected", Level.DEBUG))
+        log.debug("CoW filesystem detected")
         cp = copyfile_reflink
     else:
         cp = copyfile
 
-    log.debug(msg("Existing install detected", Level.DEBUG))
+    log.debug("Existing install detected")
 
     # Attempt to copy only the updated versions
     # Compare the local to the root config
