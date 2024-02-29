@@ -26,3 +26,16 @@ PROTON_VERBS = {
     "getcompatpath",
     "getnativepath",
 }
+
+USAGE = """
+example usage:
+  GAMEID= ulwgl-run /home/foo/example.exe
+  WINEPREFIX= GAMEID= ulwgl-run /home/foo/example.exe
+  WINEPREFIX= GAMEID= PROTONPATH= ulwgl-run /home/foo/example.exe
+  WINEPREFIX= GAMEID= PROTONPATH= ulwgl-run /home/foo/example.exe -opengl
+  WINEPREFIX= GAMEID= PROTONPATH= ulwgl-run ""
+  WINEPREFIX= GAMEID= PROTONPATH= PROTON_VERB= ulwgl-run /home/foo/example.exe
+  WINEPREFIX= GAMEID= PROTONPATH= STORE= ulwgl-run /home/foo/example.exe
+  ULWGL_LOG= GAMEID= ulwgl-run /home/foo/example.exe
+  ulwgl-run --config /home/foo/example.toml
+"""

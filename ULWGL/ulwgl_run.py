@@ -19,22 +19,9 @@ from logging import INFO, WARNING, DEBUG
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     opt_args: Set[str] = {"--help", "-h", "--config"}
-    exe: str = Path(__file__).name
-    usage: str = f"""
-example usage:
-  GAMEID= {exe} /home/foo/example.exe
-  WINEPREFIX= GAMEID= {exe} /home/foo/example.exe
-  WINEPREFIX= GAMEID= PROTONPATH= {exe} /home/foo/example.exe
-  WINEPREFIX= GAMEID= PROTONPATH= {exe} /home/foo/example.exe -opengl
-  WINEPREFIX= GAMEID= PROTONPATH= {exe} ""
-  WINEPREFIX= GAMEID= PROTONPATH= PROTON_VERB= {exe} /home/foo/example.exe
-  WINEPREFIX= GAMEID= PROTONPATH= STORE= {exe} /home/foo/example.exe
-  ULWGL_LOG= GAMEID= {exe} /home/foo/example.exe
-  {exe} --config /home/foo/example.toml
-    """
     parser: ArgumentParser = ArgumentParser(
         description="Unified Linux Wine Game Launcher",
-        epilog=usage,
+        epilog=USAGE,
         formatter_class=RawTextHelpFormatter,
     )
     parser.add_argument("--config", help="path to TOML file (requires Python 3.11)")
