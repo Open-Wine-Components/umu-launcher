@@ -93,7 +93,6 @@ def setup_pfx(path: str) -> None:
         wineuser.symlink_to("steamuser")
     elif wineuser.is_dir() and not steam.is_dir() and not steam.is_symlink():
         # When there's a user dir: steamuser -> user
-        # Be sure it's relative
         steam.unlink(missing_ok=True)
         steam.symlink_to(user.get_user())
     elif not wineuser.exists() and not wineuser.is_symlink() and steam.is_dir():
@@ -274,8 +273,7 @@ def main() -> int:  # noqa: D103
     }
     command: List[str] = []
     opts: List[str] = None
-    # Expected files in this dir: pressure vessel, launcher files, runtime platform, runner, config
-    # root: Path = Path("/usr/share/ULWGL")
+    # Expected files in this dir: pressure vessel, launcher files, runner, config, reaper
     root: Path = Path(__file__).resolve().parent
     # Expects this dir to be in sync with root
     # On update, files will be selectively updated
@@ -294,14 +292,12 @@ def main() -> int:  # noqa: D103
     if isinstance(args, Namespace) and getattr(args, "config", None):
         set_env_toml(env, args)
     else:
-        # Reference the game options
-        opts = args[1]
+        opts = args[1]  # Reference the executable options
         check_env(env)
 
     setup_pfx(env["WINEPREFIX"])
     set_env(env, args)
 
-    # Game Drive
     enable_steam_game_drive(env)
 
     # Set all environment variables
