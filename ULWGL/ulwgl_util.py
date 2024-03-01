@@ -234,7 +234,7 @@ def _install_ulwgl(
     )
 
     steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
-        "../../../ULWGL/ulwgl-run"
+        "../../../ULWGL/ulwgl_run.py"
     )
 
     print("Completed.", file=stderr)
@@ -369,7 +369,7 @@ def _update_ulwgl(
                 )
 
                 steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
-                    "../../../ULWGL/ulwgl-run"
+                    "../../../ULWGL/ulwgl_run.py"
                 )
             elif steam_compat.joinpath("ULWGL-Launcher").is_dir() and val != runner:
                 # Update
@@ -382,7 +382,7 @@ def _update_ulwgl(
                 )
 
                 steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
-                    "../../../ULWGL/ulwgl-run"
+                    "../../../ULWGL/ulwgl_run.py"
                 )
 
                 json_local["ulwgl"]["versions"]["runner"] = val
