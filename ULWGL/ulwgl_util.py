@@ -3,7 +3,6 @@ import tarfile
 import subprocess
 import re
 
-from errno import EXDEV, ENOSYS, EINVAL
 from ulwgl_consts import CONFIG
 from typing import Any, Callable, Dict
 from json import load, dump
@@ -11,7 +10,7 @@ from ulwgl_log import log
 from sys import stderr
 from pathlib import Path
 from pwd import struct_passwd, getpwuid
-from shutil import rmtree, move, copyfile, which
+from shutil import rmtree, move, copy, which, copytree
 
 
 class UnixUser:
@@ -189,13 +188,7 @@ def _install_ulwgl(
     The designated locations to copy to will be: ~/.local/share/ULWGL, ~/.local/share/Steam/compatibilitytools.d
     The tools that will be copied are: SteamRT, Pressure Vessel, ULWGL-Launcher, ULWGL Launcher files, Reaper and ULWGL_VERSION.json
     """
-    cp: Callable[Path, Path] = None
-
-    if hasattr(os, "copy_file_range"):
-        log.debug("CoW filesystem detected")
-        cp = copyfile_reflink
-    else:
-        cp = copyfile
+    cp: Callable[Path, Path] = copy
 
     log.debug("New install detected")
 
@@ -253,13 +246,7 @@ def _update_ulwgl(
     This happens by way of comparing the key/values of the local ULWGL_VERSION.json against the root configuration file
     In the case that the writable directories we copy to are in a partial state, a best effort is made to restore the missing files
     """
-    cp: Callable[Path, Path] = None
-
-    if hasattr(os, "copy_file_range"):
-        log.debug("CoW filesystem detected")
-        cp = copyfile_reflink
-    else:
-        cp = copyfile
+    cp: Callable[Path, Path] = copy
 
     log.debug("Existing install detected")
 
@@ -418,44 +405,10 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
     return json
 
 
-def copyfile_reflink(src: Path, dst: Path) -> None:
-    """Create CoW copies of a file to a destination.
-
-    Implementation is from Proton
-    """
-    dst.parent.mkdir(parents=True, exist_ok=True)
-
-    if src.is_symlink():
-        dst.symlink_to(src.readlink())
-        return
-
-    with src.open(mode="rb", buffering=0) as source:
-        bytes_to_copy: int = os.fstat(source.fileno()).st_size
-
-        try:
-            with dst.open(mode="wb", buffering=0) as dest:
-                while bytes_to_copy > 0:
-                    bytes_to_copy -= os.copy_file_range(
-                        source.fileno(), dest.fileno(), bytes_to_copy
-                    )
-        except OSError as e:
-            if e.errno not in (EXDEV, ENOSYS, EINVAL):
-                raise
-            if e.errno == ENOSYS:
-                # Fallback to normal copy
-                copyfile(src.as_posix(), dst.as_posix())
-
-        dst.chmod(src.stat().st_mode)
+def copyfile_reflink(src: Path, dst: Path) -> None: # noqa: D103
+    copy(src.as_posix(), dst.as_posix())
 
 
-def copyfile_tree(src: Path, dest: Path) -> bool:
-    """Copy the directory tree from a source to a destination, overwriting existing files and copying symlinks."""
-    for file in src.iterdir():
-        if file.is_dir():
-            dest_subdir = dest / file.name
-            dest_subdir.mkdir(parents=True, exist_ok=True)
-            copyfile_tree(file, dest_subdir)
-        else:
-            copyfile_reflink(file, dest / file.name)
-
-    return True
+def copyfile_tree(src: Path, dest: Path) -> None:
+    """Copy the directory tree from a source to a destination."""
+    copytree(src.as_posix(), dest.as_posix(), dirs_exist_ok=True, symlinks=True)
