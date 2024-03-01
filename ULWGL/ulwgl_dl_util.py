@@ -7,7 +7,7 @@ from shutil import rmtree
 from http.client import HTTPSConnection, HTTPResponse, HTTPException, HTTPConnection
 from ssl import create_default_context
 from json import loads as loads_json
-from urllib.request import urlretrieve
+from urllib.request import urlretrieve, urlopen
 from sys import stderr
 from ulwgl_plugins import enable_zenity
 
@@ -124,7 +124,19 @@ def _fetch_proton(
         enable_zenity(download_command, msg)
     except FileNotFoundError:
         print(f"Downloading {proton} ...", file=stderr)
-        urlretrieve(proton_url, cache.joinpath(proton).as_posix())
+        resp: HTTPResponse = urlopen(
+            proton_url, timeout=180, context=create_default_context()
+        )
+
+        # Without the runtime, the launcher will not work
+        if resp and resp.status != 200:
+            err: str = (
+                f"Unable to download {proton}\nGithub returned the status {resp.status}"
+            )
+            raise HTTPException(err)
+
+        with Path(cache.joinpath(proton).as_posix()).open(mode="wb") as file:
+            file.write(resp.read())
 
     print("Completed.", file=stderr)
 
