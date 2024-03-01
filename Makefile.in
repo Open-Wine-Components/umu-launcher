@@ -12,13 +12,12 @@ USERINSTALL ?= xfalse
 
 
 .PHONY: all
-all: reaper ulwgl #ulwgl-launcher
+all: reaper ulwgl ulwgl-launcher
 
 
 $(OBJDIR)/.build-ulwgl: | $(OBJDIR)
 	$(info :: Building ulwgl )
-	@#sed 's|##INSTALL_PATH##|$(DATADIR)/$(PROJECT)|g' ULWGL/ulwgl-run.in > $(OBJDIR)/ulwgl-run
-	ln -s -t $(OBJDIR) $(DATADIR)/$(PROJECT)/ulwgl_run.py
+	sed 's|##INSTALL_PATH##|$(DATADIR)/$(PROJECT)|g' ULWGL/ulwgl-run.in > $(OBJDIR)/ulwgl-run
 	touch $(@)
 
 .PHONY: ulwgl
@@ -26,8 +25,7 @@ ulwgl: $(OBJDIR)/.build-ulwgl
 
 ulwgl-bin-install: ulwgl
 	install -d $(DESTDIR)$(BINDIR)
-	@#install -Dm 755 $(OBJDIR)/ulwgl_run.py $(DESTDIR)$(BINDIR)/ulwgl-run
-	cp -P $(OBJDIR)/ulwgl_run.py $(DESTDIR)$(BINDIR)/ulwgl-run
+	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(BINDIR)/ulwgl-run
 
 ulwgl-dist-install:
 	$(info :: Installing ulwgl )

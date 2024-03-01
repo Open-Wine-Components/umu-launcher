@@ -71,8 +71,7 @@ function configure() {
     echo "include Makefile.in"
   } >> "$MAKEFILE"
 
-  stat "Created $MAKEFILE, now run make to build."
-  stat "  See README.md for make targets and instructions"
+  stat "Created $MAKEFILE, now run \"make\" to build."
 }
 
 #
@@ -119,19 +118,16 @@ function parse_args() {
       arg_help=1
     elif [[ $arg = --prefix ]]; then
       if [[ -n $arg_user_install ]]; then
-        err "--prefix cannot be used with --user-install"
-        exit 1
+        die "--prefix cannot be used with --user-install"
       fi
       if [[ $val != $(realpath "$val") ]]; then
-        err "PREFIX needs to be an absolute path"
-        exit 1
+        die "PREFIX needs to be an absolute path"
       fi
       arg_prefix="$val"
       val_used=1
     elif [[ $arg = --user-install ]]; then
       if [[ -n $arg_prefix ]]; then
-        err "--user-install cannot be used with --prefix"
-        exit 1
+        die "--user-install cannot be used with --prefix"
       fi
       arg_user_install="1"
     else
