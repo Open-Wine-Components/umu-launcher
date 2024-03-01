@@ -9,6 +9,7 @@ from ssl import create_default_context
 from json import loads as loads_json
 from urllib.request import urlretrieve
 from sys import stderr
+from ulwgl_plugins import enable_zenity
 
 
 def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
@@ -114,11 +115,16 @@ def _fetch_proton(
     proton, proton_url = files[1]
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
 
-    # TODO: Parallelize this
     print(f"Downloading {hash} ...", file=stderr)
     urlretrieve(hash_url, cache.joinpath(hash).as_posix())
-    print(f"Downloading {proton} ...", file=stderr)
-    urlretrieve(proton_url, cache.joinpath(proton).as_posix())
+
+    try:
+        download_command: str = f"curl -LJ --progress-bar {proton_url} -o {cache.joinpath(proton).as_posix()}"
+        msg: str = f"Downloading {proton} ..."
+        enable_zenity(download_command, msg)
+    except FileNotFoundError:
+        print(f"Downloading {proton} ...", file=stderr)
+        urlretrieve(proton_url, cache.joinpath(proton).as_posix())
 
     print("Completed.", file=stderr)
 
