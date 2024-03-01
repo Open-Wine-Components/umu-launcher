@@ -262,7 +262,7 @@ class TestGameLauncher(unittest.TestCase):
             if file.name == "ulwgl-run":
                 self.assertEqual(
                     self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
-                    Path("../../../ULWGL/ulwgl-run"),
+                    Path("../../../ULWGL/ulwgl_run.py"),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
@@ -448,7 +448,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat.joinpath("ULWGL-Launcher").mkdir()
         for file in runner_files:
             if file == "ulwgl-run":
-                self.test_compat.joinpath("ulwgl-run").symlink_to("../../../ulwgl-run")
+                self.test_compat.joinpath("ulwgl-run").symlink_to("../../../ulwgl_run.py")
             else:
                 with self.test_compat.joinpath(file).open(mode="w") as filer:
                     filer.write("foo")
@@ -564,7 +564,7 @@ class TestGameLauncher(unittest.TestCase):
             if file.name == "ulwgl-run":
                 self.assertEqual(
                     self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
-                    Path("../../../ULWGL/ulwgl-run"),
+                    Path("../../../ULWGL/ulwgl_run.py"),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
