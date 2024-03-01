@@ -66,6 +66,7 @@ function configure() {
     echo ""
     if [[ -n "$arg_user_install" ]]; then
       echo "USERINSTALL     := xtrue"
+      echo "INSTALLDIR      := ulwgl-launcher"
     fi
 
     # Prefix was specified, baking it into the Makefile
