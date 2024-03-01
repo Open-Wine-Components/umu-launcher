@@ -48,8 +48,16 @@ function escape_for_make() {
 }
 
 function configure() {
+  ## Checks before writing config
+  if [[ -n "$arg_user_install" ]]; then
+      arg_prefix="$HOME/.local"
+  fi
+
+  if [[ $arg_prefix != $(realpath "$arg_prefix") ]]; then
+    die "PREFIX needs to be an absolute path"
+  fi
+
   ## Write out config
-  # Don't die after this point or we'll have rather unhelpfully deleted the Makefile
   [[ ! -e "$MAKEFILE" ]] || rm "$MAKEFILE"
 
   {
@@ -58,7 +66,6 @@ function configure() {
     echo ""
     if [[ -n "$arg_user_install" ]]; then
       echo "USERINSTALL     := xtrue"
-      arg_prefix="$HOME/.local"
     fi
 
     # Prefix was specified, baking it into the Makefile
@@ -120,9 +127,6 @@ function parse_args() {
       if [[ -n $arg_user_install ]]; then
         die "--prefix cannot be used with --user-install"
       fi
-      if [[ $val != $(realpath "$val") ]]; then
-        die "PREFIX needs to be an absolute path"
-      fi
       arg_prefix="$val"
       val_used=1
     elif [[ $arg = --user-install ]]; then
@@ -173,7 +177,7 @@ usage() {
   "$1" ""
   "$1" "    --prefix=PREFIX   Install architecture-independent files in PREFIX"
   "$1" "                      [/usr]"
-  "$1" "    --user-install    Install under user-only location"
+  "$1" "    --user-install    Install under user-only location. Incompatible with --prefix"
   "$1" "                      [$HOME/.local]"
   "$1" ""
   exit 1;

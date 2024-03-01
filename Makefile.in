@@ -1,6 +1,8 @@
+# This is different from ULWGL to facilitate user installations
+# If this is changed to ULWGL (uppercase), `uninstall` target will also remove the SLR directory
 PROJECT := ulwgl
 
-OBJDIR := build
+OBJDIR := builddir
 
 PREFIX ?= /usr
 BINDIR := $(PREFIX)/bin
@@ -89,13 +91,23 @@ $(OBJDIR):
 
 .PHONY: clean
 clean:
-	rm -rf $(OBJDIR)
+	$(info Cleaning "$(OBJDIR)" build directory)
+	@rm -rf -v $(OBJDIR)
+
+
+.PHONY: uninstall
+# NEVER use a wildcard here
+uninstall:
+	$(info Removing $(PROJECT) files in $(DESTDIR)$(BINDIR))
+	@rm -rf -v --preserve-root=all $(DESTDIR)$(BINDIR)/ulwgl-run
+	$(info Removing $(PROJECT) directory in $(DESTDIR)$(DATADIR))
+	@rm -rf -v --preserve-root=all $(DESTDIR)$(DATADIR)/$(PROJECT)
 
 
 .PHONY: user-install
 user-install:
 	$(info :: ---)
-	$(info :: Installed under user-only location $(DATADIR)/$(PROJECT))
+	$(info :: Installed under user-only location "$(DATADIR)/$(PROJECT)")
 	$(info :: To run you need to make sure "$(BINDIR)" is in your PATH)
 
 
