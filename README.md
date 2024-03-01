@@ -69,32 +69,46 @@ Borderlands 3 from EGS store.
 4. Now the launcher can search 'Catnip' and 'egs' as the codename and store in the database and correlate it with Borderlands 3 and ULWGL-12345. It can then feed ULWGL-12345 to the ulwgl-run script.
 
 
-# Building:
+# Building and packaging:
+Building ULWGL currently requires `bash`, `make` and `meson`
 
-TODO:
-Right now for the steam runtime we are just copying valve's builds. In the future this will be replaced with a proper full build to allow us to customize the runtime.
-
-Reaper:
-
+To build ULWGL, after downloading and extracting the source code from this repository, change into the newly extracted directory
+```shell
+cd ULWGL-Launcher
 ```
-cd reaper
-meson setup builddir
-cd builddir
-meson compile
+
+To configure the installation `PREFIX` (this is not related to wine's `WINEPREFIX`) use the `configure.sh` script
+```shell
+./configure.sh --prefix=/usr
 ```
-Resulting 'reaper' executable will be inside builddir folder.  
+Change the `--prefix` as fit for your distribution, for example `/usr/local`, or `/app` for packaging through flatpak
 
-# Packaging:
+Then run `make` to build. After a successful build the resulting files should be available in the `./builddir` directory
 
-ULWGL entire folder should be placed at /usr/share/ULWGL  
+## Installing 
+To install ULWGL run the following command after completing the steps described above
+```shell
+make install
+```
+or if you are packaging ULWGL
+```shell
+make DESTDIR=<packaging_directory> install
+```
 
-Copy ulwgl-run to /usr/bin/ulwgl-run  
-
-For the flatpak version, the folders will be /app/share and /app/bin respectively.  
-
-TODO:  
-
-We are working on a build script to allow custom INSTALL_PATH so that /usr/share and/or /app/share are not hard-coded required values. The build script will also provide a compiled copy of reaper.  
+## Installing as user
+If you want to install ULWGL just for your user, or for quickly testing, you can configure ULWGL with the following command
+```shell
+./configure.sh --user-install
+```
+followed by 
+```shell
+make install
+```
+This will install ULWGL under `~/.local/share/ulwgl` and place the executable in `~/.local/bin`
+You will need to add `$HOME/.local/bin` in your `$PATH` to be able to run ULWGL this way by exporting the path in your shell's configuration, for example `~/.bash_profile`
+```shell
+export PATH="$HOME/.local/bin:$PATH"
+```
 
 
 # Usage notes:  
