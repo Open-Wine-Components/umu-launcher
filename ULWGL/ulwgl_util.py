@@ -1,7 +1,5 @@
 import os
 import tarfile
-import subprocess
-import re
 
 from ulwgl_consts import CONFIG
 from typing import Any, Callable, Dict
@@ -10,7 +8,11 @@ from ulwgl_log import log
 from sys import stderr
 from pathlib import Path
 from pwd import struct_passwd, getpwuid
-from shutil import rmtree, move, copy, which, copytree
+from shutil import rmtree, move, copy, copytree
+from ulwgl_plugins import enable_zenity
+from urllib.request import urlopen
+from ssl import create_default_context
+from http.client import HTTPResponse, HTTPException
 
 
 class UnixUser:
@@ -50,6 +52,8 @@ def force_rename(src: Path, dst: Path):  # noqa: D103
 
 
 def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
+    # Assuming the file is downloaded to '/tmp/steam-container-runtime-complete.tar.gz'
+    tar_path: str = "/tmp/steam-container-runtime-complete.tar.gz"
     # Access the 'runtime_platform' value
     runtime_platform_value: str = json["ulwgl"]["versions"]["runtime_platform"]
 
@@ -64,48 +68,26 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     log.debug(f"URL: {base_url}")
 
     # Command to download the file and pipe the progress to Zenity
-    download_command: str = f"curl -LJ --progress-bar {base_url} -o /tmp/steam-container-runtime-complete.tar.gz"
+    download_command: str = f"curl -LJ --progress-bar {base_url} -o {tar_path}"
     log.debug(f"Download: {download_command}")
 
-    bin: str = which("zenity")
-
-    if not bin:
-        err: str = "Zenity is not installed in system.\nPlease install zenity"
-        raise FileNotFoundError(err)
-
-    # Execute the command and pipe the output to Zenity
-    with subprocess.Popen(
-        download_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-    ) as proc:
-        # Start Zenity with a pipe to its standard input
-        zenity_proc: subprocess.Popen = subprocess.Popen(
-            [
-                f"{bin}",
-                "--progress",
-                "--auto-close",
-                "--text=Downloading Runtime, please wait...",
-                "--percentage=0",
-            ],
-            stdin=subprocess.PIPE,
+    try:
+        msg: str = "Downloading Runtime, please wait..."
+        enable_zenity(download_command, msg)
+    except FileNotFoundError:
+        print(f"Downloading {runtime_platform_value} ...", file=stderr)
+        resp: HTTPResponse = urlopen(
+            base_url, timeout=60, context=create_default_context()
         )
 
-        for line in iter(proc.stdout.readline, b""):
-            # Parse the output to extract the progress percentage
-            if b"%" in line:
-                line_str = line.decode("utf-8")
-                match = re.search(r"(\d+)%", line_str)
-                if match:
-                    percentage = match.group(1)
-                    # Send the percentage to Zenity's standard input
-                    zenity_proc.stdin.write(percentage.encode("utf-8") + b"\n")
-                    zenity_proc.stdin.flush()
+        # Without the runtime, the launcher will not work
+        if resp and resp.status != 200:
+            err: str = f"Unable to download the Steam Runtime\nrepo.steampowered.com returned the status {resp.status}"
+            raise HTTPException(err)
 
-        # Close the Zenity process's standard input
-        zenity_proc.stdin.close()
-        zenity_proc.wait()
-
-    # Assuming the file is downloaded to '/tmp/steam-container-runtime-complete.tar.gz'
-    tar_path: str = "/tmp/steam-container-runtime-complete.tar.gz"
+        log.debug(f"Writing: {tar_path}")
+        with Path(tar_path).open(mode="wb") as file:
+            file.write(resp.read())
 
     log.debug(f"Opening: {tar_path}")
 
@@ -405,7 +387,7 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
     return json
 
 
-def copyfile_reflink(src: Path, dst: Path) -> None: # noqa: D103
+def copyfile_reflink(src: Path, dst: Path) -> None:  # noqa: D103
     copy(src.as_posix(), dst.as_posix())
 
 

@@ -1,7 +1,10 @@
 import os
+import subprocess
+import re
 from pathlib import Path
 from typing import Dict, Set, Any, List
 from argparse import Namespace
+from shutil import which
 
 
 def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
@@ -140,3 +143,45 @@ def enable_reaper(env: Dict[str, str], command: List[str], local: Path) -> List[
     )
 
     return command
+
+
+def enable_zenity(command: str, msg: str) -> None:
+    """Execute the command and pipe the output to Zenity.
+
+    Intended to be used for long running operations (e.g. large file downloads)
+    """
+    bin: str = which("zenity")
+
+    if not bin:
+        err: str = "Zenity is not found in system"
+        raise FileNotFoundError(err)
+
+    with subprocess.Popen(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    ) as proc:
+        # Start Zenity with a pipe to its standard input
+        zenity_proc: subprocess.Popen = subprocess.Popen(
+            [
+                f"{bin}",
+                "--progress",
+                "--auto-close",
+                f"--text={msg}",
+                "--percentage=0",
+            ],
+            stdin=subprocess.PIPE,
+        )
+
+        for line in iter(proc.stdout.readline, b""):
+            # Parse the output to extract the progress percentage
+            if b"%" in line:
+                line_str = line.decode("utf-8")
+                match = re.search(r"(\d+)%", line_str)
+                if match:
+                    percentage = match.group(1)
+                    # Send the percentage to Zenity's standard input
+                    zenity_proc.stdin.write(percentage.encode("utf-8") + b"\n")
+                    zenity_proc.stdin.flush()
+
+        # Close the Zenity process's standard input
+        zenity_proc.stdin.close()
+        zenity_proc.wait()

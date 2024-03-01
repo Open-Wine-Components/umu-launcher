@@ -447,7 +447,9 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat.joinpath("ULWGL-Launcher").mkdir()
         for file in runner_files:
             if file == "ulwgl-run":
-                self.test_compat.joinpath("ulwgl-run").symlink_to("../../../ulwgl_run.py")
+                self.test_compat.joinpath("ulwgl-run").symlink_to(
+                    "../../../ulwgl_run.py"
+                )
             else:
                 with self.test_compat.joinpath(file).open(mode="w") as filer:
                     filer.write("foo")
@@ -856,7 +858,6 @@ class TestGameLauncher(unittest.TestCase):
         if test_dir.exists():
             test_dir.joinpath("ULWGL_VERSION.json").unlink()
             test_dir.rmdir()
-
 
     def test_copy(self):
         """Test copyfile_reflink.
