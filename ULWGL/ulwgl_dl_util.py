@@ -73,7 +73,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 
     resp = conn.getresponse()
 
-    if resp and resp.status != 200:
+    if resp.status != 200:
         return files
 
     # Attempt to acquire the tarball and checksum from the JSON data
