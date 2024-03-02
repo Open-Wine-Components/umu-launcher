@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install dependencies
       run: |
-        apt-get install meson shellcheck
+        sudo apt-get install meson shellcheck
     - name: Lint using Shellcheck
       run: |
         shellcheck configure.sh
