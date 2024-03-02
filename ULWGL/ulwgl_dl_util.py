@@ -120,7 +120,7 @@ def _fetch_proton(
 
     try:
         download_command: str = f"curl -LJ --progress-bar {proton_url} -o {cache.joinpath(proton).as_posix()}"
-        msg: str = f"Downloading {proton} ..."
+        msg: str = f"Downloading {proton_dir} ..."
         enable_zenity(download_command, msg)
     except FileNotFoundError:
         print(f"Downloading {proton} ...", file=stderr)
