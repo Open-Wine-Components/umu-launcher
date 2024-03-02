@@ -280,5 +280,8 @@ def _get_latest(
             # Refer to the cache for old version next
             _cleanup(tarball, proton_dir, cache, steam_compat)
             return None
+        except HTTPException:
+            # Download failed
+            return None
 
     return env
