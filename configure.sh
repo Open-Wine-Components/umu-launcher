@@ -89,7 +89,6 @@ function configure() {
 arg_prefix=""
 arg_user_install=""
 arg_help=""
-invalid_args=""
 function parse_args() {
   local arg;
   local val;
