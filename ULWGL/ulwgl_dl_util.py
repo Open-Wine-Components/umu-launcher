@@ -136,7 +136,8 @@ def _fetch_proton(
             proton_url, timeout=180, context=create_default_context()
         )
 
-        # Without the runtime, the launcher will not work
+        # Without Proton, the launcher will not work
+        # Continue by referring to cache
         if resp.status != 200:
             err: str = f"Unable to download {proton}\ngithub.com returned the status: {resp.status}"
             raise HTTPException(err)
@@ -268,7 +269,7 @@ def _get_latest(
             _fetch_proton(env, steam_compat, cache, files)
             env["PROTONPATH"] = environ["PROTONPATH"]
         except ValueError:
-            # Digest mismatched or download failed
+            # Digest mismatched
             # Refer to the cache for old version next
             return None
         except KeyboardInterrupt:
