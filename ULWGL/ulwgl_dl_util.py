@@ -7,7 +7,7 @@ from shutil import rmtree
 from http.client import HTTPSConnection, HTTPResponse, HTTPException, HTTPConnection
 from ssl import create_default_context
 from json import loads as loads_json
-from urllib.request import urlretrieve, urlopen
+from urllib.request import urlopen
 from sys import stderr
 from ulwgl_plugins import enable_zenity
 
@@ -116,7 +116,15 @@ def _fetch_proton(
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
 
     print(f"Downloading {hash} ...", file=stderr)
-    urlretrieve(hash_url, cache.joinpath(hash).as_posix())
+    resp: HTTPResponse = urlopen(hash_url, timeout=30, context=create_default_context())
+
+    if resp.status != 200:
+        err: str = (
+            f"Unable to download {hash}\ngithub.com returned the status: {resp.status}"
+        )
+        raise HTTPException(err)
+    with cache.joinpath(hash).open(mode="wb") as file:
+        file.write(resp.read())
 
     try:
         download_command: str = f"curl -LJ --progress-bar {proton_url} -o {cache.joinpath(proton).as_posix()}"
@@ -132,8 +140,7 @@ def _fetch_proton(
         if resp.status != 200:
             err: str = f"Unable to download {proton}\ngithub.com returned the status: {resp.status}"
             raise HTTPException(err)
-
-        with Path(cache.joinpath(proton).as_posix()).open(mode="wb") as file:
+        with cache.joinpath(proton).open(mode="wb") as file:
             file.write(resp.read())
 
     print("Completed.", file=stderr)
