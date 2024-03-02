@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+##INSTALL_PATH##/ulwgl_run.py "$@"
+

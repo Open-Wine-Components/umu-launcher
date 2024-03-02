@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Fake reaper file to avoid errors while running from source
+args="$*"
+cmd=${args#* -- }
+$cmd
