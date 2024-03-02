@@ -27,4 +27,4 @@ jobs:
     - name: Make System Package
       run: |
         mv Makefile.in Makefile
-        make PREFIX=/usr install
+        sudo make PREFIX=/usr install
