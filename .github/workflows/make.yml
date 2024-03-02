@@ -1,0 +1,30 @@
+name: Make workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        apt-get install meson shellcheck
+    - name: Lint using Shellcheck
+      run: |
+        shellcheck configure.sh
+    - name: Make Flatpak
+      run: |
+        mv Makefile.in Makefile
+        make DESTDIR="$PWD/dist" PREFIX=/app install
+    - name: Make System Package
+      run: |
+        make DESTDIR="$PWD/dist" PREFIX=/usr install
