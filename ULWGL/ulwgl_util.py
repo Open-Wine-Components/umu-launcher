@@ -81,8 +81,8 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         )
 
         # Without the runtime, the launcher will not work
-        if resp and resp.status != 200:
-            err: str = f"Unable to download the Steam Runtime\nrepo.steampowered.com returned the status {resp.status}"
+        if resp.status != 200:
+            err: str = f"Unable to download the Steam Runtime\nrepo.steampowered.com returned the status: {resp.status}"
             raise HTTPException(err)
 
         log.debug(f"Writing: {tar_path}")

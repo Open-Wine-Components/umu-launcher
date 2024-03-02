@@ -129,10 +129,8 @@ def _fetch_proton(
         )
 
         # Without the runtime, the launcher will not work
-        if resp and resp.status != 200:
-            err: str = (
-                f"Unable to download {proton}\nGithub returned the status {resp.status}"
-            )
+        if resp.status != 200:
+            err: str = f"Unable to download {proton}\ngithub.com returned the status: {resp.status}"
             raise HTTPException(err)
 
         with Path(cache.joinpath(proton).as_posix()).open(mode="wb") as file:
