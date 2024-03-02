@@ -26,4 +26,5 @@ jobs:
         shellcheck configure.sh
     - name: Make System Package
       run: |
+        mv Makefile.in Makefile
         make PREFIX=/usr install
