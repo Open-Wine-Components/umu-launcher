@@ -24,7 +24,7 @@ jobs:
     - name: Lint using Shellcheck
       run: |
         shellcheck configure.sh
-    - name: Make System Package
+    - name: Make system package
       run: |
         ./configure.sh --prefix=/usr
         sudo make PREFIX=/usr install
