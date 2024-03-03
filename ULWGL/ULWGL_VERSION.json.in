@@ -1,10 +1,10 @@
 {
   "ulwgl": {
     "versions": {
-      "launcher": "0.1-RC3",
-      "runner": "0.1-RC3",
+      "launcher": "##ULWGL_VERSION##",
+      "runner": "##ULWGL_VERSION##",
       "runtime_platform": "sniper_platform_0.20240125.75305",
-      "reaper": "1.0",
+      "reaper": "##REAPER_VERSION##",
       "pressure_vessel": "v0.20240212.0"
     }
   }

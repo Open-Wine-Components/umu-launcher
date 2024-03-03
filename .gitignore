@@ -2,3 +2,5 @@ var
 builddir
 __pycache__
 .ref
+ULWGL/ULWGL_VERSION.json
+Makefile

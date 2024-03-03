@@ -13,7 +13,24 @@ USERINSTALL ?= xfalse
 
 
 .PHONY: all
-all: reaper ulwgl ulwgl-launcher
+all: version reaper ulwgl ulwgl-launcher
+
+
+# Special case, do this inside the source directory for release source distribution
+ULWGL/ULWGL_VERSION.json: ULWGL/ULWGL_VERSION.json.in
+	$(info :: Updating $(@) )
+	cp $(<) $(<).tmp
+	sed 's|##ULWGL_VERSION##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
+	sed 's|##REAPER_VERSION##|$(shell git -C subprojects/reaper describe --always --long --tags)|g' -i $(<).tmp
+	mv $(<).tmp $(@)
+
+.PHONY: version
+version: ULWGL/ULWGL_VERSION.json
+
+version-install: version
+	$(info :: Installing ULWGL_VERSION.json )
+	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 ULWGL/ULWGL_VERSION.json -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 
 $(OBJDIR)/.build-ulwgl: | $(OBJDIR)
@@ -28,7 +45,7 @@ ulwgl-bin-install: ulwgl
 	install -d $(DESTDIR)$(BINDIR)
 	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(BINDIR)/ulwgl-run
 
-ulwgl-dist-install:
+ulwgl-dist-install: version-install
 	$(info :: Installing ulwgl )
 	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 ULWGL/ulwgl_consts.py    -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
@@ -37,12 +54,8 @@ ulwgl-dist-install:
 	install -Dm 644 ULWGL/ulwgl_plugins.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 755 ULWGL/ulwgl_run.py     	 -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 ULWGL/ulwgl_util.py      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 ULWGL/ULWGL_VERSION.json -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
-# Install both dist and sh script target
 ulwgl-install: ulwgl-dist-install ulwgl-bin-install
-# Install dist only target
-#ulwgl-install: ulwgl-dist-install
 
 
 $(OBJDIR)/.build-ulwgl-launcher: | $(OBJDIR)
@@ -63,9 +76,6 @@ ulwgl-launcher-dist-install:
 	install -Dm 644 ULWGL/ULWGL-Launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
 	install -Dm 644 ULWGL/ULWGL-Launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
 
-# Install both dist and sh script target
-#ulwgl-launcher-install: ulwgl-launcher-dist-install ulwgl-launcher-bin-install
-# Install dist only target
 ulwgl-launcher-install: ulwgl-launcher-dist-install
 
 
@@ -91,7 +101,12 @@ $(OBJDIR):
 .PHONY: clean
 clean:
 	$(info Cleaning "$(OBJDIR)" build directory)
-	@rm -rf -v $(OBJDIR)
+	@rm -rf -v $(OBJDIR) ULWGL/ULWGL_VERSION.json
+
+
+.PHONY: release
+release: version
+	$(info Creating source distribution for release)
 
 
 .PHONY: uninstall
