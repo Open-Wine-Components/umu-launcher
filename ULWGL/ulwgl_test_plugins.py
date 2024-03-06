@@ -168,6 +168,114 @@ class TestGameLauncherPlugins(unittest.TestCase):
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
 
+    def test_build_command_systemd(self):
+        """Test build_command when systemd is set as the subreaper."""
+        test_toml = "foo.toml"
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{self.test_file}"
+        proton = "{self.test_file}"
+        game_id = "{self.test_file}"
+        launch_args = ["{self.test_file}", "{self.test_file}"]
+        exe = "{self.test_exe}"
+        reaper = false
+        """
+        toml_path = self.test_file + "/" + test_toml
+        result = None
+        test_command = []
+        test_command_result = None
+        toml = None
+
+        Path(self.test_file + "/proton").touch()
+        Path(toml_path).touch()
+
+        with Path(toml_path).open(mode="w") as file:
+            file.write(toml_str)
+
+        with patch.object(
+            ulwgl_run,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path),
+        ):
+            # Args
+            result = ulwgl_run.parse_args()
+            # Config
+            self.env, toml = ulwgl_plugins.set_env_toml(self.env, result)
+            # Prefix
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            ulwgl_run.set_env(self.env, result)
+            # Game drive
+            ulwgl_plugins.enable_steam_game_drive(self.env)
+
+        # Mock setting up the runtime
+        with patch.object(
+            ulwgl_util,
+            "setup_runtime",
+            return_value=None,
+        ):
+            ulwgl_util._install_ulwgl(
+                self.test_user_share, self.test_local_share, self.test_compat, json
+            )
+            ulwgl_util.copyfile_tree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            ulwgl_util.copyfile_reflink(
+                Path(self.test_user_share, "ULWGL"),
+                Path(self.test_local_share, "ULWGL"),
+            )
+
+        for key, val in self.env.items():
+            os.environ[key] = val
+
+        # Build
+        test_command_result = ulwgl_run.build_command(
+            self.env, self.test_local_share, test_command, config=toml
+        )
+        self.assertTrue(
+            test_command_result is test_command, "Expected the same reference"
+        )
+
+        # Verify contents of the command
+        (
+            reaper,
+            systemd_opt0,
+            systemd_opt1,
+            systemd_opt2,
+            entry_point,
+            opt1,
+            verb,
+            opt2,
+            proton,
+            verb2,
+            exe,
+        ) = [*test_command]
+        # The entry point dest could change and binary paths could vary.
+        # Just check if there's a value for the reaper and the entry point
+        self.assertTrue(reaper, "Expected systemd")
+        self.assertEqual(systemd_opt0, "--user", "Expected --user")
+        self.assertEqual(systemd_opt1, "--scope", "Expected --scope")
+        self.assertEqual(systemd_opt2, "--send-sighup", "Expected --sighup")
+        self.assertTrue(entry_point, "Expected an entry point")
+        self.assertEqual(opt1, "--verb", "Expected --verb")
+        self.assertEqual(verb, self.test_verb, "Expected a verb")
+        self.assertEqual(opt2, "--", "Expected --")
+        self.assertEqual(
+            proton,
+            Path(self.env.get("PROTONPATH") + "/proton").as_posix(),
+            "Expected the proton file",
+        )
+        self.assertEqual(verb2, self.test_verb, "Expected a verb")
+        self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
+
     def test_build_command_entry(self):
         """Test build_command.
 
@@ -405,6 +513,44 @@ class TestGameLauncherPlugins(unittest.TestCase):
         )
         self.assertEqual(verb2, self.test_verb, "Expected a verb")
         self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
+
+    def test_set_env_toml_reaper(self):
+        """Test set_env_toml for reaper.
+
+        A ValueError should be raised if a boolean is not set
+        """
+        test_toml = "foo.toml"
+        toml_path = self.test_file + "/" + test_toml
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{self.test_file}"
+        proton = "{self.test_file}"
+        game_id = "{self.test_file}"
+        launch_args = ["{toml_path}"]
+        exe = "{self.test_exe}"
+        reaper = "foo"
+        """
+        result = None
+
+        Path(toml_path).touch()
+
+        with Path(toml_path).open(mode="w") as file:
+            file.write(toml_str)
+
+        with patch.object(
+            ulwgl_run,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path),
+        ):
+            # Args
+            result = ulwgl_run.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            # Env
+            with self.assertRaisesRegex(ValueError, "reaper"):
+                ulwgl_plugins.set_env_toml(self.env, result)
 
     def test_set_env_toml_opts_nofile(self):
         """Test set_env_toml for options that are a file.
@@ -652,7 +798,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             result_set_env = ulwgl_plugins.set_env_toml(self.env, result)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
+            self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
 
             # Check that the paths are still in the unexpanded form after setting the env
             # In main, we only expand them after this function exits to prepare for building the command
@@ -706,7 +852,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             result_set_env = ulwgl_plugins.set_env_toml(self.env, result)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
+            self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
             self.assertTrue(self.env["EXE"], "Expected EXE to be set")
             self.assertEqual(
                 self.env["EXE"],

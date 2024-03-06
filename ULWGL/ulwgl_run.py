@@ -6,7 +6,12 @@ from traceback import print_exception
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
-from ulwgl_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
+from ulwgl_plugins import (
+    enable_steam_game_drive,
+    set_env_toml,
+    enable_reaper,
+    enable_systemd,
+)
 from re import match
 from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
@@ -215,10 +220,15 @@ def set_env(
 
 
 def build_command(
-    env: Dict[str, str], local: Path, command: List[str], opts: List[str] = None
+    env: Dict[str, str],
+    local: Path,
+    command: List[str],
+    opts: List[str] = None,
+    config=None,
 ) -> List[str]:
     """Build the command to be executed."""
     verb: str = env["PROTON_VERB"]
+    toml: Dict[str, str] = config
 
     # Raise an error if the _v2-entry-point cannot be found
     if not local.joinpath("ULWGL").is_file():
@@ -231,7 +241,13 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
-    enable_reaper(env, command, local)
+    # Subreaper
+    if toml and not toml["ulwgl"]["reaper"]:
+        log.debug("Using systemd as subreaper")
+        enable_systemd(env, command)
+    else:
+        log.debug("Using reaper as subreaper")
+        enable_reaper(env, command, local)
 
     command.extend([local.joinpath("ULWGL").as_posix(), "--verb", verb, "--"])
     command.extend(
@@ -279,6 +295,7 @@ def main() -> int:  # noqa: D103
     # On update, files will be selectively updated
     local: Path = Path.home().joinpath(".local/share/ULWGL")
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
+    config: Dict[str, Any] = None
 
     if "musl" in os.environ.get("LD_LIBRARY_PATH", ""):
         err: str = "This script is not designed to run on musl-based systems"
@@ -290,7 +307,7 @@ def main() -> int:  # noqa: D103
     setup_ulwgl(root, local)
 
     if isinstance(args, Namespace) and getattr(args, "config", None):
-        set_env_toml(env, args)
+        env, config = set_env_toml(env, args)
     else:
         opts = args[1]  # Reference the executable options
         check_env(env)
@@ -306,7 +323,7 @@ def main() -> int:  # noqa: D103
         log.info(f"{key}={val}")
         os.environ[key] = val
 
-    build_command(env, local, command, opts)
+    build_command(env, local, command, opts, config)
     log.debug(command)
 
     return run(command).returncode
