@@ -74,13 +74,17 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     try:
         msg: str = "Downloading Runtime, please wait..."
         enable_zenity(download_command, msg)
+    except TimeoutError:
+        # Without the runtime, the launcher will not work
+        # Just exit on timeout or download failure
+        err: str = "Unable to download the Steam Runtime\nrepo.steampowered.com request timed out"
+        raise TimeoutError(err)
     except FileNotFoundError:
         print(f"Downloading {runtime_platform_value} ...", file=stderr)
         resp: HTTPResponse = urlopen(
             base_url, timeout=60, context=create_default_context()
         )
 
-        # Without the runtime, the launcher will not work
         if resp.status != 200:
             err: str = f"Unable to download the Steam Runtime\nrepo.steampowered.com returned the status: {resp.status}"
             raise HTTPException(err)
