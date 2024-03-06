@@ -68,7 +68,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     log.debug(f"URL: {base_url}")
 
     # Command to download the file and pipe the progress to Zenity
-    download_command: str = f"curl -LJ --progress-bar {base_url} -o {tar_path}"
+    download_command: str = f"curl -LJ --silent {base_url} -o {tar_path}"
     log.debug(f"Download: {download_command}")
 
     try:
