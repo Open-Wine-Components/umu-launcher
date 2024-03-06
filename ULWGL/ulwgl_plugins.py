@@ -1,6 +1,5 @@
 import os
 import subprocess
-import re
 from pathlib import Path
 from typing import Dict, Set, Any, List
 from argparse import Namespace
@@ -167,20 +166,13 @@ def enable_zenity(command: str, msg: str) -> None:
                 "--auto-close",
                 f"--text={msg}",
                 "--percentage=0",
+                "--pulsate",
             ],
             stdin=subprocess.PIPE,
         )
 
-        for line in iter(proc.stdout.readline, b""):
-            # Parse the output to extract the progress percentage
-            if b"%" in line:
-                line_str = line.decode("utf-8")
-                match = re.search(r"(\d+)%", line_str)
-                if match:
-                    percentage = match.group(1)
-                    # Send the percentage to Zenity's standard input
-                    zenity_proc.stdin.write(percentage.encode("utf-8") + b"\n")
-                    zenity_proc.stdin.flush()
+        # Timeout all operations for 3 min.
+        proc.wait(timeout=180)
 
         # Close the Zenity process's standard input
         zenity_proc.stdin.close()
