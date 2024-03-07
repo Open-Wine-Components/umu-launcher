@@ -59,9 +59,20 @@ $ WINEPREFIX= GAMEID=0 ulwgl-run foo.exe
 ```
 
 ```
-# Play a game, download the latest Proton and create a prefix
+# Play a game, automatically set Proton and create a prefix
 # This will create the prefix as ~/Games/ULWGL/<ulwgl-$GAMEID>
 $ GAMEID=0 ulwgl-run foo.exe
+```
+
+```
+# Play a game and explicitly set a valid Proton verb
+$ WINEPREFIX= GAMEID=0 PROTONPATH= PROTON_VERB=waitforexitandrun ulwgl-run ~/foo.exe
+```
+
+```
+# Play a game and enable debug logs
+# Valid values include: 1, warn, debug
+$ ULWGL_LOG=1 WINEPREFIX= GAMEID=0 PROTONPATH= ulwgl-run ~/foo.exe
 ```
 
 # AUTHORS
