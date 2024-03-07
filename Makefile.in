@@ -114,7 +114,9 @@ ulwgl-docs-install:
 	$(info :: Installing man pages)
 	@mkdir -p $(DESTDIR)$(MANDIR)/man1
 	scdoc < docs/ulwgl.1.scd > $(OBJDIR)/ulwgl.1
+	scdoc < docs/ulwgl.5.scd > $(OBJDIR)/ulwgl.5
 	install -m644 $(OBJDIR)/ulwgl.1 $(DESTDIR)$(MANDIR)/man1/ulwgl.1
+	install -m644 $(OBJDIR)/ulwgl.5 $(DESTDIR)$(MANDIR)/man1/ulwgl.5
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
