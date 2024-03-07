@@ -7,7 +7,7 @@ PREFIX ?= /usr
 BINDIR := $(PREFIX)/bin
 LIBDIR := $(PREFIX)/lib
 DATADIR := $(PREFIX)/share
-MANDIR ?= $(PREFIX)/share/man
+MANDIR ?= $(DATADIR)/man
 
 DESTDIR ?=
 USERINSTALL ?= xfalse
