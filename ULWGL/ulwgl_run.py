@@ -21,9 +21,10 @@ def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     opt_args: Set[str] = {"--help", "-h", "--config"}
     parser: ArgumentParser = ArgumentParser(
         description="Unified Linux Wine Game Launcher",
+        epilog="See ulwgl(1) for more info and examples.",
         formatter_class=RawTextHelpFormatter,
     )
-    parser.add_argument("--config", help="path to TOML file (requires Python 3.11)")
+    parser.add_argument("--config", help="path to TOML file (requires Python 3.11+)")
 
     if not sys.argv[1:]:
         err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/ULWGL-launcher"
