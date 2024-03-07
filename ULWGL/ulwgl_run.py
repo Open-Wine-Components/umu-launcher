@@ -10,7 +10,7 @@ from ulwgl_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
 from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
-from ulwgl_consts import PROTON_VERBS, USAGE, DEBUG_FORMAT
+from ulwgl_consts import PROTON_VERBS, DEBUG_FORMAT
 from ulwgl_util import setup_ulwgl
 from ulwgl_log import log, console_handler, Formatter
 from ulwgl_util import UnixUser
@@ -21,10 +21,10 @@ def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     opt_args: Set[str] = {"--help", "-h", "--config"}
     parser: ArgumentParser = ArgumentParser(
         description="Unified Linux Wine Game Launcher",
-        epilog=USAGE,
+        epilog="See ulwgl(1) for more info and examples.",
         formatter_class=RawTextHelpFormatter,
     )
-    parser.add_argument("--config", help="path to TOML file (requires Python 3.11)")
+    parser.add_argument("--config", help="path to TOML file (requires Python 3.11+)")
 
     if not sys.argv[1:]:
         err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/ULWGL-launcher"
