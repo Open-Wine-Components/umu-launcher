@@ -291,7 +291,7 @@ def _update_ulwgl(
             # Directory is absent
             if not (local.joinpath(runtime).is_dir() or local.joinpath(val).is_dir()):
                 print(
-                    f"Runtime Platform not found\nCopying {val} -> {local} ...",
+                    "Runtime Platform not found",
                     file=stderr,
                 )
 
