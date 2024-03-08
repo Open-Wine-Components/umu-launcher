@@ -44,12 +44,6 @@ class UnixUser:
         return uid == self.puid
 
 
-def force_rename(src: Path, dst: Path):  # noqa: D103
-    if dst.exists():
-        dst.unlink(missing_ok=True)
-    src.rename(dst)
-
-
 def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     # Assuming the file is downloaded to '/tmp/steam-container-runtime-complete.tar.gz'
     tar_path: str = "/tmp/steam-container-runtime-complete.tar.gz"
@@ -136,9 +130,10 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
             rmtree("/tmp/steam-container-runtime/")
 
         log.debug("Renaming: _v2-entry-point -> ULWGL")
-        force_rename(
-            destination_dir.joinpath("_v2-entry-point"),
-            destination_dir.joinpath("ULWGL"),
+
+        # Rename _v2-entry-point
+        destination_dir.joinpath("_v2-entry-point").rename(
+            destination_dir.joinpath("ULWGL")
         )
 
 
