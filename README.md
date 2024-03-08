@@ -70,7 +70,7 @@ Borderlands 3 from EGS store.
 
 
 # Building and packaging:
-Building ULWGL currently requires `bash`, `make` and `meson`
+Building ULWGL currently requires `bash`, `make`, `meson` and `scdoc`
 
 To build ULWGL, after downloading and extracting the source code from this repository, change into the newly extracted directory
 ```shell

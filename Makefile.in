@@ -5,19 +5,25 @@ INSTALLDIR ?= ulwgl
 
 OBJDIR := builddir
 
-PREFIX ?= /usr
-BINDIR := $(PREFIX)/bin
-LIBDIR := $(PREFIX)/lib
+PREFIX  ?= /usr
+BINDIR  := $(PREFIX)/bin
+LIBDIR  := $(PREFIX)/lib
 DATADIR := $(PREFIX)/share
-MANDIR ?= $(DATADIR)/man
+MANDIR  := $(DATADIR)/man
 
 DESTDIR ?=
 USERINSTALL ?= xfalse
 
 
 .PHONY: all
-all: version reaper ulwgl ulwgl-launcher
+all: version reaper ulwgl ulwgl-docs ulwgl-launcher
 
+.PHONY: install
+ifeq ($(USERINSTALL), xtrue)
+install: reaper-install ulwgl-install ulwgl-launcher-install user-install
+else
+install: reaper-install ulwgl-install ulwgl-launcher-install
+endif
 
 # Special case, do this inside the source directory for release distribution
 ULWGL/ULWGL_VERSION.json: ULWGL/ULWGL_VERSION.json.in
@@ -48,7 +54,25 @@ ulwgl-bin-install: ulwgl
 	install -d $(DESTDIR)$(BINDIR)
 	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(BINDIR)/ulwgl-run
 
-ulwgl-dist-install: version-install
+
+$(OBJDIR)/.build-ulwgl-docs: | $(OBJDIR)
+	$(info :: Building ulwgl man pages )
+	scdoc < docs/ulwgl.1.scd > $(OBJDIR)/ulwgl.1
+	scdoc < docs/ulwgl.5.scd > $(OBJDIR)/ulwgl.5
+	touch $(@)
+
+.PHONY: ulwgl-docs
+ulwgl-docs: $(OBJDIR)/.build-ulwgl-docs
+
+ulwgl-docs-install: ulwgl-docs
+	$(info :: Installing ulwgl man pages )
+	install -d $(DESTDIR)$(MANDIR)/man1
+	install -d $(DESTDIR)$(MANDIR)/man5
+	install -m644 $(OBJDIR)/ulwgl.1 $(DESTDIR)$(MANDIR)/man1/ulwgl.1
+	install -m644 $(OBJDIR)/ulwgl.5 $(DESTDIR)$(MANDIR)/man5/ulwgl.5
+
+
+ulwgl-dist-install:
 	$(info :: Installing ulwgl )
 	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 ULWGL/ulwgl_consts.py    -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
@@ -58,9 +82,10 @@ ulwgl-dist-install: version-install
 	install -Dm 755 ULWGL/ulwgl_run.py     	 -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 ULWGL/ulwgl_util.py      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
-ulwgl-install: ulwgl-dist-install ulwgl-bin-install
+ulwgl-install: version-install ulwgl-dist-install ulwgl-docs-install ulwgl-bin-install
 
 
+# ulwgl-launcher is separate to allow control over installing the bin target
 $(OBJDIR)/.build-ulwgl-launcher: | $(OBJDIR)
 	$(info :: Building ulwgl-launcher )
 	sed 's|##INSTALL_PATH##|$(DATADIR)/$(INSTALLDIR)|g' ULWGL/ULWGL-Launcher/ulwgl-run.in > $(OBJDIR)/ulwgl-launcher-run
@@ -79,6 +104,7 @@ ulwgl-launcher-dist-install:
 	install -Dm 644 ULWGL/ULWGL-Launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
 	install -Dm 644 ULWGL/ULWGL-Launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
 
+#ulwgl-launcher-install: ulwgl-launcher-dist-install ulwgl-launcher-bin-install
 ulwgl-launcher-install: ulwgl-launcher-dist-install
 
 
@@ -134,20 +160,5 @@ user-install:
 	$(info :: Installed under user-only location "$(DATADIR)/$(INSTALLDIR)" )
 	$(info :: To run you need to make sure "$(BINDIR)" is in your PATH )
 
-ulwgl-docs-install:
-	$(info :: Installing man pages)
-	@mkdir -p $(DESTDIR)$(MANDIR)/man1
-	@mkdir -p $(DESTDIR)$(MANDIR)/man5
-	scdoc < docs/ulwgl.1.scd > $(OBJDIR)/ulwgl.1
-	scdoc < docs/ulwgl.5.scd > $(OBJDIR)/ulwgl.5
-	install -m644 $(OBJDIR)/ulwgl.1 $(DESTDIR)$(MANDIR)/man1/ulwgl.1
-	install -m644 $(OBJDIR)/ulwgl.5 $(DESTDIR)$(MANDIR)/man5/ulwgl.5
-
-.PHONY: install
-ifeq ($(USERINSTALL), xtrue)
-install: reaper-install ulwgl-install ulwgl-launcher-install user-install ulwgl-docs-install
-else
-install: reaper-install ulwgl-install ulwgl-launcher-install ulwgl-docs-install
-endif
 
 # vim: ft=make
