@@ -2,15 +2,15 @@ import unittest
 import ulwgl_run
 import os
 import argparse
-from argparse import Namespace
-from unittest.mock import patch
-from pathlib import Path
-from tomllib import TOMLDecodeError
 import re
 import ulwgl_plugins
 import tarfile
 import json
 import ulwgl_util
+from argparse import Namespace
+from unittest.mock import patch
+from pathlib import Path
+from tomllib import TOMLDecodeError
 from shutil import rmtree, copy, copytree
 
 

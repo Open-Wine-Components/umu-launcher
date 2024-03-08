@@ -2,9 +2,6 @@ import unittest
 import ulwgl_run
 import os
 import argparse
-from argparse import Namespace
-from unittest.mock import patch
-from pathlib import Path
 import re
 import ulwgl_plugins
 import ulwgl_dl_util
@@ -12,6 +9,9 @@ import tarfile
 import ulwgl_util
 import hashlib
 import json
+from argparse import Namespace
+from unittest.mock import patch
+from pathlib import Path
 from shutil import rmtree, copytree, copy
 
 
