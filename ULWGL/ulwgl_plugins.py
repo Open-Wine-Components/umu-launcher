@@ -1,5 +1,5 @@
-import os
-import subprocess
+from subprocess import PIPE, Popen, STDOUT
+from os import environ
 from pathlib import Path
 from typing import Dict, Set, Any, List
 from argparse import Namespace
@@ -50,6 +50,7 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
                 env["EXE"] = val + " " + " ".join(toml.get("ulwgl").get("launch_args"))
             else:
                 env["EXE"] = val
+
     return env
 
 
@@ -116,8 +117,8 @@ def enable_steam_game_drive(env: Dict[str, str]) -> Dict[str, str]:
                 env["STEAM_COMPAT_LIBRARY_PATHS"] = path.as_posix()
             break
 
-    if "LD_LIBRARY_PATH" in os.environ:
-        paths.add(Path(os.environ["LD_LIBRARY_PATH"]).as_posix())
+    if "LD_LIBRARY_PATH" in environ:
+        paths.add(Path(environ["LD_LIBRARY_PATH"]).as_posix())
 
     if env["STEAM_COMPAT_INSTALL_PATH"]:
         paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
@@ -155,11 +156,9 @@ def enable_zenity(command: str, msg: str) -> None:
         err: str = "Zenity is not found in system"
         raise FileNotFoundError(err)
 
-    with subprocess.Popen(
-        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-    ) as proc:
+    with Popen(command, shell=True, stdout=PIPE, stderr=STDOUT) as proc:
         # Start Zenity with a pipe to its standard input
-        zenity_proc: subprocess.Popen = subprocess.Popen(
+        zenity_proc: Popen = Popen(
             [
                 f"{bin}",
                 "--progress",
@@ -168,7 +167,7 @@ def enable_zenity(command: str, msg: str) -> None:
                 "--percentage=0",
                 "--pulsate",
             ],
-            stdin=subprocess.PIPE,
+            stdin=PIPE,
         )
 
         # Timeout all operations for 3 min.
