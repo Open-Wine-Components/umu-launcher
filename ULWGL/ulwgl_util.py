@@ -255,7 +255,7 @@ def _update_ulwgl(
 
             # Update
             if val != reaper:
-                print(f"Updating {key} to {reaper} ...", file=stderr)
+                print(f"Updating {key} to {val} ...", file=stderr)
 
                 local.joinpath("reaper").unlink(missing_ok=True)
                 cp(root.joinpath("reaper"), local.joinpath("reaper"))
@@ -312,7 +312,7 @@ def _update_ulwgl(
             launcher: str = json_local["ulwgl"]["versions"]["launcher"]
 
             if val != launcher:
-                print(f"Updating {key} to {launcher} ...", file=stderr)
+                print(f"Updating {key} to {val} ...", file=stderr)
 
                 # Python files
                 for file in root.glob("*.py"):
