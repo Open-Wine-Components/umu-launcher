@@ -127,7 +127,9 @@ def _fetch_proton(
         file.write(resp.read())
 
     try:
-        download_command: str = f"curl -LJ --silent {proton_url} -o {cache.joinpath(proton).as_posix()}"
+        download_command: str = (
+            f"curl -LJ --silent {proton_url} -o {cache.joinpath(proton).as_posix()}"
+        )
         msg: str = f"Downloading {proton_dir} ..."
         enable_zenity(download_command, msg)
     except TimeoutError:

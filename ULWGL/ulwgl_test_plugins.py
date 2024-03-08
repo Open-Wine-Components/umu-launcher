@@ -225,9 +225,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 dirs_exist_ok=True,
                 symlinks=True,
             )
-            copy(
-                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
-            )
+            copy(Path(self.test_user_share, "run"), Path(self.test_local_share, "run"))
             copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
@@ -294,9 +292,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 dirs_exist_ok=True,
                 symlinks=True,
             )
-            copy(
-                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
-            )
+            copy(Path(self.test_user_share, "run"), Path(self.test_local_share, "run"))
             copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
@@ -369,9 +365,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 dirs_exist_ok=True,
                 symlinks=True,
             )
-            copy(
-                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
-            )
+            copy(Path(self.test_user_share, "run"), Path(self.test_local_share, "run"))
             copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
