@@ -2,7 +2,7 @@ import os
 import tarfile
 
 from ulwgl_consts import CONFIG
-from typing import Any, Callable, Dict
+from typing import Any, Dict
 from json import load, dump
 from ulwgl_log import log
 from sys import stderr
@@ -174,19 +174,17 @@ def _install_ulwgl(
     The designated locations to copy to will be: ~/.local/share/ULWGL, ~/.local/share/Steam/compatibilitytools.d
     The tools that will be copied are: SteamRT, Pressure Vessel, ULWGL-Launcher, ULWGL Launcher files, Reaper and ULWGL_VERSION.json
     """
-    cp: Callable[Path, Path] = copy
-
     log.debug("New install detected")
 
     local.mkdir(parents=True, exist_ok=True)
 
     # Config
     print(f"Copying {CONFIG} -> {local} ...", file=stderr)
-    cp(root.joinpath(CONFIG), local.joinpath(CONFIG))
+    copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
 
     # Reaper
     print(f"Copying reaper -> {local}", file=stderr)
-    cp(root.joinpath("reaper"), local.joinpath("reaper"))
+    copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
     setup_runtime(root, json)
@@ -195,7 +193,7 @@ def _install_ulwgl(
     for file in root.glob("*.py"):
         if not file.name.startswith("ulwgl_test"):
             print(f"Copying {file} -> {local} ...", file=stderr)
-            cp(file, local.joinpath(file.name))
+            copy(file, local.joinpath(file.name))
 
     local.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
 
@@ -208,8 +206,11 @@ def _install_ulwgl(
     if steam_compat.joinpath("ULWGL-Launcher").is_dir():
         rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
 
-    copyfile_tree(
-        root.joinpath("ULWGL-Launcher"), steam_compat.joinpath("ULWGL-Launcher")
+    copytree(
+        root.joinpath("ULWGL-Launcher"),
+        steam_compat.joinpath("ULWGL-Launcher"),
+        dirs_exist_ok=True,
+        symlinks=True,
     )
 
     steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
@@ -232,8 +233,6 @@ def _update_ulwgl(
     This happens by way of comparing the key/values of the local ULWGL_VERSION.json against the root configuration file
     In the case that the writable directories we copy to are in a partial state, a best effort is made to restore the missing files
     """
-    cp: Callable[Path, Path] = copy
-
     log.debug("Existing install detected")
 
     # Attempt to copy only the updated versions
@@ -251,14 +250,14 @@ def _update_ulwgl(
                     file=stderr,
                 )
 
-                cp(root.joinpath("reaper"), local.joinpath("reaper"))
+                copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
             # Update
             if val != reaper:
                 print(f"Updating {key} to {val} ...", file=stderr)
 
                 local.joinpath("reaper").unlink(missing_ok=True)
-                cp(root.joinpath("reaper"), local.joinpath("reaper"))
+                copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
                 json_local["ulwgl"]["versions"]["reaper"] = val
         elif key == "pressure_vessel":
@@ -272,16 +271,22 @@ def _update_ulwgl(
                     file=stderr,
                 )
 
-                copyfile_tree(
-                    root.joinpath("pressure-vessel"), local.joinpath("pressure-vessel")
+                copytree(
+                    root.joinpath("pressure-vessel"),
+                    local.joinpath("pressure-vessel"),
+                    dirs_exist_ok=True,
+                    symlinks=True,
                 )
             elif local.joinpath("pressure-vessel").is_dir() and val != pv:
                 # Update
                 print(f"Updating {key} to {val} ...", file=stderr)
 
                 rmtree(local.joinpath("pressure-vessel").as_posix())
-                copyfile_tree(
-                    root.joinpath("pressure-vessel"), local.joinpath("pressure-vessel")
+                copytree(
+                    root.joinpath("pressure-vessel"),
+                    local.joinpath("pressure-vessel"),
+                    dirs_exist_ok=True,
+                    symlinks=True,
                 )
 
                 json_local["ulwgl"]["versions"]["pressure_vessel"] = val
@@ -318,7 +323,7 @@ def _update_ulwgl(
                 for file in root.glob("*.py"):
                     if not file.name.startswith("ulwgl_test"):
                         local.joinpath(file.name).unlink(missing_ok=True)
-                        cp(file, local.joinpath(file.name))
+                        copy(file, local.joinpath(file.name))
 
                 # Symlink
                 local.joinpath("ulwgl-run").unlink(missing_ok=True)
@@ -336,9 +341,11 @@ def _update_ulwgl(
                     file=stderr,
                 )
 
-                copyfile_tree(
+                copytree(
                     root.joinpath("ULWGL-Launcher"),
                     steam_compat.joinpath("ULWGL-Launcher"),
+                    dirs_exist_ok=True,
+                    symlinks=True,
                 )
 
                 steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
@@ -349,9 +356,11 @@ def _update_ulwgl(
                 print(f"Updating {key} to {val} ...", file=stderr)
 
                 rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
-                copyfile_tree(
+                copytree(
                     root.joinpath("ULWGL-Launcher"),
                     steam_compat.joinpath("ULWGL-Launcher"),
+                    dirs_exist_ok=True,
+                    symlinks=True,
                 )
 
                 steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
@@ -389,12 +398,3 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
         raise ValueError(err)
 
     return json
-
-
-def copyfile_reflink(src: Path, dst: Path) -> None:  # noqa: D103
-    copy(src.as_posix(), dst.as_posix())
-
-
-def copyfile_tree(src: Path, dest: Path) -> None:
-    """Copy the directory tree from a source to a destination."""
-    copytree(src.as_posix(), dest.as_posix(), dirs_exist_ok=True, symlinks=True)
