@@ -1,3 +1,5 @@
+PROJECT := ulwgl-launcher
+
 # If this is changed to ULWGL (uppercase), `uninstall` target will also remove the SLR directory
 INSTALLDIR ?= ulwgl
 
@@ -14,7 +16,24 @@ USERINSTALL ?= xfalse
 
 
 .PHONY: all
-all: reaper ulwgl ulwgl-launcher
+all: version reaper ulwgl ulwgl-launcher
+
+
+# Special case, do this inside the source directory for release distribution
+ULWGL/ULWGL_VERSION.json: ULWGL/ULWGL_VERSION.json.in
+	$(info :: Updating $(@) )
+	cp $(<) $(<).tmp
+	sed 's|##ULWGL_VERSION##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
+	sed 's|##REAPER_VERSION##|$(shell git -C subprojects/reaper describe --always --long --tags)|g' -i $(<).tmp
+	mv $(<).tmp $(@)
+
+.PHONY: version
+version: ULWGL/ULWGL_VERSION.json
+
+version-install: version
+	$(info :: Installing ULWGL_VERSION.json )
+	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 ULWGL/ULWGL_VERSION.json -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 
 $(OBJDIR)/.build-ulwgl: | $(OBJDIR)
@@ -29,7 +48,7 @@ ulwgl-bin-install: ulwgl
 	install -d $(DESTDIR)$(BINDIR)
 	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(BINDIR)/ulwgl-run
 
-ulwgl-dist-install:
+ulwgl-dist-install: version-install
 	$(info :: Installing ulwgl )
 	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 ULWGL/ulwgl_consts.py    -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
@@ -38,12 +57,8 @@ ulwgl-dist-install:
 	install -Dm 644 ULWGL/ulwgl_plugins.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 755 ULWGL/ulwgl_run.py     	 -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 ULWGL/ulwgl_util.py      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 ULWGL/ULWGL_VERSION.json -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
-# Install both dist and sh script target
 ulwgl-install: ulwgl-dist-install ulwgl-bin-install
-# Install dist only target
-#ulwgl-install: ulwgl-dist-install
 
 
 $(OBJDIR)/.build-ulwgl-launcher: | $(OBJDIR)
@@ -64,9 +79,6 @@ ulwgl-launcher-dist-install:
 	install -Dm 644 ULWGL/ULWGL-Launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
 	install -Dm 644 ULWGL/ULWGL-Launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
 
-# Install both dist and sh script target
-#ulwgl-launcher-install: ulwgl-launcher-dist-install ulwgl-launcher-bin-install
-# Install dist only target
 ulwgl-launcher-install: ulwgl-launcher-dist-install
 
 
@@ -84,31 +96,43 @@ reaper-install: reaper
 	install -Dm 755 $(OBJDIR)/$</$< -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 
-.PHONY: $(OBJDIR)
 $(OBJDIR):
-	@mkdir -p $(OBJDIR)
+	@mkdir -p $(@)
 
 
 .PHONY: clean
 clean:
-	$(info Cleaning "$(OBJDIR)" build directory)
-	@rm -rf -v $(OBJDIR)
+	$(info :: Cleaning source directory )
+	@rm -rf -v $(OBJDIR) ULWGL/ULWGL_VERSION.json ./$(RELEASEDIR) $(RELEASEDIR).tar.gz
+
+
+RELEASEDIR := $(PROJECT)-$(shell git describe --abbrev=0)
+$(RELEASEDIR):
+	mkdir -p $(@)
+
+.PHONY: release
+release: $(RELEASEDIR) | version
+	$(info :: Creating source distribution for release )
+	mkdir -p $(<)
+	rm -rf ULWGL/__pycache__
+	cp -r ULWGL flatpak subprojects Makefile.in configure.sh README.md LICENSE $(<)
+	tar -cvzf $(<).tar.gz $(<)
 
 
 .PHONY: uninstall
 # NEVER use a wildcard here
 uninstall:
-	$(info Removing $(INSTALLDIR) files in $(DESTDIR)$(BINDIR))
+	$(info :: Removing $(INSTALLDIR) files in $(DESTDIR)$(BINDIR) )
 	@rm -rf -v --preserve-root=all $(DESTDIR)$(BINDIR)/ulwgl-run
-	$(info Removing $(INSTALLDIR) directory in $(DESTDIR)$(DATADIR))
+	$(info :: Removing $(INSTALLDIR) directory in $(DESTDIR)$(DATADIR) )
 	@rm -rf -v --preserve-root=all $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 
 .PHONY: user-install
 user-install:
-	$(info :: ---)
-	$(info :: Installed under user-only location "$(DATADIR)/$(INSTALLDIR)")
-	$(info :: To run you need to make sure "$(BINDIR)" is in your PATH)
+	$(info :: --- )
+	$(info :: Installed under user-only location "$(DATADIR)/$(INSTALLDIR)" )
+	$(info :: To run you need to make sure "$(BINDIR)" is in your PATH )
 
 ulwgl-docs-install:
 	$(info :: Installing man pages)
