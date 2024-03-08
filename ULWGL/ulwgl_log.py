@@ -24,9 +24,9 @@ class Formatter(logging.Formatter):
         return formatter.format(record)
 
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger(__name__)
 
-console_handler = logging.StreamHandler(stream=stderr)
+console_handler: logging.StreamHandler = logging.StreamHandler(stream=stderr)
 console_handler.setFormatter(Formatter())
 log.addHandler(console_handler)
 log.setLevel(logging.CRITICAL + 1)
