@@ -5,7 +5,6 @@ import argparse
 from argparse import Namespace
 from unittest.mock import patch
 from pathlib import Path
-from shutil import rmtree
 import re
 import ulwgl_plugins
 import ulwgl_dl_util
@@ -13,6 +12,7 @@ import tarfile
 import ulwgl_util
 import hashlib
 import json
+from shutil import rmtree, copytree, copy
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -211,18 +211,18 @@ class TestGameLauncher(unittest.TestCase):
                 json_root,
                 json_local,
             )
-            ulwgl_util.copyfile_tree(
+            copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                dirs_exist_ok=True,
+                symlinks=True,
             )
-            ulwgl_util.copyfile_reflink(
-                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
-            )
-            ulwgl_util.copyfile_reflink(
+            copy(Path(self.test_user_share, "run"), Path(self.test_local_share, "run"))
+            copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "ULWGL"),
                 Path(self.test_local_share, "ULWGL"),
             )
@@ -467,18 +467,18 @@ class TestGameLauncher(unittest.TestCase):
                 json_root,
                 json_local,
             )
-            ulwgl_util.copyfile_tree(
+            copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                dirs_exist_ok=True,
+                symlinks=True,
             )
-            ulwgl_util.copyfile_reflink(
-                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
-            )
-            ulwgl_util.copyfile_reflink(
+            copy(Path(self.test_user_share, "run"), Path(self.test_local_share, "run"))
+            copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "ULWGL"),
                 Path(self.test_local_share, "ULWGL"),
             )
@@ -677,18 +677,18 @@ class TestGameLauncher(unittest.TestCase):
             result = ulwgl_util._install_ulwgl(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
-            ulwgl_util.copyfile_tree(
+            copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                dirs_exist_ok=True,
+                symlinks=True,
             )
-            ulwgl_util.copyfile_reflink(
-                Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
-            )
-            ulwgl_util.copyfile_reflink(
+            copy(Path(self.test_user_share, "run"), Path(self.test_local_share, "run"))
+            copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "ULWGL"),
                 Path(self.test_local_share, "ULWGL"),
             )
@@ -769,147 +769,6 @@ class TestGameLauncher(unittest.TestCase):
             Path(self.test_local_share, "ulwgl-run").readlink(),
             Path("ulwgl_run.py"),
             "Expected ulwgl-run -> ulwgl_run.py",
-        )
-
-    def test_copy_tree_link(self):
-        """Test copyfile_tree for symbolic links.
-
-        An error should not be raised in the process of copying symbolic links within a directory.
-        """
-        result = False
-        test_dir = Path("tmp.IVz99WdYA6")
-
-        test_dir.mkdir(exist_ok=True)
-
-        # Symlink to the config
-        test_dir.joinpath("ULWGL_VERSION.json").symlink_to(
-            self.test_user_share.joinpath("ULWGL_VERSION.json")
-        )
-
-        self.assertTrue(
-            test_dir.joinpath("ULWGL_VERSION.json").is_symlink(),
-            "Expected ULWGL_VERSION.json to exist in test /usr/share/ULWGL",
-        )
-        self.assertFalse(
-            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
-            "Expected ULWGL_VERSION.json to not exist in test .local/share/ULWGL",
-        )
-
-        # Copy the dir with the symlink to the local share dir
-        result = ulwgl_util.copyfile_tree(test_dir, self.test_local_share)
-
-        # Confirm the state of the dest dir
-        self.assertFalse(result, "Expected None after calling copyfile_tree")
-        self.assertTrue(
-            any(self.test_local_share.iterdir()),
-            "Expected destination dir to not be empty",
-        )
-        self.assertEqual(
-            len(list(self.test_local_share.glob("*"))), 1, "Expected only one file"
-        )
-        self.assertTrue(
-            self.test_local_share.joinpath("ULWGL_VERSION.json").is_symlink(),
-            "Expected ULWGL_VERSION.json to be copied",
-        )
-
-        if test_dir.exists():
-            test_dir.joinpath("ULWGL_VERSION.json").unlink()
-            test_dir.rmdir()
-
-    def test_copy_tree(self):
-        """Test copyfile_tree.
-
-        An error should not be raised in the process of a simple copy transaction nor during recursion -- infinite recursion or callstack limit.
-        """
-        result = False
-        test_dir = Path("tmp.RkjsKEm8pZ")
-
-        test_dir.mkdir(exist_ok=True)
-        test_dir.joinpath("ULWGL_VERSION.json").touch()
-        with test_dir.joinpath("ULWGL_VERSION.json").open(mode="w") as file:
-            file.write(self.test_config)
-
-        self.assertTrue(
-            test_dir.joinpath("ULWGL_VERSION.json").exists(),
-            "Expected ULWGL_VERSION.json to exist in test /usr/share/ULWGL",
-        )
-        self.assertFalse(
-            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
-            "Expected ULWGL_VERSION.json to not exist in test .local/share/ULWGL",
-        )
-
-        # Copy the test dir contents into the other test dir
-        result = ulwgl_util.copyfile_tree(test_dir, self.test_local_share)
-
-        # Confirm the state of the dest dir
-        self.assertFalse(result, "Expected None after calling copyfile_tree")
-        self.assertTrue(
-            any(self.test_local_share.iterdir()),
-            "Expected destination dir to not be empty",
-        )
-        self.assertEqual(
-            len(list(self.test_local_share.glob("*"))), 1, "Expected only one file"
-        )
-        self.assertTrue(
-            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
-            "Expected ULWGL_VERSION.json to be copied",
-        )
-
-        if test_dir.exists():
-            test_dir.joinpath("ULWGL_VERSION.json").unlink()
-            test_dir.rmdir()
-
-    def test_copy(self):
-        """Test copyfile_reflink.
-
-        An error should not be raised when copying a file
-        A subset of metadata as well as the integrity of the file data are verified
-        """
-        result = None
-        src = b""
-        dst = b""
-
-        self.assertTrue(
-            self.test_user_share.joinpath("ULWGL_VERSION.json").exists(),
-            "Expected ULWGL_VERSION.json to exist in test /usr/share/ULWGL",
-        )
-        self.assertFalse(
-            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
-            "Expected ULWGL_VERSION.json to not exist in test .local/share/ULWGL",
-        )
-
-        # Copy ULWGL_VERSION.json to the mocked .local/share/ULWGL
-        result = ulwgl_util.copyfile_reflink(
-            self.test_user_share.joinpath("ULWGL_VERSION.json"),
-            self.test_local_share.joinpath("ULWGL_VERSION.json"),
-        )
-
-        self.assertFalse(result, "Expected None when calling copyfile_reflink")
-        self.assertTrue(
-            self.test_local_share.joinpath("ULWGL_VERSION.json").exists(),
-            "Expected ULWGL_VERSION.json to be copied to local share",
-        )
-
-        # Verify the integrity
-        with self.test_user_share.joinpath("ULWGL_VERSION.json").open(
-            mode="rb"
-        ) as file:
-            src = file.read()
-
-        with self.test_local_share.joinpath("ULWGL_VERSION.json").open(
-            mode="rb"
-        ) as file:
-            dst = file.read()
-
-        self.assertEqual(
-            hashlib.blake2b(src).digest(),
-            hashlib.blake2b(dst).digest(),
-            "Expected the same files",
-        )
-        self.assertEqual(
-            self.test_user_share.joinpath("ULWGL_VERSION.json").stat().st_mode,
-            self.test_local_share.joinpath("ULWGL_VERSION.json").stat().st_mode,
-            "Expected metadata to be equal",
         )
 
     def test_get_json_err(self):
@@ -1455,18 +1314,20 @@ class TestGameLauncher(unittest.TestCase):
             ulwgl_util._install_ulwgl(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
-            ulwgl_util.copyfile_tree(
+            copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                dirs_exist_ok=True,
+                symlinks=True,
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "ULWGL"),
                 Path(self.test_local_share, "ULWGL"),
             )

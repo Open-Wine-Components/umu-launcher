@@ -6,12 +6,12 @@ from argparse import Namespace
 from unittest.mock import patch
 from pathlib import Path
 from tomllib import TOMLDecodeError
-from shutil import rmtree
 import re
 import ulwgl_plugins
 import tarfile
 import json
 import ulwgl_util
+from shutil import rmtree, copy, copytree
 
 
 class TestGameLauncherPlugins(unittest.TestCase):
@@ -219,14 +219,16 @@ class TestGameLauncherPlugins(unittest.TestCase):
             ulwgl_util._install_ulwgl(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
-            ulwgl_util.copyfile_tree(
+            copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                dirs_exist_ok=True,
+                symlinks=True,
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
             )
@@ -286,18 +288,20 @@ class TestGameLauncherPlugins(unittest.TestCase):
             ulwgl_util._install_ulwgl(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
-            ulwgl_util.copyfile_tree(
+            copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                dirs_exist_ok=True,
+                symlinks=True,
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "ULWGL"),
                 Path(self.test_local_share, "ULWGL"),
             )
@@ -359,18 +363,20 @@ class TestGameLauncherPlugins(unittest.TestCase):
             ulwgl_util._install_ulwgl(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
-            ulwgl_util.copyfile_tree(
+            copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                dirs_exist_ok=True,
+                symlinks=True,
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "run"), Path(self.test_local_share, "run")
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
             )
-            ulwgl_util.copyfile_reflink(
+            copy(
                 Path(self.test_user_share, "ULWGL"),
                 Path(self.test_local_share, "ULWGL"),
             )
