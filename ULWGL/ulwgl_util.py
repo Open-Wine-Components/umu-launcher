@@ -1,6 +1,5 @@
-import os
-import tarfile
-
+from os import getuid
+from tarfile import open as tar_open
 from ulwgl_consts import CONFIG
 from typing import Any, Dict
 from json import load, dump
@@ -20,7 +19,7 @@ class UnixUser:
 
     def __init__(self):
         """Immutable properties of the user determined by the password database that's derived from the real user id."""
-        uid: int = os.getuid()
+        uid: int = getuid()
         entry: struct_passwd = getpwuid(uid)
         # Immutable properties, hence no setters
         self.name: str = entry.pw_name
@@ -96,7 +95,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     log.debug(f"Opening: {tar_path}")
 
     # Open the tar file
-    with tarfile.open(tar_path, "r:gz") as tar:
+    with tar_open(tar_path, "r:gz") as tar:
         # Ensure the target directory exists
         Path.home().joinpath(".local", "share", "ULWGL").mkdir(
             parents=True, exist_ok=True
