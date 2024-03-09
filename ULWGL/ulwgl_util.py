@@ -152,9 +152,9 @@ def setup_ulwgl(root: Path, local: Path) -> None:
 
     json = _get_json(root, CONFIG)
 
-    # New install
+    # New install or ULWGL dir is empty
     # Be lazy and don't implement fallback mechanisms
-    if not local.exists():
+    if not local.exists() or not any(local.iterdir()):
         return _install_ulwgl(root, local, steam_compat, json)
 
     return _update_ulwgl(root, local, steam_compat, json, _get_json(local, CONFIG))
