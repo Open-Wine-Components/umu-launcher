@@ -11,12 +11,12 @@ ulwgl-run - Unified Launcher for Windows Games on Linux
 # OPTIONS
 
 *-h, --help*
-	Show this help message
+	Show this help message.
 
 *--config* <config>
-	Path to TOML configuration file (Requires Python 3.11+)
+	Path to TOML configuration file (Requires Python 3.11+).
 
-	See *ulwgl*(5) for more info and examples
+	See *ulwgl*(5) for more info and examples.
 
 # EXAMPLES
 
