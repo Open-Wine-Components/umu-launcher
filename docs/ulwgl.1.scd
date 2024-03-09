@@ -18,6 +18,23 @@ ulwgl-run - Unified Launcher for Windows Games on Linux
 
 	See *ulwgl*(5) for more info and examples.
 
+# DESCRIPTION
+
+The Unified Launcher for Windows Games on Linux (ULWGL) was created to make
+Valve's Proton and the Protonfixes project accessible outside the Steam client,
+providing a standardized way for other clients (e.g., Lutris, Heroic Games
+Launcher, Bottles, or Rare) to run games via Proton and configure WINE
+prefixes.
+
+As a result, clients:
+- No longer require Steam or Steam binaries to be installed
+- Can contribute and benefit from Protonfixes
+- Can run games through Proton as it were a native Steam game
+- Can reference a unified online database of game fixes (Protonfixes)
+
+You can run ULWGL directly from the tty, or through your launcher of 
+choice if supported.
+
 # EXAMPLES
 
 ```
