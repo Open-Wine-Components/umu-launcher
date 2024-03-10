@@ -32,7 +32,7 @@ As a result, clients:
 - Can run games through Proton as it were a native Steam game
 - Can reference a unified online database of game fixes (Protonfixes)
 
-You can run ULWGL directly from the tty, or through your launcher of 
+You can run ULWGL directly from a terminal emulator, or through your launcher of 
 choice if supported.
 
 # EXAMPLES
