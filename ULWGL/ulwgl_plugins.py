@@ -6,6 +6,7 @@ from typing import Dict, Set, Any, List, Tuple
 from argparse import Namespace
 from shutil import which
 from ulwgl_log import log
+from ulwgl_consts import GamescopeOptions
 
 
 def set_env_toml(
@@ -212,5 +213,53 @@ def enable_systemd(env: Dict[str, str], command: List[str]) -> List[str]:
 
     # TODO Allow users to pass their own options
     command.extend([bin, "--user", "--scope", "--send-sighup"])
+
+    return command
+
+
+def enable_gamescope(
+    env: Dict[str, str], command: List[str], toml: Dict[str, Any]
+) -> List[str]:
+    """Enable the SteamOS session compositing window manager."""
+    bin: str = which("gamescope")
+    opts: List[str] = []
+
+    if not bin:
+        err: str = "gamescope is not found in system"
+        raise FileNotFoundError(err)
+
+    # Options
+    for key, val in toml["plugins"]["gamescope"].items():
+        opt: str = key.replace("_", "-")
+
+        # Check option
+        if (
+            opt not in GamescopeOptions.BOOLS.value
+            and opt not in GamescopeOptions.STRINGS.value
+            and opt not in GamescopeOptions.NUMBERS.value
+        ):
+            err: str = (
+                f"The following key in [plugins.gamescope] is unrecognized: {key}"
+            )
+            raise ValueError(err)
+
+        # Check option's type
+        if (
+            opt in GamescopeOptions.BOOLS.value
+            and not isinstance(val, bool)
+            or opt in GamescopeOptions.STRINGS.value
+            and not isinstance(val, str)
+            or opt in GamescopeOptions.NUMBERS.value
+            and not isinstance(val, int)
+        ):
+            err: str = f"The following value in [plugins.gamescope] is invalid: {val}"
+            raise ValueError(err)
+
+        if isinstance(val, bool):
+            opts.append(f"--{opt}")
+        else:
+            opts.append(f"--{opt}={val}")
+
+    command.extend([bin, *opts, "--"])
 
     return command

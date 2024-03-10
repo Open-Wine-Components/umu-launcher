@@ -11,6 +11,7 @@ from ulwgl_plugins import (
     set_env_toml,
     enable_reaper,
     enable_systemd,
+    enable_gamescope,
 )
 from re import match
 from subprocess import run
@@ -241,8 +242,18 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
+    # Gamescope
+    if (
+        toml
+        and toml["ulwgl"].get("gamescope")
+        and toml.get("plugins")
+        and toml.get("plugins").get("gamescope")
+    ):
+        log.debug("Using gamescope")
+        enable_gamescope(env, command, toml)
+
     # Subreaper
-    if toml and not toml["ulwgl"]["reaper"]:
+    if toml and "reaper" in toml["ulwgl"] and not toml["ulwgl"]["reaper"]:
         log.debug("Using systemd as subreaper")
         enable_systemd(env, command)
     else:
@@ -334,6 +345,7 @@ if __name__ == "__main__":
         sys.exit(main())
     except KeyboardInterrupt:
         log.warning("Keyboard Interrupt")
+        log.warning("Child processes may still exist if using Gamescope")
         sys.exit(1)
     except Exception as e:  # noqa: BLE001
         print_exception(e)

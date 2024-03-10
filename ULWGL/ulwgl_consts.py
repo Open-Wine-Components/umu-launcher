@@ -12,6 +12,33 @@ class Color(Enum):
     DEBUG = "\u001b[35m"
 
 
+class GamescopeOptions(Enum):
+    """Represent valid and recognizable gamescope 3.14.2+ options organized by types."""
+
+    NUMBERS = {
+        "output-width",
+        "output-height",
+        "nested-width",
+        "nested-height",
+        "nested-refresh",
+        "sharpness",
+        "framerate-limit",
+        "sdr-gamut-wideness",
+        "hdr-sdr-content-nits",
+        "hdr-itm-enable",
+        "hdr-itm-target-nits",
+    }
+    STRINGS = {
+        "filter",
+        "hdr-enabled",
+    }
+    BOOLS = {
+        "immediate-flips",
+        "adaptive-sync",
+        "grab",
+    }
+
+
 SIMPLE_FORMAT = f"%(levelname)s:  {Color.BOLD.value}%(message)s{Color.RESET.value}"
 
 DEBUG_FORMAT = f"%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:{Color.BOLD.value}%(message)s{Color.RESET.value}"
