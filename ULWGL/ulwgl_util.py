@@ -184,7 +184,7 @@ def _install_ulwgl(
     copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
 
     # Reaper
-    print(f"Copying reaper -> {local}", file=stderr)
+    print(f"Copying reaper -> {local} ...", file=stderr)
     copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
