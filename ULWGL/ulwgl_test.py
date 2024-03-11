@@ -956,6 +956,30 @@ class TestGameLauncher(unittest.TestCase):
                     "Expected Proton dir in compat to be cleaned",
                 )
 
+    def test_cache_offline(self):
+        """Test _get_from_cache when the user is offline.
+
+        In this case, we just get the first Proton that appears since we cannot determine the latest
+        """
+        result = None
+        # When user is offline, there are no files
+        files = []
+
+        result = ulwgl_dl_util._get_from_cache(
+            self.env, self.test_compat, self.test_cache, files, False
+        )
+
+        # Verify that the old Proton was assigned
+        # The test file should be there
+        self.assertTrue(result is self.env, "Expected the same reference")
+        self.assertTrue(
+            os.environ["PROTONPATH"], "Expected PROTONPATH env var to be set"
+        )
+        self.assertTrue(
+            self.env["PROTONPATH"],
+            "Expected PROTONPATH to be updated in dict",
+        )
+
     def test_cache_old(self):
         """Test _get_from_cache when the cache is empty.
 
