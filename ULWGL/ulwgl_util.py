@@ -153,6 +153,8 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     except TimeoutError:
         log.debug("User is offline")
         raise
+    except OSError:
+        raise
 
     json: Dict[str, Any] = None
     steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")

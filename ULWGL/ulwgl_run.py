@@ -15,6 +15,7 @@ from ulwgl_util import setup_ulwgl
 from ulwgl_log import log, console_handler, Formatter
 from ulwgl_util import UnixUser
 from logging import INFO, WARNING, DEBUG
+from errno import ENETUNREACH
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
@@ -293,6 +294,13 @@ def main() -> int:  # noqa: D103
         if not local.exists() or not any(local.iterdir()):
             err: str = "ULWGL has not been setup for the user\nAn internet connection is required to setup ULWGL"
             raise RuntimeError(err)
+    except OSError as e:
+        # User's network is unreachable and ULWGL has not been setup
+        if e.errno == ENETUNREACH and not local.exists() or not any(local.iterdir()):
+            err: str = "ULWGL has not been setup for the user\nAn internet connection is required to setup ULWGL"
+            raise RuntimeError(err)
+        if e.error != ENETUNREACH:
+            raise
 
     if isinstance(args, Namespace) and getattr(args, "config", None):
         set_env_toml(env, args)
