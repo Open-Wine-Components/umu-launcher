@@ -12,6 +12,7 @@ from ulwgl_plugins import enable_zenity
 from urllib.request import urlopen
 from ssl import create_default_context
 from http.client import HTTPResponse, HTTPException
+from socket import create_connection
 
 
 class UnixUser:
@@ -146,6 +147,12 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     """
     log.debug(f"Root: {root}")
     log.debug(f"Local: {local}")
+
+    try:
+        create_connection(("1.1.1.1", 80), timeout=1)
+    except TimeoutError:
+        log.debug("User is offline")
+        raise
 
     json: Dict[str, Any] = None
     steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")

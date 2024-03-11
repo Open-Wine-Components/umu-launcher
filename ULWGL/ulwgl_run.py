@@ -287,7 +287,12 @@ def main() -> int:  # noqa: D103
     if "ULWGL_LOG" in os.environ:
         set_log()
 
-    setup_ulwgl(root, local)
+    try:
+        setup_ulwgl(root, local)
+    except TimeoutError:
+        if not local.exists() or not any(local.iterdir()):
+            err: str = "ULWGL has not been setup for the user\nAn internet connection is required to setup ULWGL"
+            raise RuntimeError(err)
 
     if isinstance(args, Namespace) and getattr(args, "config", None):
         set_env_toml(env, args)
