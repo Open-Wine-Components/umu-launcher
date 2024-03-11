@@ -234,11 +234,13 @@ def _get_from_cache(
     name: str = ""
 
     for tarball in cache.glob("ULWGL-Proton*.tar.gz"):
+        # Online
         if files and tarball == cache.joinpath(files[1][0]) and use_latest:
             path = tarball
             name = tarball.name
             break
-        if files and tarball != cache.joinpath(files[1][0]) and not use_latest:
+        # Offline, download interrupt, digest mismatch
+        if not files or not use_latest:
             path = tarball
             name = tarball.name
             break
