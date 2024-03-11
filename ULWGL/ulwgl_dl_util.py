@@ -10,6 +10,7 @@ from json import loads as loads_json
 from urllib.request import urlopen
 from sys import stderr
 from ulwgl_plugins import enable_zenity
+from socket import gaierror
 
 
 def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
@@ -22,8 +23,8 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
 
     try:
         files = _fetch_releases()
-    except HTTPException:
-        print("Offline.\nContinuing ...", file=stderr)
+    except gaierror:
+        print("User is offline.\nContinuing ...", file=stderr)
 
     cache: Path = Path.home().joinpath(".cache/ULWGL")
     steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
