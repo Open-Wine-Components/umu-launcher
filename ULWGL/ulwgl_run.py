@@ -299,7 +299,7 @@ def main() -> int:  # noqa: D103
         if e.errno == ENETUNREACH and not local.exists() or not any(local.iterdir()):
             err: str = "ULWGL has not been setup for the user\nAn internet connection is required to setup ULWGL"
             raise RuntimeError(err)
-        if e.error != ENETUNREACH:
+        if e.errno != ENETUNREACH:
             raise
 
     if isinstance(args, Namespace) and getattr(args, "config", None):
