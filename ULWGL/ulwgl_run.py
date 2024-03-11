@@ -15,6 +15,7 @@ from ulwgl_util import setup_ulwgl
 from ulwgl_log import log, console_handler, Formatter
 from ulwgl_util import UnixUser
 from logging import INFO, WARNING, DEBUG
+from errno import ENETUNREACH
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
@@ -153,7 +154,7 @@ def check_env(
 
     # If download fails/doesn't exist in the system, raise an error
     if not os.environ["PROTONPATH"]:
-        err: str = "Download failed.\nProton could not be found in cache or compatibilitytools.d\nPlease set $PROTONPATH or visit https://github.com/Open-Wine-Components/ULWGL-Proton/releases"
+        err: str = "Download failed.\nULWGL-Proton could not be found in cache or compatibilitytools.d\nPlease set $PROTONPATH or visit https://github.com/Open-Wine-Components/ULWGL-Proton/releases"
         raise FileNotFoundError(err)
 
     return env
@@ -293,6 +294,13 @@ def main() -> int:  # noqa: D103
         if not local.exists() or not any(local.iterdir()):
             err: str = "ULWGL has not been setup for the user\nAn internet connection is required to setup ULWGL"
             raise RuntimeError(err)
+    except OSError as e:
+        # User's network is unreachable and ULWGL has not been setup
+        if e.errno == ENETUNREACH and not local.exists() or not any(local.iterdir()):
+            err: str = "ULWGL has not been setup for the user\nAn internet connection is required to setup ULWGL"
+            raise RuntimeError(err)
+        if e.errno != ENETUNREACH:
+            raise
 
     if isinstance(args, Namespace) and getattr(args, "config", None):
         set_env_toml(env, args)
