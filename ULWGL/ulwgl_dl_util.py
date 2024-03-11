@@ -238,7 +238,7 @@ def _get_from_cache(
             path = tarball
             name = tarball.name
             break
-        if tarball != cache.joinpath(files[1][0]) and not use_latest:
+        if files and tarball != cache.joinpath(files[1][0]) and not use_latest:
             path = tarball
             name = tarball.name
             break
