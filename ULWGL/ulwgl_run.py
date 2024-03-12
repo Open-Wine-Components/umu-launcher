@@ -118,7 +118,8 @@ def check_env(
     env["GAMEID"] = os.environ["GAMEID"]
 
     if "WINEPREFIX" not in os.environ:
-        pfx: Path = Path.home().joinpath("Games/ULWGL/" + env["GAMEID"])
+        id: str = env["GAMEID"]
+        pfx: Path = Path.home().joinpath(f"Games/ULWGL/ulwgl-{id}")
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = pfx.as_posix()
     if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
