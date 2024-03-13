@@ -14,10 +14,13 @@ from socket import gaierror
 
 
 def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
-    """Attempt to find existing Proton from the system or downloads the latest if PROTONPATH is not set.
+    """Attempt to find existing Proton from the system.
 
-    Only fetches the latest if not first found in .local/share/Steam/compatibilitytools.d
-    .cache/ULWGL is referenced for the latest then as fallback
+    Downloads the latest if not first found in:
+    ~/.local/share/Steam/compatibilitytools.d
+
+    The cache directory ~/.cache/ULWGL is referenced for the latest then as
+    fallback
     """
     files: List[Tuple[str, str]] = []
 
@@ -50,7 +53,8 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     if _get_from_cache(env, steam_compat, cache, files, False):
         return env
 
-    # No internet and cache/compat tool is empty, just return and raise an exception from the caller
+    # No internet and cache/compat tool is empty, just return and raise an
+    # exception from the caller
     return env
 
 
@@ -228,7 +232,8 @@ def _get_from_cache(
     """Refer to ULWGL cache directory.
 
     Use the latest in the cache when present. When download fails, use an old version
-    Older Proton versions are only referred to when: digests mismatch, user interrupt, or download failure/no internet
+    Older Proton versions are only referred to when: digests mismatch, user
+    interrupt, or download failure/no internet
     """
     path: Path = None
     name: str = ""
