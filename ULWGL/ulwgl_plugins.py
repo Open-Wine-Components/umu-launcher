@@ -72,8 +72,9 @@ def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]):
             raise ValueError(err)
 
         # Raise an error for executables that do not exist
-        # One case this can happen is when game options are appended at the end of the exe
-        # Users should use launch_args for that
+        # One case this can happen is when game options are appended at the
+        # end of the exe
+        # Users should use launch_args game options
         if key == "exe" and not Path(toml[table][key]).expanduser().is_file():
             val: str = toml[table][key]
             err: str = f"Value for key '{key}' in TOML is not a file: {val}"
@@ -90,7 +91,10 @@ def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]):
     # Check for empty keys
     for key, val in toml[table].items():
         if not val and isinstance(val, str):
-            err: str = f"Value is empty for '{key}' in TOML.\nPlease specify a value or remove the following entry:\n{key} = {val}"
+            err: str = (
+                f"Value is empty for '{key}' in TOML.\n"
+                + "Please specify a value or remove the following entry:\n{key} = {val}"
+            )
             raise ValueError(err)
 
     return toml
