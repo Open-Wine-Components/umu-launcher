@@ -26,21 +26,54 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
+    "builddir",
 ]
 
 # Same as Black.
 line-length = 88
 indent-width = 4
 
-# Assume Python 3.8
-target-version = "py38"
+target-version = "py310"
 
 [lint]
-# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
-# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
-# McCabe complexity (`C901`) by default.
-select = ["E4", "E7", "E9", "F", "RET", "PTH", "D", "W", "BLE001", "EM"]
-ignore = ["D100", "D203", "D213"]
+select = [
+    # Ruff defaults
+    "E4", 
+    "E7", 
+    "E9", 
+    "F", 
+    # Ensure we're being smart when raising, returning or breaking
+    "RET", 
+    # Enforce pydocstyle
+    "W", 
+    # Enforce more formats
+    # See https://docs.astral.sh/ruff/rules/#warning-w
+    "D", 
+    # Enforce pathlib when working with paths
+    "PTH", 
+    # Ensure exceptions are not blindly caught
+    "BLE001", 
+    # Enforce flake8 error messages
+    "EM", 
+    # Ensure we're being smart when working with archives/executing shell commands
+    # Or when dealing with input returned from web services (e.g., Github)
+    "S",
+    # Ensure we do not exceed our line length
+    "E501"
+]
+ignore = [
+    # Format
+    "D100", 
+    "D203",
+    "D213",
+    # Ignore untrusted input for subprocess
+    # This raises false negatives and currently we shell out when:
+    # Using Zenity or executing the final command
+    # In the above cases, we *always* verify the existence of the command/files
+    "S603",
+    # We use a static location for the crash report dir: /tmp/ULWGL_crashreports
+    "S108" 
+]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
