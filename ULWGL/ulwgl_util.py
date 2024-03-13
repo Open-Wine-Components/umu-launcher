@@ -16,10 +16,16 @@ from socket import create_connection
 
 
 class UnixUser:
-    """Represents the User of the system as determined by the password database rather than environment variables or file system paths."""
+    """Represents the User of the system as determined by password db (pwd).
+
+    This contrasts with environment variables or file system paths
+    """
 
     def __init__(self):
-        """Immutable properties of the user determined by the password database that's derived from the real user id."""
+        """Immutable properties of the user determined by pwd.
+
+        Values are derived from the real user id
+        """
         uid: int = getuid()
         entry: struct_passwd = getpwuid(uid)
         # Immutable properties, hence no setters
@@ -29,15 +35,15 @@ class UnixUser:
         self.is_user: bool = self.puid == uid
 
     def get_home_dir(self) -> Path:
-        """User home directory as determined by the password database that's derived from the current process's real user id."""
+        """User home directory."""
         return Path(self.dir).as_posix()
 
     def get_user(self) -> str:
-        """User (login name) as determined by the password database that's derived from the current process's real user id."""
+        """Username (login name)."""
         return self.name
 
     def get_puid(self) -> int:
-        """Numerical user ID as determined by the password database that's derived from the current process's real user id."""
+        """Numerical user ID."""
         return self.puid
 
     def is_user(self, uid: int) -> bool:
@@ -142,7 +148,8 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     """Copy the launcher and its tools to ~/.local/share/ULWGL.
 
     Performs full copies of tools on new installs and selectively on new updates
-    The tools that will be copied are: Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the ULWGL-Launcher
+    The tools that will be copied are:
+    Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the ULWGL-Launcher
     The ULWGL-Launcher will be copied to .local/share/Steam/compatibilitytools.d
     """
     log.debug(f"Root: {root}")
@@ -174,8 +181,12 @@ def _install_ulwgl(
 ) -> None:
     """For new installations, copy all of the ULWGL tools at a user-writable location.
 
-    The designated locations to copy to will be: ~/.local/share/ULWGL, ~/.local/share/Steam/compatibilitytools.d
-    The tools that will be copied are: SteamRT, Pressure Vessel, ULWGL-Launcher, ULWGL Launcher files, Reaper and ULWGL_VERSION.json
+    The designated locations to copy to will be:
+    ~/.local/share/ULWGL, ~/.local/share/Steam/compatibilitytools.d
+
+    The tools that will be copied are:
+    SteamRT, Pressure Vessel, ULWGL-Launcher, ULWGL Launcher files, Reaper
+    and ULWGL_VERSION.json
     """
     log.debug("New install detected")
 
@@ -232,9 +243,14 @@ def _update_ulwgl(
 ) -> None:
     """For existing installations, update the ULWGL tools at a user-writable location.
 
-    The root configuration file (ULWGL_VERSION.json) saved in /usr/share/ULWGL will determine whether an update will be performed or not
-    This happens by way of comparing the key/values of the local ULWGL_VERSION.json against the root configuration file
-    In the case that the writable directories we copy to are in a partial state, a best effort is made to restore the missing files
+    The configuration file (ULWGL_VERSION.json) saved in the root dir
+    will determine whether an update will be performed or not
+
+    This happens by way of comparing the key/values of the local
+    ULWGL_VERSION.json against the root configuration file
+
+    In the case that existing writable directories we copy to are in a partial
+    state, a best effort is made to restore the missing files
     """
     log.debug("Existing install detected")
 
@@ -340,7 +356,8 @@ def _update_ulwgl(
             # Directory is absent
             if not steam_compat.joinpath("ULWGL-Launcher").is_dir():
                 print(
-                    f"ULWGL-Launcher not found\nCopying ULWGL-Launcher -> {steam_compat} ...",
+                    "ULWGL-Launcher not found\n"
+                    + f"Copying ULWGL-Launcher -> {steam_compat} ...",
                     file=stderr,
                 )
 
@@ -380,13 +397,17 @@ def _update_ulwgl(
 def _get_json(path: Path, config: str) -> Dict[str, Any]:
     """Check the state of the configuration file (ULWGL_VERSION.json) in the given path.
 
-    The configuration files are expected to reside in: /usr/share/ULWGL and ~/.local/share/ULWGL
+    The configuration files are expected to reside in:
+    a root directory (e.g., /usr/share/ulwgl) and ~/.local/share/ULWGL
     """
     json: Dict[str, Any] = None
 
     # The file in /usr/share/ULWGL should always exist
     if not path.joinpath(config).is_file():
-        err: str = f"File not found: {config}\nPlease reinstall the package to recover configuration file"
+        err: str = (
+            f"File not found: {config}\n"
+            + "Please reinstall the package to recover configuration file"
+        )
         raise FileNotFoundError(err)
 
     with path.joinpath(config).open(mode="r") as file:
@@ -397,7 +418,10 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
         "ulwgl" not in json
         or (not json.get("ulwgl") or "versions" not in json.get("ulwgl"))
     ):
-        err: str = f"Failed to load {config} or failed to find valid keys in: {config}\nPlease reinstall the package"
+        err: str = (
+            f"Failed to load {config} or 'ulwgl' or 'versions' not in: {config}\n"
+            + "Please reinstall the package"
+        )
         raise ValueError(err)
 
     return json
