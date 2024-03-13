@@ -155,7 +155,11 @@ def check_env(
 
     # If download fails/doesn't exist in the system, raise an error
     if not os.environ["PROTONPATH"]:
-        err: str = "Download failed.\nULWGL-Proton could not be found in cache or compatibilitytools.d\nPlease set $PROTONPATH or visit https://github.com/Open-Wine-Components/ULWGL-Proton/releases"
+        err: str = (
+            "Download failed\n"
+            + "ULWGL-Proton could not be found in cache or compatibilitytools.d\n"
+            + "Please set $PROTONPATH or visit https://github.com/Open-Wine-Components/ULWGL-Proton/releases"
+        )
         raise FileNotFoundError(err)
 
     return env
@@ -226,7 +230,11 @@ def build_command(
     if not local.joinpath("ULWGL").is_file():
         home: str = Path.home().as_posix()
         dir: str = Path(__file__).parent.as_posix()
-        msg: str = f"Path to _v2-entry-point cannot be found in: {home}/.local/share or {dir}\nPlease install a Steam Runtime platform"
+        msg: str = (
+            "Path to _v2-entry-point cannot be found in: "
+            + f"{home}/.local/share or {dir}\n"
+            + "Please install a Steam Runtime platform"
+        )
         raise FileNotFoundError(msg)
 
     if not Path(env.get("PROTONPATH")).joinpath("proton").is_file():
@@ -275,7 +283,8 @@ def main() -> int:  # noqa: D103
     }
     command: List[str] = []
     opts: List[str] = None
-    # Expected files in this dir: pressure vessel, launcher files, runner, config, reaper
+    # Expected files in this dir: pressure vessel, launcher files, runner,
+    # config, reaper
     root: Path = Path(__file__).resolve().parent
     # Expects this dir to be in sync with root
     # On update, files will be selectively updated
@@ -292,13 +301,23 @@ def main() -> int:  # noqa: D103
     try:
         setup_ulwgl(root, local)
     except TimeoutError:
-        if not local.exists() or not any(local.iterdir()):
-            err: str = "ULWGL has not been setup for the user\nAn internet connection is required to setup ULWGL"
+        if not ULWGL_LOCAL.exists() or not any(ULWGL_LOCAL.iterdir()):
+            err: str = (
+                "ULWGL has not been setup for the user\n"
+                + "An internet connection is required to setup ULWGL"
+            )
             raise RuntimeError(err)
     except OSError as e:
         # User's network is unreachable and ULWGL has not been setup
-        if e.errno == ENETUNREACH and not local.exists() or not any(local.iterdir()):
-            err: str = "ULWGL has not been setup for the user\nAn internet connection is required to setup ULWGL"
+        if (
+            e.errno == ENETUNREACH
+            and not ULWGL_LOCAL.exists()
+            or not any(ULWGL_LOCAL.iterdir())
+        ):
+            err: str = (
+                "ULWGL has not been setup for the user\n"
+                + "An internet connection is required to setup ULWGL"
+            )
             raise RuntimeError(err)
         if e.errno != ENETUNREACH:
             raise
