@@ -119,16 +119,28 @@ def _fetch_proton(
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
 
     print(f"Downloading {hash} ...", file=stderr)
-    resp: HTTPResponse = urlopen(hash_url, timeout=30, context=create_default_context())
 
-    if resp.status != 200:
-        err: str = (
-            f"Unable to download {hash}\ngithub.com returned the status: {resp.status}"
-        )
-        raise HTTPException(err)
-    with cache.joinpath(hash).open(mode="wb") as file:
-        file.write(resp.read())
+    # Verify the scheme from Github for resources
+    if not proton_url.startswith("https:") or not hash_url.startswith("https:"):
+        urls = [proton_url, hash_url]
+        err: str = f"Scheme in URLs is not 'https:': {urls}"
+        raise ValueError(err)
 
+    # Digest file
+    # noqa S310 because Ruff currently cannot get this right
+    # See https://github.com/astral-sh/ruff/issues/7918
+    with urlopen(hash_url, timeout=30, context=create_default_context()) as resp:  # noqa: S310
+        if resp.status != 200:
+            err: str = (
+                f"Unable to download {hash}\n"
+                + f"github.com returned the status: {resp.status}"
+            )
+            raise HTTPException(err)
+        with cache.joinpath(hash).open(mode="wb") as file:
+            file.write(resp.read())
+
+    # Proton
+    # Check for Zenity otherwise print
     try:
         download_command: str = (
             f"curl -LJ --silent {proton_url} -o {cache.joinpath(proton).as_posix()}"
@@ -140,17 +152,18 @@ def _fetch_proton(
         raise TimeoutError(err)
     except FileNotFoundError:
         print(f"Downloading {proton} ...", file=stderr)
-        resp: HTTPResponse = urlopen(
-            proton_url, timeout=180, context=create_default_context()
-        )
 
-        # Without Proton, the launcher will not work
-        # Continue by referring to cache
-        if resp.status != 200:
-            err: str = f"Unable to download {proton}\ngithub.com returned the status: {resp.status}"
-            raise HTTPException(err)
-        with cache.joinpath(proton).open(mode="wb") as file:
-            file.write(resp.read())
+        with urlopen(proton_url, timeout=180, context=create_default_context()) as resp:  # noqa: S310
+            # Without Proton, the launcher will not work
+            # Continue by referring to cache
+            if resp.status != 200:
+                err: str = (
+                    f"Unable to download {proton}\n"
+                    + f"github.com returned the status: {resp.status}"
+                )
+                raise HTTPException(err)
+            with cache.joinpath(proton).open(mode="wb") as file:
+                file.write(resp.read())
 
     print("Completed.", file=stderr)
 
