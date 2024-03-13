@@ -101,6 +101,14 @@ $ WINEPREFIX= GAMEID=0 PROTONPATH= PROTON_VERB=waitforexitandrun ulwgl-run ~/foo
 $ ULWGL_LOG=1 WINEPREFIX= GAMEID=0 PROTONPATH= ulwgl-run ~/foo.exe
 ```
 
+*Example 9. Run a game and set a Proton by its version name*
+
+```
+# The launcher will check for GE-Proton9-1 at
+# ~/.local/share/Steam/compatibilitytools.d
+$ WINEPREFIX= GAMEID=0 PROTONPATH=GE-Proton9-1 ulwgl-run ~/foo.exe
+```
+
 # AUTHORS
 
 Maintained by Open Wine Components members, and assisted by other open source
