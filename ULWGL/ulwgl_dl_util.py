@@ -11,6 +11,7 @@ from urllib.request import urlopen
 from sys import stderr
 from ulwgl_plugins import enable_zenity
 from socket import gaierror
+from ulwgl_log import log
 from ulwgl_consts import STEAM_COMPAT, ULWGL_CACHE
 
 
@@ -142,15 +143,22 @@ def _fetch_proton(
     # Proton
     # Check for Zenity otherwise print
     try:
-        download_command: str = (
-            f"curl -LJ --silent {proton_url} -o {cache.joinpath(proton).as_posix()}"
-        )
+        bin: str = "curl"
+        opts: List[str] = [
+            "-LJO",
+            "--silent",
+            proton_url,
+            "--output-dir",
+            cache.as_posix(),
+        ]
+
         msg: str = f"Downloading {proton_dir} ..."
-        enable_zenity(download_command, msg)
+        enable_zenity(bin, opts, msg)
     except TimeoutError:
         err: str = f"Unable to download {proton}\ngithub.com request timed out"
         raise TimeoutError(err)
     except FileNotFoundError:
+        log.exception("Exception occurred when downloading Proton")
         print(f"Downloading {proton} ...", file=stderr)
 
         with urlopen(proton_url, timeout=180, context=create_default_context()) as resp:  # noqa: S310

@@ -1,7 +1,7 @@
 from os import getuid
 from tarfile import open as tar_open
-from typing import Any, Dict
 from ulwgl_consts import CONFIG, STEAM_COMPAT, ULWGL_LOCAL
+from typing import Any, Dict, List
 from json import load, dump
 from ulwgl_log import log
 from sys import stderr
@@ -68,13 +68,20 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/steam-container-runtime-complete.tar.gz"
     log.debug(f"URL: {base_url}")
 
-    # Command to download the file and pipe the progress to Zenity
-    download_command: str = f"curl -LJ --silent {base_url} -o {tar_path}"
-    log.debug(f"Download: {download_command}")
-
+    # Download the runtime
+    # Attempt to create a popup with zenity otherwise print
     try:
+        bin: str = "curl"
+        opts: List[str] = [
+            "-LJO",
+            "--silent",
+            base_url,
+            "--output-dir",
+            tmp.as_posix(),
+        ]
+
         msg: str = "Downloading Runtime, please wait..."
-        enable_zenity(download_command, msg)
+        enable_zenity(bin, opts, msg)
     except TimeoutError:
         # Without the runtime, the launcher will not work
         # Just exit on timeout or download failure
@@ -85,6 +92,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         resp: HTTPResponse = urlopen(
             base_url, timeout=60, context=create_default_context()
         )
+        log.exception("Exception occurred when enabling Zenity")
 
         if resp.status != 200:
             err: str = f"Unable to download the Steam Runtime\nrepo.steampowered.com returned the status: {resp.status}"

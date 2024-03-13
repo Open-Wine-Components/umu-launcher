@@ -149,18 +149,23 @@ def enable_reaper(env: Dict[str, str], command: List[str], local: Path) -> List[
     return command
 
 
-def enable_zenity(command: str, msg: str) -> None:
+def enable_zenity(command: str, opts: List[str], msg: str) -> None:
     """Execute the command and pipe the output to Zenity.
 
     Intended to be used for long running operations (e.g. large file downloads)
     """
     bin: str = which("zenity")
+    cmd: str = which(command)
 
     if not bin:
-        err: str = "Zenity is not found in system"
+        err: str = "zenity was not found in system"
         raise FileNotFoundError(err)
 
-    with Popen(command, shell=True, stdout=PIPE, stderr=STDOUT) as proc:
+    if not cmd:
+        err: str = f"{command} was not found in system"
+        raise FileNotFoundError(err)
+
+    with Popen([cmd, *opts], stdout=PIPE, stderr=STDOUT) as proc:
         # Start Zenity with a pipe to its standard input
         zenity_proc: Popen = Popen(
             [
