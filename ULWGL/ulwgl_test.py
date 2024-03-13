@@ -86,7 +86,8 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
 
-        # Mock a valid configuration file at /usr/share/ULWGL: tmp.BXk2NnvW2m/ULWGL_VERSION.json
+        # Mock a valid configuration file at /usr/share/ULWGL:
+        # tmp.BXk2NnvW2m/ULWGL_VERSION.json
         Path(self.test_user_share, "ULWGL_VERSION.json").touch()
         with Path(self.test_user_share, "ULWGL_VERSION.json").open(mode="w") as file:
             file.write(self.test_config)
@@ -122,7 +123,8 @@ class TestGameLauncher(unittest.TestCase):
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
 
-        # Mock the release downloaded in the cache: tmp.5HYdpddgvs/ULWGL-Proton-5HYdpddgvs.tar.gz
+        # Mock the release downloaded in the cache:
+        # tmp.5HYdpddgvs/ULWGL-Proton-5HYdpddgvs.tar.gz
         # Expected directory structure within the archive:
         #
         # +-- ULWGL-Proton-5HYdpddgvs (root directory)
@@ -160,9 +162,9 @@ class TestGameLauncher(unittest.TestCase):
             rmtree(self.test_local_share.as_posix())
 
     def test_update_ulwgl_empty(self):
-        """Test _update_ulwgl by mocking an update to the runtime tools for missing dirs.
+        """Test _update_ulwgl by mocking an update to the runtime tools.
 
-        In this case, we simply re-copy the directory and no removal is performed
+        When files are missing, re-copy the directory and without removing
         NOTE: This depends on ULWGL_VERSION.json to exist
         """
         result = None
@@ -232,7 +234,8 @@ class TestGameLauncher(unittest.TestCase):
         # Now, check the state of .local/share/ULWGL
         # We expect the relevant files to be restored
 
-        # Check if the configuration files are equal because we update this on every update of the tools
+        # Check if the configuration files are equal
+        # We update this on every update of the tools
         with self.test_user_share.joinpath("ULWGL_VERSION.json").open(
             mode="rb"
         ) as file1:
@@ -343,10 +346,14 @@ class TestGameLauncher(unittest.TestCase):
                     raise AssertionError(err)
 
     def test_update_ulwgl(self):
-        """Test _update_ulwgl by mocking an update to the runtime tools for existing installations.
+        """Test _update_ulwgl by mocking an update to the runtime tools.
 
-        NOTE: This is **very** important as the update process involves replacing directories.
-        While the directory we're removing is ours, we do **not** want unintended removals
+        We test the existing install case.
+
+        NOTE: This is **very** important as the update process involves
+        replacing directories.
+        While the directory we're removing is ours, we do **not** want
+        unintended removals
         """
         result = None
         json_local = None
@@ -396,15 +403,18 @@ class TestGameLauncher(unittest.TestCase):
         # |   +-- ulwgl_*.py                                    (normal file)
         # |   +-- ulwgl-run                                     (link file)
         #
-        # To test for potential unintended removals in that dir and that a selective update is performed, additional files will be added to the top-level
-        # After an update, those files should still exist and the count should be: count_user_share_files - num_test_files + num_foo_files
+        # To test for potential unintended removals in that dir and that a
+        # selective update is performed, additional files will be added to the top-level
+        # After an update, those files should still exist and the count should
+        # be: count_user_share_files - num_test_files + num_foo_files
 
         # Add foo files to top-level
         self.test_local_share.joinpath("foo").touch()
         self.test_local_share.joinpath("bar").touch()
         self.test_local_share.joinpath("baz").touch()
 
-        # Do the same for compatibilitytools.d as we do **not** want to unintentionally remove the user's Proton directory
+        # Do the same for compatibilitytools.d as we do **not** want to
+        # unintentionally remove the user's Proton directory
         self.test_compat.joinpath("GE-Proton-foo").mkdir()
 
         # Config
@@ -520,7 +530,8 @@ class TestGameLauncher(unittest.TestCase):
             "Expected /usr/share/ULWGL and .local/share/ULWGL to contain same files",
         )
 
-        # Check if the configuration files are equal because we update this on every update of the tools
+        # Check if the configuration files are equal because we update this on
+        # every update of the tools
         with self.test_user_share.joinpath("ULWGL_VERSION.json").open(
             mode="rb"
         ) as file1:
@@ -555,7 +566,8 @@ class TestGameLauncher(unittest.TestCase):
         self.assertEqual(
             num_share,
             num_local - 1,
-            "Expected .local/share/Steam/compatibilitytools.d/ULWGL-Launcher and /usr/share/ULWGL/ULWGL-Launcher to contain same files",
+            "Expected .local/share/Steam/compatibilitytools.d/ULWGL-Launcher"
+            + "and /usr/share/ULWGL/ULWGL-Launcher to contain same files",
         )
 
         for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*"):
@@ -649,10 +661,15 @@ class TestGameLauncher(unittest.TestCase):
     def test_install_ulwgl(self):
         """Test _install_ulwgl by mocking a first launch.
 
-        At first launch, the directory /usr/share/ULWGL is expected to be populated by distribution's package manager
+        At first launch, the directory /usr/share/ULWGL is expected to be
+        populated by distribution's package manager
+
         This function is expected to be run when ~/.local/share/ULWGL is empty
-        The contents of ~/.local/share/ULWGL should be nearly identical to /usr/share/ULWGL, with the exception of the ULWGL-Launcher files
-        ULWGL-Launcher is expcted to be copied to compatibilitytools.d
+
+        The contents of ~/.local/share/ULWGL should be nearly identical to
+        /usr/share/ULWGL, with the exception of the ULWGL-Launcher files
+
+        ULWGL-Launcher is expected to be copied to compatibilitytools.d
         """
         result = None
         runner_files = {"compatibilitytool.vdf", "toolmanifest.vdf", "ulwgl-run"}
@@ -668,7 +685,8 @@ class TestGameLauncher(unittest.TestCase):
         json = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
 
         # Mock setting up the runtime
-        # In the real usage, we callout to acquire the archive and extract to .local/share/ULWGL
+        # In the real usage, we callout to acquire the archive and
+        # extract to .local/share/ULWGL
         with patch.object(
             ulwgl_util,
             "setup_runtime",
@@ -774,7 +792,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_get_json_err(self):
         """Test _get_json when specifying a corrupted ULWGL_VERSION.json file.
 
-        A ValueError should be raised because we expect 'ulwgl' and 'version' keys to exist
+        A ValueError should be raised because we expect 'ulwgl' and 'version'
+        keys to exist
         """
         test_config = """
         {
@@ -824,7 +843,7 @@ class TestGameLauncher(unittest.TestCase):
             ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
 
     def test_get_json_foo(self):
-        """Test _get_json when not specifying ULWGL_VERSION.json as the second argument.
+        """Test _get_json when not specifying ULWGL_VERSION.json as 2nd arg.
 
         A FileNotFoundError should be raised
         """
@@ -834,8 +853,11 @@ class TestGameLauncher(unittest.TestCase):
     def test_get_json(self):
         """Test _get_json.
 
-        This function is used to verify the existence and integrity of ULWGL_VERSION.json file during the setup process
-        ULWGL_VERSION.json is used to synchronize the state of two directories, namely: /usr/share/ULWGL and ~/.local/share/ULWGL
+        This function is used to verify the existence and integrity of
+        ULWGL_VERSION.json file during the setup process
+
+        ULWGL_VERSION.json is used to synchronize the state of 2 directories:
+        /usr/share/ULWGL and ~/.local/share/ULWGL
 
         An error should not be raised when passed a JSON we expect
         """
@@ -850,17 +872,21 @@ class TestGameLauncher(unittest.TestCase):
         self.assertIsInstance(result, dict, "Expected a dict")
 
     def test_latest_interrupt(self):
-        """Test _get_latest in the event the user interrupts the download/extraction process.
+        """Test _get_latest when the user interrupts the download/extraction.
 
-        Assumes a file is being downloaded or extracted in this case.
-        A KeyboardInterrupt should be raised, and the cache/compat dir should be cleaned afterwards.
+        Assumes a file is being downloaded or extracted in this case
+
+        A KeyboardInterrupt should be raised, and the cache/compat dir should
+        be cleaned afterwards
         """
         result = None
-        # In the real usage, should be populated after successful callout for latest Proton releases
+        # In the real usage, should be populated after successful callout
+        # for latest Proton releases
         # In this case, assume the test variable will be downloaded
         files = [("", ""), (self.test_archive.name, "")]
 
-        # In the event of an interrupt, both the cache/compat dir will be checked for the latest release for removal
+        # In the event of an interrupt, both the cache/compat dir will be
+        # checked for the latest release for removal
         # We do this since the extraction process can be interrupted as well
         ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
 
@@ -887,13 +913,16 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_latest_val_err(self):
-        """Test _get_latest in the event something goes wrong in the download process for the latest Proton.
+        """Test _get_latest when something goes wrong when downloading Proton.
 
-        Assumes a file is being downloaded in this case.
-        A ValueError should be raised, and one case it can happen is if the digests mismatched for some reason
+        Assumes a file is being downloaded in this case
+
+        A ValueError should be raised, and one case it can happen is if the
+        digests mismatched for some reason
         """
         result = None
-        # In the real usage, should be populated after successful callout for latest Proton releases
+        # In the real usage, should be populated after successful callout for
+        # latest Proton releases
         # When empty, it means the callout failed for some reason (e.g. no internet)
         files = [("", ""), (self.test_archive.name, "")]
 
@@ -909,7 +938,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_latest_offline(self):
         """Test _get_latest when the user doesn't have internet."""
         result = None
-        # In the real usage, should be populated after successful callout for latest Proton releases
+        # In the real usage, should be populated after successful callout for
+        # latest Proton releases
         # When empty, it means the callout failed for some reason (e.g. no internet)
         files = []
 
@@ -923,8 +953,12 @@ class TestGameLauncher(unittest.TestCase):
             self.assertTrue(result is self.env, "Expected the same reference")
 
     def test_cache_interrupt(self):
-        """Test _get_from_cache on keyboard interrupt on extraction from the cache to the compat dir."""
-        # In the real usage, should be populated after successful callout for latest Proton releases
+        """Test _get_from_cache on keyboard interrupt when extracting.
+
+        We extract from the cache to the Steam compat dir
+        """
+        # In the real usage, should be populated after successful callout for
+        # latest Proton releases
         # Just mock it and assumes its the latest
         files = [("", ""), (self.test_archive.name, "")]
 
@@ -947,8 +981,10 @@ class TestGameLauncher(unittest.TestCase):
                     self.env, self.test_compat, self.test_cache, files, True
                 )
 
-                # After interrupt, we attempt to clean the compat dir for the file we tried to extract because it could be in an incomplete state
-                # Verify that the dir we tried to extract from cache is removed to avoid corruption on next launch
+                # After interrupt, we attempt to clean the compat dir for the
+                # file we tried to extract because it could be in an incomplete state
+                # Verify that the dir we tried to extract from cache is removed
+                # to avoid corruption on next launch
                 self.assertFalse(
                     self.test_compat.joinpath(
                         self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
@@ -957,9 +993,10 @@ class TestGameLauncher(unittest.TestCase):
                 )
 
     def test_cache_offline(self):
-        """Test _get_from_cache when the user is offline.
+        """Test _get_from_cache on fallback and when the user is offline.
 
-        In this case, we just get the first Proton that appears since we cannot determine the latest
+        In this case, we just get the first Proton that appears since we
+        cannot determine the latest
         """
         result = None
         # When user is offline, there are no files
@@ -981,13 +1018,12 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_cache_old(self):
-        """Test _get_from_cache when the cache is empty.
+        """Test _get_from_cache on fallback.
 
-        In real usage, this only happens as a last resort when: download fails, digests mismatched, etc.
+        We access the cache a second time when the download fails, digest
+        mismatches, or on interrupts
         """
         result = None
-        # In the real usage, should be populated after successful callout for latest Proton releases
-        # Just mock it and assumes its the latest
         files = [("", ""), (self.test_archive.name, "")]
 
         # Mock old Proton versions in the cache
@@ -1020,7 +1056,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_cache_empty(self):
         """Test _get_from_cache when the cache is empty."""
         result = None
-        # In the real usage, should be populated after successful callout for latest Proton releases
+        # In the real usage, should be populated after successful callout for
+        # latest Proton releases
         # Just mock it and assumes its the latest
         files = [("", ""), (self.test_archive.name, "")]
 
@@ -1041,7 +1078,8 @@ class TestGameLauncher(unittest.TestCase):
         Tests the case when the latest Proton already exists in the cache
         """
         result = None
-        # In the real usage, should be populated after successful callout for latest Proton releases
+        # In the real usage, should be populated after successful callout for
+        # latest Proton releases
         # Just mock it and assumes its the latest
         files = [("", ""), (self.test_archive.name, "")]
 
@@ -1058,9 +1096,10 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_steamcompat_nodir(self):
-        """Test _get_from_steamcompat when a Proton doesn't exist in the Steam compat dir.
+        """Test _get_from_steamcompat when Proton doesn't exist in compat dir.
 
-        In this case, the None should be returned to signal that we should continue with downloading the latest Proton
+        In this case, None should be returned to signal that we should
+        continue with downloading the latest Proton
         """
         result = None
         files = [("", ""), (self.test_archive.name, "")]
@@ -1075,7 +1114,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_steamcompat(self):
         """Test _get_from_steamcompat.
 
-        When a Proton exist in .local/share/Steam/compatibilitytools.d, use it when PROTONPATH is unset
+        When a Proton exist in .local/share/Steam/compatibilitytools.d, use it
+        when PROTONPATH is unset
         """
         result = None
         files = [("", ""), (self.test_archive.name, "")]
@@ -1098,8 +1138,12 @@ class TestGameLauncher(unittest.TestCase):
     def test_cleanup_no_exists(self):
         """Test _cleanup when passed files that do not exist.
 
-        In the event of an interrupt during the download/extract process, we only want to clean the files that exist
-        NOTE: This is **extremely** important, as we do **not** want to delete anything else but the files we downloaded/extracted -- the incomplete tarball/extracted dir
+        In the event of an interrupt during the download/extract process, we
+        only want to clean the files that exist
+
+        NOTE: This is **extremely** important, as we do **not** want to delete
+        anything else but the files we downloaded/extracted -- the incomplete
+        tarball/extracted dir
         """
         result = None
 
@@ -1110,7 +1154,8 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat.joinpath("foo").touch()
 
         # Before cleaning
-        # On setUp, an archive is created and a dir should exist in compat after extraction
+        # On setUp, an archive is created and a dir should exist in compat
+        # after extraction
         self.assertTrue(
             self.test_compat.joinpath("foo").exists(),
             "Expected test file to exist in compat before cleaning",
@@ -1162,7 +1207,9 @@ class TestGameLauncher(unittest.TestCase):
     def test_cleanup(self):
         """Test _cleanup.
 
-        In the event of an interrupt during the download/extract process, we want to clean the cache or the extracted dir in Steam compat to avoid incomplete files
+        In the event of an interrupt during the download/extract process, we
+        want to clean the cache or the extracted dir in Steam compat to avoid
+        incomplete files
         """
         result = None
 
@@ -1190,7 +1237,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_extract_err(self):
         """Test _extract_dir when passed a non-gzip compressed archive.
 
-        An error should be raised as we only expect .tar.gz releases
+        A ReadError should be raised as we only expect .tar.gz releases
         """
         test_archive = self.test_cache.joinpath(f"{self.test_proton_dir}.tar")
         # Do not apply compression
@@ -1208,7 +1255,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_extract(self):
         """Test _extract_dir.
 
-        An error should not be raised when the Proton release is extracted to the Steam compat dir
+        An error should not be raised when the Proton release is extracted to
+        the Steam compat dir
         """
         result = None
 
@@ -1230,10 +1278,15 @@ class TestGameLauncher(unittest.TestCase):
         Example:
         WINEPREFIX= PROTONPATH= GAMEID= ulwgl-run ""
 
-        During this process, we attempt to prepare setting up game drive and set the values for STEAM_RUNTIME_LIBRARY_PATH and STEAM_COMPAT_INSTALL_PATHS
-        The resulting value of those variables should be colon delimited string with no leading colons and contain only /usr/lib or /usr/lib32
+        During this process, we attempt to prepare setting up game drive and
+        set the values for STEAM_RUNTIME_LIBRARY_PATH and
+        STEAM_COMPAT_INSTALL_PATHS
 
-        Ignores LD_LIBRARY_PATH, relevant to Game Drive, which is sourced in Ubuntu and maybe its derivatives
+        The resulting value of those variables should be colon delimited
+        string with no leading colons and contain only /usr/lib or /usr/lib32
+
+        Ignores LD_LIBRARY_PATH, relevant to Game Drive, which is sourced in
+        Ubuntu and maybe its derivatives
         """
         args = None
         result_gamedrive = None
@@ -1254,7 +1307,8 @@ class TestGameLauncher(unittest.TestCase):
             # Env
             ulwgl_run.set_env(self.env, args)
 
-            # Some distributions source this variable (e.g. Ubuntu) and will be added to the result of STEAM_RUNTIME_LIBRARY_PATH
+            # Some distributions source this variable (e.g. Ubuntu) and will
+            # be added to the result of STEAM_RUNTIME_LIBRARY_PATH
             # Only test the case without it set
             if "LD_LIBRARY_PATH" in os.environ:
                 os.environ.pop("LD_LIBRARY_PATH")
@@ -1291,7 +1345,8 @@ class TestGameLauncher(unittest.TestCase):
         self.assertEqual(str1, "/usr/lib", "Expected /usr/lib")
         self.assertEqual(str2, "/usr/lib32", "Expected /usr/lib32")
 
-        # Both of these values should be empty still after calling enable_steam_game_drive
+        # Both of these values should be empty still after calling
+        # enable_steam_game_drive
         self.assertFalse(
             self.env["STEAM_COMPAT_INSTALL_PATH"],
             "Expected STEAM_COMPAT_INSTALL_PATH to be empty when passing an empty EXE",
@@ -1301,8 +1356,11 @@ class TestGameLauncher(unittest.TestCase):
     def test_build_command(self):
         """Test build command.
 
-        After parsing valid environment variables set by the user, be sure we do not raise a FileNotFoundError
-        NOTE: Also, FileNotFoundError will be raised if the _v2-entry-point (ULWGL) is not in $HOME/.local/share/ULWGL
+        After parsing valid environment variables set by the user, be sure we
+        do not raise a FileNotFoundError
+
+        A FileNotFoundError will only be raised if the _v2-entry-point (ULWGL)
+        is not in $HOME/.local/share/ULWGL
         """
         result_args = None
         test_command = []
@@ -1389,7 +1447,8 @@ class TestGameLauncher(unittest.TestCase):
         result = None
         test_str = "foo"
 
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run foo.exe -foo
+        # Replicate the command:
+        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run ...
         with patch("sys.argv", ["", self.test_exe, test_str]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -1439,14 +1498,18 @@ class TestGameLauncher(unittest.TestCase):
     def test_set_env_id(self):
         """Test set_env.
 
-        Verify that environment variables (dictionary) are set after calling set_env when passing a valid ULWGL_ID
-        When a valid ULWGL_ID is set, the STEAM_COMPAT_APP_ID variables should be the stripped ULWGL_ID
+        Verify that environment variables (dictionary) are set after calling
+        set_env when passing a valid ULWGL_ID
+
+        When a valid ULWGL_ID is set, the STEAM_COMPAT_APP_ID variables
+        should be the stripped ULWGL_ID
         """
         result = None
         test_str = "foo"
         ulwgl_id = "ulwgl-271590"
 
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run foo.exe
+        # Replicate the usage:
+        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run ...
         with patch("sys.argv", ["", self.test_exe]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -1536,12 +1599,14 @@ class TestGameLauncher(unittest.TestCase):
     def test_set_env(self):
         """Test set_env.
 
-        Verify that environment variables (dictionary) are set after calling set_env
+        Verify that environment variables (dictionary) are set after calling
+        set_env
         """
         result = None
         test_str = "foo"
 
-        # Replicate the usage WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run foo.exe
+        # Replicate the usage:
+        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run ...
         with patch("sys.argv", ["", self.test_exe]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -1629,7 +1694,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_setup_pfx_mv(self):
         """Test setup_pfx when moving the WINEPREFIX after creating it.
 
-        After setting up the prefix then moving it to a different path, ensure that the symbolic link points to that new location
+        After setting up the prefix then moving it to a different path, ensure
+        that the symbolic link points to that new location
         """
         result = None
         pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
@@ -1644,7 +1710,8 @@ class TestGameLauncher(unittest.TestCase):
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
         self.assertIsNone(
             result,
-            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+            "Expected None when creating symbolic link to WINE prefix and"
+            + "tracked_files file",
         )
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
@@ -1720,7 +1787,8 @@ class TestGameLauncher(unittest.TestCase):
 
         self.assertIsNone(
             result,
-            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+            "Expected None when creating symbolic link to WINE prefix and "
+            + "tracked_files file",
         )
 
         # Verify steamuser -> unix user
@@ -1759,7 +1827,8 @@ class TestGameLauncher(unittest.TestCase):
 
         self.assertIsNone(
             result,
-            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+            "Expected None when creating symbolic link to WINE prefix and "
+            + " tracked_files file",
         )
 
         # Verify unixuser -> steamuser
@@ -1784,7 +1853,9 @@ class TestGameLauncher(unittest.TestCase):
     def test_setup_pfx_symlinks(self):
         """Test setup_pfx for valid symlinks.
 
-        Ensure that symbolic links to the WINE prefix (pfx) are always in expanded form when passed an unexpanded path.
+        Ensure that symbolic links to the WINE prefix (pfx) are always in
+        expanded form when passed an unexpanded path.
+
         For example:
         if WINEPREFIX is /home/foo/.wine
         pfx -> /home/foo/.wine
@@ -1805,7 +1876,8 @@ class TestGameLauncher(unittest.TestCase):
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
         self.assertIsNone(
             result,
-            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+            "Expected None when creating symbolic link to WINE prefix and "
+            + "tracked_files file",
         )
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
@@ -1827,7 +1899,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_setup_pfx_paths(self):
         """Test setup_pfx on unexpanded paths.
 
-        An error should not be raised when passing paths such as ~/path/to/prefix.
+        An error should not be raised when passing paths such as
+        ~/path/to/prefix
         """
         result = None
         pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
@@ -1842,7 +1915,8 @@ class TestGameLauncher(unittest.TestCase):
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
         self.assertIsNone(
             result,
-            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+            "Expected None when creating symbolic link to WINE prefix and "
+            + "tracked_files file",
         )
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
@@ -1859,7 +1933,8 @@ class TestGameLauncher(unittest.TestCase):
         result = ulwgl_run.setup_pfx(self.test_file)
         self.assertIsNone(
             result,
-            "Expected None when creating symbolic link to WINE prefix and tracked_files file",
+            "Expected None when creating symbolic link to WINE prefix and "
+            + "tracked_files file",
         )
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
@@ -1884,6 +1959,7 @@ class TestGameLauncher(unittest.TestCase):
         """Test parse_args with no options.
 
         There's a requirement to create an empty prefix
+
         A SystemExit should be raised in this case:
         ./ulwgl_run.py
         """
@@ -1921,7 +1997,9 @@ class TestGameLauncher(unittest.TestCase):
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
 
-        When the user specifies a WINEPREFIX that doesn't exist, make the dirs on their behalf and set it
+        When the user specifies a WINEPREFIX that doesn't exist, make the dirs
+        on their behalf and set it
+
         An error should not be raised in the process
         """
         # Set a path does not exist
@@ -1951,7 +2029,7 @@ class TestGameLauncher(unittest.TestCase):
             Path(self.env["WINEPREFIX"]).rmdir()
 
     def test_env_vars_paths(self):
-        """Test check_env when setting unexpanded paths for $WINEPREFIX and $PROTONPATH."""
+        """Test check_env for unexpanded paths in $WINEPREFIX and $PROTONPATH."""
         pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
         path_to_tmp = Path(__file__).cwd().joinpath(self.test_file).as_posix()
 
