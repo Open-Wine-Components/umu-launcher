@@ -85,7 +85,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
 
-        # Mock a valid configuration file at /usr/share/ULWGL: tmp.BXk2NnvW2m/ULWGL_VERSION.json
+        # Mock a valid configuration file at /usr/share/ULWGL:
+        # tmp.BXk2NnvW2m/ULWGL_VERSION.json
         Path(self.test_user_share, "ULWGL_VERSION.json").touch()
         with Path(self.test_user_share, "ULWGL_VERSION.json").open(mode="w") as file:
             file.write(self.test_config)
@@ -131,7 +132,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
 
-        # Mock the release downloaded in the cache: tmp.5HYdpddgvs/ULWGL-Proton-jPTxUsKDdn.tar.gz
+        # Mock the release downloaded in the cache:
+        # tmp.5HYdpddgvs/ULWGL-Proton-jPTxUsKDdn.tar.gz
         # Expected directory structure within the archive:
         #
         # +-- ULWGL-Proton-5HYdpddgvs (root directory)
@@ -242,7 +244,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
         """Test build_command.
 
         A FileNotFoundError should be raised if $PROTONPATH/proton does not exist
-        Also, FileNotFoundError will be raised if the _v2-entry-point (ULWGL) is not in $HOME/.local/share/ULWGL
+
+        Also, FileNotFoundError will be raised if the _v2-entry-point (ULWGL)
+        is not in $HOME/.local/share/ULWGL
         """
         test_toml = "foo.toml"
         toml_str = f"""
@@ -524,7 +528,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
     def test_set_env_toml_nodir(self):
         """Test set_env_toml if certain key/value are not a dir.
 
-        An IsDirectoryError should be raised if the following keys are not dir: proton, prefix
+        An IsDirectoryError should be raised if the following keys are not
+        dir: proton, prefix
         """
         test_toml = "foo.toml"
         toml_str = f"""
@@ -594,10 +599,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 ulwgl_plugins.set_env_toml(self.env, result)
 
     def test_set_env_toml_paths(self):
-        """Test set_env_toml when specifying unexpanded file path values in the config file.
+        """Test set_env_toml when specifying unexpanded path values.
 
         Example: ~/Games/foo.exe
-        An error should not be raised when passing unexpanded paths to the config file as well as the prefix, proton and exe keys
+
+        An error should not be raised when passing unexpanded paths to the
+        config file as well as the prefix, proton and exe keys
         """
         test_toml = "foo.toml"
         pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
@@ -654,8 +661,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
             result_set_env = ulwgl_plugins.set_env_toml(self.env, result)
             self.assertTrue(result_set_env is self.env, "Expected the same reference")
 
-            # Check that the paths are still in the unexpanded form after setting the env
-            # In main, we only expand them after this function exits to prepare for building the command
+            # Check that the paths are still in the unexpanded form after
+            # setting the env
+            # In main, we only expand them after this function exits to
+            # prepare for building the command
             self.assertEqual(
                 self.env["EXE"], unexpanded_exe, "Expected path not to be expanded"
             )
