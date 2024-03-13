@@ -186,6 +186,13 @@ def _fetch_proton(
 def _extract_dir(proton: Path, steam_compat: Path) -> None:
     """Extract from the cache to another location."""
     with tar_open(proton.as_posix(), "r:gz") as tar:
+        if hasattr(tar, "tar_filter"):
+            log.debug("Using tar filter for archive")
+            tar.extraction_filter = tar.tar_filter
+        else:
+            log.debug("Using no filter for archive")
+            log.warning("Archive will be extracted insecurely")
+
         print(f"Extracting {proton} -> {steam_compat.as_posix()} ...", file=stderr)
         tar.extractall(path=steam_compat.as_posix())
         print("Completed.", file=stderr)

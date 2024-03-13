@@ -54,6 +54,7 @@ class UnixUser:
 def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     # Assuming the file is downloaded to '/tmp/steam-container-runtime-complete.tar.gz'
     tar_path: str = "/tmp/steam-container-runtime-complete.tar.gz"
+    tmp: Path = Path(mkdtemp())
     # Access the 'runtime_platform' value
     runtime_platform_value: str = json["ulwgl"]["versions"]["runtime_platform"]
 
@@ -96,7 +97,14 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     log.debug(f"Opening: {tar_path}")
 
     # Open the tar file
-    with tar_open(tar_path, "r:gz") as tar:
+    with tar_open(tmp.joinpath(archive), "r:gz") as tar:
+        if hasattr(tar, "tar_filter"):
+            log.debug("Using filter for archive")
+            tar.extraction_filter = tar.tar_filter
+        else:
+            log.debug("Using no filter for archive")
+            log.warning("Archive will be extracted insecurely")
+
         # Ensure the target directory exists
         ULWGL_LOCAL.mkdir(parents=True, exist_ok=True)
 
@@ -104,7 +112,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         log.debug("Extracting archive files -> /tmp")
         for member in tar.getmembers():
             if member.name.startswith("steam-container-runtime/depot/"):
-                tar.extract(member, path="/tmp")
+                tar.extract(member, path=tmp)
 
         # Step  4: move the files to the correct location
         source_dir: Path = Path("/tmp", "steam-container-runtime", "depot")
