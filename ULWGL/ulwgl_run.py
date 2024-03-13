@@ -10,7 +10,7 @@ from ulwgl_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
 from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
-from ulwgl_consts import PROTON_VERBS, DEBUG_FORMAT
+from ulwgl_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, ULWGL_LOCAL
 from ulwgl_util import setup_ulwgl
 from ulwgl_log import log, console_handler, Formatter
 from ulwgl_util import UnixUser
@@ -133,19 +133,12 @@ def check_env(
     if (
         "PROTONPATH" in os.environ
         and os.environ["PROTONPATH"]
-        and Path(
-            "~/.local/share/Steam/compatibilitytools.d/" + os.environ["PROTONPATH"]
-        )
-        .expanduser()
-        .is_dir()
+        and STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]).is_dir()
     ):
         log.debug("Proton version selected")
-        os.environ["PROTONPATH"] = (
-            Path("~/.local/share/Steam/compatibilitytools.d")
-            .joinpath(os.environ["PROTONPATH"])
-            .expanduser()
-            .as_posix()
-        )
+        os.environ["PROTONPATH"] = STEAM_COMPAT.joinpath(
+            os.environ["PROTONPATH"]
+        ).as_posix()
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
@@ -210,11 +203,7 @@ def set_env(
     env["PROTONPATH"] = Path(env["PROTONPATH"]).expanduser().as_posix()
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-    env["STEAM_COMPAT_TOOL_PATHS"] = (
-        env["PROTONPATH"]
-        + ":"
-        + Path.home().joinpath(".local", "share", "ULWGL").as_posix()
-    )
+    env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + ULWGL_LOCAL.as_posix()
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     return env
@@ -288,7 +277,6 @@ def main() -> int:  # noqa: D103
     root: Path = Path(__file__).resolve().parent
     # Expects this dir to be in sync with root
     # On update, files will be selectively updated
-    local: Path = Path.home().joinpath(".local/share/ULWGL")
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
 
     if "musl" in os.environ.get("LD_LIBRARY_PATH", ""):
@@ -298,8 +286,10 @@ def main() -> int:  # noqa: D103
     if "ULWGL_LOG" in os.environ:
         set_log()
 
+    # Setup the launcher and runtime files
+    # An internet connection is required for setup
     try:
-        setup_ulwgl(root, local)
+        setup_ulwgl(root, ULWGL_LOCAL)
     except TimeoutError:
         if not ULWGL_LOCAL.exists() or not any(ULWGL_LOCAL.iterdir()):
             err: str = (
@@ -339,7 +329,7 @@ def main() -> int:  # noqa: D103
         log.info(f"{key}={val}")
         os.environ[key] = val
 
-    build_command(env, local, command, opts)
+    build_command(env, ULWGL_LOCAL, command, opts)
     log.debug(command)
 
     return run(command).returncode
@@ -355,5 +345,6 @@ if __name__ == "__main__":
         print_exception(e)
         sys.exit(1)
     finally:
-        # Cleanup .ref file on every exit
-        Path.home().joinpath(".local/share/ULWGL/.ref").unlink(missing_ok=True)
+        ULWGL_LOCAL.joinpath(".ref").unlink(
+            missing_ok=True
+        )  # Cleanup .ref file on every exit

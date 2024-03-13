@@ -1,4 +1,5 @@
 from enum import Enum
+from pathlib import Path
 
 
 class Color(Enum):
@@ -17,6 +18,14 @@ SIMPLE_FORMAT = f"%(levelname)s:  {Color.BOLD.value}%(message)s{Color.RESET.valu
 DEBUG_FORMAT = f"%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:{Color.BOLD.value}%(message)s{Color.RESET.value}"  # noqa: E501
 
 CONFIG = "ULWGL_VERSION.json"
+
+ULWGL_LOCAL: Path = Path.home().joinpath(".local", "share", "ULWGL")
+
+ULWGL_CACHE: Path = Path.home().joinpath(".cache", "ULWGL")
+
+STEAM_COMPAT: Path = Path.home().joinpath(
+    ".local", "share", "Steam", "compatibilitytools.d"
+)
 
 PROTON_VERBS = {
     "waitforexitandrun",

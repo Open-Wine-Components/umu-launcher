@@ -1,7 +1,7 @@
 from os import getuid
 from tarfile import open as tar_open
-from ulwgl_consts import CONFIG
 from typing import Any, Dict
+from ulwgl_consts import CONFIG, STEAM_COMPAT, ULWGL_LOCAL
 from json import load, dump
 from ulwgl_log import log
 from sys import stderr
@@ -98,9 +98,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     # Open the tar file
     with tar_open(tar_path, "r:gz") as tar:
         # Ensure the target directory exists
-        Path.home().joinpath(".local", "share", "ULWGL").mkdir(
-            parents=True, exist_ok=True
-        )
+        ULWGL_LOCAL.mkdir(parents=True, exist_ok=True)
 
         # Extract the 'depot' folder to the target directory
         log.debug("Extracting archive files -> /tmp")
@@ -110,7 +108,6 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
 
         # Step  4: move the files to the correct location
         source_dir: Path = Path("/tmp", "steam-container-runtime", "depot")
-        destination_dir: Path = Path.home().joinpath(".local", "share", "ULWGL")
 
         log.debug(f"Source: {source_dir}")
         log.debug(f"Destination: {destination_dir}")
@@ -118,7 +115,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         # Move each file to the destination directory, overwriting if it exists
         for file in source_dir.glob("*"):
             src_file: Path = source_dir.joinpath(file.name)
-            dest_file: Path = destination_dir.joinpath(file.name)
+            dest_file: Path = ULWGL_LOCAL.joinpath(file.name)
 
             if dest_file.is_file() or dest_file.is_symlink():
                 log.debug(f"Removing file: {dest_file}")
@@ -139,9 +136,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         log.debug("Renaming: _v2-entry-point -> ULWGL")
 
         # Rename _v2-entry-point
-        destination_dir.joinpath("_v2-entry-point").rename(
-            destination_dir.joinpath("ULWGL")
-        )
+        ULWGL_LOCAL.joinpath("_v2-entry-point").rename(ULWGL_LOCAL.joinpath("ULWGL"))
 
 
 def setup_ulwgl(root: Path, local: Path) -> None:
@@ -171,9 +166,9 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     # New install or ULWGL dir is empty
     # Be lazy and don't implement fallback mechanisms
     if not local.exists() or not any(local.iterdir()):
-        return _install_ulwgl(root, local, steam_compat, json)
+        return _install_ulwgl(root, local, STEAM_COMPAT, json)
 
-    return _update_ulwgl(root, local, steam_compat, json, _get_json(local, CONFIG))
+    return _update_ulwgl(root, local, STEAM_COMPAT, json, _get_json(local, CONFIG))
 
 
 def _install_ulwgl(

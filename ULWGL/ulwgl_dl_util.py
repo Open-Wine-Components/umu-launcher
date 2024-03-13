@@ -11,6 +11,7 @@ from urllib.request import urlopen
 from sys import stderr
 from ulwgl_plugins import enable_zenity
 from socket import gaierror
+from ulwgl_consts import STEAM_COMPAT, ULWGL_CACHE
 
 
 def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
@@ -29,28 +30,25 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     except gaierror:
         print("User is offline.\nContinuing ...", file=stderr)
 
-    cache: Path = Path.home().joinpath(".cache/ULWGL")
-    steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
-
-    cache.mkdir(exist_ok=True, parents=True)
-    steam_compat.mkdir(exist_ok=True, parents=True)
+    ULWGL_CACHE.mkdir(exist_ok=True, parents=True)
+    STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
     # Prioritize the Steam compat
-    if _get_from_steamcompat(env, steam_compat, cache, files):
+    if _get_from_steamcompat(env, STEAM_COMPAT, ULWGL_CACHE, files):
         return env
 
     # Use the latest Proton in the cache if it exists
-    if _get_from_cache(env, steam_compat, cache, files, True):
+    if _get_from_cache(env, STEAM_COMPAT, ULWGL_CACHE, files, True):
         return env
 
     # Download the latest if Proton is not in Steam compat
     # If the digests mismatched, refer to the cache in the next block
-    if _get_latest(env, steam_compat, cache, files):
+    if _get_latest(env, STEAM_COMPAT, ULWGL_CACHE, files):
         return env
 
     # Refer to an old version previously downloaded
     # Reached on digest mismatch, user interrupt or download failure/no internet
-    if _get_from_cache(env, steam_compat, cache, files, False):
+    if _get_from_cache(env, STEAM_COMPAT, ULWGL_CACHE, files, False):
         return env
 
     # No internet and cache/compat tool is empty, just return and raise an
