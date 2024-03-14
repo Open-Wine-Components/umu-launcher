@@ -109,7 +109,7 @@ def check_env(
 ) -> Union[Dict[str, str], Dict[str, Any]]:
     """Before executing a game, check for environment variables and set them.
 
-    WINEPREFIX, GAMEID and PROTONPATH are strictly required.
+    GAMEID is strictly required
     """
     if "GAMEID" not in os.environ:
         err: str = "Environment variable not set: GAMEID"
