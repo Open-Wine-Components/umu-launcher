@@ -2,7 +2,6 @@
 
 import os
 import sys
-from traceback import print_exception
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
@@ -341,8 +340,11 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         log.warning("Keyboard Interrupt")
         sys.exit(1)
-    except Exception as e:  # noqa: BLE001
-        print_exception(e)
+    except SystemExit as e:
+        if e.code != 0:
+            raise Exception(e)
+    except Exception:  # noqa: BLE001
+        log.exception("Exception")
         sys.exit(1)
     finally:
         ULWGL_LOCAL.joinpath(".ref").unlink(
