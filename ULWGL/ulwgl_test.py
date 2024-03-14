@@ -926,6 +926,11 @@ class TestGameLauncher(unittest.TestCase):
         # When empty, it means the callout failed for some reason (e.g. no internet)
         files = [("", ""), (self.test_archive.name, "")]
 
+        self.assertTrue(
+            self.test_archive.is_file(),
+            "Expected test file in cache to exist",
+        )
+
         with patch("ulwgl_dl_util._fetch_proton") as mock_function:
             # Mock the interrupt
             mock_function.side_effect = ValueError
@@ -934,6 +939,12 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
             self.assertFalse(result, "Expected None when a ValueError occurs")
+
+            # Ensure we clean up suspected files
+            self.assertFalse(
+                self.test_archive.is_file(),
+                "Expected test file in cache to be deleted",
+            )
 
     def test_latest_offline(self):
         """Test _get_latest when the user doesn't have internet."""
