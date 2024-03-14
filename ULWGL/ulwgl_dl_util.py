@@ -34,7 +34,7 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     try:
         files = _fetch_releases()
     except gaierror:
-        print("User is offline", file=stderr)
+        pass  # User is offline
 
     ULWGL_CACHE.mkdir(exist_ok=True, parents=True)
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
