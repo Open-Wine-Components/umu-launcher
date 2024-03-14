@@ -11,7 +11,7 @@ from shutil import rmtree, move, copy, copytree
 from ulwgl_plugins import enable_zenity
 from urllib.request import urlopen
 from ssl import create_default_context
-from http.client import HTTPResponse, HTTPException
+from http.client import HTTPException
 from socket import create_connection
 
 
@@ -88,19 +88,21 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         err: str = "Unable to download the Steam Runtime\nrepo.steampowered.com request timed out"
         raise TimeoutError(err)
     except FileNotFoundError:
-        print(f"Downloading {runtime_platform_value} ...", file=stderr)
-        resp: HTTPResponse = urlopen(
-            base_url, timeout=60, context=create_default_context()
-        )
         log.exception("Exception occurred when enabling Zenity")
 
-        if resp.status != 200:
-            err: str = f"Unable to download the Steam Runtime\nrepo.steampowered.com returned the status: {resp.status}"
-            raise HTTPException(err)
+        print(f"Downloading {runtime_platform_value} ...", file=stderr)
 
-        log.debug(f"Writing: {tar_path}")
-        with Path(tar_path).open(mode="wb") as file:
-            file.write(resp.read())
+        # noqa S310 we hardcode the URL and trust it
+        with urlopen(base_url, timeout=60, context=create_default_context()) as resp:  # noqa: S310
+            if resp.status != 200:
+                err: str = (
+                    "Unable to download the Steam Runtime\n"
+                    + f"repo.steampowered.com returned the status: {resp.status}"
+                )
+                raise HTTPException(err)
+            log.debug(f"Writing: {tmp.joinpath(archive)}")
+            with tmp.joinpath(archive).open(mode="wb") as file:
+                file.write(resp.read())
 
     log.debug(f"Opening: {tar_path}")
 
