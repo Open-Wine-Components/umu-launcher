@@ -296,6 +296,7 @@ def main() -> int:  # noqa: D103
                 + "An internet connection is required to setup ULWGL"
             )
             raise RuntimeError(err)
+        log.debug("Request timed out\nUser is offline")
     except OSError as e:
         # User's network is unreachable and ULWGL has not been setup
         if (
@@ -310,6 +311,7 @@ def main() -> int:  # noqa: D103
             raise RuntimeError(err)
         if e.errno != ENETUNREACH:
             raise
+        log.debug("Network is unreachable\nUser is offline")
 
     if isinstance(args, Namespace) and getattr(args, "config", None):
         set_env_toml(env, args)
