@@ -1,6 +1,6 @@
+import tarfile
 from pathlib import Path
 from os import environ
-from tarfile import open as tar_open
 from typing import Dict, List, Tuple, Any, Union
 from hashlib import sha512
 from shutil import rmtree
@@ -193,16 +193,16 @@ def _fetch_proton(
 
 def _extract_dir(proton: Path, steam_compat: Path) -> None:
     """Extract from the cache to another location."""
-    with tar_open(proton.as_posix(), "r:gz") as tar:
-        if hasattr(tar, "tar_filter"):
-            log.debug("Using tar filter for archive")
-            tar.extraction_filter = tar.tar_filter
+    with tarfile.open(proton.as_posix(), "r:gz") as tar:
+        if hasattr(tarfile, "tar_filter"):
+            log.debug("Using filter for archive")
+            tar.extraction_filter = tarfile.tar_filter
         else:
             log.debug("Using no filter for archive")
             log.warning("Archive will be extracted insecurely")
 
         print(f"Extracting {proton} -> {steam_compat.as_posix()} ...", file=stderr)
-        tar.extractall(path=steam_compat.as_posix())
+        tar.extractall(path=steam_compat.as_posix())  # noqa: S202
         print("Completed.", file=stderr)
 
 

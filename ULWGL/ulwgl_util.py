@@ -1,5 +1,5 @@
+import tarfile
 from os import getuid
-from tarfile import open as tar_open
 from ulwgl_consts import CONFIG, STEAM_COMPAT, ULWGL_LOCAL
 from typing import Any, Dict, List
 from json import load, dump
@@ -111,10 +111,10 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     log.debug(f"Opening: {tmp.joinpath(archive)}")
 
     # Open the tar file
-    with tar_open(tmp.joinpath(archive), "r:gz") as tar:
-        if hasattr(tar, "tar_filter"):
+    with tarfile.open(tmp.joinpath(archive), "r:gz") as tar:
+        if hasattr(tarfile, "tar_filter"):
             log.debug("Using filter for archive")
-            tar.extraction_filter = tar.tar_filter
+            tar.extraction_filter = tarfile.tar_filter
         else:
             log.debug("Using no filter for archive")
             log.warning("Archive will be extracted insecurely")
