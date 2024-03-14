@@ -66,10 +66,10 @@ def set_log() -> None:
 def setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
     pfx: Path = Path(path).joinpath("pfx").expanduser()
-    steam: Path = Path(path).expanduser().joinpath("drive_c/users/steamuser")
+    steam: Path = Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
     user: UnixUser = UnixUser()
     wineuser: Path = (
-        Path(path).expanduser().joinpath(f"drive_c/users/{user.get_user()}")
+        Path(path).expanduser().joinpath("drive_c", "users", user.get_user())
     )
 
     if pfx.is_symlink():
@@ -118,7 +118,7 @@ def check_env(
 
     if "WINEPREFIX" not in os.environ:
         id: str = env["GAMEID"]
-        pfx: Path = Path.home().joinpath(f"Games/ULWGL/ulwgl-{id}")
+        pfx: Path = Path.home().joinpath("Games", "ULWGL", f"ulwgl-{id}")
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = pfx.as_posix()
     if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
