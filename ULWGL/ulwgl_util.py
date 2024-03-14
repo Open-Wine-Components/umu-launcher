@@ -183,8 +183,6 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     except OSError:
         raise
 
-    steam_compat: Path = Path.home().joinpath(".local/share/Steam/compatibilitytools.d")
-
     json: Dict[str, Any] = _get_json(root, CONFIG)
 
     # New install or ULWGL dir is empty
