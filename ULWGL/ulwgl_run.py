@@ -287,6 +287,8 @@ def main() -> int:  # noqa: D103
 
     # Setup the launcher and runtime files
     # An internet connection is required for setup
+    # When an HTTP request times out or there's no internet, continue if ULWGL
+    # has already been setup
     try:
         setup_ulwgl(root, ULWGL_LOCAL)
     except TimeoutError:
@@ -296,7 +298,7 @@ def main() -> int:  # noqa: D103
                 + "An internet connection is required to setup ULWGL"
             )
             raise RuntimeError(err)
-        log.debug("Request timed out\nUser is offline")
+        log.debug("Request timed out")
     except OSError as e:
         # User's network is unreachable and ULWGL has not been setup
         if (
@@ -311,7 +313,7 @@ def main() -> int:  # noqa: D103
             raise RuntimeError(err)
         if e.errno != ENETUNREACH:
             raise
-        log.debug("Network is unreachable\nUser is offline")
+        log.debug("Network is unreachable")
 
     if isinstance(args, Namespace) and getattr(args, "config", None):
         set_env_toml(env, args)
