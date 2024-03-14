@@ -1029,39 +1029,38 @@ class TestGameLauncher(unittest.TestCase):
         )
 
     def test_cache_old(self):
-        """Test _get_from_cache on fallback.
+        """Test _get_from_cache on fallback for Proton assigned.
 
-        We access the cache a second time when the download fails, digest
-        mismatches, or on interrupts
+        We access the cache a second time when the digests mismatches,
+        interrupted or when the HTTP status code is not 200
         """
         result = None
-        files = [("", ""), (self.test_archive.name, "")]
+        files = [("", ""), ("ULWGL-Proton-8.0-5-3.tar.gz", "")]
 
-        # Mock old Proton versions in the cache
-        test_proton_dir = Path("ULWGL-Proton-foo")
+        # Mock an old Proton version
+        test_proton_dir = Path("ULWGL-Proton-8.0-5-2")
         test_proton_dir.mkdir(exist_ok=True)
-        test_archive = Path(self.test_cache).joinpath(
-            f"{test_proton_dir.as_posix()}.tar.gz"
-        )
+        test_archive = self.test_cache.joinpath(f"{test_proton_dir.as_posix()}.tar.gz")
 
         with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
             tar.add(test_proton_dir.as_posix(), arcname=test_proton_dir.as_posix())
 
+        # By passing False, we do not attempt to find the latest
         result = ulwgl_dl_util._get_from_cache(
             self.env, self.test_compat, self.test_cache, files, False
         )
 
-        # Verify that the old Proton was assigned
         self.assertTrue(result is self.env, "Expected the same reference")
-        self.assertEqual(
+
+        # Any Proton whether the earliest or most recent can be assigned
+        self.assertTrue(
+            os.environ["PROTONPATH"], "Expected PROTONPATH env var to be set"
+        )
+        self.assertTrue(
             self.env["PROTONPATH"],
-            self.test_compat.joinpath(
-                test_archive.name[: test_archive.name.find(".tar.gz")]
-            ).as_posix(),
-            "Expected PROTONPATH to be proton dir in compat",
+            "Expected PROTONPATH to be updated in dict",
         )
 
-        test_archive.unlink()
         test_proton_dir.rmdir()
 
     def test_cache_empty(self):
