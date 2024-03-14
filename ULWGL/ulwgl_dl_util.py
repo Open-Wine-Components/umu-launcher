@@ -313,8 +313,13 @@ def _get_latest(
             _fetch_proton(env, steam_compat, cache, files)
             env["PROTONPATH"] = environ["PROTONPATH"]
         except ValueError:
+            log.exception("Exception")
+            tarball: str = files[1][0]
+
             # Digest mismatched
             # Refer to the cache for old version next
+            # Since we do not want the user to use a suspect file, delete it
+            cache.joinpath(tarball).unlink(missing_ok=True)
             return None
         except KeyboardInterrupt:
             tarball: str = files[1][0]
