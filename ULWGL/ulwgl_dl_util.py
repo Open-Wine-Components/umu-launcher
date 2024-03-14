@@ -258,7 +258,7 @@ def _get_from_cache(
     steam_compat: Path,
     cache: Path,
     files: List[Tuple[str, str]],
-    use_latest=True,
+    use_latest: bool = True,
 ) -> Union[Dict[str, str], None]:
     """Refer to ULWGL cache directory.
 

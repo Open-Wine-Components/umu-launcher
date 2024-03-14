@@ -6,7 +6,7 @@ from ulwgl_consts import SIMPLE_FORMAT, Color
 class Formatter(logging.Formatter):
     """Extend the logging Formatter class to apply styles for log records."""
 
-    def __init__(self, fmt=SIMPLE_FORMAT):
+    def __init__(self, fmt: str = SIMPLE_FORMAT) -> None:
         """Apply colors to the record style for each level."""
         self.fmt = fmt
         self.formats = {

@@ -27,7 +27,7 @@ class UnixUser:
     This contrasts with environment variables or file system paths
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Immutable properties of the user determined by pwd.
 
         Values are derived from the real user id

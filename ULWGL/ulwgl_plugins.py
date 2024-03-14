@@ -54,7 +54,7 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
     return env
 
 
-def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]):
+def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]) -> Dict[str, Any]:
     """Check for required or empty key/value pairs when reading a TOML config.
 
     NOTE: Casing matters in the config and we do not check if the game id is set
