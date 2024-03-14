@@ -59,7 +59,8 @@ select = [
     # Or when dealing with input returned from web services (e.g., Github)
     "S",
     # Ensure we do not exceed our line length
-    "E501"
+    "E501",
+    "ANN"
 ]
 ignore = [
     # Format
@@ -72,7 +73,8 @@ ignore = [
     # In the above cases, we *always* verify the existence of the command/files
     "S603",
     # We use a static location for the crash report dir: /tmp/ULWGL_crashreports
-    "S108" 
+    "S108",
+    "ANN101"
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
@@ -81,6 +83,10 @@ unfixable = []
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[lint.per-file-ignores]
+"ulwgl_test.py" = ["ANN"]
+"ulwgl_test_plugins.py" = ["ANN"]
 
 [format]
 # Like Black, use double quotes for strings.
