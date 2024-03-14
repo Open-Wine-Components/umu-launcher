@@ -1,7 +1,7 @@
-import tarfile
+from tarfile import open as tar_open, TarInfo
 from os import getuid
 from ulwgl_consts import CONFIG, STEAM_COMPAT, ULWGL_LOCAL
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Callable
 from json import load, dump
 from ulwgl_log import log
 from sys import stderr
@@ -14,6 +14,11 @@ from ssl import create_default_context
 from http.client import HTTPException
 from socket import create_connection
 from tempfile import mkdtemp
+
+try:
+    from tarfile import tar_filter
+except ImportError:
+    tar_filter: Callable[[str, str], TarInfo] = None
 
 
 class UnixUser:
@@ -111,10 +116,10 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     log.debug(f"Opening: {tmp.joinpath(archive)}")
 
     # Open the tar file
-    with tarfile.open(tmp.joinpath(archive), "r:gz") as tar:
-        if hasattr(tarfile, "tar_filter"):
+    with tar_open(tmp.joinpath(archive), "r:gz") as tar:
+        if tar_filter:
             log.debug("Using filter for archive")
-            tar.extraction_filter = tarfile.tar_filter
+            tar.extraction_filter = tar_filter
         else:
             log.debug("Using no filter for archive")
             log.warning("Archive will be extracted insecurely")

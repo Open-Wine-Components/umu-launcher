@@ -1,7 +1,7 @@
-import tarfile
+from tarfile import open as tar_open, TarInfo
 from pathlib import Path
 from os import environ
-from typing import Dict, List, Tuple, Any, Union
+from typing import Dict, List, Tuple, Any, Union, Callable
 from hashlib import sha512
 from shutil import rmtree
 from http.client import HTTPSConnection, HTTPResponse, HTTPException, HTTPConnection
@@ -13,6 +13,11 @@ from ulwgl_plugins import enable_zenity
 from socket import gaierror
 from ulwgl_log import log
 from ulwgl_consts import STEAM_COMPAT, ULWGL_CACHE
+
+try:
+    from tarfile import tar_filter
+except ImportError:
+    tar_filter: Callable[[str, str], TarInfo] = None
 
 
 def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
@@ -193,10 +198,10 @@ def _fetch_proton(
 
 def _extract_dir(proton: Path, steam_compat: Path) -> None:
     """Extract from the cache to another location."""
-    with tarfile.open(proton.as_posix(), "r:gz") as tar:
-        if hasattr(tarfile, "tar_filter"):
+    with tar_open(proton.as_posix(), "r:gz") as tar:
+        if tar_filter:
             log.debug("Using filter for archive")
-            tar.extraction_filter = tarfile.tar_filter
+            tar.extraction_filter = tar_filter
         else:
             log.debug("Using no filter for archive")
             log.warning("Archive will be extracted insecurely")
