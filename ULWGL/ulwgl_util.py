@@ -176,7 +176,7 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     log.debug(f"Local: {local}")
 
     try:
-        create_connection(("1.1.1.1", 80), timeout=1)
+        create_connection(("1.1.1.1", 80), timeout=5)
     except TimeoutError:
         log.debug("User is offline")
         raise
