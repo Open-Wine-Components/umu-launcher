@@ -12,7 +12,7 @@ from ulwgl_plugins import enable_zenity
 from urllib.request import urlopen
 from ssl import create_default_context
 from http.client import HTTPException
-from socket import create_connection
+from socket import AF_INET, SOCK_DGRAM, socket
 from tempfile import mkdtemp
 
 try:
@@ -181,7 +181,9 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     log.debug(f"Local: {local}")
 
     try:
-        create_connection(("1.1.1.1", 80), timeout=5)
+        with socket(AF_INET, SOCK_DGRAM) as sock:
+            sock.settimeout(5)
+            sock.connect(("1.1.1.1", 53))
     except TimeoutError:
         log.debug("User is offline")
         raise
