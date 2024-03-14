@@ -13,6 +13,7 @@ from urllib.request import urlopen
 from ssl import create_default_context
 from http.client import HTTPException
 from socket import create_connection
+from tempfile import mkdtemp
 
 
 class UnixUser:
@@ -52,8 +53,7 @@ class UnixUser:
 
 
 def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
-    # Assuming the file is downloaded to '/tmp/steam-container-runtime-complete.tar.gz'
-    tar_path: str = "/tmp/steam-container-runtime-complete.tar.gz"
+    archive: str = "steam-container-runtime-complete.tar.gz"
     tmp: Path = Path(mkdtemp())
     # Access the 'runtime_platform' value
     runtime_platform_value: str = json["ulwgl"]["versions"]["runtime_platform"]
@@ -65,7 +65,8 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     log.debug(f"Version: {version}")
 
     # Step  1: Define the URL of the file to download
-    base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/steam-container-runtime-complete.tar.gz"
+    # We expect the archive name to not change
+    base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/{archive}"
     log.debug(f"URL: {base_url}")
 
     # Download the runtime
@@ -85,7 +86,10 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     except TimeoutError:
         # Without the runtime, the launcher will not work
         # Just exit on timeout or download failure
-        err: str = "Unable to download the Steam Runtime\nrepo.steampowered.com request timed out"
+        err: str = (
+            "Unable to download the Steam Runtime\n"
+            + "repo.steampowered.com request timed out"
+        )
         raise TimeoutError(err)
     except FileNotFoundError:
         log.exception("Exception occurred when enabling Zenity")
@@ -104,7 +108,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
             with tmp.joinpath(archive).open(mode="wb") as file:
                 file.write(resp.read())
 
-    log.debug(f"Opening: {tar_path}")
+    log.debug(f"Opening: {tmp.joinpath(archive)}")
 
     # Open the tar file
     with tar_open(tmp.joinpath(archive), "r:gz") as tar:
@@ -119,16 +123,16 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         ULWGL_LOCAL.mkdir(parents=True, exist_ok=True)
 
         # Extract the 'depot' folder to the target directory
-        log.debug("Extracting archive files -> /tmp")
+        log.debug(f"Extracting archive files -> {tmp}")
         for member in tar.getmembers():
             if member.name.startswith("steam-container-runtime/depot/"):
                 tar.extract(member, path=tmp)
 
         # Step  4: move the files to the correct location
-        source_dir: Path = Path("/tmp", "steam-container-runtime", "depot")
+        source_dir = tmp.joinpath("steam-container-runtime", "depot")
 
         log.debug(f"Source: {source_dir}")
-        log.debug(f"Destination: {destination_dir}")
+        log.debug(f"Destination: {ULWGL_LOCAL}")
 
         # Move each file to the destination directory, overwriting if it exists
         for file in source_dir.glob("*"):
@@ -147,9 +151,12 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
             move(src_file.as_posix(), dest_file.as_posix())
 
         # Remove the extracted directory and all its contents
-        log.debug("Removing: /tmp/steam-container-runtime")
-        if Path("/tmp/steam-container-runtime/").exists():
-            rmtree("/tmp/steam-container-runtime/")
+        log.debug(f"Removing: {tmp}/steam-container-runtime")
+        if tmp.joinpath("steam-container-runtime").exists():
+            rmtree(tmp.joinpath("steam-container-runtime").as_posix())
+
+        log.debug(f"Removing: {tmp.joinpath(archive)}")
+        tmp.joinpath(archive).unlink(missing_ok=True)
 
         log.debug("Renaming: _v2-entry-point -> ULWGL")
 
