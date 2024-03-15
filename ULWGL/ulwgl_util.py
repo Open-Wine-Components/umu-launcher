@@ -97,7 +97,6 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         )
         raise TimeoutError(err)
     except FileNotFoundError:
-        log.exception("Exception occurred when enabling Zenity")
 
         print(f"Downloading {runtime_platform_value} ...", file=stderr)
 
@@ -288,6 +287,7 @@ def _update_ulwgl(
 
             # Directory is absent
             if not local.joinpath("reaper").is_file():
+                log.warning("Reaper not found")
                 print(
                     f"Reaper not found\nCopying {key} -> {local} ...",
                     file=stderr,
@@ -309,6 +309,7 @@ def _update_ulwgl(
 
             # Directory is absent
             if not local.joinpath("pressure-vessel").is_dir():
+                log.warning("Pressure Vessel not found")
                 print(
                     f"Pressure Vessel not found\nCopying {key} -> {local} ...",
                     file=stderr,
@@ -343,6 +344,7 @@ def _update_ulwgl(
                     "Runtime Platform not found",
                     file=stderr,
                 )
+                log.warning("Runtime Platform not found")
 
                 # Download the runtime from the official source
                 setup_runtime(root, json_root)
@@ -379,6 +381,7 @@ def _update_ulwgl(
 
             # Directory is absent
             if not steam_compat.joinpath("ULWGL-Launcher").is_dir():
+                log.warning("ULWGL-Launcher not found")
                 print(
                     "ULWGL-Launcher not found\n"
                     + f"Copying ULWGL-Launcher -> {steam_compat} ...",
