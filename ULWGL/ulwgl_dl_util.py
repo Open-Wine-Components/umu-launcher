@@ -163,7 +163,6 @@ def _fetch_proton(
         err: str = f"Unable to download {proton}\ngithub.com request timed out"
         raise TimeoutError(err)
     except FileNotFoundError:
-        log.exception("Exception occurred when downloading Proton")
         print(f"Downloading {proton} ...", file=stderr)
 
         with urlopen(proton_url, timeout=180, context=create_default_context()) as resp:  # noqa: S310
