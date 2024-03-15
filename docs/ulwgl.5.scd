@@ -46,8 +46,9 @@ $ ulwgl-run --config config.toml
 	Expects the values: egs, gog, battlenet, amazon, humble, itchio, and ubisoft.
 
 *launch_args*
-	Launch arguments for the executable. Value must be a basic *string*.
-	Assumes each argument is space-separated.
+	Launch arguments for the executable. Value must be a basic *string* or an
+	*array* of basic strings. When using a string, assumes each argument is
+	space-separated.
 
 # AUTHORS
 

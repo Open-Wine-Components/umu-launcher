@@ -60,7 +60,7 @@ prefix = "~/.wine"
 proton = "~/GE-Proton30"
 game_id = "0"
 exe = "~/foo.exe"
-launch_args = "-opengl -SkipBuildPatchPrereq"
+launch_args = ["-opengl", "-SkipBuildPatchPrereq"]
 store = "gog"
 $ ulwgl-run --config config.toml
 ```
