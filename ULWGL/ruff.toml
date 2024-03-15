@@ -60,7 +60,19 @@ select = [
     "S",
     # Ensure we do not exceed our line length
     "E501",
-    "ANN"
+    # Enforce types for variables
+    "ANN",
+    # Ensure we're smart when accessing dicts
+    "RUF019",
+    # Enforce not concatenating collections
+    "RUF005",
+    # Flag unused qa directives
+    "RUF100",
+    # Enforce flake8 concat strings because the + operator can be unnecessary
+    "ISC",
+    # Ensure we're smart when using the logger
+    # Specific log statements should execute only when necessary
+    "G"
 ]
 ignore = [
     # Format
@@ -74,7 +86,11 @@ ignore = [
     "S603",
     # We use a static location for the crash report dir: /tmp/ULWGL_crashreports
     "S108",
-    "ANN101"
+    # Don't flag missing type for self
+    # This will be deprecated in Ruff soon
+    "ANN101",
+    # Single line implicit concat conflicts with the formatter
+    "ISC001"
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
@@ -83,6 +99,8 @@ unfixable = []
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+logger-objects = ["ulwgl_log.log"]
 
 [lint.per-file-ignores]
 "ulwgl_test.py" = ["ANN"]
