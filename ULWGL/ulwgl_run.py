@@ -99,9 +99,9 @@ def setup_pfx(path: str) -> None:
         wineuser.unlink(missing_ok=True)
         wineuser.symlink_to("steamuser")
     else:
-        paths: List[str] = [steam.as_posix(), wineuser.as_posix()]
-        log.warning(f"Skipping link creation for prefix: {pfx.parent}")
-        log.warning(f"Following paths already exist: {paths}")
+        log.debug("Skipping link creation for prefix")
+        log.debug("User steamuser directory exists: %s", steam)
+        log.debug("User home directory exists: %s", wineuser)
 
 
 def check_env(
