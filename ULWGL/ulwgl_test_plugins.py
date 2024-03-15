@@ -410,49 +410,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
         self.assertEqual(verb2, self.test_verb, "Expected a verb")
         self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
 
-    def test_set_env_toml_opts_nofile(self):
-        """Test set_env_toml for options that are a file.
-
-        An error should not be raised if a launch argument is a file
-        We allow this behavior to give users flexibility at the cost of security
-        """
-        test_toml = "foo.toml"
-        toml_path = self.test_file + "/" + test_toml
-        toml_str = f"""
-        [ulwgl]
-        prefix = "{self.test_file}"
-        proton = "{self.test_file}"
-        game_id = "{self.test_file}"
-        launch_args = ["{toml_path}"]
-        exe = "{self.test_exe}"
-        """
-        result = None
-
-        Path(toml_path).touch()
-
-        with Path(toml_path).open(mode="w") as file:
-            file.write(toml_str)
-
-        with patch.object(
-            ulwgl_run,
-            "parse_args",
-            return_value=argparse.Namespace(config=toml_path),
-        ):
-            # Args
-            result = ulwgl_run.parse_args()
-            self.assertIsInstance(
-                result, Namespace, "Expected a Namespace from parse_arg"
-            )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
-            # Env
-            ulwgl_plugins.set_env_toml(self.env, result)
-
-            # Check if its the TOML file we just created
-            self.assertTrue(
-                Path(self.env["EXE"].split(" ")[1]).is_file(),
-                "Expected a file to be appended to the executable",
-            )
-
     def test_set_env_toml_nofile(self):
         """Test set_env_toml for values that are not a file.
 
@@ -659,7 +616,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             result_set_env = ulwgl_plugins.set_env_toml(self.env, result)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
+            self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
 
             # Check that the paths are still in the unexpanded form after
             # setting the env
@@ -680,6 +637,76 @@ class TestGameLauncherPlugins(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["GAMEID"], unexpanded_path, "Expectd path not to be expanded"
+            )
+
+    def test_set_env_toml_opts(self):
+        """Test set_env_toml when passed a string as a launch argument."""
+        test_toml = "foo.toml"
+        toml_str = f"""
+        [ulwgl]
+        prefix = "{self.test_file}"
+        proton = "{self.test_file}"
+        game_id = "{self.test_file}"
+        launch_args = "{self.test_file} {self.test_file}"
+        exe = "{self.test_exe}"
+        """
+        toml_path = self.test_file + "/" + test_toml
+        result = None
+        result_set_env = None
+
+        Path(toml_path).touch()
+
+        with Path(toml_path).open(mode="w") as file:
+            file.write(toml_str)
+
+        with patch.object(
+            ulwgl_run,
+            "parse_args",
+            return_value=argparse.Namespace(config=toml_path),
+        ):
+            # Args
+            result = ulwgl_run.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+
+            # Env
+            # The first argument is the env
+            result_set_env = ulwgl_plugins.set_env_toml(self.env, result)
+            self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
+            self.assertTrue(
+                result_set_env[0] is self.env, "Expected the same reference"
+            )
+
+            # Verify the launch arguments
+            self.assertTrue(
+                isinstance(result_set_env[1], list), "Expected a list for game options"
+            )
+            self.assertEqual(
+                result_set_env[1][0],
+                self.test_file,
+                "Expected the test file as first arg",
+            )
+            self.assertEqual(
+                result_set_env[1][1],
+                self.test_file,
+                "Expected the test file as second arg",
+            )
+
+            self.assertTrue(self.env["EXE"], "Expected EXE to be set")
+            self.assertEqual(
+                self.env["PROTONPATH"],
+                self.test_file,
+                "Expected PROTONPATH to be set",
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"],
+                self.test_file,
+                "Expected WINEPREFIX to be set",
+            )
+            self.assertEqual(
+                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
             )
 
     def test_set_env_toml(self):
@@ -715,13 +742,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             result_set_env = ulwgl_plugins.set_env_toml(self.env, result)
-            self.assertTrue(result_set_env is self.env, "Expected the same reference")
+            self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
             self.assertTrue(self.env["EXE"], "Expected EXE to be set")
-            self.assertEqual(
-                self.env["EXE"],
-                self.test_exe + " " + " ".join([self.test_file, self.test_file]),
-                "Expectd GAMEID to be set",
-            )
             self.assertEqual(
                 self.env["PROTONPATH"],
                 self.test_file,
@@ -733,7 +755,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 "Expected WINEPREFIX to be set",
             )
             self.assertEqual(
-                self.env["GAMEID"], self.test_file, "Expectd GAMEID to be set"
+                self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
             )
 
 
