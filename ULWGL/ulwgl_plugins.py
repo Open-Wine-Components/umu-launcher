@@ -1,12 +1,14 @@
 from subprocess import PIPE, Popen, STDOUT
 from os import environ
 from pathlib import Path
-from typing import Dict, Set, Any, List
+from typing import Dict, Set, Any, List, Tuple
 from argparse import Namespace
 from shutil import which
 
 
-def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
+def set_env_toml(
+    env: Dict[str, str], args: Namespace
+) -> Tuple[Dict[str, str], List[str]]:
     """Read a TOML file then sets the environment variables for the Steam RT.
 
     In the TOML file, certain keys map to Steam RT environment variables. For example:
@@ -24,6 +26,7 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
 
     toml: Dict[str, Any] = None
     path_config: str = Path(getattr(args, "config", None)).expanduser().as_posix()
+    opts: List[str] = []
 
     if not Path(path_config).is_file():
         msg: str = "Path to configuration is not a file: " + getattr(
@@ -46,12 +49,13 @@ def set_env_toml(env: Dict[str, str], args: Namespace) -> Dict[str, str]:
         elif key == "store":
             env["STORE"] = val
         elif key == "exe":
-            if toml.get("ulwgl").get("launch_args"):
-                env["EXE"] = val + " " + " ".join(toml.get("ulwgl").get("launch_args"))
-            else:
-                env["EXE"] = val
+            env["EXE"] = val
+        elif key == "launch_args" and isinstance(val, list):
+            opts = val
+        elif key == "launch_args" and isinstance(val, str):
+            opts = val.split(" ")
 
-    return env
+    return env, opts
 
 
 def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]) -> Dict[str, Any]:

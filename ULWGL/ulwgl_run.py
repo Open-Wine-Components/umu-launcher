@@ -319,7 +319,7 @@ def main() -> int:  # noqa: D103
         log.debug("Network is unreachable")
 
     if isinstance(args, Namespace) and getattr(args, "config", None):
-        set_env_toml(env, args)
+        env, opts = set_env_toml(env, args)
     else:
         opts = args[1]  # Reference the executable options
         check_env(env)
