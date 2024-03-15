@@ -567,7 +567,7 @@ class TestGameLauncher(unittest.TestCase):
             num_share,
             num_local - 1,
             "Expected .local/share/Steam/compatibilitytools.d/ULWGL-Launcher"
-            + "and /usr/share/ULWGL/ULWGL-Launcher to contain same files",
+            "and /usr/share/ULWGL/ULWGL-Launcher to contain same files",
         )
 
         for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*"):
@@ -1721,7 +1721,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and"
-            + "tracked_files file",
+            "tracked_files file",
         )
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
@@ -1798,7 +1798,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and "
-            + "tracked_files file",
+            "tracked_files file",
         )
 
         # Verify steamuser -> unix user
@@ -1838,7 +1838,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and "
-            + " tracked_files file",
+            " tracked_files file",
         )
 
         # Verify unixuser -> steamuser
@@ -1887,7 +1887,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and "
-            + "tracked_files file",
+            "tracked_files file",
         )
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
@@ -1926,7 +1926,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and "
-            + "tracked_files file",
+            "tracked_files file",
         )
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
@@ -1944,7 +1944,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and "
-            + "tracked_files file",
+            "tracked_files file",
         )
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"

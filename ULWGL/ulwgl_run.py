@@ -152,8 +152,8 @@ def check_env(
     if not os.environ["PROTONPATH"]:
         err: str = (
             "Download failed\n"
-            + "ULWGL-Proton could not be found in cache or compatibilitytools.d\n"
-            + "Please set $PROTONPATH or visit https://github.com/Open-Wine-Components/ULWGL-Proton/releases"
+            "ULWGL-Proton could not be found in cache or compatibilitytools.d\n"
+            "Please set $PROTONPATH or visit https://github.com/Open-Wine-Components/ULWGL-Proton/releases"
         )
         raise FileNotFoundError(err)
 
@@ -223,8 +223,8 @@ def build_command(
         dir: str = Path(__file__).parent.as_posix()
         msg: str = (
             "Path to _v2-entry-point cannot be found in: "
-            + f"{home}/.local/share or {dir}\n"
-            + "Please install a Steam Runtime platform"
+            f"{home}/.local/share or {dir}\n"
+            "Please install a Steam Runtime platform"
         )
         raise FileNotFoundError(msg)
 
@@ -298,7 +298,7 @@ def main() -> int:  # noqa: D103
         if not ULWGL_LOCAL.exists() or not any(ULWGL_LOCAL.iterdir()):
             err: str = (
                 "ULWGL has not been setup for the user\n"
-                + "An internet connection is required to setup ULWGL"
+                "An internet connection is required to setup ULWGL"
             )
             raise RuntimeError(err)
         log.debug("Request timed out")
@@ -311,7 +311,7 @@ def main() -> int:  # noqa: D103
         ):
             err: str = (
                 "ULWGL has not been setup for the user\n"
-                + "An internet connection is required to setup ULWGL"
+                "An internet connection is required to setup ULWGL"
             )
             raise RuntimeError(err)
         if e.errno != ENETUNREACH:

@@ -97,7 +97,7 @@ def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]) -> Dict[str, Any]
         if not val and isinstance(val, str):
             err: str = (
                 f"Value is empty for '{key}' in TOML.\n"
-                + "Please specify a value or remove the following entry:\n{key} = {val}"
+                f"Please specify a value or remove the following entry:\n{key} = {val}"
             )
             raise ValueError(err)
 

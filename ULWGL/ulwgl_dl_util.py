@@ -139,7 +139,7 @@ def _fetch_proton(
         if resp.status != 200:
             err: str = (
                 f"Unable to download {hash}\n"
-                + f"github.com returned the status: {resp.status}"
+                f"github.com returned the status: {resp.status}"
             )
             raise HTTPException(err)
         with cache.joinpath(hash).open(mode="wb") as file:
@@ -172,7 +172,7 @@ def _fetch_proton(
             if resp.status != 200:
                 err: str = (
                     f"Unable to download {proton}\n"
-                    + f"github.com returned the status: {resp.status}"
+                    f"github.com returned the status: {resp.status}"
                 )
                 raise HTTPException(err)
             with cache.joinpath(proton).open(mode="wb") as file:

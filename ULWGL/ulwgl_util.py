@@ -93,7 +93,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         # Just exit on timeout or download failure
         err: str = (
             "Unable to download the Steam Runtime\n"
-            + "repo.steampowered.com request timed out"
+            "repo.steampowered.com request timed out"
         )
         raise TimeoutError(err)
     except FileNotFoundError:
@@ -106,7 +106,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
             if resp.status != 200:
                 err: str = (
                     "Unable to download the Steam Runtime\n"
-                    + f"repo.steampowered.com returned the status: {resp.status}"
+                    f"repo.steampowered.com returned the status: {resp.status}"
                 )
                 raise HTTPException(err)
             log.debug(f"Writing: {tmp.joinpath(archive)}")
@@ -430,7 +430,7 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
     if not path.joinpath(config).is_file():
         err: str = (
             f"File not found: {config}\n"
-            + "Please reinstall the package to recover configuration file"
+            "Please reinstall the package to recover configuration file"
         )
         raise FileNotFoundError(err)
 
@@ -444,7 +444,7 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
     ):
         err: str = (
             f"Failed to load {config} or 'ulwgl' or 'versions' not in: {config}\n"
-            + "Please reinstall the package"
+            "Please reinstall the package"
         )
         raise ValueError(err)
 
