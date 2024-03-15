@@ -133,7 +133,7 @@ def _fetch_proton(
         raise ValueError(err)
 
     # Digest file
-    # noqa S310 because Ruff currently cannot get this right
+    # Ruff currently cannot get this right
     # See https://github.com/astral-sh/ruff/issues/7918
     with urlopen(hash_url, timeout=30, context=create_default_context()) as resp:  # noqa: S310
         if resp.status != 200:

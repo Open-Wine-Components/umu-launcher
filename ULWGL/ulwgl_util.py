@@ -67,12 +67,12 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     # Split the string at 'sniper_platform_'
     # TODO Change logic so we don't split on a hardcoded string
     version: str = runtime_platform_value.split("sniper_platform_")[1]
-    log.debug(f"Version: {version}")
+    log.debug("Version: %s", version)
 
     # Step  1: Define the URL of the file to download
     # We expect the archive name to not change
     base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/{archive}"
-    log.debug(f"URL: {base_url}")
+    log.debug("URL: %s", base_url)
 
     # Download the runtime
     # Attempt to create a popup with zenity otherwise print
@@ -109,11 +109,11 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
                     f"repo.steampowered.com returned the status: {resp.status}"
                 )
                 raise HTTPException(err)
-            log.debug(f"Writing: {tmp.joinpath(archive)}")
+            log.debug("Writing: %s", tmp.joinpath(archive))
             with tmp.joinpath(archive).open(mode="wb") as file:
                 file.write(resp.read())
 
-    log.debug(f"Opening: {tmp.joinpath(archive)}")
+    log.debug("Opening: %s", tmp.joinpath(archive))
 
     # Open the tar file
     with tar_open(tmp.joinpath(archive), "r:gz") as tar:
@@ -128,7 +128,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         ULWGL_LOCAL.mkdir(parents=True, exist_ok=True)
 
         # Extract the 'depot' folder to the target directory
-        log.debug(f"Extracting archive files -> {tmp}")
+        log.debug("Extracting archive files -> %s", tmp)
         for member in tar.getmembers():
             if member.name.startswith("steam-container-runtime/depot/"):
                 tar.extract(member, path=tmp)
@@ -136,8 +136,8 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         # Step  4: move the files to the correct location
         source_dir = tmp.joinpath("steam-container-runtime", "depot")
 
-        log.debug(f"Source: {source_dir}")
-        log.debug(f"Destination: {ULWGL_LOCAL}")
+        log.debug("Source: %s", source_dir)
+        log.debug("Destination: %s", ULWGL_LOCAL)
 
         # Move each file to the destination directory, overwriting if it exists
         for file in source_dir.glob("*"):
@@ -145,22 +145,22 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
             dest_file: Path = ULWGL_LOCAL.joinpath(file.name)
 
             if dest_file.is_file() or dest_file.is_symlink():
-                log.debug(f"Removing file: {dest_file}")
+                log.debug("Removing file: %s", dest_file)
                 dest_file.unlink()
             elif dest_file.is_dir():
-                log.debug(f"Removing directory: {dest_file}")
+                log.debug("Removing directory: %s", dest_file)
                 if dest_file.exists():
                     rmtree(dest_file.as_posix())  # remove dir and all contains
 
-            log.debug(f"Moving {src_file} -> {dest_file}")
+            log.debug("Moving %s -> %s", src_file, dest_file)
             move(src_file.as_posix(), dest_file.as_posix())
 
         # Remove the extracted directory and all its contents
-        log.debug(f"Removing: {tmp}/steam-container-runtime")
+        log.debug("Removing: %s/steam-container-runtime", tmp)
         if tmp.joinpath("steam-container-runtime").exists():
             rmtree(tmp.joinpath("steam-container-runtime").as_posix())
 
-        log.debug(f"Removing: {tmp.joinpath(archive)}")
+        log.debug("Removing: %s", tmp.joinpath(archive))
         tmp.joinpath(archive).unlink(missing_ok=True)
 
         log.debug("Renaming: _v2-entry-point -> ULWGL")
@@ -177,8 +177,8 @@ def setup_ulwgl(root: Path, local: Path) -> None:
     Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the ULWGL-Launcher
     The ULWGL-Launcher will be copied to .local/share/Steam/compatibilitytools.d
     """
-    log.debug(f"Root: {root}")
-    log.debug(f"Local: {local}")
+    log.debug("Root: %s", root)
+    log.debug("Local: %s", local)
 
     try:
         with socket(AF_INET, SOCK_DGRAM) as sock:

@@ -332,7 +332,7 @@ def main() -> int:  # noqa: D103
     # Set all environment variables
     # NOTE: `env` after this block should be read only
     for key, val in env.items():
-        log.info(f"{key}={val}")
+        log.info("%s=%s", key, val)
         os.environ[key] = val
 
     build_command(env, ULWGL_LOCAL, command, opts)
@@ -350,7 +350,7 @@ if __name__ == "__main__":
     except SystemExit as e:
         if e.code != 0:
             raise Exception(e)
-    except Exception:  # noqa: BLE001
+    except Exception:
         log.exception("Exception")
         sys.exit(1)
     finally:
