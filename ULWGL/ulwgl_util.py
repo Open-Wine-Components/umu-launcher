@@ -1,6 +1,6 @@
 from tarfile import open as tar_open, TarInfo
 from os import getuid
-from ulwgl_consts import CONFIG, STEAM_COMPAT, ULWGL_LOCAL
+from ulwgl_consts import CONFIG, STEAM_COMPAT, ULWGL_LOCAL, Color
 from typing import Any, Dict, List, Callable
 from json import load, dump
 from ulwgl_log import log
@@ -97,10 +97,9 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         )
         raise TimeoutError(err)
     except FileNotFoundError:
+        console_log(f"Downloading {runtime_platform_value} ...")
 
-        print(f"Downloading {runtime_platform_value} ...", file=stderr)
-
-        # noqa S310 we hardcode the URL and trust it
+        # We hardcode the URL and trust it
         with urlopen(base_url, timeout=60, context=create_default_context()) as resp:  # noqa: S310
             if resp.status != 200:
                 err: str = (
@@ -212,15 +211,16 @@ def _install_ulwgl(
     and ULWGL_VERSION.json
     """
     log.debug("New install detected")
+    console_log("Setting up Unified Launcher for Windows Games on Linux ...")
 
     local.mkdir(parents=True, exist_ok=True)
 
     # Config
-    print(f"Copying {CONFIG} -> {local} ...", file=stderr)
+    console_log(f"Copying {CONFIG} -> {local} ...")
     copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
 
     # Reaper
-    print(f"Copying reaper -> {local} ...", file=stderr)
+    console_log(f"Copying reaper -> {local} ...")
     copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
@@ -229,7 +229,7 @@ def _install_ulwgl(
     # Launcher files
     for file in root.glob("*.py"):
         if not file.name.startswith("ulwgl_test"):
-            print(f"Copying {file} -> {local} ...", file=stderr)
+            console_log(f"Copying {file} -> {local} ...")
             copy(file, local.joinpath(file.name))
 
     local.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
@@ -237,7 +237,7 @@ def _install_ulwgl(
     # Runner
     steam_compat.mkdir(parents=True, exist_ok=True)
 
-    print(f"Copying ULWGL-Launcher -> {steam_compat} ...", file=stderr)
+    console_log(f"Copying ULWGL-Launcher -> {steam_compat} ...")
 
     # Remove existing files if they exist -- this is a clean install.
     if steam_compat.joinpath("ULWGL-Launcher").is_dir():
@@ -254,7 +254,7 @@ def _install_ulwgl(
         "../../../ULWGL/ulwgl_run.py"
     )
 
-    print("Completed.", file=stderr)
+    console_log("Completed.")
 
 
 def _update_ulwgl(
@@ -288,16 +288,13 @@ def _update_ulwgl(
             # Directory is absent
             if not local.joinpath("reaper").is_file():
                 log.warning("Reaper not found")
-                print(
-                    f"Reaper not found\nCopying {key} -> {local} ...",
-                    file=stderr,
-                )
+                console_log(f"Copying {key} -> {local} ...")
 
                 copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
             # Update
             if val != reaper:
-                print(f"Updating {key} to {val} ...", file=stderr)
+                console_log(f"Updating {key} to {val}")
 
                 local.joinpath("reaper").unlink(missing_ok=True)
                 copy(root.joinpath("reaper"), local.joinpath("reaper"))
@@ -310,10 +307,7 @@ def _update_ulwgl(
             # Directory is absent
             if not local.joinpath("pressure-vessel").is_dir():
                 log.warning("Pressure Vessel not found")
-                print(
-                    f"Pressure Vessel not found\nCopying {key} -> {local} ...",
-                    file=stderr,
-                )
+                console_log(f"Copying {key} -> {val} ...")
 
                 copytree(
                     root.joinpath("pressure-vessel"),
@@ -323,7 +317,7 @@ def _update_ulwgl(
                 )
             elif local.joinpath("pressure-vessel").is_dir() and val != pv:
                 # Update
-                print(f"Updating {key} to {val} ...", file=stderr)
+                console_log(f"Updating {key} to {val}")
 
                 rmtree(local.joinpath("pressure-vessel").as_posix())
                 copytree(
@@ -340,17 +334,13 @@ def _update_ulwgl(
 
             # Directory is absent
             if not (local.joinpath(runtime).is_dir() or local.joinpath(val).is_dir()):
-                print(
-                    "Runtime Platform not found",
-                    file=stderr,
-                )
                 log.warning("Runtime Platform not found")
 
                 # Download the runtime from the official source
                 setup_runtime(root, json_root)
             elif local.joinpath(runtime).is_dir() and val != runtime:
                 # Update
-                print(f"Updating {key} to {val} ...", file=stderr)
+                console_log(f"Updating {key} to {val}")
 
                 rmtree(local.joinpath(runtime).as_posix())
                 setup_runtime(root, json_root)
@@ -362,7 +352,7 @@ def _update_ulwgl(
             launcher: str = json_local["ulwgl"]["versions"]["launcher"]
 
             if val != launcher:
-                print(f"Updating {key} to {val} ...", file=stderr)
+                console_log(f"Updating {key} to {val}")
 
                 # Python files
                 for file in root.glob("*.py"):
@@ -382,11 +372,7 @@ def _update_ulwgl(
             # Directory is absent
             if not steam_compat.joinpath("ULWGL-Launcher").is_dir():
                 log.warning("ULWGL-Launcher not found")
-                print(
-                    "ULWGL-Launcher not found\n"
-                    + f"Copying ULWGL-Launcher -> {steam_compat} ...",
-                    file=stderr,
-                )
+                console_log(f"Copying ULWGL-Launcher ->  {steam_compat} ...")
 
                 copytree(
                     root.joinpath("ULWGL-Launcher"),
@@ -400,7 +386,7 @@ def _update_ulwgl(
                 )
             elif steam_compat.joinpath("ULWGL-Launcher").is_dir() and val != runner:
                 # Update
-                print(f"Updating {key} to {val} ...", file=stderr)
+                console_log(f"Updating {key} to {val}")
 
                 rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
                 copytree(
@@ -452,3 +438,11 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
         raise ValueError(err)
 
     return json
+
+
+def console_log(msg: str) -> None:
+    """Display non-debug-related statements to the console.
+
+    Intended to be used to notify ULWGL setup progress state
+    """
+    print(f"{Color.BOLD.value}{msg}{Color.RESET.value}", file=stderr)

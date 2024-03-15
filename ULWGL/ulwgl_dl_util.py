@@ -8,11 +8,11 @@ from http.client import HTTPSConnection, HTTPResponse, HTTPException, HTTPConnec
 from ssl import create_default_context
 from json import loads as loads_json
 from urllib.request import urlopen
-from sys import stderr
 from ulwgl_plugins import enable_zenity
 from socket import gaierror
 from ulwgl_log import log
 from ulwgl_consts import STEAM_COMPAT, ULWGL_CACHE
+from ulwgl_util import console_log
 
 try:
     from tarfile import tar_filter
@@ -124,7 +124,7 @@ def _fetch_proton(
     proton, proton_url = files[1]
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
 
-    print(f"Downloading {hash} ...", file=stderr)
+    console_log(f"Downloading {hash} ...")
 
     # Verify the scheme from Github for resources
     if not proton_url.startswith("https:") or not hash_url.startswith("https:"):
@@ -163,7 +163,7 @@ def _fetch_proton(
         err: str = f"Unable to download {proton}\ngithub.com request timed out"
         raise TimeoutError(err)
     except FileNotFoundError:
-        print(f"Downloading {proton} ...", file=stderr)
+        console_log(f"Downloading {proton} ...")
 
         with urlopen(proton_url, timeout=180, context=create_default_context()) as resp:  # noqa: S310
             # Without Proton, the launcher will not work
@@ -177,7 +177,7 @@ def _fetch_proton(
             with cache.joinpath(proton).open(mode="wb") as file:
                 file.write(resp.read())
 
-    print("Completed.", file=stderr)
+    console_log("Completed.")
 
     with cache.joinpath(proton).open(mode="rb") as file:
         if (
@@ -186,7 +186,7 @@ def _fetch_proton(
         ):
             err: str = "Digests mismatched.\nFalling back to cache ..."
             raise ValueError(err)
-        print(f"{proton}: SHA512 is OK", file=stderr)
+        console_log(f"{proton}: SHA512 is OK")
 
     _extract_dir(cache.joinpath(proton), steam_compat)
     environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
@@ -205,9 +205,9 @@ def _extract_dir(proton: Path, steam_compat: Path) -> None:
             log.debug("Using no filter for archive")
             log.warning("Archive will be extracted insecurely")
 
-        print(f"Extracting {proton} -> {steam_compat.as_posix()} ...", file=stderr)
+        console_log(f"Extracting {proton} -> {steam_compat} ...")
         tar.extractall(path=steam_compat.as_posix())  # noqa: S202
-        print("Completed.", file=stderr)
+        console_log("Completed.")
 
 
 def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None:
@@ -215,13 +215,13 @@ def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None
 
     We want to do this when a download for a new release is interrupted
     """
-    print("Keyboard Interrupt.\nCleaning ...", file=stderr)
+    console_log("Keyboard Interrupt.\nCleaning ...")
 
     if cache.joinpath(tarball).is_file():
-        print(f"Purging {tarball} in {cache} ...", file=stderr)
+        console_log(f"Purging {tarball} in {cache} ...")
         cache.joinpath(tarball).unlink()
     if steam_compat.joinpath(proton).is_dir():
-        print(f"Purging {proton} in {steam_compat} ...", file=stderr)
+        console_log(f"Purging {proton} in {steam_compat} ...")
         rmtree(steam_compat.joinpath(proton).as_posix())
 
 
@@ -235,16 +235,18 @@ def _get_from_steamcompat(
         proton_dir: str = files[1][0][: files[1][0].find(".tar.gz")]
 
     for proton in steam_compat.glob("ULWGL-Proton*"):
-        print(f"{proton.name} found in: {steam_compat.as_posix()}", file=stderr)
+        console_log(f"{proton.name} found in: {steam_compat}")
+        console_log(f"Using {proton.name}")
+
         environ["PROTONPATH"] = proton.as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
 
         # Notify the user that they're not using the latest
         if proton_dir and proton.name != proton_dir:
-            print(
-                "ULWGL-Proton is outdated.\nFor latest release, please download "
-                + files[1][1],
-                file=stderr,
+            link: str = files[1][1]
+            console_log(
+                "ULWGL-Proton is outdated.\n"
+                f"For latest release, please download {link}"
             )
 
         return env
@@ -283,16 +285,18 @@ def _get_from_cache(
     if path:
         proton_dir: str = name[: name.find(".tar.gz")]  # Proton dir
 
-        print(f"{name} found in: {path}", file=stderr)
+        console_log(f"{name} found in: {path}")
         try:
             _extract_dir(path, steam_compat)
+
+            console_log(f"Using {proton_dir}")
             environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
             env["PROTONPATH"] = environ["PROTONPATH"]
 
             return env
         except KeyboardInterrupt:
             if steam_compat.joinpath(proton_dir).is_dir():
-                print(f"Purging {proton_dir} in {steam_compat} ...", file=stderr)
+                console_log(f"Purging {proton_dir} in {steam_compat} ...")
                 rmtree(steam_compat.joinpath(proton_dir).as_posix())
             raise
 
@@ -307,9 +311,15 @@ def _get_latest(
     When the digests mismatched or when interrupted, refer to cache for an old version
     """
     if files:
-        print("Fetching latest release ...", file=stderr)
+        console_log("Fetching latest release ...")
+
         try:
+            tarball: str = files[1][0]
+            proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
+
             _fetch_proton(env, steam_compat, cache, files)
+
+            console_log(f"Using {proton_dir}")
             env["PROTONPATH"] = environ["PROTONPATH"]
         except ValueError:
             log.exception("Exception")
