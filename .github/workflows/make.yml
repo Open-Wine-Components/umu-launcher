@@ -28,3 +28,6 @@ jobs:
       run: |
         ./configure.sh --prefix=/usr
         sudo make PREFIX=/usr install
+    - name: Make release
+      run: |
+        make release
