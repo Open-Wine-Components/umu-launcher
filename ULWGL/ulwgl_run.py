@@ -134,8 +134,7 @@ def check_env(
     # stem when it encounters a separator
     if (
         os.environ.get("PROTONPATH")
-        and not Path(os.environ.get("PROTONPATH")).is_dir()
-        and STEAM_COMPAT.joinpath(os.environ.get("PROTONPATH")).is_dir()
+        and Path(f"{STEAM_COMPAT}/" + os.environ.get("PROTONPATH")).is_dir()
     ):
         log.debug("Proton version selected")
         os.environ["PROTONPATH"] = STEAM_COMPAT.joinpath(
