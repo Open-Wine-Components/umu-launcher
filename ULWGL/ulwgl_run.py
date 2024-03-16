@@ -289,12 +289,10 @@ def main() -> int:  # noqa: D103
         set_log()
 
     # Setup the launcher and runtime files
-    # An internet connection is required for setup
-    # When an HTTP request times out or there's no internet, continue if ULWGL
-    # has already been setup
+    # An internet connection is required for new setups
     try:
         setup_ulwgl(root, ULWGL_LOCAL)
-    except TimeoutError:
+    except TimeoutError:  # Request to a server timed out
         if not ULWGL_LOCAL.exists() or not any(ULWGL_LOCAL.iterdir()):
             err: str = (
                 "ULWGL has not been setup for the user\n"
@@ -302,8 +300,7 @@ def main() -> int:  # noqa: D103
             )
             raise RuntimeError(err)
         log.debug("Request timed out")
-    except OSError as e:
-        # User's network is unreachable and ULWGL has not been setup
+    except OSError as e:  # No internet
         if (
             e.errno == ENETUNREACH
             and not ULWGL_LOCAL.exists()
@@ -318,15 +315,20 @@ def main() -> int:  # noqa: D103
             raise
         log.debug("Network is unreachable")
 
+    # Check environment
     if isinstance(args, Namespace) and getattr(args, "config", None):
         env, opts = set_env_toml(env, args)
     else:
         opts = args[1]  # Reference the executable options
         check_env(env)
 
+    # Prepare the prefix
     setup_pfx(env["WINEPREFIX"])
+
+    # Configure the environment
     set_env(env, args)
 
+    # Game drive
     enable_steam_game_drive(env)
 
     # Set all environment variables
@@ -335,6 +337,7 @@ def main() -> int:  # noqa: D103
         log.info("%s=%s", key, val)
         os.environ[key] = val
 
+    # Run
     build_command(env, ULWGL_LOCAL, command, opts)
     log.debug(command)
 
