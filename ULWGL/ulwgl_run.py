@@ -11,7 +11,7 @@ from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
 from ulwgl_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, ULWGL_LOCAL
 from ulwgl_util import setup_ulwgl
-from ulwgl_log import log, console_handler, Formatter
+from ulwgl_log import log, console_handler, CustomFormatter
 from ulwgl_util import UnixUser
 from logging import INFO, WARNING, DEBUG
 from errno import ENETUNREACH
@@ -56,7 +56,7 @@ def set_log() -> None:
         log.setLevel(level=WARNING)
     elif os.environ["ULWGL_LOG"] == "debug":
         # Show all logs
-        console_handler.setFormatter(Formatter(DEBUG_FORMAT))
+        console_handler.setFormatter(CustomFormatter(DEBUG_FORMAT))
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
 

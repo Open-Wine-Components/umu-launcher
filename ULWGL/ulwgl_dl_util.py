@@ -12,7 +12,6 @@ from ulwgl_plugins import enable_zenity
 from socket import gaierror
 from ulwgl_log import log
 from ulwgl_consts import STEAM_COMPAT, ULWGL_CACHE
-from ulwgl_util import console_log
 
 try:
     from tarfile import tar_filter

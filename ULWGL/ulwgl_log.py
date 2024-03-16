@@ -3,29 +3,39 @@ from sys import stderr
 from ulwgl_consts import SIMPLE_FORMAT, Color
 
 
-class Formatter(logging.Formatter):
-    """Extend the logging Formatter class to apply styles for log records."""
+class CustomLogger(logging.Logger):  # noqa: D101
+    def __init__(self, log: logging.Logger) -> None:  # noqa: D107
+        super().__init__(log.name, log.getEffectiveLevel())
 
+    def console(self, msg: str) -> None:
+        """Display non-debug-related statements to the console.
+
+        Intended to be used to notify ULWGL setup progress state
+        """
+        print(f"{Color.BOLD.value}{msg}{Color.RESET.value}", file=stderr)
+
+
+class CustomFormatter(logging.Formatter):  # noqa: D101
     def __init__(self, fmt: str = SIMPLE_FORMAT) -> None:
         """Apply colors to the record style for each level."""
-        self.fmt = fmt
-        self.formats = {
-            logging.DEBUG: f"{Color.DEBUG.value}{self.fmt}",
-            logging.INFO: f"{Color.INFO.value}{self.fmt}",
-            logging.WARNING: f"{Color.WARNING.value}{self.fmt}",
-            logging.ERROR: f"{Color.ERROR.value}{self.fmt}",
+        self._fmt = fmt
+        self._formats = {
+            logging.DEBUG: f"{Color.DEBUG.value}{self._fmt}",
+            logging.INFO: f"{Color.INFO.value}{self._fmt}",
+            logging.WARNING: f"{Color.WARNING.value}{self._fmt}",
+            logging.ERROR: f"{Color.ERROR.value}{self._fmt}",
         }
 
     def format(self, record: logging.LogRecord) -> str:  # noqa: D102
         formatter: logging.Formatter = logging.Formatter(
-            self.formats.get(record.levelno)
+            self._formats.get(record.levelno)
         )
 
         return formatter.format(record)
 
 
-log: logging.Logger = logging.getLogger(__name__)
+log: CustomLogger = CustomLogger(logging.getLogger(__name__))
 
 console_handler: logging.StreamHandler = logging.StreamHandler(stream=stderr)
-console_handler.setFormatter(Formatter())
+console_handler.setFormatter(CustomFormatter())
 log.addHandler(console_handler)
