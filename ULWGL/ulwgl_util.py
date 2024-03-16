@@ -426,10 +426,7 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
         json = load(file)
 
     # Raise an error if "ulwgl" and "versions" doesn't exist
-    if not json or (
-        "ulwgl" not in json
-        or (not json.get("ulwgl") or "versions" not in json.get("ulwgl"))
-    ):
+    if not json or not json.get("ulwgl") or not json.get("ulwgl").get("versions"):
         err: str = (
             f"Failed to load {config} or 'ulwgl' or 'versions' not in: {config}\n"
             "Please reinstall the package"
