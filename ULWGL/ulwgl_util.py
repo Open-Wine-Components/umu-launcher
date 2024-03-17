@@ -13,6 +13,7 @@ from ssl import create_default_context
 from http.client import HTTPException
 from socket import AF_INET, SOCK_DGRAM, socket
 from tempfile import mkdtemp
+from threading import Thread
 
 try:
     from tarfile import tar_filter
@@ -209,6 +210,7 @@ def _install_ulwgl(
     SteamRT, Pressure Vessel, ULWGL-Launcher, ULWGL Launcher files, Reaper
     and ULWGL_VERSION.json
     """
+    thread: Thread = None
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux ...")
 
@@ -223,7 +225,8 @@ def _install_ulwgl(
     copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
-    setup_runtime(root, json)
+    thread = Thread(target=setup_runtime, args=(root, json))
+    thread.start()
 
     # Launcher files
     for file in root.glob("*.py"):
@@ -253,6 +256,7 @@ def _install_ulwgl(
         "../../../ULWGL/ulwgl_run.py"
     )
 
+    thread.join(timeout=180)
     log.console("Completed.")
 
 
@@ -274,6 +278,7 @@ def _update_ulwgl(
     In the case that existing writable directories we copy to are in a partial
     state, a best effort is made to restore the missing files
     """
+    thread: Thread = None
     log.debug("Existing install detected")
 
     # Attempt to copy only the updated versions
@@ -287,9 +292,8 @@ def _update_ulwgl(
             # Directory is absent
             if not local.joinpath("reaper").is_file():
                 log.warning("Reaper not found")
-                log.console(f"Copying {key} -> {local} ...")
-
                 copy(root.joinpath("reaper"), local.joinpath("reaper"))
+                log.console(f"Restored {key} to {val} ...")
 
             # Update
             if val != reaper:
@@ -299,57 +303,44 @@ def _update_ulwgl(
                 copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
                 json_local["ulwgl"]["versions"]["reaper"] = val
-        elif key == "pressure_vessel":
-            # Pressure Vessel
-            pv: str = json_local["ulwgl"]["versions"]["pressure_vessel"]
-
-            # Directory is absent
-            if not local.joinpath("pressure-vessel").is_dir():
-                log.warning("Pressure Vessel not found")
-                log.console(f"Copying {key} -> {val} ...")
-
-                copytree(
-                    root.joinpath("pressure-vessel"),
-                    local.joinpath("pressure-vessel"),
-                    dirs_exist_ok=True,
-                    symlinks=True,
-                )
-            elif local.joinpath("pressure-vessel").is_dir() and val != pv:
-                # Update
-                log.console(f"Updating {key} to {val}")
-
-                rmtree(local.joinpath("pressure-vessel").as_posix())
-                copytree(
-                    root.joinpath("pressure-vessel"),
-                    local.joinpath("pressure-vessel"),
-                    dirs_exist_ok=True,
-                    symlinks=True,
-                )
-
-                json_local["ulwgl"]["versions"]["pressure_vessel"] = val
         elif key == "runtime_platform":
             # Old runtime
             runtime: str = json_local["ulwgl"]["versions"]["runtime_platform"]
 
-            # Directory is absent
-            if not (local.joinpath(runtime).is_dir() or local.joinpath(val).is_dir()):
+            # Redownload the runtime if absent or pressure vessel is absent
+            if (
+                not local.joinpath(runtime).is_dir()
+                or not local.joinpath("pressure-vessel").is_dir()
+            ):
+                # Redownload
                 log.warning("Runtime Platform not found")
+                if local.joinpath("pressure-vessel").is_dir():
+                    rmtree(local.joinpath("pressure-vessel").as_posix())
+                if local.joinpath(runtime).is_dir():
+                    rmtree(local.joinpath(runtime).as_posix())
 
-                # Download the runtime from the official source
-                setup_runtime(root, json_root)
-            elif local.joinpath(runtime).is_dir() and val != runtime:
+                thread = Thread(target=setup_runtime, args=(root, json_root))
+                thread.start()
+                log.console(f"Restoring Runtime Platform to {val} ...")
+            elif (
+                local.joinpath(runtime).is_dir()
+                and local.joinpath("pressure-vessel").is_dir()
+                and val != runtime
+            ):
                 # Update
                 log.console(f"Updating {key} to {val}")
-
+                rmtree(local.joinpath("pressure-vessel").as_posix())
                 rmtree(local.joinpath(runtime).as_posix())
-                setup_runtime(root, json_root)
+                thread = Thread(target=setup_runtime, args=(root, json_root))
+                thread.start()
 
                 json_local["ulwgl"]["versions"]["runtime_platform"] = val
         elif key == "launcher":
             # Launcher
-            # NOTE: We do not attempt to restore missing launcher files
+            is_missing: bool = False
             launcher: str = json_local["ulwgl"]["versions"]["launcher"]
 
+            # Update
             if val != launcher:
                 log.console(f"Updating {key} to {val}")
 
@@ -364,6 +355,22 @@ def _update_ulwgl(
                 local.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
 
                 json_local["ulwgl"]["versions"]["launcher"] = val
+                continue
+
+            # Check for missing files
+            for file in root.glob("*.py"):
+                if (
+                    not file.name.startswith("ulwgl_test")
+                    and not local.joinpath(file.name).is_file()
+                ):
+                    is_missing = True
+                    log.warning("Missing %s", file.name)
+                    copy(file, local.joinpath(file.name))
+
+            if is_missing:
+                log.console(f"Restored {key} to {val}")
+                local.joinpath("ulwgl-run").unlink(missing_ok=True)
+                local.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
         elif key == "runner":
             # Runner
             runner: str = json_local["ulwgl"]["versions"]["runner"]
@@ -371,7 +378,6 @@ def _update_ulwgl(
             # Directory is absent
             if not steam_compat.joinpath("ULWGL-Launcher").is_dir():
                 log.warning("ULWGL-Launcher not found")
-                log.console(f"Copying ULWGL-Launcher ->  {steam_compat} ...")
 
                 copytree(
                     root.joinpath("ULWGL-Launcher"),
@@ -383,6 +389,7 @@ def _update_ulwgl(
                 steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
                     "../../../ULWGL/ulwgl_run.py"
                 )
+                log.console(f"Restored ULWGL-Launcher to {val}")
             elif steam_compat.joinpath("ULWGL-Launcher").is_dir() and val != runner:
                 # Update
                 log.console(f"Updating {key} to {val}")
@@ -400,6 +407,9 @@ def _update_ulwgl(
                 )
 
                 json_local["ulwgl"]["versions"]["runner"] = val
+
+    if thread:
+        thread.join(timeout=180)
 
     # Finally, update the local config file
     with local.joinpath(CONFIG).open(mode="w") as file:

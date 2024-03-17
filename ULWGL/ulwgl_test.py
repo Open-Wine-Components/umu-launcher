@@ -228,6 +228,13 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_user_share, "ULWGL"),
                 Path(self.test_local_share, "ULWGL"),
             )
+            # When the runtime updates, pressure vessel needs to be updated
+            copytree(
+                Path(self.test_user_share, "pressure-vessel"),
+                Path(self.test_local_share, "pressure-vessel"),
+                dirs_exist_ok=True,
+                symlinks=True,
+            )
 
         self.assertFalse(result, "Expected None when calling _update_ulwgl")
 
@@ -378,7 +385,8 @@ class TestGameLauncher(unittest.TestCase):
             "ulwgl-run",
         ]
         # Mock an outdated ULWGL_VERSION.json in ~/.local/share/ULWGL
-        # Downgrade these files: launcher, runner, runtime_platform, pressure_vessel
+        # Downgrade these files: launcher, runner, runtime_platform
+        # We don't downgrade Pressure Vessel because it's a runtime property
         config = {
             "ulwgl": {
                 "versions": {
@@ -386,7 +394,7 @@ class TestGameLauncher(unittest.TestCase):
                     "runner": "0.1-RC2",
                     "runtime_platform": "sniper_platform_0.20240125.75304",
                     "reaper": "1.0",
-                    "pressure_vessel": "v0.20240211.0",
+                    "pressure_vessel": "v0.20240212.0",
                 }
             }
         }
@@ -491,6 +499,13 @@ class TestGameLauncher(unittest.TestCase):
             copy(
                 Path(self.test_user_share, "ULWGL"),
                 Path(self.test_local_share, "ULWGL"),
+            )
+            # When the runtime updates, pressure vessel needs to be updated
+            copytree(
+                Path(self.test_user_share, "pressure-vessel"),
+                Path(self.test_local_share, "pressure-vessel"),
+                dirs_exist_ok=True,
+                symlinks=True,
             )
 
         self.assertFalse(result, "Expected None when calling _update_ulwgl")
