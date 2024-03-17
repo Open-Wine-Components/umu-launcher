@@ -287,9 +287,8 @@ def _update_ulwgl(
             # Directory is absent
             if not local.joinpath("reaper").is_file():
                 log.warning("Reaper not found")
-                log.console(f"Copying {key} -> {local} ...")
-
                 copy(root.joinpath("reaper"), local.joinpath("reaper"))
+                log.console(f"Restored {key} to {val} ...")
 
             # Update
             if val != reaper:
@@ -372,7 +371,6 @@ def _update_ulwgl(
             # Directory is absent
             if not steam_compat.joinpath("ULWGL-Launcher").is_dir():
                 log.warning("ULWGL-Launcher not found")
-                log.console(f"Copying ULWGL-Launcher ->  {steam_compat} ...")
 
                 copytree(
                     root.joinpath("ULWGL-Launcher"),
@@ -384,6 +382,7 @@ def _update_ulwgl(
                 steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
                     "../../../ULWGL/ulwgl_run.py"
                 )
+                log.console(f"Restored ULWGL-Launcher to {val}")
             elif steam_compat.joinpath("ULWGL-Launcher").is_dir() and val != runner:
                 # Update
                 log.console(f"Updating {key} to {val}")
