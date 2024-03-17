@@ -299,34 +299,6 @@ def _update_ulwgl(
                 copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
                 json_local["ulwgl"]["versions"]["reaper"] = val
-        elif key == "pressure_vessel":
-            # Pressure Vessel
-            pv: str = json_local["ulwgl"]["versions"]["pressure_vessel"]
-
-            # Directory is absent
-            if not local.joinpath("pressure-vessel").is_dir():
-                log.warning("Pressure Vessel not found")
-                log.console(f"Copying {key} -> {val} ...")
-
-                copytree(
-                    root.joinpath("pressure-vessel"),
-                    local.joinpath("pressure-vessel"),
-                    dirs_exist_ok=True,
-                    symlinks=True,
-                )
-            elif local.joinpath("pressure-vessel").is_dir() and val != pv:
-                # Update
-                log.console(f"Updating {key} to {val}")
-
-                rmtree(local.joinpath("pressure-vessel").as_posix())
-                copytree(
-                    root.joinpath("pressure-vessel"),
-                    local.joinpath("pressure-vessel"),
-                    dirs_exist_ok=True,
-                    symlinks=True,
-                )
-
-                json_local["ulwgl"]["versions"]["pressure_vessel"] = val
         elif key == "runtime_platform":
             # Old runtime
             runtime: str = json_local["ulwgl"]["versions"]["runtime_platform"]
