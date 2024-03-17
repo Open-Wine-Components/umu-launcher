@@ -13,6 +13,7 @@ from ssl import create_default_context
 from http.client import HTTPException
 from socket import AF_INET, SOCK_DGRAM, socket
 from tempfile import mkdtemp
+from threading import Thread
 
 try:
     from tarfile import tar_filter
@@ -209,6 +210,7 @@ def _install_ulwgl(
     SteamRT, Pressure Vessel, ULWGL-Launcher, ULWGL Launcher files, Reaper
     and ULWGL_VERSION.json
     """
+    thread: Thread = None
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux ...")
 
@@ -223,7 +225,8 @@ def _install_ulwgl(
     copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
-    setup_runtime(root, json)
+    thread = Thread(target=setup_runtime, args=(root, json))
+    thread.start()
 
     # Launcher files
     for file in root.glob("*.py"):
@@ -253,6 +256,7 @@ def _install_ulwgl(
         "../../../ULWGL/ulwgl_run.py"
     )
 
+    thread.join(timeout=180)
     log.console("Completed.")
 
 
@@ -274,6 +278,7 @@ def _update_ulwgl(
     In the case that existing writable directories we copy to are in a partial
     state, a best effort is made to restore the missing files
     """
+    thread: Thread = None
     log.debug("Existing install detected")
 
     # Attempt to copy only the updated versions
@@ -314,8 +319,9 @@ def _update_ulwgl(
                 if local.joinpath(runtime).is_dir():
                     rmtree(local.joinpath(runtime).as_posix())
 
-                setup_runtime(root, json_root)
-                log.console(f"Restored Runtime Platform to {val}")
+                thread = Thread(target=setup_runtime, args=(root, json_root))
+                thread.start()
+                log.console(f"Restoring Runtime Platform to {val} ...")
             elif (
                 local.joinpath(runtime).is_dir()
                 and local.joinpath("pressure-vessel").is_dir()
@@ -325,7 +331,8 @@ def _update_ulwgl(
                 log.console(f"Updating {key} to {val}")
                 rmtree(local.joinpath("pressure-vessel").as_posix())
                 rmtree(local.joinpath(runtime).as_posix())
-                setup_runtime(root, json_root)
+                thread = Thread(target=setup_runtime, args=(root, json_root))
+                thread.start()
 
                 json_local["ulwgl"]["versions"]["runtime_platform"] = val
         elif key == "launcher":
@@ -400,6 +407,9 @@ def _update_ulwgl(
                 )
 
                 json_local["ulwgl"]["versions"]["runner"] = val
+
+    if thread:
+        thread.join(timeout=180)
 
     # Finally, update the local config file
     with local.joinpath(CONFIG).open(mode="w") as file:
