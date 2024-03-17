@@ -303,16 +303,28 @@ def _update_ulwgl(
             # Old runtime
             runtime: str = json_local["ulwgl"]["versions"]["runtime_platform"]
 
-            # Directory is absent
-            if not (local.joinpath(runtime).is_dir() or local.joinpath(val).is_dir()):
+            # Redownload the runtime if absent or pressure vessel is absent
+            if (
+                not local.joinpath(runtime).is_dir()
+                or not local.joinpath("pressure-vessel").is_dir()
+            ):
+                # Redownload
                 log.warning("Runtime Platform not found")
+                if local.joinpath("pressure-vessel").is_dir():
+                    rmtree(local.joinpath("pressure-vessel").as_posix())
+                if local.joinpath(runtime).is_dir():
+                    rmtree(local.joinpath(runtime).as_posix())
 
-                # Download the runtime from the official source
                 setup_runtime(root, json_root)
-            elif local.joinpath(runtime).is_dir() and val != runtime:
+                log.console(f"Restored Runtime Platform to {val}")
+            elif (
+                local.joinpath(runtime).is_dir()
+                and local.joinpath("pressure-vessel").is_dir()
+                and val != runtime
+            ):
                 # Update
                 log.console(f"Updating {key} to {val}")
-
+                rmtree(local.joinpath("pressure-vessel").as_posix())
                 rmtree(local.joinpath(runtime).as_posix())
                 setup_runtime(root, json_root)
 
