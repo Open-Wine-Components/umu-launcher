@@ -331,9 +331,10 @@ def _update_ulwgl(
                 json_local["ulwgl"]["versions"]["runtime_platform"] = val
         elif key == "launcher":
             # Launcher
-            # NOTE: We do not attempt to restore missing launcher files
+            is_missing: bool = False
             launcher: str = json_local["ulwgl"]["versions"]["launcher"]
 
+            # Update
             if val != launcher:
                 log.console(f"Updating {key} to {val}")
 
@@ -348,6 +349,22 @@ def _update_ulwgl(
                 local.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
 
                 json_local["ulwgl"]["versions"]["launcher"] = val
+                continue
+
+            # Check for missing files
+            for file in root.glob("*.py"):
+                if (
+                    not file.name.startswith("ulwgl_test")
+                    and not local.joinpath(file.name).is_file()
+                ):
+                    is_missing = True
+                    log.warning("Missing %s", file.name)
+                    copy(file, local.joinpath(file.name))
+
+            if is_missing:
+                log.console(f"Restored {key} to {val}")
+                local.joinpath("ulwgl-run").unlink(missing_ok=True)
+                local.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
         elif key == "runner":
             # Runner
             runner: str = json_local["ulwgl"]["versions"]["runner"]
