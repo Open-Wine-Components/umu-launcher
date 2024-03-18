@@ -4,11 +4,13 @@ from pathlib import Path
 from typing import Dict, Set, Any, List, Tuple
 from argparse import Namespace
 from shutil import which
+from ulwgl_log import log
+from ulwgl_consts import TOMLDocument, ULWGL_LOCAL
 
 
 def set_env_toml(
     env: Dict[str, str], args: Namespace
-) -> Tuple[Dict[str, str], List[str]]:
+) -> Tuple[Dict[str, str], List[str], TOMLDocument]:
     """Read a TOML file then sets the environment variables for the Steam RT.
 
     In the TOML file, certain keys map to Steam RT environment variables. For example:
@@ -54,11 +56,13 @@ def set_env_toml(
             opts = val
         elif key == "launch_args" and isinstance(val, str):
             opts = val.split(" ")
+        elif key == "reaper" and not val:
+            env["ULWGL_SYSTEMD"] = "1"
 
-    return env, opts
+    return env, opts, toml
 
 
-def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]) -> Dict[str, Any]:
+def _check_env_toml(env: Dict[str, str], toml: TOMLDocument) -> Dict[str, Any]:
     """Check for required or empty key/value pairs when reading a TOML config.
 
     NOTE: Casing matters in the config and we do not check if the game id is set
@@ -92,12 +96,18 @@ def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]) -> Dict[str, Any]
             err: str = f"Value for key '{key}' in TOML is not a directory: {dir}"
             raise NotADirectoryError(err)
 
-    # Check for empty keys
+    # Check for empty and optional keys
     for key, val in toml[table].items():
+        if key == "reaper" and not isinstance(val, bool):
+            err: str = (
+                f"Value is not a boolean for '{key}' in TOML.\n"
+                f"Please specify a value or remove the entry:\n{key} = {val}"
+            )
+            raise ValueError(err)
         if not val and isinstance(val, str):
             err: str = (
                 f"Value is empty for '{key}' in TOML.\n"
-                f"Please specify a value or remove the following entry:\n{key} = {val}"
+                f"Please specify a value or remove the entry:\n{key} = {val}"
             )
             raise ValueError(err)
 
@@ -189,3 +199,39 @@ def enable_zenity(command: str, opts: List[str], msg: str) -> None:
         # Close the Zenity process's standard input
         zenity_proc.stdin.close()
         zenity_proc.wait()
+
+
+def enable_systemd(env: Dict[str, str], command: List[str]) -> List[str]:
+    """Use systemd to monitor and keep track of descendent processes.
+
+    Descendent processes of ulwgl-run will be executed in a transient, user scoped unit
+    For more information of systemd-run, please visit
+    https://www.freedesktop.org/software/systemd/man/latest/systemd-run.html
+    """
+    bin: str = which("systemd-run")
+    id: str = env["ULWGL_ID"]
+
+    if not id.startswith("ulwgl-"):
+        id = "ulwgl-" + env["ULWGL_ID"]
+
+    # Fallback to reaper
+    if not bin:
+        log.debug("systemd-run is not found in system\nUsing reaper as subreaper")
+        return enable_reaper(
+            env,
+            command,
+        )
+
+    # TODO Allow users to pass their own options
+    command.extend(
+        [
+            bin,
+            "--user",
+            "--scope",
+            "--send-sighup",
+            "--description",
+            id,
+        ]
+    )
+
+    return command

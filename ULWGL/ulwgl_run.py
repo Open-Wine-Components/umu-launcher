@@ -5,16 +5,28 @@ import sys
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
-from ulwgl_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
 from subprocess import run
 from ulwgl_dl_util import get_ulwgl_proton
-from ulwgl_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, ULWGL_LOCAL
 from ulwgl_util import setup_ulwgl
 from ulwgl_log import log, console_handler, CustomFormatter
 from ulwgl_util import UnixUser
 from logging import INFO, WARNING, DEBUG
 from errno import ENETUNREACH
+from shutil import which
+from json import loads as json_loads
+from ulwgl_plugins import (
+    enable_steam_game_drive,
+    set_env_toml,
+    enable_reaper,
+    enable_systemd,
+from ulwgl_consts import (
+    PROTON_VERBS,
+    DEBUG_FORMAT,
+    STEAM_COMPAT,
+    ULWGL_LOCAL,
+    TOMLDocument,
+)
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
@@ -207,11 +219,23 @@ def set_env(
     env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + ULWGL_LOCAL.as_posix()
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
+    # Gamescope
+    if "ULWGL_GAMESCOPE" in os.environ:
+        env["ULWGL_GAMESCOPE"] = os.environ["ULWGL_GAMESCOPE"]
+
+    # Systemd
+    if "ULWGL_SYSTEMD" in os.environ:
+        env["ULWGL_SYSTEMD"] = os.environ["ULWGL_SYSTEMD"]
+
     return env
 
 
 def build_command(
-    env: Dict[str, str], local: Path, command: List[str], opts: List[str] = None
+    env: Dict[str, str],
+    local: Path,
+    command: List[str],
+    opts: List[str] = None,
+    config: TOMLDocument = None,
 ) -> List[str]:
     """Build the command to be executed."""
     verb: str = env["PROTON_VERB"]
@@ -231,7 +255,20 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
-    enable_reaper(env, command, local)
+    # Subreaper
+    if (
+        config
+        and config.get("ulwgl").get("reaper")
+        and not config.get("ulwgl").get("reaper")
+    ):
+        log.debug("Using systemd as subreaper")
+        enable_systemd(env, command)
+    elif env.get("ULWGL_SYSTEMD") == "1":
+        log.debug("Using systemd as subreaper")
+        enable_systemd(env, command)
+    else:
+        log.debug("Using reaper as subreaper")
+        enable_reaper(env, command, local)
 
     command.extend([local.joinpath("ULWGL").as_posix(), "--verb", verb, "--"])
     command.extend(
@@ -270,6 +307,7 @@ def main() -> int:  # noqa: D103
         "STORE": "",
         "PROTON_VERB": "",
         "ULWGL_ID": "",
+        "ULWGL_SYSTEMD": "",
     }
     command: List[str] = []
     opts: List[str] = None
@@ -279,6 +317,7 @@ def main() -> int:  # noqa: D103
     # Expects this dir to be in sync with root
     # On update, files will be selectively updated
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
+    config: TOMLDocument = None
 
     if "musl" in os.environ.get("LD_LIBRARY_PATH", ""):
         err: str = "This script is not designed to run on musl-based systems"
@@ -316,7 +355,7 @@ def main() -> int:  # noqa: D103
 
     # Check environment
     if isinstance(args, Namespace) and getattr(args, "config", None):
-        env, opts = set_env_toml(env, args)
+        env, opts, config = set_env_toml(env, args)
     else:
         opts = args[1]  # Reference the executable options
         check_env(env)
@@ -337,17 +376,57 @@ def main() -> int:  # noqa: D103
         os.environ[key] = val
 
     # Run
-    build_command(env, ULWGL_LOCAL, command, opts)
+    build_command(env, ULWGL_LOCAL, command, opts, config)
     log.debug(command)
 
     return run(command).returncode
 
 
+def stop_unit(id: str) -> None:
+    """Handle explicit kill or server shutdowns of the game.
+
+    Intended to run when using gamescope with the launcher
+
+    Used when systemd is configured as the subreaper and we assume the systemd
+    transient unit is ours if the unit's description matches the ULWGL ID
+    """
+    if not os.environ["ULWGL_SYSTEMD"] == "1" and os.environ["ULWGL_GAMESCOPE"] == "1":
+        emoji: str = "\U0001f480"
+        log.warning("Explicit shutdown detected")
+        log.warning("Zombies will prevent re-running the game %s ...", emoji)
+        return
+
+    result: str = run(
+        [which("systemctl"), "list-units", "--user", "-o", "json"],
+        capture_output=True,
+        text=True,
+    ).stdout
+    ulwgl_id: str = f"ulwgl-{id}"
+    unit: str = ""
+
+    for item in json_loads(result):
+        if item.get("description") == ulwgl_id:
+            unit = item["unit"]
+            break
+
+    if unit:
+        emoji: str = "\U0001f480"
+        log.console(f"Reaping zombies due to explicit shutdown {emoji} ...")
+        run([which("systemctl"), "stop", "--user", f"{unit}"])
+
+
 if __name__ == "__main__":
     try:
-        sys.exit(main())
+        ret: int = main()
+
+        if not ret:
+            # Handle force exits when using gamescope
+            stop_unit(os.environ["ULWGL_ID"])
+
+        sys.exit(ret)
     except KeyboardInterrupt:
         log.warning("Keyboard Interrupt")
+        stop_unit(os.environ["ULWGL_ID"])
         sys.exit(1)
     except SystemExit as e:
         if e.code != 0:

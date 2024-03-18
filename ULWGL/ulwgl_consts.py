@@ -1,5 +1,6 @@
 from enum import Enum
 from pathlib import Path
+from typing import Dict, Any
 
 
 class Color(Enum):
@@ -35,3 +36,5 @@ PROTON_VERBS = {
     "getcompatpath",
     "getnativepath",
 }
+
+TOMLDocument = Dict[str, Any]
