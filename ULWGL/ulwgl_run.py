@@ -20,6 +20,8 @@ from ulwgl_plugins import (
     set_env_toml,
     enable_reaper,
     enable_systemd,
+    enable_gamescope,
+)
 from ulwgl_consts import (
     PROTON_VERBS,
     DEBUG_FORMAT,
@@ -270,6 +272,22 @@ def build_command(
         log.debug("Using reaper as subreaper")
         enable_reaper(env, command, local)
 
+    # Gamescope
+    if env.get("ULWGL_GAMESCOPE") == "1":
+        log.debug("Using gamescope")
+        enable_gamescope(env, command)
+    elif (
+        config
+        and config.get("ulwgl").get("gamescope")
+        and config.get("plugins")
+        and config.get("plugins").get("gamescope")
+        and config.get("plugins").get("gamescope").get("options")
+    ):
+        log.debug("Using gamescope")
+        enable_gamescope(
+            env, command, config.get("plugins").get("gamescope").get("options")
+        )
+
     command.extend([local.joinpath("ULWGL").as_posix(), "--verb", verb, "--"])
     command.extend(
         [
@@ -307,6 +325,7 @@ def main() -> int:  # noqa: D103
         "STORE": "",
         "PROTON_VERB": "",
         "ULWGL_ID": "",
+        "ULWGL_GAMESCOPE": "",
         "ULWGL_SYSTEMD": "",
     }
     command: List[str] = []

@@ -6,6 +6,7 @@ from argparse import Namespace
 from shutil import which
 from ulwgl_log import log
 from ulwgl_consts import TOMLDocument, ULWGL_LOCAL
+from json import load
 
 
 def set_env_toml(
@@ -110,6 +111,24 @@ def _check_env_toml(env: Dict[str, str], toml: TOMLDocument) -> Dict[str, Any]:
                 f"Please specify a value or remove the entry:\n{key} = {val}"
             )
             raise ValueError(err)
+        if key == "gamescope" and not isinstance(val, bool):
+            err: str = (
+                f"Value is not a boolean for '{key}' in TOML.\n"
+                f"Please specify a value or remove the entry:\n{key} = {val}"
+            )
+            raise ValueError(err)
+
+    if (
+        toml.get("plugins")
+        and toml.get("plugins").get("gamescope")
+        and toml.get("plugins").get("gamescope").get("options")
+        and not isinstance(toml.get("plugins").get("gamescope").get("options"), list)
+    ):
+        err: str = (
+            f"Value is not an array for '{key}' in TOML.\n"
+            f"Please specify a value or remove the entry:\n{key} = {val}"
+        )
+        raise ValueError(err)
 
     return toml
 
@@ -233,5 +252,43 @@ def enable_systemd(env: Dict[str, str], command: List[str]) -> List[str]:
             id,
         ]
     )
+
+    return command
+
+
+def enable_gamescope(
+    env: Dict[str, str], command: List[str], opts: List[str] = None
+) -> List[str]:
+    """Enable the gamescope microcompositor."""
+    bin: str = which("gamescope")
+    id: str = env["ULWGL_ID"]
+    json: Dict[str, Any] = None
+
+    if not id.startswith("ulwgl-"):
+        id = f"ulwgl-{id}"  # We use an underscore for the file
+
+    if not bin or not ULWGL_LOCAL.joinpath("state", f"{id}.json"):
+        return command
+
+    # Config
+    if opts:
+        command.extend([bin, *opts, "--"])
+        return command
+
+    # CLI
+    with ULWGL_LOCAL.joinpath("state", f"{id}.json").open(mode="r") as file:
+        json = load(file)
+
+    # Pass user options
+    # NOTE: We do not validate them. We trust the client
+    for item in json:
+        if item.get("name") == "gamescope":
+            opts = item.get("options")
+
+    if opts:
+        command.extend([bin, *opts, "--"])
+        return command
+
+    command.extend([bin, "--"])
 
     return command
