@@ -153,7 +153,7 @@ def enable_reaper(env: Dict[str, str], command: List[str], local: Path) -> List[
     return command
 
 
-def enable_zenity(command: str, opts: List[str], msg: str) -> None:
+def enable_zenity(command: str, opts: List[str], msg: str) -> int:
     """Execute the command and pipe the output to Zenity.
 
     Intended to be used for long running operations (e.g. large file downloads)
@@ -188,4 +188,5 @@ def enable_zenity(command: str, opts: List[str], msg: str) -> None:
 
         # Close the Zenity process's standard input
         zenity_proc.stdin.close()
-        zenity_proc.wait()
+
+        return zenity_proc.wait()
