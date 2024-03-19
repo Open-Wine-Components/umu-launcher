@@ -89,13 +89,12 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         msg: str = "Downloading Runtime, please wait..."
         ret: int = enable_zenity(bin, opts, msg)
 
-        log.debug("Exit code returned from zenity: %s", ret)
-
         # Handle the symbol lookup error from the zenity flatpak in lutris
-        if ret == 127:
+        if ret:
+            log.warning("Zenity exited with the status code: %s", ret)
+            log.warning("Zenity will not be used")
+            tmp.joinpath(archive).unlink(missing_ok=True)
             raise FileNotFoundError
-        if ret != 0:
-            raise
     except TimeoutError:
         # Without the runtime, the launcher will not work
         # Just exit on timeout or download failure
