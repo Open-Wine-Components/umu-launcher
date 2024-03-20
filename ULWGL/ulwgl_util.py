@@ -264,7 +264,7 @@ def _install_ulwgl(
         "../../../ULWGL/ulwgl_run.py"
     )
 
-    thread.join(timeout=300)
+    thread.join()
     log.console("Completed.")
 
 
@@ -417,7 +417,7 @@ def _update_ulwgl(
                 json_local["ulwgl"]["versions"]["runner"] = val
 
     if thread:
-        thread.join(timeout=300)
+        thread.join()
 
     # Finally, update the local config file
     with local.joinpath(CONFIG).open(mode="w") as file:
