@@ -287,6 +287,8 @@ def main() -> int:  # noqa: D103
     if "ULWGL_LOG" in os.environ:
         set_log()
 
+    log.debug("Arguments: %s", args)
+
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
     try:
