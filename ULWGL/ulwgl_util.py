@@ -91,8 +91,8 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
 
         # Handle the symbol lookup error from the zenity flatpak in lutris
         if ret:
-            log.warning("Zenity exited with the status code: %s", ret)
-            log.warning("Zenity will not be used")
+            log.warning("zenity exited with the status code: %s", ret)
+            log.warning("zenity will not be used")
             tmp.joinpath(archive).unlink(missing_ok=True)
             raise FileNotFoundError
     except TimeoutError:
@@ -100,7 +100,8 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         # Just exit on timeout or download failure
         err: str = (
             "Unable to download the Steam Runtime\n"
-            "repo.steampowered.com request timed out"
+            "repo.steampowered.com request timed out "
+            "or timeout limit was reached"
         )
         raise TimeoutError(err)
     except FileNotFoundError:
