@@ -1,9 +1,10 @@
-from subprocess import PIPE, Popen, STDOUT
+from subprocess import Popen, TimeoutExpired, PIPE, STDOUT
 from os import environ
 from pathlib import Path
 from typing import Dict, Set, Any, List, Tuple
 from argparse import Namespace
 from shutil import which
+from ulwgl_log import log
 
 
 def set_env_toml(
@@ -170,8 +171,7 @@ def enable_zenity(command: str, opts: List[str], msg: str) -> int:
         raise FileNotFoundError(err)
 
     with Popen([cmd, *opts], stdout=PIPE, stderr=STDOUT) as proc:
-        # Start Zenity with a pipe to its standard input
-        zenity_proc: Popen = Popen(
+        with Popen(
             [
                 f"{bin}",
                 "--progress",
@@ -181,12 +181,14 @@ def enable_zenity(command: str, opts: List[str], msg: str) -> int:
                 "--pulsate",
             ],
             stdin=PIPE,
-        )
+        ) as zenity_proc:
+            try:
+                proc.wait(timeout=300)
+            except TimeoutExpired:
+                zenity_proc.terminate()
+                log.warning("%s timed out after 5 min.", cmd)
+                raise TimeoutError
 
-        # Timeout all operations for 3 min.
-        proc.wait(timeout=180)
+            zenity_proc.stdin.close()
 
-        # Close the Zenity process's standard input
-        zenity_proc.stdin.close()
-
-        return zenity_proc.wait()
+            return zenity_proc.wait()
