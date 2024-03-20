@@ -1296,6 +1296,91 @@ class TestGameLauncher(unittest.TestCase):
             "Expected 'proton' file to exists in the proton dir",
         )
 
+    def test_game_drive_libpath(self):
+        """Test enable_steam_game_drive for duplicate paths.
+
+        Distributions or GUI launchers may set the LD_LIBRARY_PATH environment
+        variable to reference their own runtime library paths. Ensure that
+        there will never be duplicates in that environment variable.
+        """
+        args = None
+        result_gamedrive = None
+        Path(self.test_file + "/proton").touch()
+
+        # Replicate main's execution and test up until enable_steam_game_drive
+        with patch("sys.argv", ["", ""]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["STORE"] = self.test_file
+            # Args
+            args = ulwgl_run.parse_args()
+            # Config
+            ulwgl_run.check_env(self.env)
+            # Prefix
+            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            ulwgl_run.set_env(self.env, args)
+
+            if "LD_LIBRARY_PATH" in os.environ:
+                os.environ.pop("LD_LIBRARY_PATH")
+
+            # Mock Lutris's LD_LIBRARY_PATH
+            paths = (
+                "/home/foo/.local/share/lutris/runtime/steam/i386/usr/lib:"
+                "/usr/lib:"
+                "/usr/lib32:"
+                "/usr/lib64:"
+                "/home/foo/.local/share/lutris/runtime/steam/amd64/lib:"
+                "/home/foo/.local/share/lutris/runtime/steam/amd64/usr/lib:"
+                "/home/foo/.local/share/lutris/runtime/Ubuntu-18.04-i686:"
+                "/home/foo/.local/share/lutris/runtime/steam/i386/lib:"
+                "/usr/lib/libfakeroot:"
+                "/home/foo/.local/share/lutris/runtime/steam/amd64/lib/x86_64-linux-gnu:"
+                "/home/foo/.local/share/lutris/runtime/steam/i386/usr/lib/i386-linux-gnu:"
+                "/home/foo/.local/share/lutris/runtime/Ubuntu-18.04-x86_64:"
+                "/home/foo/.local/share/lutris/runtime/steam/i386/lib/i386-linux-gnu:"
+                "/home/foo/.local/share/lutris/runtime/steam/amd64/usr/lib/x86_64-linux-gnu"
+            )
+            os.environ["LD_LIBRARY_PATH"] = paths
+
+            # Game drive
+            result_gamedrive = ulwgl_plugins.enable_steam_game_drive(self.env)
+
+        for key, val in self.env.items():
+            os.environ[key] = val
+
+        # Game drive
+        self.assertTrue(result_gamedrive is self.env, "Expected the same reference")
+        self.assertTrue(
+            self.env["STEAM_RUNTIME_LIBRARY_PATH"],
+            "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
+        )
+
+        # Expect LD_LIBRARY_PATH was added ontop of /usr/lib and /usr/lib64
+        self.assertNotEqual(
+            len(self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")),
+            2,
+            "Expected more than two values in STEAM_RUNTIME_LIBRARY_PATH",
+        )
+
+        # An error should be raised if /usr/lib or /usr/lib64 is found twice
+        lib_paths = set()
+        for path in self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":"):
+            if path not in lib_paths:
+                lib_paths.add(path)
+            elif path in lib_paths:
+                err: str = f"Duplicate path found in STEAM_RUNTIME_LIBRARY_PATH: {path}"
+                raise AssertionError(err)
+
+        # Both of these values should be empty still after calling
+        # enable_steam_game_drive
+        self.assertFalse(
+            self.env["STEAM_COMPAT_INSTALL_PATH"],
+            "Expected STEAM_COMPAT_INSTALL_PATH to be empty when passing an empty EXE",
+        )
+        self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
+
     def test_game_drive_empty(self):
         """Test enable_steam_game_drive.
 
