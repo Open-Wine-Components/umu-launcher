@@ -1,12 +1,12 @@
 import unittest
-import ulwgl_run
+import umu_run
 import os
 import argparse
 import re
-import ulwgl_plugins
-import ulwgl_dl_util
+import umu_plugins
+import umu_dl_util
 import tarfile
-import ulwgl_util
+import umu_util
 import hashlib
 import json
 from argparse import Namespace
@@ -16,14 +16,14 @@ from shutil import rmtree, copytree, copy
 
 
 class TestGameLauncher(unittest.TestCase):
-    """Test suite for ulwgl_run.py."""
+    """Test suite for umu_run.py."""
 
     def setUp(self):
         """Create the test directory, exe and environment variables."""
         self.env = {
             "WINEPREFIX": "",
             "GAMEID": "",
-            "PROTON_CRASH_REPORT_DIR": "/tmp/ULWGL_crashreports",
+            "PROTON_CRASH_REPORT_DIR": "/tmp/umu_crashreports",
             "PROTONPATH": "",
             "STEAM_COMPAT_APP_ID": "",
             "STEAM_COMPAT_TOOL_PATHS": "",
@@ -38,7 +38,7 @@ class TestGameLauncher(unittest.TestCase):
             "SteamAppId": "",
             "SteamGameId": "",
             "STEAM_RUNTIME_LIBRARY_PATH": "",
-            "ULWGL_ID": "",
+            "umu_ID": "",
             "STORE": "",
             "PROTON_VERB": "",
         }
@@ -54,20 +54,20 @@ class TestGameLauncher(unittest.TestCase):
         self.test_cache = Path("./tmp.5HYdpddgvs")
         # Steam compat dir
         self.test_compat = Path("./tmp.ZssGZoiNod")
-        # ULWGL-Proton dir
-        self.test_proton_dir = Path("ULWGL-Proton-5HYdpddgvs")
-        # ULWGL-Proton release
+        # umu-Proton dir
+        self.test_proton_dir = Path("umu-Proton-5HYdpddgvs")
+        # umu-Proton release
         self.test_archive = Path(self.test_cache).joinpath(
             f"{self.test_proton_dir}.tar.gz"
         )
-        # /usr/share/ULWGL
+        # /usr/share/umu
         self.test_user_share = Path("./tmp.BXk2NnvW2m")
         # ~/.local/share/Steam/compatibilitytools.d
         self.test_local_share = Path("./tmp.aDl73CbQCP")
 
-        # Dictionary that represents the ULWGL_VERSIONS.json
+        # Dictionary that represents the umu_versionS.json
         self.root_config = {
-            "ulwgl": {
+            "umu": {
                 "versions": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
@@ -77,7 +77,7 @@ class TestGameLauncher(unittest.TestCase):
                 }
             }
         }
-        # ULWGL_VERSION.json
+        # umu_version.json
         self.test_config = json.dumps(self.root_config, indent=4)
 
         self.test_user_share.mkdir(exist_ok=True)
@@ -86,36 +86,36 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
 
-        # Mock a valid configuration file at /usr/share/ULWGL:
-        # tmp.BXk2NnvW2m/ULWGL_VERSION.json
-        Path(self.test_user_share, "ULWGL_VERSION.json").touch()
-        with Path(self.test_user_share, "ULWGL_VERSION.json").open(mode="w") as file:
+        # Mock a valid configuration file at /usr/share/umu:
+        # tmp.BXk2NnvW2m/umu_version.json
+        Path(self.test_user_share, "umu_version.json").touch()
+        with Path(self.test_user_share, "umu_version.json").open(mode="w") as file:
             file.write(self.test_config)
 
         # Mock the launcher files
-        Path(self.test_user_share, "ulwgl_consts.py").touch()
-        Path(self.test_user_share, "ulwgl_dl_util.py").touch()
-        Path(self.test_user_share, "ulwgl_log.py").touch()
-        Path(self.test_user_share, "ulwgl_plugins.py").touch()
-        Path(self.test_user_share, "ulwgl_run.py").touch()
-        Path(self.test_user_share, "ulwgl_util.py").touch()
-        Path(self.test_user_share, "ulwgl-run").symlink_to("ulwgl_run.py")
+        Path(self.test_user_share, "umu_consts.py").touch()
+        Path(self.test_user_share, "umu_dl_util.py").touch()
+        Path(self.test_user_share, "umu_log.py").touch()
+        Path(self.test_user_share, "umu_plugins.py").touch()
+        Path(self.test_user_share, "umu_run.py").touch()
+        Path(self.test_user_share, "umu_util.py").touch()
+        Path(self.test_user_share, "umu-run").symlink_to("umu_run.py")
 
         # Mock the runtime files
         Path(self.test_user_share, "sniper_platform_0.20240125.75305").mkdir()
         Path(self.test_user_share, "sniper_platform_0.20240125.75305", "foo").touch()
         Path(self.test_user_share, "run").touch()
         Path(self.test_user_share, "run-in-sniper").touch()
-        Path(self.test_user_share, "ULWGL").touch()
+        Path(self.test_user_share, "umu").touch()
 
         # Mock pressure vessel
         Path(self.test_user_share, "pressure-vessel").mkdir()
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
 
-        # Mock ULWGL-Launcher
-        Path(self.test_user_share, "ULWGL-Launcher").mkdir()
-        Path(self.test_user_share, "ULWGL-Launcher", "compatibilitytool.vdf").touch()
-        Path(self.test_user_share, "ULWGL-Launcher", "toolmanifest.vdf").touch()
+        # Mock umu-Launcher
+        Path(self.test_user_share, "umu-Launcher").mkdir()
+        Path(self.test_user_share, "umu-Launcher", "compatibilitytool.vdf").touch()
+        Path(self.test_user_share, "umu-Launcher", "toolmanifest.vdf").touch()
 
         # Mock Reaper
         Path(self.test_user_share, "reaper").touch()
@@ -124,10 +124,10 @@ class TestGameLauncher(unittest.TestCase):
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
 
         # Mock the release downloaded in the cache:
-        # tmp.5HYdpddgvs/ULWGL-Proton-5HYdpddgvs.tar.gz
+        # tmp.5HYdpddgvs/umu-Proton-5HYdpddgvs.tar.gz
         # Expected directory structure within the archive:
         #
-        # +-- ULWGL-Proton-5HYdpddgvs (root directory)
+        # +-- umu-Proton-5HYdpddgvs (root directory)
         # |   +-- proton              (normal file)
         with tarfile.open(self.test_archive.as_posix(), "w:gz") as tar:
             tar.add(
@@ -161,18 +161,18 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
 
-    def test_update_ulwgl_empty(self):
-        """Test _update_ulwgl by mocking an update to the runtime tools.
+    def test_update_umu_empty(self):
+        """Test _update_umu by mocking an update to the runtime tools.
 
         When files are missing, re-copy the directory and without removing
-        NOTE: This depends on ULWGL_VERSION.json to exist
+        NOTE: This depends on umu_version.json to exist
         """
         result = None
         json_local = None
-        json_root = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
         # Mock an update-to-date config file
         config = {
-            "ulwgl": {
+            "umu": {
                 "versions": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
@@ -184,29 +184,29 @@ class TestGameLauncher(unittest.TestCase):
         }
         data = json.dumps(config, indent=4)
 
-        # Do not mock the tools in .local/share/ULWGL
+        # Do not mock the tools in .local/share/umu
         # Leave all of the tool dirs missing except the config
 
         # Config
-        self.test_local_share.joinpath("ULWGL_VERSION.json").touch()
-        with self.test_local_share.joinpath("ULWGL_VERSION.json").open(
+        self.test_local_share.joinpath("umu_version.json").touch()
+        with self.test_local_share.joinpath("umu_version.json").open(
             mode="w"
         ) as file:
             file.write(data)
-        json_local = ulwgl_util._get_json(self.test_local_share, "ULWGL_VERSION.json")
+        json_local = umu_util._get_json(self.test_local_share, "umu_version.json")
 
         self.assertTrue(
-            self.test_local_share.joinpath("ULWGL_VERSION.json").is_file(),
-            "Expected ULWGL_VERSION.json to be in local share",
+            self.test_local_share.joinpath("umu_version.json").is_file(),
+            "Expected umu_version.json to be in local share",
         )
 
         # Update
         with patch.object(
-            ulwgl_util,
+            umu_util,
             "setup_runtime",
             return_value=None,
         ):
-            result = ulwgl_util._update_ulwgl(
+            result = umu_util._update_umu(
                 self.test_user_share,
                 self.test_local_share,
                 self.test_compat,
@@ -225,8 +225,8 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_local_share, "run-in-sniper"),
             )
             copy(
-                Path(self.test_user_share, "ULWGL"),
-                Path(self.test_local_share, "ULWGL"),
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
             )
             # When the runtime updates, pressure vessel needs to be updated
             copytree(
@@ -236,19 +236,19 @@ class TestGameLauncher(unittest.TestCase):
                 symlinks=True,
             )
 
-        self.assertFalse(result, "Expected None when calling _update_ulwgl")
+        self.assertFalse(result, "Expected None when calling _update_umu")
 
-        # Now, check the state of .local/share/ULWGL
+        # Now, check the state of .local/share/umu
         # We expect the relevant files to be restored
 
         # Check if the configuration files are equal
         # We update this on every update of the tools
-        with self.test_user_share.joinpath("ULWGL_VERSION.json").open(
+        with self.test_user_share.joinpath("umu_version.json").open(
             mode="rb"
         ) as file1:
             root = file1.read()
             local = b""
-            with self.test_local_share.joinpath("ULWGL_VERSION.json").open(
+            with self.test_local_share.joinpath("umu_version.json").open(
                 mode="rb"
             ) as file2:
                 local = file2.read()
@@ -260,25 +260,25 @@ class TestGameLauncher(unittest.TestCase):
 
         # Runner
         self.assertTrue(
-            self.test_compat.joinpath("ULWGL-Launcher").is_dir(),
-            "Expected ULWGL-Launcher in compat",
+            self.test_compat.joinpath("umu-Launcher").is_dir(),
+            "Expected umu-Launcher in compat",
         )
 
-        for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*"):
+        for file in self.test_compat.joinpath("umu-Launcher").glob("*"):
             src = b""
             dst = b""
 
-            if file.name == "ulwgl-run":
+            if file.name == "umu-run":
                 self.assertEqual(
-                    self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
-                    Path("../../../ULWGL/ulwgl_run.py"),
+                    self.test_compat.joinpath("umu-Launcher", "umu-run").readlink(),
+                    Path("../../../umu/umu_run.py"),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
 
             with file.open(mode="rb") as filer:
                 dst = filer.read()
-            with self.test_user_share.joinpath("ULWGL-Launcher", file.name).open(
+            with self.test_user_share.joinpath("umu-Launcher", file.name).open(
                 mode="rb"
             ) as filer:
                 src = filer.read()
@@ -291,7 +291,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Launcher
         for file in self.test_local_share.glob("*.py"):
-            if not file.name.startswith("ulwgl_test"):
+            if not file.name.startswith("umu_test"):
                 src = b""
                 dst = b""
 
@@ -307,13 +307,13 @@ class TestGameLauncher(unittest.TestCase):
         # Runtime Platform
         self.assertTrue(
             self.test_local_share.joinpath(
-                json_local["ulwgl"]["versions"]["runtime_platform"]
+                json_local["umu"]["versions"]["runtime_platform"]
             ).is_dir(),
             "Expected runtime to in local share",
         )
 
         for file in self.test_local_share.joinpath(
-            json_local["ulwgl"]["versions"]["runtime_platform"]
+            json_local["umu"]["versions"]["runtime_platform"]
         ).glob("*"):
             if file.is_file():
                 src = b""
@@ -322,7 +322,7 @@ class TestGameLauncher(unittest.TestCase):
                 with file.open(mode="rb") as filer:
                     dst = filer.read()
                 with self.test_user_share.joinpath(
-                    json_root["ulwgl"]["versions"]["runtime_platform"], file.name
+                    json_root["umu"]["versions"]["runtime_platform"], file.name
                 ).open(mode="rb") as filer:
                     src = filer.read()
 
@@ -352,8 +352,8 @@ class TestGameLauncher(unittest.TestCase):
                     err = "Files did not get updated"
                     raise AssertionError(err)
 
-    def test_update_ulwgl(self):
-        """Test _update_ulwgl by mocking an update to the runtime tools.
+    def test_update_umu(self):
+        """Test _update_umu by mocking an update to the runtime tools.
 
         We test the existing install case.
 
@@ -364,31 +364,31 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         json_local = None
-        json_root = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
         py_files = [
-            "ulwgl_consts.py",
-            "ulwgl_dl_util.py",
-            "ulwgl_log.py",
-            "ulwgl_plugins.py",
-            "ulwgl_run.py",
-            "ulwgl_test.py",
-            "ulwgl_util.py",
+            "umu_consts.py",
+            "umu_dl_util.py",
+            "umu_log.py",
+            "umu_plugins.py",
+            "umu_run.py",
+            "umu_test.py",
+            "umu_util.py",
         ]
         rt_files = [
             "run",
             "run-in-sniper",
-            "ULWGL",
+            "umu",
         ]
         runner_files = [
             "compatibilitytool.vdf",
             "toolmanifest.vdf",
-            "ulwgl-run",
+            "umu-run",
         ]
-        # Mock an outdated ULWGL_VERSION.json in ~/.local/share/ULWGL
+        # Mock an outdated umu_version.json in ~/.local/share/umu
         # Downgrade these files: launcher, runner, runtime_platform
         # We don't downgrade Pressure Vessel because it's a runtime property
         config = {
-            "ulwgl": {
+            "umu": {
                 "versions": {
                     "launcher": "0.1-RC2",
                     "runner": "0.1-RC2",
@@ -400,16 +400,16 @@ class TestGameLauncher(unittest.TestCase):
         }
         data = json.dumps(config, indent=4)
 
-        # In .local/share/ULWGL we expect at least these files to exist:
-        # +-- ULWGL (root directory)
+        # In .local/share/umu we expect at least these files to exist:
+        # +-- umu (root directory)
         # |   +-- pressure-vessel                               (directory)
         # |   +-- *_platform_0.20240125.75304                   (directory)
         # |   +-- run                                           (normal file)
         # |   +-- run-in-*                                      (normal file)
-        # |   +-- ULWGL                                         (normal file)
-        # |   +-- ULWGL_VERSION.json                            (normal file)
-        # |   +-- ulwgl_*.py                                    (normal file)
-        # |   +-- ulwgl-run                                     (link file)
+        # |   +-- umu                                         (normal file)
+        # |   +-- umu_version.json                            (normal file)
+        # |   +-- umu_*.py                                    (normal file)
+        # |   +-- umu-run                                     (link file)
         #
         # To test for potential unintended removals in that dir and that a
         # selective update is performed, additional files will be added to the top-level
@@ -426,32 +426,32 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat.joinpath("GE-Proton-foo").mkdir()
 
         # Config
-        self.test_local_share.joinpath("ULWGL_VERSION.json").touch()
-        with self.test_local_share.joinpath("ULWGL_VERSION.json").open(
+        self.test_local_share.joinpath("umu_version.json").touch()
+        with self.test_local_share.joinpath("umu_version.json").open(
             mode="w"
         ) as file:
             file.write(data)
-        json_local = ulwgl_util._get_json(self.test_local_share, "ULWGL_VERSION.json")
+        json_local = umu_util._get_json(self.test_local_share, "umu_version.json")
 
         self.assertTrue(
-            self.test_local_share.joinpath("ULWGL_VERSION.json").is_file(),
-            "Expected ULWGL_VERSION.json to be in local share",
+            self.test_local_share.joinpath("umu_version.json").is_file(),
+            "Expected umu_version.json to be in local share",
         )
 
         # Mock the launcher files
         for file in py_files:
-            if file == "ulwgl-run":
-                self.test_local_share.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
+            if file == "umu-run":
+                self.test_local_share.joinpath("umu-run").symlink_to("umu_run.py")
             else:
                 with self.test_local_share.joinpath(file).open(mode="w") as filer:
                     filer.write("foo")
 
         # Mock the runtime files
         self.test_local_share.joinpath(
-            json_local["ulwgl"]["versions"]["runtime_platform"]
+            json_local["umu"]["versions"]["runtime_platform"]
         ).mkdir()
         self.test_local_share.joinpath(
-            json_local["ulwgl"]["versions"]["runtime_platform"], "bar"
+            json_local["umu"]["versions"]["runtime_platform"], "bar"
         ).touch()
         for file in rt_files:
             with self.test_local_share.joinpath(file).open(mode="w") as filer:
@@ -461,12 +461,12 @@ class TestGameLauncher(unittest.TestCase):
         self.test_local_share.joinpath("pressure-vessel").mkdir()
         self.test_local_share.joinpath("pressure-vessel", "bar").touch()
 
-        # Mock ULWGL-Launcher
-        self.test_compat.joinpath("ULWGL-Launcher").mkdir()
+        # Mock umu-Launcher
+        self.test_compat.joinpath("umu-Launcher").mkdir()
         for file in runner_files:
-            if file == "ulwgl-run":
-                self.test_compat.joinpath("ulwgl-run").symlink_to(
-                    "../../../ulwgl_run.py"
+            if file == "umu-run":
+                self.test_compat.joinpath("umu-run").symlink_to(
+                    "../../../umu_run.py"
                 )
             else:
                 with self.test_compat.joinpath(file).open(mode="w") as filer:
@@ -474,11 +474,11 @@ class TestGameLauncher(unittest.TestCase):
 
         # Update
         with patch.object(
-            ulwgl_util,
+            umu_util,
             "setup_runtime",
             return_value=None,
         ):
-            result = ulwgl_util._update_ulwgl(
+            result = umu_util._update_umu(
                 self.test_user_share,
                 self.test_local_share,
                 self.test_compat,
@@ -497,8 +497,8 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_local_share, "run-in-sniper"),
             )
             copy(
-                Path(self.test_user_share, "ULWGL"),
-                Path(self.test_local_share, "ULWGL"),
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
             )
             # When the runtime updates, pressure vessel needs to be updated
             copytree(
@@ -508,7 +508,7 @@ class TestGameLauncher(unittest.TestCase):
                 symlinks=True,
             )
 
-        self.assertFalse(result, "Expected None when calling _update_ulwgl")
+        self.assertFalse(result, "Expected None when calling _update_umu")
 
         # Check that foo files still exist after the update
         self.assertTrue(
@@ -530,29 +530,29 @@ class TestGameLauncher(unittest.TestCase):
             "Expected test Proton to survive after update",
         )
 
-        # Verify the count for .local/share/ULWGL
+        # Verify the count for .local/share/umu
         num_share = len(
             [
                 file
                 for file in self.test_user_share.glob("*")
-                if not file.name.startswith("ulwgl_test")
+                if not file.name.startswith("umu_test")
             ]
         )
         num_local = len([file for file in self.test_local_share.glob("*")])
         self.assertEqual(
             num_share,
             num_local - 3,
-            "Expected /usr/share/ULWGL and .local/share/ULWGL to contain same files",
+            "Expected /usr/share/umu and .local/share/umu to contain same files",
         )
 
         # Check if the configuration files are equal because we update this on
         # every update of the tools
-        with self.test_user_share.joinpath("ULWGL_VERSION.json").open(
+        with self.test_user_share.joinpath("umu_version.json").open(
             mode="rb"
         ) as file1:
             root = file1.read()
             local = b""
-            with self.test_local_share.joinpath("ULWGL_VERSION.json").open(
+            with self.test_local_share.joinpath("umu_version.json").open(
                 mode="rb"
             ) as file2:
                 local = file2.read()
@@ -565,41 +565,41 @@ class TestGameLauncher(unittest.TestCase):
         # Runner
         # The hashes should be compared because we written data in the mocked files
         self.assertTrue(
-            self.test_compat.joinpath("ULWGL-Launcher").is_dir(),
-            "Expected ULWGL-Launcher in compat",
+            self.test_compat.joinpath("umu-Launcher").is_dir(),
+            "Expected umu-Launcher in compat",
         )
 
-        # Verify the count for .local/share/Steam/ULWGL-Launcher
+        # Verify the count for .local/share/Steam/umu-Launcher
         num_share = len(
-            [file for file in self.test_user_share.joinpath("ULWGL-Launcher").glob("*")]
+            [file for file in self.test_user_share.joinpath("umu-Launcher").glob("*")]
         )
         num_local = len(
-            [file for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*")]
+            [file for file in self.test_compat.joinpath("umu-Launcher").glob("*")]
         )
 
         # Subtract one because a symbolic link is dynamically created
         self.assertEqual(
             num_share,
             num_local - 1,
-            "Expected .local/share/Steam/compatibilitytools.d/ULWGL-Launcher"
-            "and /usr/share/ULWGL/ULWGL-Launcher to contain same files",
+            "Expected .local/share/Steam/compatibilitytools.d/umu-Launcher"
+            "and /usr/share/umu/umu-Launcher to contain same files",
         )
 
-        for file in self.test_compat.joinpath("ULWGL-Launcher").glob("*"):
+        for file in self.test_compat.joinpath("umu-Launcher").glob("*"):
             src = b""
             dst = b""
 
-            if file.name == "ulwgl-run":
+            if file.name == "umu-run":
                 self.assertEqual(
-                    self.test_compat.joinpath("ULWGL-Launcher", "ulwgl-run").readlink(),
-                    Path("../../../ULWGL/ulwgl_run.py"),
+                    self.test_compat.joinpath("umu-Launcher", "umu-run").readlink(),
+                    Path("../../../umu/umu_run.py"),
                     "Expected both symlinks to point to same dest",
                 )
                 continue
 
             with file.open(mode="rb") as filer:
                 dst = filer.read()
-            with self.test_user_share.joinpath("ULWGL-Launcher", file.name).open(
+            with self.test_user_share.joinpath("umu-Launcher", file.name).open(
                 mode="rb"
             ) as filer:
                 src = filer.read()
@@ -612,7 +612,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Launcher
         for file in self.test_local_share.glob("*.py"):
-            if not file.name.startswith("ulwgl_test"):
+            if not file.name.startswith("umu_test"):
                 src = b""
                 dst = b""
 
@@ -628,13 +628,13 @@ class TestGameLauncher(unittest.TestCase):
         # Runtime Platform
         self.assertTrue(
             self.test_local_share.joinpath(
-                json_local["ulwgl"]["versions"]["runtime_platform"]
+                json_local["umu"]["versions"]["runtime_platform"]
             ).is_dir(),
             "Expected runtime to in local share",
         )
 
         for file in self.test_local_share.joinpath(
-            json_local["ulwgl"]["versions"]["runtime_platform"]
+            json_local["umu"]["versions"]["runtime_platform"]
         ).glob("*"):
             if file.is_file():
                 src = b""
@@ -643,7 +643,7 @@ class TestGameLauncher(unittest.TestCase):
                 with file.open(mode="rb") as filer:
                     dst = filer.read()
                 with self.test_user_share.joinpath(
-                    json_root["ulwgl"]["versions"]["runtime_platform"], file.name
+                    json_root["umu"]["versions"]["runtime_platform"], file.name
                 ).open(mode="rb") as filer:
                     src = filer.read()
 
@@ -673,41 +673,41 @@ class TestGameLauncher(unittest.TestCase):
                     err = "Files did not get updated"
                     raise AssertionError(err)
 
-    def test_install_ulwgl(self):
-        """Test _install_ulwgl by mocking a first launch.
+    def test_install_umu(self):
+        """Test _install_umu by mocking a first launch.
 
-        At first launch, the directory /usr/share/ULWGL is expected to be
+        At first launch, the directory /usr/share/umu is expected to be
         populated by distribution's package manager
 
-        This function is expected to be run when ~/.local/share/ULWGL is empty
+        This function is expected to be run when ~/.local/share/umu is empty
 
-        The contents of ~/.local/share/ULWGL should be nearly identical to
-        /usr/share/ULWGL, with the exception of the ULWGL-Launcher files
+        The contents of ~/.local/share/umu should be nearly identical to
+        /usr/share/umu, with the exception of the umu-Launcher files
 
-        ULWGL-Launcher is expected to be copied to compatibilitytools.d
+        umu-Launcher is expected to be copied to compatibilitytools.d
         """
         result = None
-        runner_files = {"compatibilitytool.vdf", "toolmanifest.vdf", "ulwgl-run"}
+        runner_files = {"compatibilitytool.vdf", "toolmanifest.vdf", "umu-run"}
         py_files = {
-            "ulwgl_consts.py",
-            "ulwgl_dl_util.py",
-            "ulwgl_log.py",
-            "ulwgl_plugins.py",
-            "ulwgl_run.py",
-            "ulwgl_test.py",
-            "ulwgl_util.py",
+            "umu_consts.py",
+            "umu_dl_util.py",
+            "umu_log.py",
+            "umu_plugins.py",
+            "umu_run.py",
+            "umu_test.py",
+            "umu_util.py",
         }
-        json = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+        json = umu_util._get_json(self.test_user_share, "umu_version.json")
 
         # Mock setting up the runtime
         # In the real usage, we callout to acquire the archive and
-        # extract to .local/share/ULWGL
+        # extract to .local/share/umu
         with patch.object(
-            ulwgl_util,
+            umu_util,
             "setup_runtime",
             return_value=None,
         ):
-            result = ulwgl_util._install_ulwgl(
+            result = umu_util._install_umu(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
             copytree(
@@ -722,33 +722,33 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_local_share, "run-in-sniper"),
             )
             copy(
-                Path(self.test_user_share, "ULWGL"),
-                Path(self.test_local_share, "ULWGL"),
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
             )
 
         # Verify the state of the local share directory
-        self.assertFalse(result, "Expected None after calling _install_ulwgl")
+        self.assertFalse(result, "Expected None after calling _install_umu")
 
         # Config
         self.assertTrue(
-            Path(self.test_user_share, "ULWGL_VERSION.json").is_file(),
-            "Expected ULWGL_VERSION.json to exist",
+            Path(self.test_user_share, "umu_version.json").is_file(),
+            "Expected umu_version.json to exist",
         )
 
-        # ULWGL-Launcher
+        # umu-Launcher
         self.assertTrue(
-            Path(self.test_user_share, "ULWGL-Launcher").is_dir(),
-            "Expected ULWGL-Launcher to exist",
+            Path(self.test_user_share, "umu-Launcher").is_dir(),
+            "Expected umu-Launcher to exist",
         )
-        for file in Path(self.test_compat, "ULWGL-Launcher").glob("*"):
+        for file in Path(self.test_compat, "umu-Launcher").glob("*"):
             if file.name not in runner_files:
                 err = "A non-runner file was copied"
                 raise AssertionError(err)
             if file in runner_files and file.is_symlink():
                 self.assertEqual(
                     file.readlink(),
-                    Path("../../../ulwgl-run"),
-                    "Expected ulwgl-run symlink to exist",
+                    Path("../../../umu-run"),
+                    "Expected umu-run symlink to exist",
                 )
 
         # Pressure Vessel
@@ -780,7 +780,7 @@ class TestGameLauncher(unittest.TestCase):
             "Expected other run to exist",
         )
         self.assertTrue(
-            Path(self.test_local_share, "ULWGL").is_file(), "Expected ULWGL to exist"
+            Path(self.test_local_share, "umu").is_file(), "Expected umu to exist"
         )
 
         # Python files
@@ -795,19 +795,19 @@ class TestGameLauncher(unittest.TestCase):
 
         # Symlink
         self.assertTrue(
-            Path(self.test_local_share, "ulwgl-run").is_symlink(),
-            "Expected ULWGL to exist",
+            Path(self.test_local_share, "umu-run").is_symlink(),
+            "Expected umu to exist",
         )
         self.assertEqual(
-            Path(self.test_local_share, "ulwgl-run").readlink(),
-            Path("ulwgl_run.py"),
-            "Expected ulwgl-run -> ulwgl_run.py",
+            Path(self.test_local_share, "umu-run").readlink(),
+            Path("umu_run.py"),
+            "Expected umu-run -> umu_run.py",
         )
 
     def test_get_json_err(self):
-        """Test _get_json when specifying a corrupted ULWGL_VERSION.json file.
+        """Test _get_json when specifying a corrupted umu_version.json file.
 
-        A ValueError should be raised because we expect 'ulwgl' and 'version'
+        A ValueError should be raised because we expect 'umu' and 'version'
         keys to exist
         """
         test_config = """
@@ -825,7 +825,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         test_config2 = """
         {
-            "ulwgl": {
+            "umu": {
                 "foo": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
@@ -837,53 +837,53 @@ class TestGameLauncher(unittest.TestCase):
         }
         """
         # Remove the valid config created at setup
-        Path(self.test_user_share, "ULWGL_VERSION.json").unlink(missing_ok=True)
+        Path(self.test_user_share, "umu_version.json").unlink(missing_ok=True)
 
-        Path(self.test_user_share, "ULWGL_VERSION.json").touch()
-        with Path(self.test_user_share, "ULWGL_VERSION.json").open(mode="w") as file:
+        Path(self.test_user_share, "umu_version.json").touch()
+        with Path(self.test_user_share, "umu_version.json").open(mode="w") as file:
             file.write(test_config)
 
-        # Test when "ulwgl" doesn't exist
+        # Test when "umu" doesn't exist
         with self.assertRaisesRegex(ValueError, "load"):
-            ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+            umu_util._get_json(self.test_user_share, "umu_version.json")
 
         # Test when "versions" doesn't exist
-        Path(self.test_user_share, "ULWGL_VERSION.json").unlink(missing_ok=True)
+        Path(self.test_user_share, "umu_version.json").unlink(missing_ok=True)
 
-        Path(self.test_user_share, "ULWGL_VERSION.json").touch()
-        with Path(self.test_user_share, "ULWGL_VERSION.json").open(mode="w") as file:
+        Path(self.test_user_share, "umu_version.json").touch()
+        with Path(self.test_user_share, "umu_version.json").open(mode="w") as file:
             file.write(test_config2)
 
         with self.assertRaisesRegex(ValueError, "load"):
-            ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+            umu_util._get_json(self.test_user_share, "umu_version.json")
 
     def test_get_json_foo(self):
-        """Test _get_json when not specifying ULWGL_VERSION.json as 2nd arg.
+        """Test _get_json when not specifying umu_version.json as 2nd arg.
 
         A FileNotFoundError should be raised
         """
         with self.assertRaisesRegex(FileNotFoundError, "configuration"):
-            ulwgl_util._get_json(self.test_user_share, "foo")
+            umu_util._get_json(self.test_user_share, "foo")
 
     def test_get_json(self):
         """Test _get_json.
 
         This function is used to verify the existence and integrity of
-        ULWGL_VERSION.json file during the setup process
+        umu_version.json file during the setup process
 
-        ULWGL_VERSION.json is used to synchronize the state of 2 directories:
-        /usr/share/ULWGL and ~/.local/share/ULWGL
+        umu_version.json is used to synchronize the state of 2 directories:
+        /usr/share/umu and ~/.local/share/umu
 
         An error should not be raised when passed a JSON we expect
         """
         result = None
 
         self.assertTrue(
-            self.test_user_share.joinpath("ULWGL_VERSION.json").exists(),
-            "Expected ULWGL_VERSION.json to exist",
+            self.test_user_share.joinpath("umu_version.json").exists(),
+            "Expected umu_version.json to exist",
         )
 
-        result = ulwgl_util._get_json(self.test_user_share, "ULWGL_VERSION.json")
+        result = umu_util._get_json(self.test_user_share, "umu_version.json")
         self.assertIsInstance(result, dict, "Expected a dict")
 
     def test_latest_interrupt(self):
@@ -903,13 +903,13 @@ class TestGameLauncher(unittest.TestCase):
         # In the event of an interrupt, both the cache/compat dir will be
         # checked for the latest release for removal
         # We do this since the extraction process can be interrupted as well
-        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
 
-        with patch("ulwgl_dl_util._fetch_proton") as mock_function:
+        with patch("umu_dl_util._fetch_proton") as mock_function:
             # Mock the interrupt
             # We want the dir we tried to extract to be cleaned
             mock_function.side_effect = KeyboardInterrupt
-            result = ulwgl_dl_util._get_latest(
+            result = umu_dl_util._get_latest(
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
@@ -946,10 +946,10 @@ class TestGameLauncher(unittest.TestCase):
             "Expected test file in cache to exist",
         )
 
-        with patch("ulwgl_dl_util._fetch_proton") as mock_function:
+        with patch("umu_dl_util._fetch_proton") as mock_function:
             # Mock the interrupt
             mock_function.side_effect = ValueError
-            result = ulwgl_dl_util._get_latest(
+            result = umu_dl_util._get_latest(
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
@@ -971,8 +971,8 @@ class TestGameLauncher(unittest.TestCase):
 
         os.environ["PROTONPATH"] = ""
 
-        with patch("ulwgl_dl_util._fetch_proton"):
-            result = ulwgl_dl_util._get_latest(
+        with patch("umu_dl_util._fetch_proton"):
+            result = umu_dl_util._get_latest(
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
@@ -988,7 +988,7 @@ class TestGameLauncher(unittest.TestCase):
         # Just mock it and assumes its the latest
         files = [("", ""), (self.test_archive.name, "")]
 
-        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
 
         self.assertTrue(
             self.test_compat.joinpath(
@@ -997,13 +997,13 @@ class TestGameLauncher(unittest.TestCase):
             "Expected Proton dir to exist in compat",
         )
 
-        with patch("ulwgl_dl_util._extract_dir") as mock_function:
+        with patch("umu_dl_util._extract_dir") as mock_function:
             with self.assertRaisesRegex(KeyboardInterrupt, ""):
                 # Mock the interrupt
                 # We want to simulate an interrupt mid-extraction in this case
                 # We want the dir we tried to extract to be cleaned
                 mock_function.side_effect = KeyboardInterrupt
-                ulwgl_dl_util._get_from_cache(
+                umu_dl_util._get_from_cache(
                     self.env, self.test_compat, self.test_cache, files, True
                 )
 
@@ -1028,7 +1028,7 @@ class TestGameLauncher(unittest.TestCase):
         # When user is offline, there are no files
         files = []
 
-        result = ulwgl_dl_util._get_from_cache(
+        result = umu_dl_util._get_from_cache(
             self.env, self.test_compat, self.test_cache, files, False
         )
 
@@ -1050,10 +1050,10 @@ class TestGameLauncher(unittest.TestCase):
         interrupted or when the HTTP status code is not 200
         """
         result = None
-        files = [("", ""), ("ULWGL-Proton-8.0-5-3.tar.gz", "")]
+        files = [("", ""), ("umu-Proton-8.0-5-3.tar.gz", "")]
 
         # Mock an old Proton version
-        test_proton_dir = Path("ULWGL-Proton-8.0-5-2")
+        test_proton_dir = Path("umu-Proton-8.0-5-2")
         test_proton_dir.mkdir(exist_ok=True)
         test_archive = self.test_cache.joinpath(f"{test_proton_dir.as_posix()}.tar.gz")
 
@@ -1061,7 +1061,7 @@ class TestGameLauncher(unittest.TestCase):
             tar.add(test_proton_dir.as_posix(), arcname=test_proton_dir.as_posix())
 
         # By passing False, we do not attempt to find the latest
-        result = ulwgl_dl_util._get_from_cache(
+        result = umu_dl_util._get_from_cache(
             self.env, self.test_compat, self.test_cache, files, False
         )
 
@@ -1088,7 +1088,7 @@ class TestGameLauncher(unittest.TestCase):
 
         self.test_archive.unlink()
 
-        result = ulwgl_dl_util._get_from_cache(
+        result = umu_dl_util._get_from_cache(
             self.env, self.test_compat, self.test_cache, files, True
         )
         self.assertFalse(result, "Expected None when calling _get_from_cache")
@@ -1108,7 +1108,7 @@ class TestGameLauncher(unittest.TestCase):
         # Just mock it and assumes its the latest
         files = [("", ""), (self.test_archive.name, "")]
 
-        result = ulwgl_dl_util._get_from_cache(
+        result = umu_dl_util._get_from_cache(
             self.env, self.test_compat, self.test_cache, files, True
         )
         self.assertTrue(result is self.env, "Expected the same reference")
@@ -1129,7 +1129,7 @@ class TestGameLauncher(unittest.TestCase):
         result = None
         files = [("", ""), (self.test_archive.name, "")]
 
-        result = ulwgl_dl_util._get_from_steamcompat(
+        result = umu_dl_util._get_from_steamcompat(
             self.env, self.test_compat, self.test_cache, files
         )
 
@@ -1145,9 +1145,9 @@ class TestGameLauncher(unittest.TestCase):
         result = None
         files = [("", ""), (self.test_archive.name, "")]
 
-        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
 
-        result = ulwgl_dl_util._get_from_steamcompat(
+        result = umu_dl_util._get_from_steamcompat(
             self.env, self.test_compat, self.test_cache, files
         )
 
@@ -1172,7 +1172,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
 
         # Create a file in the cache and compat
         self.test_cache.joinpath("foo").touch()
@@ -1199,7 +1199,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
         # Pass files that do not exist
-        result = ulwgl_dl_util._cleanup(
+        result = umu_dl_util._cleanup(
             "foo.tar.gz",
             "foo",
             self.test_cache,
@@ -1238,8 +1238,8 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
-        result = ulwgl_dl_util._cleanup(
+        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
+        result = umu_dl_util._cleanup(
             self.test_proton_dir.as_posix() + ".tar.gz",
             self.test_proton_dir.as_posix(),
             self.test_cache,
@@ -1272,7 +1272,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
         with self.assertRaisesRegex(tarfile.ReadError, "gzip"):
-            ulwgl_dl_util._extract_dir(test_archive, self.test_compat)
+            umu_dl_util._extract_dir(test_archive, self.test_compat)
 
         if test_archive.exists():
             test_archive.unlink()
@@ -1285,7 +1285,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        result = ulwgl_dl_util._extract_dir(self.test_archive, self.test_compat)
+        result = umu_dl_util._extract_dir(self.test_archive, self.test_compat)
         self.assertFalse(result, "Expected None after extracting")
         self.assertTrue(
             self.test_compat.joinpath(self.test_proton_dir).exists(),
@@ -1314,13 +1314,13 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
-            args = ulwgl_run.parse_args()
+            args = umu_run.parse_args()
             # Config
-            ulwgl_run.check_env(self.env)
+            umu_run.check_env(self.env)
             # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            ulwgl_run.set_env(self.env, args)
+            umu_run.set_env(self.env, args)
 
             if "LD_LIBRARY_PATH" in os.environ:
                 os.environ.pop("LD_LIBRARY_PATH")
@@ -1345,7 +1345,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["LD_LIBRARY_PATH"] = paths
 
             # Game drive
-            result_gamedrive = ulwgl_plugins.enable_steam_game_drive(self.env)
+            result_gamedrive = umu_plugins.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
@@ -1386,7 +1386,7 @@ class TestGameLauncher(unittest.TestCase):
 
         WINE prefixes can be created by passing an empty string
         Example:
-        WINEPREFIX= PROTONPATH= GAMEID= ulwgl-run ""
+        WINEPREFIX= PROTONPATH= GAMEID= umu-run ""
 
         During this process, we attempt to prepare setting up game drive and
         set the values for STEAM_RUNTIME_LIBRARY_PATH and
@@ -1409,13 +1409,13 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
-            args = ulwgl_run.parse_args()
+            args = umu_run.parse_args()
             # Config
-            ulwgl_run.check_env(self.env)
+            umu_run.check_env(self.env)
             # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            ulwgl_run.set_env(self.env, args)
+            umu_run.set_env(self.env, args)
 
             # Some distributions source this variable (e.g. Ubuntu) and will
             # be added to the result of STEAM_RUNTIME_LIBRARY_PATH
@@ -1424,7 +1424,7 @@ class TestGameLauncher(unittest.TestCase):
                 os.environ.pop("LD_LIBRARY_PATH")
 
             # Game drive
-            result_gamedrive = ulwgl_plugins.enable_steam_game_drive(self.env)
+            result_gamedrive = umu_plugins.enable_steam_game_drive(self.env)
 
         # Ubuntu sources this variable and will be added once Game Drive is enabled
         # Just test the case without it
@@ -1469,8 +1469,8 @@ class TestGameLauncher(unittest.TestCase):
         After parsing valid environment variables set by the user, be sure we
         do not raise a FileNotFoundError
 
-        A FileNotFoundError will only be raised if the _v2-entry-point (ULWGL)
-        is not in $HOME/.local/share/ULWGL
+        A FileNotFoundError will only be raised if the _v2-entry-point (umu)
+        is not in $HOME/.local/share/umu
         """
         result_args = None
         test_command = []
@@ -1484,26 +1484,26 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
-            result_args = ulwgl_run.parse_args()
+            result_args = umu_run.parse_args()
             # Config
-            ulwgl_run.check_env(self.env)
+            umu_run.check_env(self.env)
             # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            ulwgl_run.set_env(self.env, result_args)
+            umu_run.set_env(self.env, result_args)
             # Game drive
-            ulwgl_plugins.enable_steam_game_drive(self.env)
+            umu_plugins.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
 
         # Mock setting up the runtime
         with patch.object(
-            ulwgl_util,
+            umu_util,
             "setup_runtime",
             return_value=None,
         ):
-            ulwgl_util._install_ulwgl(
+            umu_util._install_umu(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
             copytree(
@@ -1518,12 +1518,12 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_local_share, "run-in-sniper"),
             )
             copy(
-                Path(self.test_user_share, "ULWGL"),
-                Path(self.test_local_share, "ULWGL"),
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
             )
 
         # Build
-        test_command = ulwgl_run.build_command(
+        test_command = umu_run.build_command(
             self.env, self.test_local_share, test_command
         )
         self.assertIsInstance(test_command, list, "Expected a List from build_command")
@@ -1558,7 +1558,7 @@ class TestGameLauncher(unittest.TestCase):
         test_str = "foo"
 
         # Replicate the command:
-        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run ...
+        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= umu_run ...
         with patch("sys.argv", ["", self.test_exe, test_str]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -1566,7 +1566,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(result, tuple, "Expected a tuple")
             self.assertIsInstance(result[0], str, "Expected a string")
             self.assertIsInstance(result[1], list, "Expected a list as options")
@@ -1579,11 +1579,11 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected the test string when passed as an option",
             )
             # Check
-            ulwgl_run.check_env(self.env)
+            umu_run.check_env(self.env)
             # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            result = ulwgl_run.set_env(self.env, result[0:])
+            result = umu_run.set_env(self.env, result[0:])
             self.assertTrue(result is self.env, "Expected the same reference")
 
             path_exe = Path(self.test_exe).expanduser().as_posix()
@@ -1609,25 +1609,25 @@ class TestGameLauncher(unittest.TestCase):
         """Test set_env.
 
         Verify that environment variables (dictionary) are set after calling
-        set_env when passing a valid ULWGL_ID
+        set_env when passing a valid umu_ID
 
-        When a valid ULWGL_ID is set, the STEAM_COMPAT_APP_ID variables
-        should be the stripped ULWGL_ID
+        When a valid umu_ID is set, the STEAM_COMPAT_APP_ID variables
+        should be the stripped umu_ID
         """
         result = None
         test_str = "foo"
-        ulwgl_id = "ulwgl-271590"
+        umu_id = "umu-271590"
 
         # Replicate the usage:
-        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run ...
+        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= umu_run ...
         with patch("sys.argv", ["", self.test_exe]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
-            os.environ["GAMEID"] = ulwgl_id
+            os.environ["GAMEID"] = umu_id
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(result, tuple, "Expected a tuple")
             self.assertIsInstance(result[0], str, "Expected a string")
             self.assertIsInstance(result[1], list, "Expected a list as options")
@@ -1638,11 +1638,11 @@ class TestGameLauncher(unittest.TestCase):
                 result[1], "Expected an empty list when passing no options"
             )
             # Check
-            ulwgl_run.check_env(self.env)
+            umu_run.check_env(self.env)
             # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            result = ulwgl_run.set_env(self.env, result[0:])
+            result = umu_run.set_env(self.env, result[0:])
             self.assertTrue(result is self.env, "Expected the same reference")
 
             path_exe = Path(self.test_exe).expanduser().as_posix()
@@ -1657,24 +1657,24 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 self.env["WINEPREFIX"], path_file, "Expected WINEPREFIX to be set"
             )
-            self.assertEqual(self.env["GAMEID"], ulwgl_id, "Expected GAMEID to be set")
+            self.assertEqual(self.env["GAMEID"], umu_id, "Expected GAMEID to be set")
             self.assertEqual(
                 self.env["PROTON_VERB"],
                 self.test_verb,
                 "Expected PROTON_VERB to be set",
             )
-            # ULWGL
+            # umu
             self.assertEqual(
-                self.env["ULWGL_ID"],
+                self.env["umu_ID"],
                 self.env["GAMEID"],
-                "Expected ULWGL_ID to be GAMEID",
+                "Expected umu_ID to be GAMEID",
             )
-            self.assertEqual(self.env["ULWGL_ID"], ulwgl_id, "Expected ULWGL_ID")
+            self.assertEqual(self.env["umu_ID"], umu_id, "Expected umu_ID")
             # Should be stripped -- everything after the hyphen
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
-                ulwgl_id[ulwgl_id.find("-") + 1 :],
-                "Expected STEAM_COMPAT_APP_ID to be the stripped ULWGL_ID",
+                umu_id[umu_id.find("-") + 1 :],
+                "Expected STEAM_COMPAT_APP_ID to be the stripped umu_ID",
             )
             self.assertEqual(
                 self.env["SteamAppId"],
@@ -1697,7 +1697,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
+                + Path.home().joinpath(".local", "share", "umu").as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -1716,7 +1716,7 @@ class TestGameLauncher(unittest.TestCase):
         test_str = "foo"
 
         # Replicate the usage:
-        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= ulwgl_run ...
+        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= umu_run ...
         with patch("sys.argv", ["", self.test_exe]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
@@ -1724,7 +1724,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(result, tuple, "Expected a tuple")
             self.assertIsInstance(result[0], str, "Expected a string")
             self.assertIsInstance(result[1], list, "Expected a list as options")
@@ -1735,11 +1735,11 @@ class TestGameLauncher(unittest.TestCase):
                 result[1], "Expected an empty list when passing no options"
             )
             # Check
-            ulwgl_run.check_env(self.env)
+            umu_run.check_env(self.env)
             # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            result = ulwgl_run.set_env(self.env, result[0:])
+            result = umu_run.set_env(self.env, result[0:])
             self.assertTrue(result is self.env, "Expected the same reference")
 
             path_exe = Path(self.test_exe).expanduser().as_posix()
@@ -1760,11 +1760,11 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_verb,
                 "Expected PROTON_VERB to be set",
             )
-            # ULWGL
+            # umu
             self.assertEqual(
-                self.env["ULWGL_ID"],
+                self.env["umu_ID"],
                 self.env["GAMEID"],
-                "Expected ULWGL_ID to be GAMEID",
+                "Expected umu_ID to be GAMEID",
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
@@ -1792,7 +1792,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "ULWGL").as_posix(),
+                + Path.home().joinpath(".local", "share", "umu").as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -1814,7 +1814,7 @@ class TestGameLauncher(unittest.TestCase):
             "~",
             Path(self.test_file).cwd().joinpath(self.test_file).as_posix(),
         )
-        result = ulwgl_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(unexpanded_path)
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -1842,7 +1842,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         pattern = r"^/home/[\w\d]+"
-        user = ulwgl_util.UnixUser()
+        user = umu_util.UnixUser()
         unexpanded_path = re.sub(
             pattern,
             "~",
@@ -1864,7 +1864,7 @@ class TestGameLauncher(unittest.TestCase):
             "steamuser"
         ).expanduser().symlink_to(Path(self.test_file).absolute())
 
-        result = ulwgl_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(unexpanded_path)
 
         self.assertIsNone(
             result,
@@ -1879,7 +1879,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         pattern = r"^/home/[\w\d]+"
-        user = ulwgl_util.UnixUser()
+        user = umu_util.UnixUser()
         unexpanded_path = re.sub(
             pattern,
             "~",
@@ -1893,7 +1893,7 @@ class TestGameLauncher(unittest.TestCase):
             user.get_user()
         ).expanduser().mkdir(parents=True, exist_ok=True)
 
-        result = ulwgl_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(unexpanded_path)
 
         self.assertIsNone(
             result,
@@ -1918,7 +1918,7 @@ class TestGameLauncher(unittest.TestCase):
         Tests the case when only steamuser exist and the user dir does not exist
         """
         result = None
-        user = ulwgl_util.UnixUser()
+        user = umu_util.UnixUser()
         pattern = r"^/home/[\w\d]+"
         unexpanded_path = re.sub(
             pattern,
@@ -1933,7 +1933,7 @@ class TestGameLauncher(unittest.TestCase):
             parents=True, exist_ok=True
         )
 
-        result = ulwgl_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(unexpanded_path)
 
         self.assertIsNone(
             result,
@@ -1980,7 +1980,7 @@ class TestGameLauncher(unittest.TestCase):
             "~",
             Path(self.test_file).cwd().joinpath(self.test_file).as_posix(),
         )
-        result = ulwgl_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(unexpanded_path)
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -2019,7 +2019,7 @@ class TestGameLauncher(unittest.TestCase):
             "~",
             Path(self.test_file).as_posix(),
         )
-        result = ulwgl_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(unexpanded_path)
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -2039,8 +2039,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_setup_pfx(self):
         """Test setup_pfx."""
         result = None
-        user = ulwgl_util.UnixUser()
-        result = ulwgl_run.setup_pfx(self.test_file)
+        user = umu_util.UnixUser()
+        result = umu_run.setup_pfx(self.test_file)
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and "
@@ -2071,19 +2071,19 @@ class TestGameLauncher(unittest.TestCase):
         There's a requirement to create an empty prefix
 
         A SystemExit should be raised in this case:
-        ./ulwgl_run.py
+        ./umu_run.py
         """
         with self.assertRaises(SystemExit):
-            ulwgl_run.parse_args()
+            umu_run.parse_args()
 
     def test_parse_args_config(self):
         """Test parse_args --config."""
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=self.test_file),
         ):
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -2096,13 +2096,13 @@ class TestGameLauncher(unittest.TestCase):
         # Mock getting the Proton
         with self.assertRaises(FileNotFoundError):
             with patch.object(
-                ulwgl_run,
-                "get_ulwgl_proton",
+                umu_run,
+                "get_umu_proton",
                 return_value=self.env,
             ):
                 os.environ["WINEPREFIX"] = self.test_file
                 os.environ["GAMEID"] = self.test_file
-                ulwgl_run.check_env(self.env)
+                umu_run.check_env(self.env)
 
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
@@ -2122,7 +2122,7 @@ class TestGameLauncher(unittest.TestCase):
             "Expected WINEPREFIX to not exist before check_env",
         )
 
-        ulwgl_run.check_env(self.env)
+        umu_run.check_env(self.env)
 
         # After this, the WINEPREFIX and new dirs should be created for the user
         self.assertTrue(
@@ -2154,7 +2154,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["WINEPREFIX"] = unexpanded_path
         os.environ["GAMEID"] = self.test_file
         os.environ["PROTONPATH"] = unexpanded_path
-        result = ulwgl_run.check_env(self.env)
+        result = umu_run.check_env(self.env)
         self.assertTrue(result is self.env, "Expected the same reference")
         self.assertEqual(
             self.env["WINEPREFIX"], unexpanded_path, "Expected WINEPREFIX to be set"
@@ -2172,7 +2172,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["WINEPREFIX"] = self.test_file
         os.environ["GAMEID"] = self.test_file
         os.environ["PROTONPATH"] = self.test_file
-        result = ulwgl_run.check_env(self.env)
+        result = umu_run.check_env(self.env)
         self.assertTrue(result is self.env, "Expected the same reference")
         self.assertEqual(
             self.env["WINEPREFIX"], self.test_file, "Expected WINEPREFIX to be set"
@@ -2191,13 +2191,13 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             # Mock getting the Proton
             with patch.object(
-                ulwgl_run,
-                "get_ulwgl_proton",
+                umu_run,
+                "get_umu_proton",
                 return_value=self.env,
             ):
                 os.environ["WINEPREFIX"] = self.test_file
                 os.environ["GAMEID"] = self.test_file
-                result = ulwgl_run.check_env(self.env)
+                result = umu_run.check_env(self.env)
                 self.assertTrue(result is self.env, "Expected the same reference")
                 self.assertFalse(os.environ["PROTONPATH"])
 
@@ -2205,7 +2205,7 @@ class TestGameLauncher(unittest.TestCase):
         """Test check_env when setting only $WINEPREFIX."""
         with self.assertRaisesRegex(ValueError, "GAMEID"):
             os.environ["WINEPREFIX"] = self.test_file
-            ulwgl_run.check_env(self.env)
+            umu_run.check_env(self.env)
 
     def test_env_vars_none(self):
         """Tests check_env when setting no env vars.
@@ -2213,7 +2213,7 @@ class TestGameLauncher(unittest.TestCase):
         GAMEID should be the only strictly required env var
         """
         with self.assertRaisesRegex(ValueError, "GAMEID"):
-            ulwgl_run.check_env(self.env)
+            umu_run.check_env(self.env)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,12 @@
 import unittest
-import ulwgl_run
+import umu_run
 import os
 import argparse
 import re
-import ulwgl_plugins
+import umu_plugins
 import tarfile
 import json
-import ulwgl_util
+import umu_util
 from argparse import Namespace
 from unittest.mock import patch
 from pathlib import Path
@@ -15,14 +15,14 @@ from shutil import rmtree, copy, copytree
 
 
 class TestGameLauncherPlugins(unittest.TestCase):
-    """Test suite ulwgl_run.py plugins."""
+    """Test suite umu_run.py plugins."""
 
     def setUp(self):
         """Create the test directory, exe and environment variables."""
         self.env = {
             "WINEPREFIX": "",
             "GAMEID": "",
-            "PROTON_CRASH_REPORT_DIR": "/tmp/ULWGL_crashreports",
+            "PROTON_CRASH_REPORT_DIR": "/tmp/umu_crashreports",
             "PROTONPATH": "",
             "STEAM_COMPAT_APP_ID": "",
             "STEAM_COMPAT_TOOL_PATHS": "",
@@ -37,7 +37,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             "SteamAppId": "",
             "SteamGameId": "",
             "STEAM_RUNTIME_LIBRARY_PATH": "",
-            "ULWGL_ID": "",
+            "umu_ID": "",
             "STORE": "",
             "PROTON_VERB": "",
         }
@@ -53,20 +53,20 @@ class TestGameLauncherPlugins(unittest.TestCase):
         self.test_cache = Path("./tmp.ND7tcK5m3K")
         # Steam compat dir
         self.test_compat = Path("./tmp.1A5cflhwQa")
-        # ULWGL-Proton dir
-        self.test_proton_dir = Path("ULWGL-Proton-jPTxUsKDdn")
-        # ULWGL-Proton release
+        # umu-Proton dir
+        self.test_proton_dir = Path("umu-Proton-jPTxUsKDdn")
+        # umu-Proton release
         self.test_archive = Path(self.test_cache).joinpath(
             f"{self.test_proton_dir}.tar.gz"
         )
-        # /usr/share/ULWGL
+        # /usr/share/umu
         self.test_user_share = Path("./tmp.jl3W4MtO57")
         # ~/.local/share/Steam/compatibilitytools.d
         self.test_local_share = Path("./tmp.WUaQAk7hQJ")
 
-        # Dictionary that represents the ULWGL_VERSIONS.json
+        # Dictionary that represents the umu_versionS.json
         self.root_config = {
-            "ulwgl": {
+            "umu": {
                 "versions": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
@@ -76,7 +76,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 }
             }
         }
-        # ULWGL_VERSION.json
+        # umu_version.json
         self.test_config = json.dumps(self.root_config, indent=4)
 
         self.test_user_share.mkdir(exist_ok=True)
@@ -85,36 +85,36 @@ class TestGameLauncherPlugins(unittest.TestCase):
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
 
-        # Mock a valid configuration file at /usr/share/ULWGL:
-        # tmp.BXk2NnvW2m/ULWGL_VERSION.json
-        Path(self.test_user_share, "ULWGL_VERSION.json").touch()
-        with Path(self.test_user_share, "ULWGL_VERSION.json").open(mode="w") as file:
+        # Mock a valid configuration file at /usr/share/umu:
+        # tmp.BXk2NnvW2m/umu_version.json
+        Path(self.test_user_share, "umu_version.json").touch()
+        with Path(self.test_user_share, "umu_version.json").open(mode="w") as file:
             file.write(self.test_config)
 
         # Mock the launcher files
-        Path(self.test_user_share, "ulwgl_consts.py").touch()
-        Path(self.test_user_share, "ulwgl_dl_util.py").touch()
-        Path(self.test_user_share, "ulwgl_log.py").touch()
-        Path(self.test_user_share, "ulwgl_plugins.py").touch()
-        Path(self.test_user_share, "ulwgl_run.py").touch()
-        Path(self.test_user_share, "ulwgl_util.py").touch()
-        Path(self.test_user_share, "ulwgl-run").symlink_to("ulwgl_run.py")
+        Path(self.test_user_share, "umu_consts.py").touch()
+        Path(self.test_user_share, "umu_dl_util.py").touch()
+        Path(self.test_user_share, "umu_log.py").touch()
+        Path(self.test_user_share, "umu_plugins.py").touch()
+        Path(self.test_user_share, "umu_run.py").touch()
+        Path(self.test_user_share, "umu_util.py").touch()
+        Path(self.test_user_share, "umu-run").symlink_to("umu_run.py")
 
         # Mock the runtime files
         Path(self.test_user_share, "sniper_platform_0.20240125.75305").mkdir()
         Path(self.test_user_share, "sniper_platform_0.20240125.75305", "foo").touch()
         Path(self.test_user_share, "run").touch()
         Path(self.test_user_share, "run-in-sniper").touch()
-        Path(self.test_user_share, "ULWGL").touch()
+        Path(self.test_user_share, "umu").touch()
 
         # Mock pressure vessel
         Path(self.test_user_share, "pressure-vessel").mkdir()
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
 
-        # Mock ULWGL-Launcher
-        Path(self.test_user_share, "ULWGL-Launcher").mkdir()
-        Path(self.test_user_share, "ULWGL-Launcher", "compatibilitytool.vdf").touch()
-        Path(self.test_user_share, "ULWGL-Launcher", "toolmanifest.vdf").touch()
+        # Mock umu-Launcher
+        Path(self.test_user_share, "umu-Launcher").mkdir()
+        Path(self.test_user_share, "umu-Launcher", "compatibilitytool.vdf").touch()
+        Path(self.test_user_share, "umu-Launcher", "toolmanifest.vdf").touch()
 
         # Mock Reaper
         Path(self.test_user_share, "reaper").touch()
@@ -133,10 +133,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
 
         # Mock the release downloaded in the cache:
-        # tmp.5HYdpddgvs/ULWGL-Proton-jPTxUsKDdn.tar.gz
+        # tmp.5HYdpddgvs/umu-Proton-jPTxUsKDdn.tar.gz
         # Expected directory structure within the archive:
         #
-        # +-- ULWGL-Proton-5HYdpddgvs (root directory)
+        # +-- umu-Proton-5HYdpddgvs (root directory)
         # |   +-- proton              (normal file)
         with tarfile.open(self.test_archive.as_posix(), "w:gz") as tar:
             tar.add(
@@ -173,11 +173,11 @@ class TestGameLauncherPlugins(unittest.TestCase):
     def test_build_command_entry(self):
         """Test build_command.
 
-        A FileNotFoundError should be raised if $PROTONPATH/ULWGL does not exist
+        A FileNotFoundError should be raised if $PROTONPATH/umu does not exist
         """
         test_toml = "foo.toml"
         toml_str = f"""
-        [ulwgl]
+        [umu]
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
@@ -196,29 +196,29 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             # Config
-            ulwgl_plugins.set_env_toml(self.env, result)
+            umu_plugins.set_env_toml(self.env, result)
             # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            ulwgl_run.set_env(self.env, result)
+            umu_run.set_env(self.env, result)
             # Game drive
-            ulwgl_plugins.enable_steam_game_drive(self.env)
+            umu_plugins.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
         # Don't copy _v2-entry-point
         with patch.object(
-            ulwgl_util,
+            umu_util,
             "setup_runtime",
             return_value=None,
         ):
-            ulwgl_util._install_ulwgl(
+            umu_util._install_umu(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
             copytree(
@@ -238,19 +238,19 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "_v2-entry-point"):
-            ulwgl_run.build_command(self.env, self.test_local_share, test_command)
+            umu_run.build_command(self.env, self.test_local_share, test_command)
 
     def test_build_command_proton(self):
         """Test build_command.
 
         A FileNotFoundError should be raised if $PROTONPATH/proton does not exist
 
-        Also, FileNotFoundError will be raised if the _v2-entry-point (ULWGL)
-        is not in $HOME/.local/share/ULWGL
+        Also, FileNotFoundError will be raised if the _v2-entry-point (umu)
+        is not in $HOME/.local/share/umu
         """
         test_toml = "foo.toml"
         toml_str = f"""
-        [ulwgl]
+        [umu]
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
@@ -266,28 +266,28 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             # Config
-            ulwgl_plugins.set_env_toml(self.env, result)
+            umu_plugins.set_env_toml(self.env, result)
             # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            ulwgl_run.set_env(self.env, result)
+            umu_run.set_env(self.env, result)
             # Game drive
-            ulwgl_plugins.enable_steam_game_drive(self.env)
+            umu_plugins.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
         with patch.object(
-            ulwgl_util,
+            umu_util,
             "setup_runtime",
             return_value=None,
         ):
-            ulwgl_util._install_ulwgl(
+            umu_util._install_umu(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
             copytree(
@@ -302,8 +302,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 Path(self.test_local_share, "run-in-sniper"),
             )
             copy(
-                Path(self.test_user_share, "ULWGL"),
-                Path(self.test_local_share, "ULWGL"),
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
             )
 
         for key, val in self.env.items():
@@ -311,7 +311,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            ulwgl_run.build_command(self.env, self.test_local_share, test_command)
+            umu_run.build_command(self.env, self.test_local_share, test_command)
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -320,7 +320,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         """
         test_toml = "foo.toml"
         toml_str = f"""
-        [ulwgl]
+        [umu]
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
@@ -339,28 +339,28 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             # Config
-            ulwgl_plugins.set_env_toml(self.env, result)
+            umu_plugins.set_env_toml(self.env, result)
             # Prefix
-            ulwgl_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
-            ulwgl_run.set_env(self.env, result)
+            umu_run.set_env(self.env, result)
             # Game drive
-            ulwgl_plugins.enable_steam_game_drive(self.env)
+            umu_plugins.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
         with patch.object(
-            ulwgl_util,
+            umu_util,
             "setup_runtime",
             return_value=None,
         ):
-            ulwgl_util._install_ulwgl(
+            umu_util._install_umu(
                 self.test_user_share, self.test_local_share, self.test_compat, json
             )
             copytree(
@@ -375,15 +375,15 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 Path(self.test_local_share, "run-in-sniper"),
             )
             copy(
-                Path(self.test_user_share, "ULWGL"),
-                Path(self.test_local_share, "ULWGL"),
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
             )
 
         for key, val in self.env.items():
             os.environ[key] = val
 
         # Build
-        test_command_result = ulwgl_run.build_command(
+        test_command_result = umu_run.build_command(
             self.env, self.test_local_share, test_command
         )
         self.assertTrue(
@@ -417,7 +417,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         """
         test_toml = "foo.toml"
         toml_str = f"""
-        [ulwgl]
+        [umu]
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
@@ -433,19 +433,19 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             with self.assertRaisesRegex(FileNotFoundError, "exe"):
-                ulwgl_plugins.set_env_toml(self.env, result)
+                umu_plugins.set_env_toml(self.env, result)
 
     def test_set_env_toml_err(self):
         """Test set_env_toml for valid TOML.
@@ -454,7 +454,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         """
         test_toml = "foo.toml"
         toml_str = f"""
-        [ulwgl]
+        [umu]
         prefix = [[
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
@@ -469,18 +469,18 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             # Env
             with self.assertRaisesRegex(TOMLDecodeError, "Invalid"):
-                ulwgl_plugins.set_env_toml(self.env, result)
+                umu_plugins.set_env_toml(self.env, result)
 
     def test_set_env_toml_nodir(self):
         """Test set_env_toml if certain key/value are not a dir.
@@ -490,7 +490,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         """
         test_toml = "foo.toml"
         toml_str = f"""
-        [ulwgl]
+        [umu]
         prefix = "foo"
         proton = "foo"
         game_id = "{self.test_file}"
@@ -505,24 +505,24 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
             with self.assertRaisesRegex(NotADirectoryError, "proton"):
-                ulwgl_plugins.set_env_toml(self.env, result)
+                umu_plugins.set_env_toml(self.env, result)
 
     def test_set_env_toml_tables(self):
         """Test set_env_toml for expected tables.
 
-        A ValueError should be raised if the following tables are absent: ulwgl
+        A ValueError should be raised if the following tables are absent: umu
         """
         test_toml = "foo.toml"
         toml_str = f"""
@@ -541,19 +541,19 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
-            with self.assertRaisesRegex(ValueError, "ulwgl"):
-                ulwgl_plugins.set_env_toml(self.env, result)
+            with self.assertRaisesRegex(ValueError, "umu"):
+                umu_plugins.set_env_toml(self.env, result)
 
     def test_set_env_toml_paths(self):
         """Test set_env_toml when specifying unexpanded path values.
@@ -587,7 +587,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             path_to_exe,
         )
         toml_str = f"""
-        [ulwgl]
+        [umu]
         prefix = "{unexpanded_path}"
         proton = "{unexpanded_path}"
         game_id = "{unexpanded_path}"
@@ -604,18 +604,18 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
-            result_set_env = ulwgl_plugins.set_env_toml(self.env, result)
+            result_set_env = umu_plugins.set_env_toml(self.env, result)
             self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
 
             # Check that the paths are still in the unexpanded form after
@@ -643,7 +643,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         """Test set_env_toml when passed a string as a launch argument."""
         test_toml = "foo.toml"
         toml_str = f"""
-        [ulwgl]
+        [umu]
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
@@ -660,12 +660,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -673,7 +673,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
             # Env
             # The first argument is the env
-            result_set_env = ulwgl_plugins.set_env_toml(self.env, result)
+            result_set_env = umu_plugins.set_env_toml(self.env, result)
             self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
             self.assertTrue(
                 result_set_env[0] is self.env, "Expected the same reference"
@@ -713,7 +713,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         """Test set_env_toml."""
         test_toml = "foo.toml"
         toml_str = f"""
-        [ulwgl]
+        [umu]
         prefix = "{self.test_file}"
         proton = "{self.test_file}"
         game_id = "{self.test_file}"
@@ -730,18 +730,18 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            ulwgl_run,
+            umu_run,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = ulwgl_run.parse_args()
+            result = umu_run.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
             self.assertTrue(vars(result).get("config"), "Expected a value for --config")
             # Env
-            result_set_env = ulwgl_plugins.set_env_toml(self.env, result)
+            result_set_env = umu_plugins.set_env_toml(self.env, result)
             self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
             self.assertTrue(self.env["EXE"], "Expected EXE to be set")
             self.assertEqual(

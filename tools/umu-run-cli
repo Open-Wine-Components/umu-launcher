@@ -1,0 +1,72 @@
+#!/bin/sh
+
+# use for debug only.
+# set -x
+
+umu_PROTON_VER="umu-Proton-8.0-5-3"
+umu_LAUNCHER_VER="0.1-RC3"
+
+me="$(readlink -f "$0")"
+
+umu_link="https://github.com/Open-Wine-Components/umu-launcher/releases/download/$umu_LAUNCHER_VER/umu-launcher.tar.gz"
+umu_dir="$HOME"/.local/share/umu
+
+proton_link="https://github.com/Open-Wine-Components/umu-Proton/releases/download/$umu_PROTON_VER/$umu_PROTON_VER"
+proton_dir="$HOME"/.local/share/Steam/compatibilitytools.d
+
+umu_cache="$HOME"/.cache/umu
+
+if [ ! -d "$umu_cache" ]; then
+	mkdir -p "$umu_cache"
+fi
+
+# Self-update
+# In flatpak it will check for /app/share/umu/umu-launcher.tar.gz and check version
+# In distro package it will check for /usr/share/umu/umu-launcher.tar.gz and check version
+# If tarball does not exist it will just download it.
+if [ ! -d "$umu_dir" ]; then
+	mkdir -p "$umu_dir"
+  if [ -f "${me%/*/*}"/share/umu/umu-launcher.tar.gz ]; then
+    tar -zxvf "${me%/*/*}"/share/umu/umu-launcher.tar.gz --one-top-level="$umu_dir"
+  else
+    wget "$umu_link" -O "$umu_cache/umu-launcher.tar.gz"
+    tar -zxvf "$umu_cache/umu-launcher.tar.gz" --one-top-level="$umu_dir"
+    rm "$umu_cache/umu-launcher.tar.gz"
+  fi
+else
+    if [ "$umu_LAUNCHER_VER" != "$(cat "$umu_dir"/umu-VERSION)" ]; then
+      rm -Rf "$umu_dir" --preserve-root=all
+      if [ -f "${me%/*/*}"/share/umu/umu-launcher.tar.gz ]; then
+        tar -zxvf "${me%/*/*}"/share/umu/umu-launcher.tar.gz --one-top-level="$umu_dir"
+      else
+    		wget "$umu_link" -O "$umu_cache/umu-launcher.tar.gz"
+        tar -zxvf "$umu_cache/umu-launcher.tar.gz" --one-top-level="$umu_dir"
+        rm "$umu_cache/umu-launcher.tar.gz"
+      fi
+    fi
+fi
+
+if [ -z "$PROTONPATH" ]; then
+  if [ ! -d "$proton_dir"/$umu_PROTON_VER ]; then
+    wget "$proton_link".tar.gz -O "$umu_cache/$umu_PROTON_VER".tar.gz
+    wget "$proton_link".sha512sum -O "$umu_cache/$umu_PROTON_VER".sha512sum
+    cd "$umu_cache" || exit
+    checksum=$(sha512sum "$umu_PROTON_VER".tar.gz)
+    cd - || exit
+    if [ "$checksum" = "$(cat "$umu_cache/$umu_PROTON_VER".sha512sum)" ]; then
+      tar -zxvf "$umu_cache/$umu_PROTON_VER".tar.gz --one-top-level="$proton_dir"
+      rm "$umu_cache/$umu_PROTON_VER".tar.gz
+      rm "$umu_cache/$umu_PROTON_VER".sha512sum
+    else
+      echo "ERROR: $umu_cache/$umu_PROTON_VER.tar.gz checksum does not match $umu_cache/$umu_PROTON_VER.sha512sum, aborting!"
+      rm "$umu_cache/$umu_PROTON_VER".tar.gz
+      rm "$umu_cache/$umu_PROTON_VER".sha512sum
+      exit 1
+    fi
+  fi
+  export PROTONPATH="$proton_dir/$umu_PROTON_VER"
+else
+  export PROTONPATH="$PROTONPATH"
+fi
+
+"$umu_dir/umu-run" "$@"

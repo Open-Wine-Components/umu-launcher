@@ -1,11 +1,11 @@
-id: org.openwinecomponents.ulwgl.launcher
+id: org.openwinecomponents.umu.launcher
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '23.08'
 x-gl-version: &gl-version '1.4'
 x-gl-versions: &gl-versions 23.08;23.08-extra;1.4
 x-gl-merge-dirs: &gl-merge-dirs vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors;lib/dri;lib/d3d;vulkan/explicit_layer.d;vulkan/implicit_layer.d
 sdk: org.freedesktop.Sdk
-command: ulwgl-run
+command: umu-run
 separate-locales: false
 
 sdk-extensions:
@@ -26,7 +26,7 @@ finish-args:
   - --filesystem=~/Games:rw
   - --filesystem=~/.local/share:rw
   - --filesystem=~/.var/app/com.valvesoftware.Steam:rw
-  - --filesystem=~/.var/app/org.openwinecomponents.ulwgl.launcher:rw
+  - --filesystem=~/.var/app/org.openwinecomponents.umu.launcher:rw
   - --filesystem=xdg-documents
   - --filesystem=xdg-desktop
   - --env=TZ=
@@ -139,17 +139,17 @@ add-extensions:
     autodelete: true
 
 modules:
-  # --- ULWGL ---
-  - name: ulwgl-run
+  # --- umu ---
+  - name: umu-run
     buildsystem: simple
     build-commands:
-      - install -D ulwgl-run-cli /app/bin/ulwgl-run
-      - install -D ULWGL-launcher.tar.gz /app/share/ULWGL/ULWGL-launcher.tar.gz
+      - install -D umu-run-cli /app/bin/umu-run
+      - install -D umu-launcher.tar.gz /app/share/umu/umu-launcher.tar.gz
     sources:
       - type: file
-        path: ulwgl-run-cli
+        path: umu-run-cli
       - type: file
-        url: https://github.com/Open-Wine-Components/ULWGL-launcher/releases/download/0.1-RC3/ULWGL-launcher.tar.gz
+        url: https://github.com/Open-Wine-Components/umu-launcher/releases/download/0.1-RC3/umu-launcher.tar.gz
         sha256: e25c4dd0636d04e7c8c534cf3c5bbdca5ae0d49f146ee8395306174700899952
 
   - name: platform-bootstrap

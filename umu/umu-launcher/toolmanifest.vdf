@@ -1,8 +1,8 @@
 // Generated file, do not edit
 "manifest"
 {
-	"commandline" "/ulwgl-run %verb%"
+	"commandline" "/umu-run %verb%"
 	"version" "2"
 	"use_tool_subprocess_reaper" "1"
-	"compatmanager_layer_name" "ulwgl-launcher"
+	"compatmanager_layer_name" "umu-launcher"
 }

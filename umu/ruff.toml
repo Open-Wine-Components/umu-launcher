@@ -84,7 +84,7 @@ ignore = [
     # Using Zenity or executing the final command
     # In the above cases, we *always* verify the existence of the command/files
     "S603",
-    # We use a static location for the crash report dir: /tmp/ULWGL_crashreports
+    # We use a static location for the crash report dir: /tmp/umu_crashreports
     "S108",
     # Don't flag missing type for self
     # This will be deprecated in Ruff soon
@@ -100,11 +100,11 @@ unfixable = []
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-logger-objects = ["ulwgl_log.log"]
+logger-objects = ["umu_log.log"]
 
 [lint.per-file-ignores]
-"ulwgl_test.py" = ["ANN"]
-"ulwgl_test_plugins.py" = ["ANN"]
+"umu_test.py" = ["ANN"]
+"umu_test_plugins.py" = ["ANN"]
 
 [format]
 # Like Black, use double quotes for strings.

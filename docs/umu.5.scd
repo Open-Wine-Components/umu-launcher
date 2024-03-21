@@ -1,20 +1,20 @@
-ulwgl(5)
+umu(5)
 
 # NAME
 
-ulwgl-run - configuration file
+umu-run - configuration file
 
 # DESCRIPTION
 
-ulwgl-run can optionally read a configuration file instead of reading
+umu-run can optionally read a configuration file instead of reading
 environment variables set from the command line. The configuration file for
-ulwgl-run must be written in valid Tom's Obvious Minimal Language (TOML).
+umu-run must be written in valid Tom's Obvious Minimal Language (TOML).
 
-In the configuration file, the table *ulwgl* is required as well as the keys
+In the configuration file, the table *umu* is required as well as the keys
 *prefix*, *proton* and *exe* which all must be basic strings. e.g.:
 
 ```
-[ulwgl]
+[umu]
 prefix = "~/WINE/epic-games-store"
 exe = "~/EpicGamesLauncher.exe"
 proton = "~/.local/share/Steam/compatibilitytools.d/GE-Proton30"
@@ -22,10 +22,10 @@ proton = "~/.local/share/Steam/compatibilitytools.d/GE-Proton30"
 
 Afterwards, run the command:
 ```
-$ ulwgl-run --config config.toml
+$ umu-run --config config.toml
 ```
 
-# [ulwgl] SECTION
+# [umu] SECTION
 
 *exe*
 	Path to the game executable to run. Value must be a basic *string*.
@@ -37,8 +37,8 @@ $ ulwgl-run --config config.toml
 	Path to a WINE prefix directory. Value must be a basic *string*.
 
 *game_id*
-	The ULWGL id to assign to the game. Depending on the value assigned, a Proton
-	fix will be applied to the prefix if available. Please refer to the ULWGL
+	The umu id to assign to the game. Depending on the value assigned, a Proton
+	fix will be applied to the prefix if available. Please refer to the umu
 	database for an extended list of game ids.
 
 *store*
@@ -53,5 +53,5 @@ $ ulwgl-run --config config.toml
 # AUTHORS
 
 Maintained by Open Wine Components members, and assisted by other open source
-contributors. For more information about ULWGL development, see
-https://github.com/Open-Wine-Components/ULWGL-launcher.
+contributors. For more information about umu development, see
+https://github.com/Open-Wine-Components/umu-launcher.

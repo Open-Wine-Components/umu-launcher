@@ -1,4 +1,4 @@
-name: ULWGL-launcher workflow
+name: umu-launcher workflow
 
 on:
   push:
@@ -28,12 +28,12 @@ jobs:
     - name: Install dependencies
       run: |
         python3 -m pip install --upgrade pip
-    - name: Lint ulwgl_*.py files with Ruff
+    - name: Lint umu_*.py files with Ruff
       run: |
         pip install ruff
-        ruff --output-format github ./ULWGL/ulwgl_*.py
+        ruff --output-format github ./umu/umu_*.py
     - name: Test with unittest
-      run: python3 ./ULWGL/ulwgl_test.py
+      run: python3 ./umu/umu_test.py
     - name: Test with unittest for plugins
       if: ${{ matrix.version == '3.11' || matrix.version == '3.12' }}
-      run: python3 ./ULWGL/ulwgl_test_plugins.py
+      run: python3 ./umu/umu_test_plugins.py

@@ -66,7 +66,7 @@ function configure() {
     echo ""
     if [[ -n "$arg_user_install" ]]; then
       echo "USERINSTALL     := xtrue"
-      echo "INSTALLDIR      := ulwgl-launcher"
+      echo "INSTALLDIR      := umu-launcher"
     fi
 
     # Prefix was specified, baking it into the Makefile
@@ -169,7 +169,7 @@ function parse_args() {
 
 usage() {
   "$1" "Usage: $0 { --prefix=path }"
-  "$1" "  Generate a Makefile for building ULWGL"
+  "$1" "  Generate a Makefile for building umu"
   "$1" ""
   "$1" "  Options"
   "$1" "    --help"

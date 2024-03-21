@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Set, Any, List, Tuple
 from argparse import Namespace
 from shutil import which
-from ulwgl_log import log
+from umu_log import log
 
 
 def set_env_toml(
@@ -17,7 +17,7 @@ def set_env_toml(
           prefix -> $WINEPREFIX
           game_id -> $GAMEID
           exe -> $EXE
-    At the moment we expect the tables: 'ulwgl'
+    At the moment we expect the tables: 'umu'
     """
     try:
         import tomllib
@@ -40,7 +40,7 @@ def set_env_toml(
 
     _check_env_toml(env, toml)
 
-    for key, val in toml["ulwgl"].items():
+    for key, val in toml["umu"].items():
         if key == "prefix":
             env["WINEPREFIX"] = val
         elif key == "game_id":
@@ -64,7 +64,7 @@ def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]) -> Dict[str, Any]
 
     NOTE: Casing matters in the config and we do not check if the game id is set
     """
-    table: str = "ulwgl"
+    table: str = "umu"
     required_keys: List[str] = ["proton", "prefix", "exe"]
 
     if table not in toml:
@@ -146,7 +146,7 @@ def enable_reaper(env: Dict[str, str], command: List[str], local: Path) -> List[
     command.extend(
         [
             local.joinpath("reaper").as_posix(),
-            "ULWGL_ID=" + env["ULWGL_ID"],
+            "umu_ID=" + env["umu_ID"],
             "--",
         ]
     )

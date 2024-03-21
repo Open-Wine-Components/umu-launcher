@@ -44,7 +44,7 @@ ninja -C _build/devel
 ninja -C _build/devel install
 
 
-provides pressure-vessel folder contents and main folder contents (mtree.txt.gz,run,run-in-sniper,toolmanifest.vdf,_v2-entry-point(ULWGL)):
+provides pressure-vessel folder contents and main folder contents (mtree.txt.gz,run,run-in-sniper,toolmanifest.vdf,_v2-entry-point(umu)):
 https://gitlab.steamos.cloud/steamrt/steam-runtime-tools
 
 provides sniper_platform_*:

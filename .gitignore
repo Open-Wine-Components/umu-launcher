@@ -2,6 +2,6 @@ var
 builddir
 __pycache__
 .ref
-ULWGL_VERSION.json
-ULWGL_VERSION.json.in.tmp
+umu_version.json
+umu_version.json.in.tmp
 Makefile

@@ -4,7 +4,7 @@
 # set -x
 
 if [ -z "$1" ] || [ -z "$WINEPREFIX" ] || [ -z "$GAMEID" ] || [ -z "$PROTONPATH" ]; then
- echo "Usage: WINEPREFIX=<wine-prefix-path> GAMEID=<ulwgl-id> PROTONPATH=<proton-version-path> ./gamelauncher.sh <executable-path> <arguments>"
+ echo "Usage: WINEPREFIX=<wine-prefix-path> GAMEID=<umu-id> PROTONPATH=<proton-version-path> ./gamelauncher.sh <executable-path> <arguments>"
  echo "Ex:"
  echo "WINEPREFIX=$HOME/Games/epic-games-store GAMEID=egs PROTONPATH=\"$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28\" ./gamelauncher.sh \"$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe\" \"-opengl -SkipBuildPatchPrereq\""
  exit 1
@@ -37,11 +37,11 @@ if [ -n "$PROTONPATH" ]; then
   fi
 fi
 
-export ULWGL_ID="$GAMEID"
+export umu_ID="$GAMEID"
 export STEAM_COMPAT_APP_ID="0"
 numcheck='^[0-9]+$'
-if echo "$ULWGL_ID" | cut -d "-" -f  2 | grep -Eq "$numcheck"; then
-  STEAM_COMPAT_APP_ID=$(echo "$ULWGL_ID" | cut -d "-" -f  2)
+if echo "$umu_ID" | cut -d "-" -f  2 | grep -Eq "$numcheck"; then
+  STEAM_COMPAT_APP_ID=$(echo "$umu_ID" | cut -d "-" -f  2)
   export STEAM_COMPAT_APP_ID
 fi
 export SteamAppId="$STEAM_COMPAT_APP_ID"
@@ -91,7 +91,7 @@ export STEAM_COMPAT_CLIENT_INSTALL_PATH=''
 export STEAM_COMPAT_DATA_PATH="$WINEPREFIX"
 export STEAM_COMPAT_SHADER_PATH="$STEAM_COMPAT_DATA_PATH"/shadercache
 
-export PROTON_CRASH_REPORT_DIR='/tmp/ULWGL_crashreports'
+export PROTON_CRASH_REPORT_DIR='/tmp/umu_crashreports'
 export FONTCONFIG_PATH=''
 
 export EXE="$1"
@@ -105,4 +105,4 @@ shift 1
 export STEAM_COMPAT_TOOL_PATHS="$PROTONPATH:$here"
 export STEAM_COMPAT_MOUNTS="$PROTONPATH:$here"
 
-"$here"/ULWGL "--verb=$PROTON_VERB" -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"
+"$here"/umu "--verb=$PROTON_VERB" -- "$PROTONPATH"/proton "$PROTON_VERB" "$EXE" "$@"

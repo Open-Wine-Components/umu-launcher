@@ -1,8 +1,8 @@
 {
-  "ulwgl": {
+  "umu": {
     "versions": {
-      "launcher": "##ULWGL_VERSION##",
-      "runner": "##ULWGL_VERSION##",
+      "launcher": "##umu_version##",
+      "runner": "##umu_version##",
       "runtime_platform": "sniper_platform_0.20240125.75305",
       "reaper": "##REAPER_VERSION##",
       "pressure_vessel": "v0.20240212.0"

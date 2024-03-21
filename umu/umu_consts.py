@@ -17,11 +17,11 @@ SIMPLE_FORMAT = f"%(levelname)s:  {Color.BOLD.value}%(message)s{Color.RESET.valu
 
 DEBUG_FORMAT = f"%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:{Color.BOLD.value}%(message)s{Color.RESET.value}"  # noqa: E501
 
-CONFIG = "ULWGL_VERSION.json"
+CONFIG = "umu_version.json"
 
-ULWGL_LOCAL: Path = Path.home().joinpath(".local", "share", "ULWGL")
+umu_LOCAL: Path = Path.home().joinpath(".local", "share", "umu")
 
-ULWGL_CACHE: Path = Path.home().joinpath(".cache", "ULWGL")
+umu_CACHE: Path = Path.home().joinpath(".cache", "umu")
 
 STEAM_COMPAT: Path = Path.home().joinpath(
     ".local", "share", "Steam", "compatibilitytools.d"

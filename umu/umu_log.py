@@ -1,6 +1,6 @@
 import logging
 from sys import stderr
-from ulwgl_consts import SIMPLE_FORMAT, Color
+from umu_consts import SIMPLE_FORMAT, Color
 
 
 class CustomLogger(logging.Logger):  # noqa: D101
@@ -10,7 +10,7 @@ class CustomLogger(logging.Logger):  # noqa: D101
     def console(self, msg: str) -> None:
         """Display non-debug-related statements to the console.
 
-        Intended to be used to notify ULWGL setup progress state
+        Intended to be used to notify umu setup progress state
         """
         print(f"{Color.BOLD.value}{msg}{Color.RESET.value}", file=stderr)
 

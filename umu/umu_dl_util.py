@@ -8,10 +8,10 @@ from http.client import HTTPSConnection, HTTPResponse, HTTPException, HTTPConnec
 from ssl import create_default_context
 from json import loads as loads_json
 from urllib.request import urlopen
-from ulwgl_plugins import enable_zenity
+from umu_plugins import enable_zenity
 from socket import gaierror
-from ulwgl_log import log
-from ulwgl_consts import STEAM_COMPAT, ULWGL_CACHE
+from umu_log import log
+from umu_consts import STEAM_COMPAT, umu_CACHE
 
 try:
     from tarfile import tar_filter
@@ -19,13 +19,13 @@ except ImportError:
     tar_filter: Callable[[str, str], TarInfo] = None
 
 
-def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
+def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     """Attempt to find existing Proton from the system.
 
     Downloads the latest if not first found in:
     ~/.local/share/Steam/compatibilitytools.d
 
-    The cache directory ~/.cache/ULWGL is referenced for the latest then as
+    The cache directory ~/.cache/umu is referenced for the latest then as
     fallback
     """
     files: List[Tuple[str, str]] = []
@@ -35,25 +35,25 @@ def get_ulwgl_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     except gaierror:
         pass  # User is offline
 
-    ULWGL_CACHE.mkdir(exist_ok=True, parents=True)
+    umu_CACHE.mkdir(exist_ok=True, parents=True)
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
     # Prioritize the Steam compat
-    if _get_from_steamcompat(env, STEAM_COMPAT, ULWGL_CACHE, files):
+    if _get_from_steamcompat(env, STEAM_COMPAT, umu_CACHE, files):
         return env
 
     # Use the latest Proton in the cache if it exists
-    if _get_from_cache(env, STEAM_COMPAT, ULWGL_CACHE, files, True):
+    if _get_from_cache(env, STEAM_COMPAT, umu_CACHE, files, True):
         return env
 
     # Download the latest if Proton is not in Steam compat
     # If the digests mismatched, refer to the cache in the next block
-    if _get_latest(env, STEAM_COMPAT, ULWGL_CACHE, files):
+    if _get_latest(env, STEAM_COMPAT, umu_CACHE, files):
         return env
 
     # Refer to an old version previously downloaded
     # Reached on digest mismatch, user interrupt or download failure/no internet
-    if _get_from_cache(env, STEAM_COMPAT, ULWGL_CACHE, files, False):
+    if _get_from_cache(env, STEAM_COMPAT, umu_CACHE, files, False):
         return env
 
     # No internet and cache/compat tool is empty, just return and raise an
@@ -71,7 +71,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 
     conn.request(
         "GET",
-        "/repos/Open-Wine-Components/ULWGL-Proton/releases",
+        "/repos/Open-Wine-Components/umu-Proton/releases",
         headers={
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
@@ -97,7 +97,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
                         asset["name"].endswith("sum")
                         or (
                             asset["name"].endswith("tar.gz")
-                            and asset["name"].startswith("ULWGL-Proton")
+                            and asset["name"].startswith("umu-Proton")
                         )
                     )
                     and "browser_download_url" in asset
@@ -118,7 +118,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 def _fetch_proton(
     env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
 ) -> Dict[str, str]:
-    """Download the latest ULWGL-Proton and set it as PROTONPATH."""
+    """Download the latest umu-Proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
     proton, proton_url = files[1]
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
@@ -233,7 +233,7 @@ def _get_from_steamcompat(
     if len(files) == 2:
         proton_dir: str = files[1][0][: files[1][0].find(".tar.gz")]
 
-    for proton in steam_compat.glob("ULWGL-Proton*"):
+    for proton in steam_compat.glob("umu-Proton*"):
         log.console(f"{proton.name} found in: {steam_compat}")
         log.console(f"Using {proton.name}")
 
@@ -244,7 +244,7 @@ def _get_from_steamcompat(
         if proton_dir and proton.name != proton_dir:
             link: str = files[1][1]
             log.console(
-                "ULWGL-Proton is outdated.\n"
+                "umu-Proton is outdated.\n"
                 f"For latest release, please download {link}"
             )
 
@@ -260,7 +260,7 @@ def _get_from_cache(
     files: List[Tuple[str, str]],
     use_latest: bool = True,
 ) -> Union[Dict[str, str], None]:
-    """Refer to ULWGL cache directory.
+    """Refer to umu cache directory.
 
     Use the latest in the cache when present. When download fails, use an old version
     Older Proton versions are only referred to when: digests mismatch, user
@@ -269,7 +269,7 @@ def _get_from_cache(
     path: Path = None
     name: str = ""
 
-    for tarball in cache.glob("ULWGL-Proton*.tar.gz"):
+    for tarball in cache.glob("umu-Proton*.tar.gz"):
         # Online
         if files and tarball == cache.joinpath(files[1][0]) and use_latest:
             path = tarball

@@ -5,14 +5,14 @@ import sys
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
-from ulwgl_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
+from umu_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
 from subprocess import run
-from ulwgl_dl_util import get_ulwgl_proton
-from ulwgl_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, ULWGL_LOCAL
-from ulwgl_util import setup_ulwgl
-from ulwgl_log import log, console_handler, CustomFormatter
-from ulwgl_util import UnixUser
+from umu_dl_util import get_umu_proton
+from umu_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, umu_LOCAL
+from umu_util import setup_umu
+from umu_log import log, console_handler, CustomFormatter
+from umu_util import UnixUser
 from logging import INFO, WARNING, DEBUG
 from errno import ENETUNREACH
 
@@ -21,13 +21,13 @@ def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     opt_args: Set[str] = {"--help", "-h", "--config"}
     parser: ArgumentParser = ArgumentParser(
         description="Unified Linux Wine Game Launcher",
-        epilog="See ulwgl(1) for more info and examples.",
+        epilog="See umu(1) for more info and examples.",
         formatter_class=RawTextHelpFormatter,
     )
     parser.add_argument("--config", help="path to TOML file (requires Python 3.11+)")
 
     if not sys.argv[1:]:
-        err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/ULWGL-launcher"
+        err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/umu-launcher"
         parser.print_help(sys.stderr)
         raise SystemExit(err)
 
@@ -46,21 +46,21 @@ def set_log() -> None:
     """Adjust the log level for the logger."""
     levels: Set[str] = {"1", "warn", "debug"}
 
-    if os.environ["ULWGL_LOG"] not in levels:
+    if os.environ["umu_LOG"] not in levels:
         return
 
-    if os.environ["ULWGL_LOG"] == "1":
+    if os.environ["umu_LOG"] == "1":
         # Show the envvars and command at this level
         log.setLevel(level=INFO)
-    elif os.environ["ULWGL_LOG"] == "warn":
+    elif os.environ["umu_LOG"] == "warn":
         log.setLevel(level=WARNING)
-    elif os.environ["ULWGL_LOG"] == "debug":
+    elif os.environ["umu_LOG"] == "debug":
         # Show all logs
         console_handler.setFormatter(CustomFormatter(DEBUG_FORMAT))
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
 
-    os.environ.pop("ULWGL_LOG")
+    os.environ.pop("umu_LOG")
 
 
 def setup_pfx(path: str) -> None:
@@ -118,7 +118,7 @@ def check_env(
 
     if "WINEPREFIX" not in os.environ:
         id: str = env["GAMEID"]
-        pfx: Path = Path.home().joinpath("Games", "ULWGL", f"ulwgl-{id}")
+        pfx: Path = Path.home().joinpath("Games", "umu", f"umu-{id}")
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = pfx.as_posix()
     if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
@@ -143,7 +143,7 @@ def check_env(
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
-        get_ulwgl_proton(env)
+        get_umu_proton(env)
 
     env["PROTONPATH"] = os.environ["PROTONPATH"]
 
@@ -151,8 +151,8 @@ def check_env(
     if not os.environ["PROTONPATH"]:
         err: str = (
             "Download failed\n"
-            "ULWGL-Proton could not be found in cache or compatibilitytools.d\n"
-            "Please set $PROTONPATH or visit https://github.com/Open-Wine-Components/ULWGL-Proton/releases"
+            "umu-Proton could not be found in cache or compatibilitytools.d\n"
+            "Please set $PROTONPATH or visit https://github.com/Open-Wine-Components/umu-Proton/releases"
         )
         raise FileNotFoundError(err)
 
@@ -190,12 +190,12 @@ def set_env(
     if "STORE" in os.environ:
         env["STORE"] = os.environ["STORE"]
 
-    # ULWGL_ID
-    env["ULWGL_ID"] = env["GAMEID"]
+    # umu_ID
+    env["umu_ID"] = env["GAMEID"]
     env["STEAM_COMPAT_APP_ID"] = "0"
 
-    if match(r"^ulwgl-[\d\w]+$", env["ULWGL_ID"]):
-        env["STEAM_COMPAT_APP_ID"] = env["ULWGL_ID"][env["ULWGL_ID"].find("-") + 1 :]
+    if match(r"^umu-[\d\w]+$", env["umu_ID"]):
+        env["STEAM_COMPAT_APP_ID"] = env["umu_ID"][env["umu_ID"].find("-") + 1 :]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
 
@@ -204,7 +204,7 @@ def set_env(
     env["PROTONPATH"] = Path(env["PROTONPATH"]).expanduser().as_posix()
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-    env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + ULWGL_LOCAL.as_posix()
+    env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + umu_LOCAL.as_posix()
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     return env
@@ -217,7 +217,7 @@ def build_command(
     verb: str = env["PROTON_VERB"]
 
     # Raise an error if the _v2-entry-point cannot be found
-    if not local.joinpath("ULWGL").is_file():
+    if not local.joinpath("umu").is_file():
         home: str = Path.home().as_posix()
         dir: str = Path(__file__).parent.as_posix()
         msg: str = (
@@ -233,7 +233,7 @@ def build_command(
 
     enable_reaper(env, command, local)
 
-    command.extend([local.joinpath("ULWGL").as_posix(), "--verb", verb, "--"])
+    command.extend([local.joinpath("umu").as_posix(), "--verb", verb, "--"])
     command.extend(
         [
             Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
@@ -252,7 +252,7 @@ def main() -> int:  # noqa: D103
     env: Dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
-        "PROTON_CRASH_REPORT_DIR": "/tmp/ULWGL_crashreports",
+        "PROTON_CRASH_REPORT_DIR": "/tmp/umu_crashreports",
         "PROTONPATH": "",
         "STEAM_COMPAT_APP_ID": "",
         "STEAM_COMPAT_TOOL_PATHS": "",
@@ -269,7 +269,7 @@ def main() -> int:  # noqa: D103
         "STEAM_RUNTIME_LIBRARY_PATH": "",
         "STORE": "",
         "PROTON_VERB": "",
-        "ULWGL_ID": "",
+        "umu_ID": "",
     }
     command: List[str] = []
     opts: List[str] = None
@@ -284,7 +284,7 @@ def main() -> int:  # noqa: D103
         err: str = "This script is not designed to run on musl-based systems"
         raise SystemExit(err)
 
-    if "ULWGL_LOG" in os.environ:
+    if "umu_LOG" in os.environ:
         set_log()
 
     log.debug("Arguments: %s", args)
@@ -292,24 +292,24 @@ def main() -> int:  # noqa: D103
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
     try:
-        setup_ulwgl(root, ULWGL_LOCAL)
+        setup_umu(root, umu_LOCAL)
     except TimeoutError:  # Request to a server timed out
-        if not ULWGL_LOCAL.exists() or not any(ULWGL_LOCAL.iterdir()):
+        if not umu_LOCAL.exists() or not any(umu_LOCAL.iterdir()):
             err: str = (
-                "ULWGL has not been setup for the user\n"
-                "An internet connection is required to setup ULWGL"
+                "umu has not been setup for the user\n"
+                "An internet connection is required to setup umu"
             )
             raise RuntimeError(err)
         log.debug("Request timed out")
     except OSError as e:  # No internet
         if (
             e.errno == ENETUNREACH
-            and not ULWGL_LOCAL.exists()
-            or not any(ULWGL_LOCAL.iterdir())
+            and not umu_LOCAL.exists()
+            or not any(umu_LOCAL.iterdir())
         ):
             err: str = (
-                "ULWGL has not been setup for the user\n"
-                "An internet connection is required to setup ULWGL"
+                "umu has not been setup for the user\n"
+                "An internet connection is required to setup umu"
             )
             raise RuntimeError(err)
         if e.errno != ENETUNREACH:
@@ -339,7 +339,7 @@ def main() -> int:  # noqa: D103
         os.environ[key] = val
 
     # Run
-    build_command(env, ULWGL_LOCAL, command, opts)
+    build_command(env, umu_LOCAL, command, opts)
     log.debug(command)
 
     return run(command).returncode
@@ -358,6 +358,6 @@ if __name__ == "__main__":
         log.exception("Exception")
         sys.exit(1)
     finally:
-        ULWGL_LOCAL.joinpath(".ref").unlink(
+        umu_LOCAL.joinpath(".ref").unlink(
             missing_ok=True
         )  # Cleanup .ref file on every exit

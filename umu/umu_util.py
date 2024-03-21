@@ -1,13 +1,13 @@
 from tarfile import open as tar_open, TarInfo
 from os import getuid
-from ulwgl_consts import CONFIG, STEAM_COMPAT, ULWGL_LOCAL
+from umu_consts import CONFIG, STEAM_COMPAT, umu_LOCAL
 from typing import Any, Dict, List, Callable
 from json import load, dump
-from ulwgl_log import log
+from umu_log import log
 from pathlib import Path
 from pwd import struct_passwd, getpwuid
 from shutil import rmtree, move, copy, copytree
-from ulwgl_plugins import enable_zenity
+from umu_plugins import enable_zenity
 from urllib.request import urlopen
 from ssl import create_default_context
 from http.client import HTTPException
@@ -61,7 +61,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
     archive: str = "steam-container-runtime-complete.tar.gz"
     tmp: Path = Path(mkdtemp())
     # Access the 'runtime_platform' value
-    runtime_platform_value: str = json["ulwgl"]["versions"]["runtime_platform"]
+    runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
 
     # Assuming runtime_platform_value is "sniper_platform_0.20240125.75305"
     # Split the string at 'sniper_platform_'
@@ -131,7 +131,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
             log.warning("Archive will be extracted insecurely")
 
         # Ensure the target directory exists
-        ULWGL_LOCAL.mkdir(parents=True, exist_ok=True)
+        umu_LOCAL.mkdir(parents=True, exist_ok=True)
 
         # Extract the 'depot' folder to the target directory
         log.debug("Extracting archive files -> %s", tmp)
@@ -143,12 +143,12 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         source_dir = tmp.joinpath("steam-container-runtime", "depot")
 
         log.debug("Source: %s", source_dir)
-        log.debug("Destination: %s", ULWGL_LOCAL)
+        log.debug("Destination: %s", umu_LOCAL)
 
         # Move each file to the destination directory, overwriting if it exists
         for file in source_dir.glob("*"):
             src_file: Path = source_dir.joinpath(file.name)
-            dest_file: Path = ULWGL_LOCAL.joinpath(file.name)
+            dest_file: Path = umu_LOCAL.joinpath(file.name)
 
             if dest_file.is_file() or dest_file.is_symlink():
                 log.debug("Removing file: %s", dest_file)
@@ -169,19 +169,19 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         log.debug("Removing: %s", tmp.joinpath(archive))
         tmp.joinpath(archive).unlink(missing_ok=True)
 
-        log.debug("Renaming: _v2-entry-point -> ULWGL")
+        log.debug("Renaming: _v2-entry-point -> umu")
 
         # Rename _v2-entry-point
-        ULWGL_LOCAL.joinpath("_v2-entry-point").rename(ULWGL_LOCAL.joinpath("ULWGL"))
+        umu_LOCAL.joinpath("_v2-entry-point").rename(umu_LOCAL.joinpath("umu"))
 
 
-def setup_ulwgl(root: Path, local: Path) -> None:
-    """Copy the launcher and its tools to ~/.local/share/ULWGL.
+def setup_umu(root: Path, local: Path) -> None:
+    """Copy the launcher and its tools to ~/.local/share/umu.
 
     Performs full copies of tools on new installs and selectively on new updates
     The tools that will be copied are:
-    Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the ULWGL-Launcher
-    The ULWGL-Launcher will be copied to .local/share/Steam/compatibilitytools.d
+    Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the umu-Launcher
+    The umu-Launcher will be copied to .local/share/Steam/compatibilitytools.d
     """
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
@@ -198,25 +198,25 @@ def setup_ulwgl(root: Path, local: Path) -> None:
 
     json: Dict[str, Any] = _get_json(root, CONFIG)
 
-    # New install or ULWGL dir is empty
+    # New install or umu dir is empty
     # Be lazy and don't implement fallback mechanisms
     if not local.exists() or not any(local.iterdir()):
-        return _install_ulwgl(root, local, STEAM_COMPAT, json)
+        return _install_umu(root, local, STEAM_COMPAT, json)
 
-    return _update_ulwgl(root, local, STEAM_COMPAT, json, _get_json(local, CONFIG))
+    return _update_umu(root, local, STEAM_COMPAT, json, _get_json(local, CONFIG))
 
 
-def _install_ulwgl(
+def _install_umu(
     root: Path, local: Path, steam_compat: Path, json: Dict[str, Any]
 ) -> None:
-    """For new installations, copy all of the ULWGL tools at a user-writable location.
+    """For new installations, copy all of the umu tools at a user-writable location.
 
     The designated locations to copy to will be:
-    ~/.local/share/ULWGL, ~/.local/share/Steam/compatibilitytools.d
+    ~/.local/share/umu, ~/.local/share/Steam/compatibilitytools.d
 
     The tools that will be copied are:
-    SteamRT, Pressure Vessel, ULWGL-Launcher, ULWGL Launcher files, Reaper
-    and ULWGL_VERSION.json
+    SteamRT, Pressure Vessel, umu-Launcher, umu Launcher files, Reaper
+    and umu_version.json
     """
     thread: Thread = None
     log.debug("New install detected")
@@ -238,50 +238,50 @@ def _install_ulwgl(
 
     # Launcher files
     for file in root.glob("*.py"):
-        if not file.name.startswith("ulwgl_test"):
+        if not file.name.startswith("umu_test"):
             log.console(f"Copying {file} -> {local} ...")
             copy(file, local.joinpath(file.name))
 
-    local.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
+    local.joinpath("umu-run").symlink_to("umu_run.py")
 
     # Runner
     steam_compat.mkdir(parents=True, exist_ok=True)
 
-    log.console(f"Copying ULWGL-Launcher -> {steam_compat} ...")
+    log.console(f"Copying umu-Launcher -> {steam_compat} ...")
 
     # Remove existing files if they exist -- this is a clean install.
-    if steam_compat.joinpath("ULWGL-Launcher").is_dir():
-        rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
+    if steam_compat.joinpath("umu-Launcher").is_dir():
+        rmtree(steam_compat.joinpath("umu-Launcher").as_posix())
 
     copytree(
-        root.joinpath("ULWGL-Launcher"),
-        steam_compat.joinpath("ULWGL-Launcher"),
+        root.joinpath("umu-Launcher"),
+        steam_compat.joinpath("umu-Launcher"),
         dirs_exist_ok=True,
         symlinks=True,
     )
 
-    steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
-        "../../../ULWGL/ulwgl_run.py"
+    steam_compat.joinpath("umu-Launcher", "umu-run").symlink_to(
+        "../../../umu/umu_run.py"
     )
 
     thread.join()
     log.console("Completed.")
 
 
-def _update_ulwgl(
+def _update_umu(
     root: Path,
     local: Path,
     steam_compat: Path,
     json_root: Dict[str, Any],
     json_local: Dict[str, Any],
 ) -> None:
-    """For existing installations, update the ULWGL tools at a user-writable location.
+    """For existing installations, update the umu tools at a user-writable location.
 
-    The configuration file (ULWGL_VERSION.json) saved in the root dir
+    The configuration file (umu_version.json) saved in the root dir
     will determine whether an update will be performed or not
 
     This happens by way of comparing the key/values of the local
-    ULWGL_VERSION.json against the root configuration file
+    umu_version.json against the root configuration file
 
     In the case that existing writable directories we copy to are in a partial
     state, a best effort is made to restore the missing files
@@ -293,9 +293,9 @@ def _update_ulwgl(
     # Compare the local to the root config
     # When a directory for a specific tool doesn't exist, remake the copy
     # Be lazy and just trust the integrity of local
-    for key, val in json_root["ulwgl"]["versions"].items():
+    for key, val in json_root["umu"]["versions"].items():
         if key == "reaper":
-            reaper: str = json_local["ulwgl"]["versions"]["reaper"]
+            reaper: str = json_local["umu"]["versions"]["reaper"]
 
             # Directory is absent
             if not local.joinpath("reaper").is_file():
@@ -310,10 +310,10 @@ def _update_ulwgl(
                 local.joinpath("reaper").unlink(missing_ok=True)
                 copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
-                json_local["ulwgl"]["versions"]["reaper"] = val
+                json_local["umu"]["versions"]["reaper"] = val
         elif key == "runtime_platform":
             # Old runtime
-            runtime: str = json_local["ulwgl"]["versions"]["runtime_platform"]
+            runtime: str = json_local["umu"]["versions"]["runtime_platform"]
 
             # Redownload the runtime if absent or pressure vessel is absent
             if (
@@ -342,11 +342,11 @@ def _update_ulwgl(
                 thread = Thread(target=setup_runtime, args=(root, json_root))
                 thread.start()
 
-                json_local["ulwgl"]["versions"]["runtime_platform"] = val
+                json_local["umu"]["versions"]["runtime_platform"] = val
         elif key == "launcher":
             # Launcher
             is_missing: bool = False
-            launcher: str = json_local["ulwgl"]["versions"]["launcher"]
+            launcher: str = json_local["umu"]["versions"]["launcher"]
 
             # Update
             if val != launcher:
@@ -354,21 +354,21 @@ def _update_ulwgl(
 
                 # Python files
                 for file in root.glob("*.py"):
-                    if not file.name.startswith("ulwgl_test"):
+                    if not file.name.startswith("umu_test"):
                         local.joinpath(file.name).unlink(missing_ok=True)
                         copy(file, local.joinpath(file.name))
 
                 # Symlink
-                local.joinpath("ulwgl-run").unlink(missing_ok=True)
-                local.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
+                local.joinpath("umu-run").unlink(missing_ok=True)
+                local.joinpath("umu-run").symlink_to("umu_run.py")
 
-                json_local["ulwgl"]["versions"]["launcher"] = val
+                json_local["umu"]["versions"]["launcher"] = val
                 continue
 
             # Check for missing files
             for file in root.glob("*.py"):
                 if (
-                    not file.name.startswith("ulwgl_test")
+                    not file.name.startswith("umu_test")
                     and not local.joinpath(file.name).is_file()
                 ):
                     is_missing = True
@@ -377,44 +377,44 @@ def _update_ulwgl(
 
             if is_missing:
                 log.console(f"Restored {key} to {val}")
-                local.joinpath("ulwgl-run").unlink(missing_ok=True)
-                local.joinpath("ulwgl-run").symlink_to("ulwgl_run.py")
+                local.joinpath("umu-run").unlink(missing_ok=True)
+                local.joinpath("umu-run").symlink_to("umu_run.py")
         elif key == "runner":
             # Runner
-            runner: str = json_local["ulwgl"]["versions"]["runner"]
+            runner: str = json_local["umu"]["versions"]["runner"]
 
             # Directory is absent
-            if not steam_compat.joinpath("ULWGL-Launcher").is_dir():
-                log.warning("ULWGL-Launcher not found")
+            if not steam_compat.joinpath("umu-Launcher").is_dir():
+                log.warning("umu-Launcher not found")
 
                 copytree(
-                    root.joinpath("ULWGL-Launcher"),
-                    steam_compat.joinpath("ULWGL-Launcher"),
+                    root.joinpath("umu-Launcher"),
+                    steam_compat.joinpath("umu-Launcher"),
                     dirs_exist_ok=True,
                     symlinks=True,
                 )
 
-                steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
-                    "../../../ULWGL/ulwgl_run.py"
+                steam_compat.joinpath("umu-Launcher", "umu-run").symlink_to(
+                    "../../../umu/umu_run.py"
                 )
-                log.console(f"Restored ULWGL-Launcher to {val}")
-            elif steam_compat.joinpath("ULWGL-Launcher").is_dir() and val != runner:
+                log.console(f"Restored umu-Launcher to {val}")
+            elif steam_compat.joinpath("umu-Launcher").is_dir() and val != runner:
                 # Update
                 log.console(f"Updating {key} to {val}")
 
-                rmtree(steam_compat.joinpath("ULWGL-Launcher").as_posix())
+                rmtree(steam_compat.joinpath("umu-Launcher").as_posix())
                 copytree(
-                    root.joinpath("ULWGL-Launcher"),
-                    steam_compat.joinpath("ULWGL-Launcher"),
+                    root.joinpath("umu-Launcher"),
+                    steam_compat.joinpath("umu-Launcher"),
                     dirs_exist_ok=True,
                     symlinks=True,
                 )
 
-                steam_compat.joinpath("ULWGL-Launcher", "ulwgl-run").symlink_to(
-                    "../../../ULWGL/ulwgl_run.py"
+                steam_compat.joinpath("umu-Launcher", "umu-run").symlink_to(
+                    "../../../umu/umu_run.py"
                 )
 
-                json_local["ulwgl"]["versions"]["runner"] = val
+                json_local["umu"]["versions"]["runner"] = val
 
     if thread:
         thread.join()
@@ -425,14 +425,14 @@ def _update_ulwgl(
 
 
 def _get_json(path: Path, config: str) -> Dict[str, Any]:
-    """Check the state of the configuration file (ULWGL_VERSION.json) in the given path.
+    """Check the state of the configuration file (umu_version.json) in the given path.
 
     The configuration files are expected to reside in:
-    a root directory (e.g., /usr/share/ulwgl) and ~/.local/share/ULWGL
+    a root directory (e.g., /usr/share/umu) and ~/.local/share/umu
     """
     json: Dict[str, Any] = None
 
-    # The file in /usr/share/ULWGL should always exist
+    # The file in /usr/share/umu should always exist
     if not path.joinpath(config).is_file():
         err: str = (
             f"File not found: {config}\n"
@@ -443,10 +443,10 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
     with path.joinpath(config).open(mode="r") as file:
         json = load(file)
 
-    # Raise an error if "ulwgl" and "versions" doesn't exist
-    if not json or not json.get("ulwgl") or not json.get("ulwgl").get("versions"):
+    # Raise an error if "umu" and "versions" doesn't exist
+    if not json or not json.get("umu") or not json.get("umu").get("versions"):
         err: str = (
-            f"Failed to load {config} or 'ulwgl' or 'versions' not in: {config}\n"
+            f"Failed to load {config} or 'umu' or 'versions' not in: {config}\n"
             "Please reinstall the package"
         )
         raise ValueError(err)

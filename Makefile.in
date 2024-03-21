@@ -1,7 +1,7 @@
-PROJECT := ulwgl-launcher
+PROJECT := umu-launcher
 
-# If this is changed to ULWGL (uppercase), `uninstall` target will also remove the SLR directory
-INSTALLDIR ?= ulwgl
+# If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
+INSTALLDIR ?= umu
 
 OBJDIR := builddir
 
@@ -16,96 +16,96 @@ USERINSTALL ?= xfalse
 
 
 .PHONY: all
-all: version reaper ulwgl ulwgl-docs ulwgl-launcher
+all: version reaper umu umu-docs umu-launcher
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
-install: reaper-install ulwgl-install ulwgl-launcher-install user-install
+install: reaper-install umu-install umu-launcher-install user-install
 else
-install: reaper-install ulwgl-install ulwgl-launcher-install
+install: reaper-install umu-install umu-launcher-install
 endif
 
 # Special case, do this inside the source directory for release distribution
-ULWGL/ULWGL_VERSION.json: ULWGL/ULWGL_VERSION.json.in
+umu/umu_version.json: umu/umu_version.json.in
 	$(info :: Updating $(@) )
 	cp $(<) $(<).tmp
-	sed 's|##ULWGL_VERSION##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
+	sed 's|##umu_version##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
 	sed 's|##REAPER_VERSION##|$(shell git -C subprojects/reaper describe --always --long --tags)|g' -i $(<).tmp
 	mv $(<).tmp $(@)
 
 .PHONY: version
-version: ULWGL/ULWGL_VERSION.json
+version: umu/umu_version.json
 
 version-install: version
-	$(info :: Installing ULWGL_VERSION.json )
+	$(info :: Installing umu_version.json )
 	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 ULWGL/ULWGL_VERSION.json -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 umu/umu_version.json -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 
-$(OBJDIR)/.build-ulwgl: | $(OBJDIR)
-	$(info :: Building ulwgl )
-	sed 's|##INSTALL_PATH##|$(DATADIR)/$(INSTALLDIR)|g' ULWGL/ulwgl-run.in > $(OBJDIR)/ulwgl-run
+$(OBJDIR)/.build-umu: | $(OBJDIR)
+	$(info :: Building umu )
+	sed 's|##INSTALL_PATH##|$(DATADIR)/$(INSTALLDIR)|g' umu/umu-run.in > $(OBJDIR)/umu-run
 	touch $(@)
 
-.PHONY: ulwgl
-ulwgl: $(OBJDIR)/.build-ulwgl
+.PHONY: umu
+umu: $(OBJDIR)/.build-umu
 
-ulwgl-bin-install: ulwgl
+umu-bin-install: umu
 	install -d $(DESTDIR)$(BINDIR)
-	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(BINDIR)/ulwgl-run
+	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(BINDIR)/umu-run
 
 
-$(OBJDIR)/.build-ulwgl-docs: | $(OBJDIR)
-	$(info :: Building ulwgl man pages )
-	scdoc < docs/ulwgl.1.scd > $(OBJDIR)/ulwgl.1
-	scdoc < docs/ulwgl.5.scd > $(OBJDIR)/ulwgl.5
+$(OBJDIR)/.build-umu-docs: | $(OBJDIR)
+	$(info :: Building umu man pages )
+	scdoc < docs/umu.1.scd > $(OBJDIR)/umu.1
+	scdoc < docs/umu.5.scd > $(OBJDIR)/umu.5
 	touch $(@)
 
-.PHONY: ulwgl-docs
-ulwgl-docs: $(OBJDIR)/.build-ulwgl-docs
+.PHONY: umu-docs
+umu-docs: $(OBJDIR)/.build-umu-docs
 
-ulwgl-docs-install: ulwgl-docs
-	$(info :: Installing ulwgl man pages )
+umu-docs-install: umu-docs
+	$(info :: Installing umu man pages )
 	install -d $(DESTDIR)$(MANDIR)/man1
 	install -d $(DESTDIR)$(MANDIR)/man5
-	install -m644 $(OBJDIR)/ulwgl.1 $(DESTDIR)$(MANDIR)/man1/ulwgl.1
-	install -m644 $(OBJDIR)/ulwgl.5 $(DESTDIR)$(MANDIR)/man5/ulwgl.5
+	install -m644 $(OBJDIR)/umu.1 $(DESTDIR)$(MANDIR)/man1/umu.1
+	install -m644 $(OBJDIR)/umu.5 $(DESTDIR)$(MANDIR)/man5/umu.5
 
 
-ulwgl-dist-install:
-	$(info :: Installing ulwgl )
+umu-dist-install:
+	$(info :: Installing umu )
 	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 ULWGL/ulwgl_consts.py    -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 ULWGL/ulwgl_dl_util.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 ULWGL/ulwgl_log.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 ULWGL/ulwgl_plugins.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 755 ULWGL/ulwgl_run.py     	 -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 ULWGL/ulwgl_util.py      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 umu/umu_consts.py    -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 umu/umu_dl_util.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 umu/umu_log.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 umu/umu_plugins.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 755 umu/umu_run.py     	 -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 umu/umu_util.py      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
-ulwgl-install: version-install ulwgl-dist-install ulwgl-docs-install ulwgl-bin-install
+umu-install: version-install umu-dist-install umu-docs-install umu-bin-install
 
 
-# ulwgl-launcher is separate to allow control over installing the bin target
-$(OBJDIR)/.build-ulwgl-launcher: | $(OBJDIR)
-	$(info :: Building ulwgl-launcher )
-	sed 's|##INSTALL_PATH##|$(DATADIR)/$(INSTALLDIR)|g' ULWGL/ULWGL-Launcher/ulwgl-run.in > $(OBJDIR)/ulwgl-launcher-run
+# umu-launcher is separate to allow control over installing the bin target
+$(OBJDIR)/.build-umu-launcher: | $(OBJDIR)
+	$(info :: Building umu-launcher )
+	sed 's|##INSTALL_PATH##|$(DATADIR)/$(INSTALLDIR)|g' umu/umu-Launcher/umu-run.in > $(OBJDIR)/umu-launcher-run
 	touch $(@)
 
-.PHONY: ulwgl-launcher
-ulwgl-launcher: $(OBJDIR)/.build-ulwgl-launcher
+.PHONY: umu-launcher
+umu-launcher: $(OBJDIR)/.build-umu-launcher
 
-ulwgl-launcher-bin-install: ulwgl-launcher
-	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
-	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher/ulwgl-run
+umu-launcher-bin-install: umu-launcher
+	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
+	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher/umu-run
 
-ulwgl-launcher-dist-install:
-	$(info :: Installing ulwgl-launcher )
-	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
-	install -Dm 644 ULWGL/ULWGL-Launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
-	install -Dm 644 ULWGL/ULWGL-Launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/ULWGL-Launcher
+umu-launcher-dist-install:
+	$(info :: Installing umu-launcher )
+	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
+	install -Dm 644 umu/umu-Launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
+	install -Dm 644 umu/umu-Launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
 
-#ulwgl-launcher-install: ulwgl-launcher-dist-install ulwgl-launcher-bin-install
-ulwgl-launcher-install: ulwgl-launcher-dist-install
+#umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
+umu-launcher-install: umu-launcher-dist-install
 
 
 $(OBJDIR)/.build-reaper: | $(OBJDIR)
@@ -129,7 +129,7 @@ $(OBJDIR):
 .PHONY: clean
 clean:
 	$(info :: Cleaning source directory )
-	@rm -rf -v $(OBJDIR) ULWGL/ULWGL_VERSION.json ./$(RELEASEDIR) $(RELEASEDIR).tar.gz
+	@rm -rf -v $(OBJDIR) umu/umu_version.json ./$(RELEASEDIR) $(RELEASEDIR).tar.gz
 
 
 RELEASEDIR := $(PROJECT)-$(shell git describe --abbrev=0)
@@ -140,8 +140,8 @@ $(RELEASEDIR):
 release: $(RELEASEDIR) | version
 	$(info :: Creating source distribution for release )
 	mkdir -p $(<)
-	rm -rf ULWGL/__pycache__
-	cp -r ULWGL flatpak subprojects Makefile.in configure.sh README.md LICENSE $(<)
+	rm -rf umu/__pycache__
+	cp -r umu flatpak subprojects Makefile.in configure.sh README.md LICENSE $(<)
 	tar -cvzf $(<).tar.gz $(<)
 
 
@@ -149,7 +149,7 @@ release: $(RELEASEDIR) | version
 # NEVER use a wildcard here
 uninstall:
 	$(info :: Removing $(INSTALLDIR) files in $(DESTDIR)$(BINDIR) )
-	@rm -rf -v --preserve-root=all $(DESTDIR)$(BINDIR)/ulwgl-run
+	@rm -rf -v --preserve-root=all $(DESTDIR)$(BINDIR)/umu-run
 	$(info :: Removing $(INSTALLDIR) directory in $(DESTDIR)$(DATADIR) )
 	@rm -rf -v --preserve-root=all $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 

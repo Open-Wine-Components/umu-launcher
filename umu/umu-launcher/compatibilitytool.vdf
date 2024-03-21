@@ -2,10 +2,10 @@
 {
   "compat_tools"
   {
-    "ULWGL-Launcher" // Internal name of this tool
+    "umu-Launcher" // Internal name of this tool
     {
       "install_path" "."
-      "display_name" "ULWGL-Launcher"
+      "display_name" "umu-Launcher"
       "from_oslist"  "windows"
       "to_oslist"    "linux"
     }
