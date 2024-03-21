@@ -71,7 +71,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 
     conn.request(
         "GET",
-        "/repos/Open-Wine-Components/umu-Proton/releases",
+        "/repos/Open-Wine-Components/umu-proton/releases",
         headers={
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
@@ -97,7 +97,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
                         asset["name"].endswith("sum")
                         or (
                             asset["name"].endswith("tar.gz")
-                            and asset["name"].startswith("umu-Proton")
+                            and asset["name"].startswith(("umu-proton", "ULWGL-Proton"))
                         )
                     )
                     and "browser_download_url" in asset
@@ -111,6 +111,8 @@ def _fetch_releases() -> List[Tuple[str, str]]:
                     break
         break
     conn.close()
+    if len(files) != 2:
+        raise RuntimeError("Failed to get complete information for Proton release")
 
     return files
 
