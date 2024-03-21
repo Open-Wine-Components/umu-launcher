@@ -27,7 +27,10 @@ def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     parser.add_argument("--config", help="path to TOML file (requires Python 3.11+)")
 
     if not sys.argv[1:]:
-        err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/umu-launcher"
+        err: str = (
+            "Please see project README.md for more info and examples.\n"
+            "https://github.com/Open-Wine-Components/umu-launcher"
+        )
         parser.print_help(sys.stderr)
         raise SystemExit(err)
 
