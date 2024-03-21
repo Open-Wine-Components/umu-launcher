@@ -30,17 +30,17 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     """
     files: List[Tuple[str, str]] = []
 
-    try:
-        files = _fetch_releases()
-    except gaierror:
-        pass  # User is offline
-
     UMU_CACHE.mkdir(exist_ok=True, parents=True)
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
     # Prioritize the Steam compat
     if _get_from_steamcompat(env, STEAM_COMPAT, UMU_CACHE):
         return env
+
+    try:
+        files = _fetch_releases()
+    except gaierror:
+        pass  # User is offline
 
     # Use the latest Proton in the cache if it exists
     if _get_from_cache(env, STEAM_COMPAT, UMU_CACHE, files, True):
@@ -228,14 +228,9 @@ def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None
 
 
 def _get_from_steamcompat(
-    env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
+    env: Dict[str, str], steam_compat: Path, cache: Path
 ) -> Union[Dict[str, str], None]:
     """Refer to Steam compat folder for any existing Proton directories."""
-    proton_dir: str = ""  # Latest Proton
-
-    if len(files) == 2:
-        proton_dir: str = files[1][0][: files[1][0].find(".tar.gz")]
-
     for proton in sorted(
         [
             proton
@@ -246,18 +241,8 @@ def _get_from_steamcompat(
     ):
         log.console(f"{proton.name} found in: {steam_compat}")
         log.console(f"Using {proton.name}")
-
         environ["PROTONPATH"] = proton.as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
-
-        # Notify the user that they're not using the latest
-        if proton_dir and proton.name != proton_dir:
-            link: str = files[1][1]
-            log.console(
-                "umu-Proton is outdated.\n"
-                f"For latest release, please download {link}"
-            )
-
         return env
 
     return None
