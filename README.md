@@ -74,7 +74,7 @@ Building umu currently requires `bash`, `make`, `meson` and `scdoc`
 
 To build umu, after downloading and extracting the source code from this repository, change into the newly extracted directory
 ```shell
-cd umu-Launcher
+cd umu-launcher
 ```
 
 To configure the installation `PREFIX` (this is not related to wine's `WINEPREFIX`) use the `configure.sh` script

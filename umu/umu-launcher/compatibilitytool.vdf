@@ -2,10 +2,10 @@
 {
   "compat_tools"
   {
-    "umu-Launcher" // Internal name of this tool
+    "umu-launcher" // Internal name of this tool
     {
       "install_path" "."
-      "display_name" "umu-Launcher"
+      "display_name" "umu-launcher"
       "from_oslist"  "windows"
       "to_oslist"    "linux"
     }

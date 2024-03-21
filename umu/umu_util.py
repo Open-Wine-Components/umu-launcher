@@ -180,8 +180,8 @@ def setup_umu(root: Path, local: Path) -> None:
 
     Performs full copies of tools on new installs and selectively on new updates
     The tools that will be copied are:
-    Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the umu-Launcher
-    The umu-Launcher will be copied to .local/share/Steam/compatibilitytools.d
+    Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the umu-launcher
+    The umu-launcher will be copied to .local/share/Steam/compatibilitytools.d
     """
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
@@ -215,7 +215,7 @@ def _install_umu(
     ~/.local/share/umu, ~/.local/share/Steam/compatibilitytools.d
 
     The tools that will be copied are:
-    SteamRT, Pressure Vessel, umu-Launcher, umu Launcher files, Reaper
+    SteamRT, Pressure Vessel, umu-launcher, umu Launcher files, Reaper
     and umu_version.json
     """
     thread: Thread = None
@@ -247,20 +247,20 @@ def _install_umu(
     # Runner
     steam_compat.mkdir(parents=True, exist_ok=True)
 
-    log.console(f"Copying umu-Launcher -> {steam_compat} ...")
+    log.console(f"Copying umu-launcher -> {steam_compat} ...")
 
     # Remove existing files if they exist -- this is a clean install.
-    if steam_compat.joinpath("umu-Launcher").is_dir():
-        rmtree(steam_compat.joinpath("umu-Launcher").as_posix())
+    if steam_compat.joinpath("umu-launcher").is_dir():
+        rmtree(steam_compat.joinpath("umu-launcher").as_posix())
 
     copytree(
-        root.joinpath("umu-Launcher"),
-        steam_compat.joinpath("umu-Launcher"),
+        root.joinpath("umu-launcher"),
+        steam_compat.joinpath("umu-launcher"),
         dirs_exist_ok=True,
         symlinks=True,
     )
 
-    steam_compat.joinpath("umu-Launcher", "umu-run").symlink_to(
+    steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
         "../../../umu/umu_run.py"
     )
 
@@ -384,33 +384,33 @@ def _update_umu(
             runner: str = json_local["umu"]["versions"]["runner"]
 
             # Directory is absent
-            if not steam_compat.joinpath("umu-Launcher").is_dir():
-                log.warning("umu-Launcher not found")
+            if not steam_compat.joinpath("umu-launcher").is_dir():
+                log.warning("umu-launcher not found")
 
                 copytree(
-                    root.joinpath("umu-Launcher"),
-                    steam_compat.joinpath("umu-Launcher"),
+                    root.joinpath("umu-launcher"),
+                    steam_compat.joinpath("umu-launcher"),
                     dirs_exist_ok=True,
                     symlinks=True,
                 )
 
-                steam_compat.joinpath("umu-Launcher", "umu-run").symlink_to(
+                steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
                     "../../../umu/umu_run.py"
                 )
-                log.console(f"Restored umu-Launcher to {val}")
-            elif steam_compat.joinpath("umu-Launcher").is_dir() and val != runner:
+                log.console(f"Restored umu-launcher to {val}")
+            elif steam_compat.joinpath("umu-launcher").is_dir() and val != runner:
                 # Update
                 log.console(f"Updating {key} to {val}")
 
-                rmtree(steam_compat.joinpath("umu-Launcher").as_posix())
+                rmtree(steam_compat.joinpath("umu-launcher").as_posix())
                 copytree(
-                    root.joinpath("umu-Launcher"),
-                    steam_compat.joinpath("umu-Launcher"),
+                    root.joinpath("umu-launcher"),
+                    steam_compat.joinpath("umu-launcher"),
                     dirs_exist_ok=True,
                     symlinks=True,
                 )
 
-                steam_compat.joinpath("umu-Launcher", "umu-run").symlink_to(
+                steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
                     "../../../umu/umu_run.py"
                 )
 

@@ -111,10 +111,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
         Path(self.test_user_share, "pressure-vessel").mkdir()
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
 
-        # Mock umu-Launcher
-        Path(self.test_user_share, "umu-Launcher").mkdir()
-        Path(self.test_user_share, "umu-Launcher", "compatibilitytool.vdf").touch()
-        Path(self.test_user_share, "umu-Launcher", "toolmanifest.vdf").touch()
+        # Mock umu-launcher
+        Path(self.test_user_share, "umu-launcher").mkdir()
+        Path(self.test_user_share, "umu-launcher", "compatibilitytool.vdf").touch()
+        Path(self.test_user_share, "umu-launcher", "toolmanifest.vdf").touch()
 
         # Mock Reaper
         Path(self.test_user_share, "reaper").touch()

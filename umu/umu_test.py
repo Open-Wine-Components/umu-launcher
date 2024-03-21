@@ -112,10 +112,10 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "pressure-vessel").mkdir()
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
 
-        # Mock umu-Launcher
-        Path(self.test_user_share, "umu-Launcher").mkdir()
-        Path(self.test_user_share, "umu-Launcher", "compatibilitytool.vdf").touch()
-        Path(self.test_user_share, "umu-Launcher", "toolmanifest.vdf").touch()
+        # Mock umu-launcher
+        Path(self.test_user_share, "umu-launcher").mkdir()
+        Path(self.test_user_share, "umu-launcher", "compatibilitytool.vdf").touch()
+        Path(self.test_user_share, "umu-launcher", "toolmanifest.vdf").touch()
 
         # Mock Reaper
         Path(self.test_user_share, "reaper").touch()
@@ -256,17 +256,17 @@ class TestGameLauncher(unittest.TestCase):
 
         # Runner
         self.assertTrue(
-            self.test_compat.joinpath("umu-Launcher").is_dir(),
-            "Expected umu-Launcher in compat",
+            self.test_compat.joinpath("umu-launcher").is_dir(),
+            "Expected umu-launcher in compat",
         )
 
-        for file in self.test_compat.joinpath("umu-Launcher").glob("*"):
+        for file in self.test_compat.joinpath("umu-launcher").glob("*"):
             src = b""
             dst = b""
 
             if file.name == "umu-run":
                 self.assertEqual(
-                    self.test_compat.joinpath("umu-Launcher", "umu-run").readlink(),
+                    self.test_compat.joinpath("umu-launcher", "umu-run").readlink(),
                     Path("../../../umu/umu_run.py"),
                     "Expected both symlinks to point to same dest",
                 )
@@ -274,7 +274,7 @@ class TestGameLauncher(unittest.TestCase):
 
             with file.open(mode="rb") as filer:
                 dst = filer.read()
-            with self.test_user_share.joinpath("umu-Launcher", file.name).open(
+            with self.test_user_share.joinpath("umu-launcher", file.name).open(
                 mode="rb"
             ) as filer:
                 src = filer.read()
@@ -455,8 +455,8 @@ class TestGameLauncher(unittest.TestCase):
         self.test_local_share.joinpath("pressure-vessel").mkdir()
         self.test_local_share.joinpath("pressure-vessel", "bar").touch()
 
-        # Mock umu-Launcher
-        self.test_compat.joinpath("umu-Launcher").mkdir()
+        # Mock umu-launcher
+        self.test_compat.joinpath("umu-launcher").mkdir()
         for file in runner_files:
             if file == "umu-run":
                 self.test_compat.joinpath("umu-run").symlink_to("../../../umu_run.py")
@@ -555,33 +555,33 @@ class TestGameLauncher(unittest.TestCase):
         # Runner
         # The hashes should be compared because we written data in the mocked files
         self.assertTrue(
-            self.test_compat.joinpath("umu-Launcher").is_dir(),
-            "Expected umu-Launcher in compat",
+            self.test_compat.joinpath("umu-launcher").is_dir(),
+            "Expected umu-launcher in compat",
         )
 
-        # Verify the count for .local/share/Steam/umu-Launcher
+        # Verify the count for .local/share/Steam/umu-launcher
         num_share = len(
-            [file for file in self.test_user_share.joinpath("umu-Launcher").glob("*")]
+            [file for file in self.test_user_share.joinpath("umu-launcher").glob("*")]
         )
         num_local = len(
-            [file for file in self.test_compat.joinpath("umu-Launcher").glob("*")]
+            [file for file in self.test_compat.joinpath("umu-launcher").glob("*")]
         )
 
         # Subtract one because a symbolic link is dynamically created
         self.assertEqual(
             num_share,
             num_local - 1,
-            "Expected .local/share/Steam/compatibilitytools.d/umu-Launcher"
-            "and /usr/share/umu/umu-Launcher to contain same files",
+            "Expected .local/share/Steam/compatibilitytools.d/umu-launcher"
+            "and /usr/share/umu/umu-launcher to contain same files",
         )
 
-        for file in self.test_compat.joinpath("umu-Launcher").glob("*"):
+        for file in self.test_compat.joinpath("umu-launcher").glob("*"):
             src = b""
             dst = b""
 
             if file.name == "umu-run":
                 self.assertEqual(
-                    self.test_compat.joinpath("umu-Launcher", "umu-run").readlink(),
+                    self.test_compat.joinpath("umu-launcher", "umu-run").readlink(),
                     Path("../../../umu/umu_run.py"),
                     "Expected both symlinks to point to same dest",
                 )
@@ -589,7 +589,7 @@ class TestGameLauncher(unittest.TestCase):
 
             with file.open(mode="rb") as filer:
                 dst = filer.read()
-            with self.test_user_share.joinpath("umu-Launcher", file.name).open(
+            with self.test_user_share.joinpath("umu-launcher", file.name).open(
                 mode="rb"
             ) as filer:
                 src = filer.read()
@@ -672,9 +672,9 @@ class TestGameLauncher(unittest.TestCase):
         This function is expected to be run when ~/.local/share/umu is empty
 
         The contents of ~/.local/share/umu should be nearly identical to
-        /usr/share/umu, with the exception of the umu-Launcher files
+        /usr/share/umu, with the exception of the umu-launcher files
 
-        umu-Launcher is expected to be copied to compatibilitytools.d
+        umu-launcher is expected to be copied to compatibilitytools.d
         """
         result = None
         runner_files = {"compatibilitytool.vdf", "toolmanifest.vdf", "umu-run"}
@@ -725,12 +725,12 @@ class TestGameLauncher(unittest.TestCase):
             "Expected umu_version.json to exist",
         )
 
-        # umu-Launcher
+        # umu-launcher
         self.assertTrue(
-            Path(self.test_user_share, "umu-Launcher").is_dir(),
-            "Expected umu-Launcher to exist",
+            Path(self.test_user_share, "umu-launcher").is_dir(),
+            "Expected umu-launcher to exist",
         )
-        for file in Path(self.test_compat, "umu-Launcher").glob("*"):
+        for file in Path(self.test_compat, "umu-launcher").glob("*"):
             if file.name not in runner_files:
                 err = "A non-runner file was copied"
                 raise AssertionError(err)
