@@ -1,4 +1,4 @@
-name: umu-launcher workflow
+name: umu-launcher
 
 on:
   push:
