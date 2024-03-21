@@ -236,7 +236,14 @@ def _get_from_steamcompat(
     if len(files) == 2:
         proton_dir: str = files[1][0][: files[1][0].find(".tar.gz")]
 
-    for proton in steam_compat.glob("umu-Proton*"):
+    for proton in sorted(
+        [
+            proton
+            for proton in steam_compat.glob("*")
+            if proton.name.startswith("umu-proton")
+            or proton.name.startswith("ULWGL-Proton")
+        ]
+    ):
         log.console(f"{proton.name} found in: {steam_compat}")
         log.console(f"Using {proton.name}")
 
@@ -272,7 +279,12 @@ def _get_from_cache(
     path: Path = None
     name: str = ""
 
-    for tarball in cache.glob("umu-Proton*.tar.gz"):
+    for tarball in [
+        tarball
+        for tarball in cache.glob("*.tar.gz")
+        if tarball.name.startswith("umu-proton")
+        or tarball.name.startswith("ULWGL-Proton")
+    ]:
         # Online
         if files and tarball == cache.joinpath(files[1][0]) and use_latest:
             path = tarball

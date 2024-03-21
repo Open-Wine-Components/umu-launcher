@@ -192,10 +192,7 @@ def set_env(
 
     # UMU_ID
     env["UMU_ID"] = env["GAMEID"]
-<<<<<<< HEAD
-=======
     env["ULWGL_ID"] = env["UMU_ID"]  # Set ULWGL_ID for compatibility
->>>>>>> 56365ec (Update names)
     env["STEAM_COMPAT_APP_ID"] = "0"
 
     if match(r"^umu-[\d\w]+$", env["UMU_ID"]):
@@ -274,6 +271,7 @@ def main() -> int:  # noqa: D103
         "STORE": "",
         "PROTON_VERB": "",
         "UMU_ID": "",
+        "ULWGL_ID": "",
     }
     command: List[str] = []
     opts: List[str] = None
