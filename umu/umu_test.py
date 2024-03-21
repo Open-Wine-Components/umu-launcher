@@ -966,7 +966,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
-            self.assertTrue(result is self.env, "Expected the same reference")
+            self.assertFalse(result, "Expected None to be returned from _get_latest")
 
     def test_cache_interrupt(self):
         """Test _get_from_cache on keyboard interrupt when extracting.
