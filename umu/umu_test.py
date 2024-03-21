@@ -1117,10 +1117,9 @@ class TestGameLauncher(unittest.TestCase):
         continue with downloading the latest Proton
         """
         result = None
-        files = [("", ""), (self.test_archive.name, "")]
 
         result = umu_dl_util._get_from_steamcompat(
-            self.env, self.test_compat, self.test_cache, files
+            self.env, self.test_compat, self.test_cache
         )
 
         self.assertFalse(result, "Expected None after calling _get_from_steamcompat")
@@ -1133,12 +1132,11 @@ class TestGameLauncher(unittest.TestCase):
         when PROTONPATH is unset
         """
         result = None
-        files = [("", ""), (self.test_archive.name, "")]
 
         umu_dl_util._extract_dir(self.test_archive, self.test_compat)
 
         result = umu_dl_util._get_from_steamcompat(
-            self.env, self.test_compat, self.test_cache, files
+            self.env, self.test_compat, self.test_cache
         )
 
         self.assertTrue(result is self.env, "Expected the same reference")
