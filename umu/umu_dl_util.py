@@ -112,7 +112,8 @@ def _fetch_releases() -> List[Tuple[str, str]]:
         break
     conn.close()
     if len(files) != 2:
-        raise RuntimeError("Failed to get complete information for Proton release")
+        err: str = "Failed to get complete information for Proton release"
+        raise RuntimeError(err)
 
     return files
 
