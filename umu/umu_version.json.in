@@ -1,8 +1,8 @@
 {
   "umu": {
     "versions": {
-      "launcher": "##umu_version##",
-      "runner": "##umu_version##",
+      "launcher": "##UMU_VERSION##",
+      "runner": "##UMU_VERSION##",
       "runtime_platform": "sniper_platform_0.20240125.75305",
       "reaper": "##REAPER_VERSION##",
       "pressure_vessel": "v0.20240212.0"
