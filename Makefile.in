@@ -88,7 +88,7 @@ umu-install: version-install umu-dist-install umu-docs-install umu-bin-install
 # umu-launcher is separate to allow control over installing the bin target
 $(OBJDIR)/.build-umu-launcher: | $(OBJDIR)
 	$(info :: Building umu-launcher )
-	sed 's|##INSTALL_PATH##|$(DATADIR)/$(INSTALLDIR)|g' umu/umu-Launcher/umu-run.in > $(OBJDIR)/umu-launcher-run
+	sed 's|##INSTALL_PATH##|$(DATADIR)/$(INSTALLDIR)|g' umu/umu-launcher/umu-run.in > $(OBJDIR)/umu-launcher-run
 	touch $(@)
 
 .PHONY: umu-launcher
@@ -96,13 +96,13 @@ umu-launcher: $(OBJDIR)/.build-umu-launcher
 
 umu-launcher-bin-install: umu-launcher
 	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
-	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher/umu-run
+	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-launcher/umu-run
 
 umu-launcher-dist-install:
 	$(info :: Installing umu-launcher )
-	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
-	install -Dm 644 umu/umu-Launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
-	install -Dm 644 umu/umu-Launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
+	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-launcher
+	install -Dm 644 umu/umu-launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
+	install -Dm 644 umu/umu-launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-Launcher
 
 #umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 umu-launcher-install: umu-launcher-dist-install
