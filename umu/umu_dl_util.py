@@ -11,7 +11,7 @@ from urllib.request import urlopen
 from umu_plugins import enable_zenity
 from socket import gaierror
 from umu_log import log
-from umu_consts import STEAM_COMPAT, umu_CACHE
+from umu_consts import STEAM_COMPAT, UMU_CACHE
 
 try:
     from tarfile import tar_filter
@@ -35,25 +35,25 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     except gaierror:
         pass  # User is offline
 
-    umu_CACHE.mkdir(exist_ok=True, parents=True)
+    UMU_CACHE.mkdir(exist_ok=True, parents=True)
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
     # Prioritize the Steam compat
-    if _get_from_steamcompat(env, STEAM_COMPAT, umu_CACHE, files):
+    if _get_from_steamcompat(env, STEAM_COMPAT, UMU_CACHE):
         return env
 
     # Use the latest Proton in the cache if it exists
-    if _get_from_cache(env, STEAM_COMPAT, umu_CACHE, files, True):
+    if _get_from_cache(env, STEAM_COMPAT, UMU_CACHE, files, True):
         return env
 
     # Download the latest if Proton is not in Steam compat
     # If the digests mismatched, refer to the cache in the next block
-    if _get_latest(env, STEAM_COMPAT, umu_CACHE, files):
+    if _get_latest(env, STEAM_COMPAT, UMU_CACHE, files):
         return env
 
     # Refer to an old version previously downloaded
     # Reached on digest mismatch, user interrupt or download failure/no internet
-    if _get_from_cache(env, STEAM_COMPAT, umu_CACHE, files, False):
+    if _get_from_cache(env, STEAM_COMPAT, UMU_CACHE, files, False):
         return env
 
     # No internet and cache/compat tool is empty, just return and raise an
@@ -121,7 +121,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 def _fetch_proton(
     env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
 ) -> Dict[str, str]:
-    """Download the latest umu-Proton and set it as PROTONPATH."""
+    """Download the latest umu-proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
     proton, proton_url = files[1]
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir

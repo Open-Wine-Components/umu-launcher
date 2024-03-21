@@ -19,9 +19,9 @@ DEBUG_FORMAT = f"%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:{Color.BOLD.
 
 CONFIG = "umu_version.json"
 
-umu_LOCAL: Path = Path.home().joinpath(".local", "share", "umu")
+UMU_LOCAL: Path = Path.home().joinpath(".local", "share", "umu")
 
-umu_CACHE: Path = Path.home().joinpath(".cache", "umu")
+UMU_CACHE: Path = Path.home().joinpath(".cache", "umu")
 
 STEAM_COMPAT: Path = Path.home().joinpath(
     ".local", "share", "Steam", "compatibilitytools.d"

@@ -1,6 +1,6 @@
 from tarfile import open as tar_open, TarInfo
 from os import getuid
-from umu_consts import CONFIG, STEAM_COMPAT, umu_LOCAL
+from umu_consts import CONFIG, STEAM_COMPAT, UMU_LOCAL
 from typing import Any, Dict, List, Callable
 from json import load, dump
 from umu_log import log
@@ -131,7 +131,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
             log.warning("Archive will be extracted insecurely")
 
         # Ensure the target directory exists
-        umu_LOCAL.mkdir(parents=True, exist_ok=True)
+        UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
         # Extract the 'depot' folder to the target directory
         log.debug("Extracting archive files -> %s", tmp)
@@ -143,12 +143,12 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         source_dir = tmp.joinpath("steam-container-runtime", "depot")
 
         log.debug("Source: %s", source_dir)
-        log.debug("Destination: %s", umu_LOCAL)
+        log.debug("Destination: %s", UMU_LOCAL)
 
         # Move each file to the destination directory, overwriting if it exists
         for file in source_dir.glob("*"):
             src_file: Path = source_dir.joinpath(file.name)
-            dest_file: Path = umu_LOCAL.joinpath(file.name)
+            dest_file: Path = UMU_LOCAL.joinpath(file.name)
 
             if dest_file.is_file() or dest_file.is_symlink():
                 log.debug("Removing file: %s", dest_file)
@@ -172,7 +172,7 @@ def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
         log.debug("Renaming: _v2-entry-point -> umu")
 
         # Rename _v2-entry-point
-        umu_LOCAL.joinpath("_v2-entry-point").rename(umu_LOCAL.joinpath("umu"))
+        UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
 
 
 def setup_umu(root: Path, local: Path) -> None:

@@ -54,9 +54,9 @@ class TestGameLauncher(unittest.TestCase):
         self.test_cache = Path("./tmp.5HYdpddgvs")
         # Steam compat dir
         self.test_compat = Path("./tmp.ZssGZoiNod")
-        # umu-Proton dir
-        self.test_proton_dir = Path("umu-Proton-5HYdpddgvs")
-        # umu-Proton release
+        # umu-proton dir
+        self.test_proton_dir = Path("umu-proton-5HYdpddgvs")
+        # umu-proton release
         self.test_archive = Path(self.test_cache).joinpath(
             f"{self.test_proton_dir}.tar.gz"
         )
