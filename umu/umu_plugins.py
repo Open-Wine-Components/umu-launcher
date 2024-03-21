@@ -146,7 +146,7 @@ def enable_reaper(env: Dict[str, str], command: List[str], local: Path) -> List[
     command.extend(
         [
             local.joinpath("reaper").as_posix(),
-            "umu_ID=" + env["umu_ID"],
+            "UMU_ID=" + env["UMU_ID"],
             "--",
         ]
     )

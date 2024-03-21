@@ -37,11 +37,11 @@ if [ -n "$PROTONPATH" ]; then
   fi
 fi
 
-export umu_ID="$GAMEID"
+export UMU_ID="$GAMEID"
 export STEAM_COMPAT_APP_ID="0"
 numcheck='^[0-9]+$'
-if echo "$umu_ID" | cut -d "-" -f  2 | grep -Eq "$numcheck"; then
-  STEAM_COMPAT_APP_ID=$(echo "$umu_ID" | cut -d "-" -f  2)
+if echo "$UMU_ID" | cut -d "-" -f  2 | grep -Eq "$numcheck"; then
+  STEAM_COMPAT_APP_ID=$(echo "$UMU_ID" | cut -d "-" -f  2)
   export STEAM_COMPAT_APP_ID
 fi
 export SteamAppId="$STEAM_COMPAT_APP_ID"

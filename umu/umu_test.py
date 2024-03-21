@@ -38,7 +38,7 @@ class TestGameLauncher(unittest.TestCase):
             "SteamAppId": "",
             "SteamGameId": "",
             "STEAM_RUNTIME_LIBRARY_PATH": "",
-            "umu_ID": "",
+            "UMU_ID": "",
             "STORE": "",
             "PROTON_VERB": "",
         }
@@ -1599,10 +1599,10 @@ class TestGameLauncher(unittest.TestCase):
         """Test set_env.
 
         Verify that environment variables (dictionary) are set after calling
-        set_env when passing a valid umu_ID
+        set_env when passing a valid UMU_ID
 
-        When a valid umu_ID is set, the STEAM_COMPAT_APP_ID variables
-        should be the stripped umu_ID
+        When a valid UMU_ID is set, the STEAM_COMPAT_APP_ID variables
+        should be the stripped UMU_ID
         """
         result = None
         test_str = "foo"
@@ -1655,16 +1655,16 @@ class TestGameLauncher(unittest.TestCase):
             )
             # umu
             self.assertEqual(
-                self.env["umu_ID"],
+                self.env["UMU_ID"],
                 self.env["GAMEID"],
-                "Expected umu_ID to be GAMEID",
+                "Expected UMU_ID to be GAMEID",
             )
-            self.assertEqual(self.env["umu_ID"], umu_id, "Expected umu_ID")
+            self.assertEqual(self.env["UMU_ID"], umu_id, "Expected UMU_ID")
             # Should be stripped -- everything after the hyphen
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
                 umu_id[umu_id.find("-") + 1 :],
-                "Expected STEAM_COMPAT_APP_ID to be the stripped umu_ID",
+                "Expected STEAM_COMPAT_APP_ID to be the stripped UMU_ID",
             )
             self.assertEqual(
                 self.env["SteamAppId"],
@@ -1752,9 +1752,9 @@ class TestGameLauncher(unittest.TestCase):
             )
             # umu
             self.assertEqual(
-                self.env["umu_ID"],
+                self.env["UMU_ID"],
                 self.env["GAMEID"],
-                "Expected umu_ID to be GAMEID",
+                "Expected UMU_ID to be GAMEID",
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],

@@ -37,7 +37,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             "SteamAppId": "",
             "SteamGameId": "",
             "STEAM_RUNTIME_LIBRARY_PATH": "",
-            "umu_ID": "",
+            "UMU_ID": "",
             "STORE": "",
             "PROTON_VERB": "",
         }

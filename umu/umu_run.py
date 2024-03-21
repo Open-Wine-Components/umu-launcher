@@ -118,7 +118,7 @@ def check_env(
 
     if "WINEPREFIX" not in os.environ:
         id: str = env["GAMEID"]
-        pfx: Path = Path.home().joinpath("Games", "umu", f"umu-{id}")
+        pfx: Path = Path.home().joinpath("Games", "umu", f"{id}")
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = pfx.as_posix()
     if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
@@ -190,12 +190,12 @@ def set_env(
     if "STORE" in os.environ:
         env["STORE"] = os.environ["STORE"]
 
-    # umu_ID
-    env["umu_ID"] = env["GAMEID"]
+    # UMU_ID
+    env["UMU_ID"] = env["GAMEID"]
     env["STEAM_COMPAT_APP_ID"] = "0"
 
-    if match(r"^umu-[\d\w]+$", env["umu_ID"]):
-        env["STEAM_COMPAT_APP_ID"] = env["umu_ID"][env["umu_ID"].find("-") + 1 :]
+    if match(r"^umu-[\d\w]+$", env["UMU_ID"]):
+        env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][env["UMU_ID"].find("-") + 1 :]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
 
@@ -269,7 +269,7 @@ def main() -> int:  # noqa: D103
         "STEAM_RUNTIME_LIBRARY_PATH": "",
         "STORE": "",
         "PROTON_VERB": "",
-        "umu_ID": "",
+        "UMU_ID": "",
     }
     command: List[str] = []
     opts: List[str] = None
