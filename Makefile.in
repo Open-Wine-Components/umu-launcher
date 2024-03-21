@@ -29,8 +29,8 @@ endif
 umu/umu_version.json: umu/umu_version.json.in
 	$(info :: Updating $(@) )
 	cp $(<) $(<).tmp
-	sed 's|##umu_version##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
-	sed 's|##REAPER_VERSION##|$(shell git -C subprojects/reaper describe --always --long --tags)|g' -i $(<).tmp
+	sed 's|##UMU_VERSION##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
+	sed 's|##REAPER_VERSION##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
 	mv $(<).tmp $(@)
 
 .PHONY: version
