@@ -9,7 +9,7 @@ from umu_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
 from subprocess import run
 from umu_dl_util import get_umu_proton
-from umu_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, umu_LOCAL
+from umu_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, UMU_LOCAL
 from umu_util import setup_umu
 from umu_log import log, console_handler, CustomFormatter
 from umu_util import UnixUser
@@ -27,7 +27,10 @@ def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     parser.add_argument("--config", help="path to TOML file (requires Python 3.11+)")
 
     if not sys.argv[1:]:
-        err: str = "Please see project README.md for more info and examples.\nhttps://github.com/Open-Wine-Components/umu-launcher"
+        err: str = (
+            "Please see project README.md for more info and examples.\n"
+            "https://github.com/Open-Wine-Components/umu-launcher"
+        )
         parser.print_help(sys.stderr)
         raise SystemExit(err)
 
@@ -46,21 +49,21 @@ def set_log() -> None:
     """Adjust the log level for the logger."""
     levels: Set[str] = {"1", "warn", "debug"}
 
-    if os.environ["umu_LOG"] not in levels:
+    if os.environ["UMU_LOG"] not in levels:
         return
 
-    if os.environ["umu_LOG"] == "1":
+    if os.environ["UMU_LOG"] == "1":
         # Show the envvars and command at this level
         log.setLevel(level=INFO)
-    elif os.environ["umu_LOG"] == "warn":
+    elif os.environ["UMU_LOG"] == "warn":
         log.setLevel(level=WARNING)
-    elif os.environ["umu_LOG"] == "debug":
+    elif os.environ["UMU_LOG"] == "debug":
         # Show all logs
         console_handler.setFormatter(CustomFormatter(DEBUG_FORMAT))
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
 
-    os.environ.pop("umu_LOG")
+    os.environ.pop("UMU_LOG")
 
 
 def setup_pfx(path: str) -> None:
@@ -192,6 +195,7 @@ def set_env(
 
     # UMU_ID
     env["UMU_ID"] = env["GAMEID"]
+    env["ULWGL_ID"] = env["UMU_ID"]  # Set ULWGL_ID for compatibility
     env["STEAM_COMPAT_APP_ID"] = "0"
 
     if match(r"^umu-[\d\w]+$", env["UMU_ID"]):
@@ -204,7 +208,7 @@ def set_env(
     env["PROTONPATH"] = Path(env["PROTONPATH"]).expanduser().as_posix()
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-    env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + umu_LOCAL.as_posix()
+    env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + UMU_LOCAL.as_posix()
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     return env
@@ -270,6 +274,7 @@ def main() -> int:  # noqa: D103
         "STORE": "",
         "PROTON_VERB": "",
         "UMU_ID": "",
+        "ULWGL_ID": "",
     }
     command: List[str] = []
     opts: List[str] = None
@@ -284,7 +289,7 @@ def main() -> int:  # noqa: D103
         err: str = "This script is not designed to run on musl-based systems"
         raise SystemExit(err)
 
-    if "umu_LOG" in os.environ:
+    if "UMU_LOG" in os.environ:
         set_log()
 
     log.debug("Arguments: %s", args)
@@ -292,9 +297,9 @@ def main() -> int:  # noqa: D103
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
     try:
-        setup_umu(root, umu_LOCAL)
+        setup_umu(root, UMU_LOCAL)
     except TimeoutError:  # Request to a server timed out
-        if not umu_LOCAL.exists() or not any(umu_LOCAL.iterdir()):
+        if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
             err: str = (
                 "umu has not been setup for the user\n"
                 "An internet connection is required to setup umu"
@@ -304,8 +309,8 @@ def main() -> int:  # noqa: D103
     except OSError as e:  # No internet
         if (
             e.errno == ENETUNREACH
-            and not umu_LOCAL.exists()
-            or not any(umu_LOCAL.iterdir())
+            and not UMU_LOCAL.exists()
+            or not any(UMU_LOCAL.iterdir())
         ):
             err: str = (
                 "umu has not been setup for the user\n"
@@ -339,7 +344,7 @@ def main() -> int:  # noqa: D103
         os.environ[key] = val
 
     # Run
-    build_command(env, umu_LOCAL, command, opts)
+    build_command(env, UMU_LOCAL, command, opts)
     log.debug(command)
 
     return run(command).returncode
@@ -358,6 +363,6 @@ if __name__ == "__main__":
         log.exception("Exception")
         sys.exit(1)
     finally:
-        umu_LOCAL.joinpath(".ref").unlink(
+        UMU_LOCAL.joinpath(".ref").unlink(
             missing_ok=True
         )  # Cleanup .ref file on every exit

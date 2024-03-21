@@ -54,9 +54,9 @@ class TestGameLauncher(unittest.TestCase):
         self.test_cache = Path("./tmp.5HYdpddgvs")
         # Steam compat dir
         self.test_compat = Path("./tmp.ZssGZoiNod")
-        # umu-Proton dir
-        self.test_proton_dir = Path("umu-Proton-5HYdpddgvs")
-        # umu-Proton release
+        # umu-proton dir
+        self.test_proton_dir = Path("umu-proton-5HYdpddgvs")
+        # umu-proton release
         self.test_archive = Path(self.test_cache).joinpath(
             f"{self.test_proton_dir}.tar.gz"
         )
@@ -966,7 +966,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
-            self.assertTrue(result is self.env, "Expected the same reference")
+            self.assertFalse(result, "Expected None to be returned from _get_latest")
 
     def test_cache_interrupt(self):
         """Test _get_from_cache on keyboard interrupt when extracting.
@@ -1117,10 +1117,9 @@ class TestGameLauncher(unittest.TestCase):
         continue with downloading the latest Proton
         """
         result = None
-        files = [("", ""), (self.test_archive.name, "")]
 
         result = umu_dl_util._get_from_steamcompat(
-            self.env, self.test_compat, self.test_cache, files
+            self.env, self.test_compat, self.test_cache
         )
 
         self.assertFalse(result, "Expected None after calling _get_from_steamcompat")
@@ -1133,12 +1132,11 @@ class TestGameLauncher(unittest.TestCase):
         when PROTONPATH is unset
         """
         result = None
-        files = [("", ""), (self.test_archive.name, "")]
 
         umu_dl_util._extract_dir(self.test_archive, self.test_compat)
 
         result = umu_dl_util._get_from_steamcompat(
-            self.env, self.test_compat, self.test_cache, files
+            self.env, self.test_compat, self.test_cache
         )
 
         self.assertTrue(result is self.env, "Expected the same reference")

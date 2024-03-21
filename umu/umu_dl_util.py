@@ -11,7 +11,7 @@ from urllib.request import urlopen
 from umu_plugins import enable_zenity
 from socket import gaierror
 from umu_log import log
-from umu_consts import STEAM_COMPAT, umu_CACHE
+from umu_consts import STEAM_COMPAT, UMU_CACHE
 
 try:
     from tarfile import tar_filter
@@ -30,30 +30,30 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     """
     files: List[Tuple[str, str]] = []
 
+    UMU_CACHE.mkdir(exist_ok=True, parents=True)
+    STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
+
+    # Prioritize the Steam compat
+    if _get_from_steamcompat(env, STEAM_COMPAT, UMU_CACHE):
+        return env
+
     try:
         files = _fetch_releases()
     except gaierror:
         pass  # User is offline
 
-    umu_CACHE.mkdir(exist_ok=True, parents=True)
-    STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
-
-    # Prioritize the Steam compat
-    if _get_from_steamcompat(env, STEAM_COMPAT, umu_CACHE, files):
-        return env
-
     # Use the latest Proton in the cache if it exists
-    if _get_from_cache(env, STEAM_COMPAT, umu_CACHE, files, True):
+    if _get_from_cache(env, STEAM_COMPAT, UMU_CACHE, files, True):
         return env
 
     # Download the latest if Proton is not in Steam compat
     # If the digests mismatched, refer to the cache in the next block
-    if _get_latest(env, STEAM_COMPAT, umu_CACHE, files):
+    if _get_latest(env, STEAM_COMPAT, UMU_CACHE, files):
         return env
 
     # Refer to an old version previously downloaded
     # Reached on digest mismatch, user interrupt or download failure/no internet
-    if _get_from_cache(env, STEAM_COMPAT, umu_CACHE, files, False):
+    if _get_from_cache(env, STEAM_COMPAT, UMU_CACHE, files, False):
         return env
 
     # No internet and cache/compat tool is empty, just return and raise an
@@ -121,7 +121,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 def _fetch_proton(
     env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
 ) -> Dict[str, str]:
-    """Download the latest umu-Proton and set it as PROTONPATH."""
+    """Download the latest umu-proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
     proton, proton_url = files[1]
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
@@ -228,29 +228,21 @@ def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None
 
 
 def _get_from_steamcompat(
-    env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
+    env: Dict[str, str], steam_compat: Path, cache: Path
 ) -> Union[Dict[str, str], None]:
     """Refer to Steam compat folder for any existing Proton directories."""
-    proton_dir: str = ""  # Latest Proton
-
-    if len(files) == 2:
-        proton_dir: str = files[1][0][: files[1][0].find(".tar.gz")]
-
-    for proton in steam_compat.glob("umu-Proton*"):
+    for proton in sorted(
+        [
+            proton
+            for proton in steam_compat.glob("*")
+            if proton.name.startswith("umu-proton")
+            or proton.name.startswith("ULWGL-Proton")
+        ]
+    ):
         log.console(f"{proton.name} found in: {steam_compat}")
         log.console(f"Using {proton.name}")
-
         environ["PROTONPATH"] = proton.as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
-
-        # Notify the user that they're not using the latest
-        if proton_dir and proton.name != proton_dir:
-            link: str = files[1][1]
-            log.console(
-                "umu-Proton is outdated.\n"
-                f"For latest release, please download {link}"
-            )
-
         return env
 
     return None
@@ -269,40 +261,40 @@ def _get_from_cache(
     Older Proton versions are only referred to when: digests mismatch, user
     interrupt, or download failure/no internet
     """
-    path: Path = None
-    name: str = ""
+    resource: Tuple[Path, str] = None  # Path to the archive and its file name
 
-    for tarball in cache.glob("umu-Proton*.tar.gz"):
+    for tarball in [
+        tarball
+        for tarball in cache.glob("*.tar.gz")
+        if tarball.name.startswith("umu-proton")
+        or tarball.name.startswith("ULWGL-Proton")
+    ]:
         # Online
         if files and tarball == cache.joinpath(files[1][0]) and use_latest:
-            path = tarball
-            name = tarball.name
+            resource = (tarball, tarball.name)
             break
         # Offline, download interrupt, digest mismatch
         if not files or not use_latest:
-            path = tarball
-            name = tarball.name
+            resource = (tarball, tarball.name)
             break
 
-    if path:
-        proton_dir: str = name[: name.find(".tar.gz")]  # Proton dir
+    if not resource:
+        return None
 
+    path, name = resource
+    proton: str = name[: name.find(".tar.gz")]  # Proton dir
+    try:
         log.console(f"{name} found in: {path}")
-        try:
-            _extract_dir(path, steam_compat)
-
-            log.console(f"Using {proton_dir}")
-            environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
-            env["PROTONPATH"] = environ["PROTONPATH"]
-
-            return env
-        except KeyboardInterrupt:
-            if steam_compat.joinpath(proton_dir).is_dir():
-                log.console(f"Purging {proton_dir} in {steam_compat} ...")
-                rmtree(steam_compat.joinpath(proton_dir).as_posix())
-            raise
-
-    return None
+        _extract_dir(path, steam_compat)
+        log.console(f"Using {proton}")
+        environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
+        env["PROTONPATH"] = environ["PROTONPATH"]
+        return env
+    except KeyboardInterrupt:
+        if steam_compat.joinpath(proton).is_dir():
+            log.console(f"Purging {proton} in {steam_compat} ...")
+            rmtree(steam_compat.joinpath(proton).as_posix())
+        raise
 
 
 def _get_latest(
@@ -312,37 +304,35 @@ def _get_latest(
 
     When the digests mismatched or when interrupted, refer to cache for an old version
     """
-    if files:
+    if not files:
+        return None
+
+    try:
         log.console("Fetching latest release ...")
+        tarball: str = files[1][0]
+        proton: str = tarball[: tarball.find(".tar.gz")]
+        _fetch_proton(env, steam_compat, cache, files)
+        log.console(f"Using {proton}")
+        env["PROTONPATH"] = environ["PROTONPATH"]
+    except ValueError:
+        log.exception("Exception")
+        tarball: str = files[1][0]
 
-        try:
-            tarball: str = files[1][0]
-            proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
+        # Digest mismatched
+        # Refer to the cache for old version next
+        # Since we do not want the user to use a suspect file, delete it
+        cache.joinpath(tarball).unlink(missing_ok=True)
+        return None
+    except KeyboardInterrupt:
+        tarball: str = files[1][0]
+        proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
 
-            _fetch_proton(env, steam_compat, cache, files)
-
-            log.console(f"Using {proton_dir}")
-            env["PROTONPATH"] = environ["PROTONPATH"]
-        except ValueError:
-            log.exception("Exception")
-            tarball: str = files[1][0]
-
-            # Digest mismatched
-            # Refer to the cache for old version next
-            # Since we do not want the user to use a suspect file, delete it
-            cache.joinpath(tarball).unlink(missing_ok=True)
-            return None
-        except KeyboardInterrupt:
-            tarball: str = files[1][0]
-            proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
-
-            # Exit cleanly
-            # Clean up extracted data and cache to prevent corruption/errors
-            # Refer to the cache for old version next
-            _cleanup(tarball, proton_dir, cache, steam_compat)
-            return None
-        except HTTPException:
-            # Download failed
-            return None
+        # Exit cleanly
+        # Clean up extracted data and cache to prevent corruption/errors
+        # Refer to the cache for old version next
+        _cleanup(tarball, proton_dir, cache, steam_compat)
+        return None
+    except HTTPException:  # Download failed
+        return None
 
     return env
