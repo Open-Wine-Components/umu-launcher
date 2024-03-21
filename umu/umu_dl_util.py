@@ -304,37 +304,35 @@ def _get_latest(
 
     When the digests mismatched or when interrupted, refer to cache for an old version
     """
-    if files:
+    if not files:
+        return None
+
+    try:
         log.console("Fetching latest release ...")
+        tarball: str = files[1][0]
+        proton: str = tarball[: tarball.find(".tar.gz")]
+        _fetch_proton(env, steam_compat, cache, files)
+        log.console(f"Using {proton}")
+        env["PROTONPATH"] = environ["PROTONPATH"]
+    except ValueError:
+        log.exception("Exception")
+        tarball: str = files[1][0]
 
-        try:
-            tarball: str = files[1][0]
-            proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
+        # Digest mismatched
+        # Refer to the cache for old version next
+        # Since we do not want the user to use a suspect file, delete it
+        cache.joinpath(tarball).unlink(missing_ok=True)
+        return None
+    except KeyboardInterrupt:
+        tarball: str = files[1][0]
+        proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
 
-            _fetch_proton(env, steam_compat, cache, files)
-
-            log.console(f"Using {proton_dir}")
-            env["PROTONPATH"] = environ["PROTONPATH"]
-        except ValueError:
-            log.exception("Exception")
-            tarball: str = files[1][0]
-
-            # Digest mismatched
-            # Refer to the cache for old version next
-            # Since we do not want the user to use a suspect file, delete it
-            cache.joinpath(tarball).unlink(missing_ok=True)
-            return None
-        except KeyboardInterrupt:
-            tarball: str = files[1][0]
-            proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
-
-            # Exit cleanly
-            # Clean up extracted data and cache to prevent corruption/errors
-            # Refer to the cache for old version next
-            _cleanup(tarball, proton_dir, cache, steam_compat)
-            return None
-        except HTTPException:
-            # Download failed
-            return None
+        # Exit cleanly
+        # Clean up extracted data and cache to prevent corruption/errors
+        # Refer to the cache for old version next
+        _cleanup(tarball, proton_dir, cache, steam_compat)
+        return None
+    except HTTPException:  # Download failed
+        return None
 
     return env
