@@ -189,9 +189,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Config
         self.test_local_share.joinpath("umu_version.json").touch()
-        with self.test_local_share.joinpath("umu_version.json").open(
-            mode="w"
-        ) as file:
+        with self.test_local_share.joinpath("umu_version.json").open(mode="w") as file:
             file.write(data)
         json_local = umu_util._get_json(self.test_local_share, "umu_version.json")
 
@@ -243,9 +241,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Check if the configuration files are equal
         # We update this on every update of the tools
-        with self.test_user_share.joinpath("umu_version.json").open(
-            mode="rb"
-        ) as file1:
+        with self.test_user_share.joinpath("umu_version.json").open(mode="rb") as file1:
             root = file1.read()
             local = b""
             with self.test_local_share.joinpath("umu_version.json").open(
@@ -427,9 +423,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Config
         self.test_local_share.joinpath("umu_version.json").touch()
-        with self.test_local_share.joinpath("umu_version.json").open(
-            mode="w"
-        ) as file:
+        with self.test_local_share.joinpath("umu_version.json").open(mode="w") as file:
             file.write(data)
         json_local = umu_util._get_json(self.test_local_share, "umu_version.json")
 
@@ -465,9 +459,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat.joinpath("umu-Launcher").mkdir()
         for file in runner_files:
             if file == "umu-run":
-                self.test_compat.joinpath("umu-run").symlink_to(
-                    "../../../umu_run.py"
-                )
+                self.test_compat.joinpath("umu-run").symlink_to("../../../umu_run.py")
             else:
                 with self.test_compat.joinpath(file).open(mode="w") as filer:
                     filer.write("foo")
@@ -547,9 +539,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Check if the configuration files are equal because we update this on
         # every update of the tools
-        with self.test_user_share.joinpath("umu_version.json").open(
-            mode="rb"
-        ) as file1:
+        with self.test_user_share.joinpath("umu_version.json").open(mode="rb") as file1:
             root = file1.read()
             local = b""
             with self.test_local_share.joinpath("umu_version.json").open(
