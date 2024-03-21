@@ -261,8 +261,7 @@ def _get_from_cache(
     Older Proton versions are only referred to when: digests mismatch, user
     interrupt, or download failure/no internet
     """
-    path: Path = None
-    name: str = ""
+    resource: Tuple[Path, str] = None  # Path to the archive and its file name
 
     for tarball in [
         tarball
@@ -272,34 +271,30 @@ def _get_from_cache(
     ]:
         # Online
         if files and tarball == cache.joinpath(files[1][0]) and use_latest:
-            path = tarball
-            name = tarball.name
+            resource = (tarball, tarball.name)
             break
         # Offline, download interrupt, digest mismatch
         if not files or not use_latest:
-            path = tarball
-            name = tarball.name
+            resource = (tarball, tarball.name)
             break
 
-    if path:
-        proton_dir: str = name[: name.find(".tar.gz")]  # Proton dir
+    if not resource:
+        return None
 
+    path, name = resource
+    proton: str = name[: name.find(".tar.gz")]  # Proton dir
+    try:
         log.console(f"{name} found in: {path}")
-        try:
-            _extract_dir(path, steam_compat)
-
-            log.console(f"Using {proton_dir}")
-            environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
-            env["PROTONPATH"] = environ["PROTONPATH"]
-
-            return env
-        except KeyboardInterrupt:
-            if steam_compat.joinpath(proton_dir).is_dir():
-                log.console(f"Purging {proton_dir} in {steam_compat} ...")
-                rmtree(steam_compat.joinpath(proton_dir).as_posix())
-            raise
-
-    return None
+        _extract_dir(path, steam_compat)
+        log.console(f"Using {proton}")
+        environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
+        env["PROTONPATH"] = environ["PROTONPATH"]
+        return env
+    except KeyboardInterrupt:
+        if steam_compat.joinpath(proton).is_dir():
+            log.console(f"Purging {proton} in {steam_compat} ...")
+            rmtree(steam_compat.joinpath(proton).as_posix())
+        raise
 
 
 def _get_latest(
