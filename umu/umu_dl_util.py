@@ -11,7 +11,8 @@ from urllib.request import urlopen
 from umu_plugins import enable_zenity
 from socket import gaierror
 from umu_log import log
-from umu_consts import STEAM_COMPAT, UMU_CACHE
+from umu_consts import STEAM_COMPAT
+from tempfile import mkdtemp
 
 try:
     from tarfile import tar_filter
@@ -29,34 +30,26 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     fallback
     """
     files: List[Tuple[str, str]] = []
+    tmp: Path = Path(mkdtemp())
 
-    UMU_CACHE.mkdir(exist_ok=True, parents=True)
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
-    # Prioritize the Steam compat
-    if _get_from_steamcompat(env, STEAM_COMPAT, UMU_CACHE):
-        return env
-
     try:
+        log.debug("Sending request to api.github.com")
         files = _fetch_releases()
     except gaierror:
         pass  # User is offline
 
-    # Use the latest Proton in the cache if it exists
-    if _get_from_cache(env, STEAM_COMPAT, UMU_CACHE, files, True):
+    # Download the latest Proton
+    if _get_latest(env, STEAM_COMPAT, tmp, files):
         return env
 
-    # Download the latest if Proton is not in Steam compat
-    # If the digests mismatched, refer to the cache in the next block
-    if _get_latest(env, STEAM_COMPAT, UMU_CACHE, files):
+    # When offline or an error occurs, use the first Proton in
+    # compatibilitytools.d
+    if _get_from_steamcompat(env, STEAM_COMPAT):
         return env
 
-    # Refer to an old version previously downloaded
-    # Reached on digest mismatch, user interrupt or download failure/no internet
-    if _get_from_cache(env, STEAM_COMPAT, UMU_CACHE, files, False):
-        return env
-
-    # No internet and cache/compat tool is empty, just return and raise an
+    # No internet and compat tool is empty, just return and raise an
     # exception from the caller
     return env
 
@@ -119,7 +112,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 
 
 def _fetch_proton(
-    env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
+    env: Dict[str, str], steam_compat: Path, tmp: Path, files: List[Tuple[str, str]]
 ) -> Dict[str, str]:
     """Download the latest umu-proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
@@ -144,7 +137,7 @@ def _fetch_proton(
                 f"github.com returned the status: {resp.status}"
             )
             raise HTTPException(err)
-        with cache.joinpath(hash).open(mode="wb") as file:
+        with tmp.joinpath(hash).open(mode="wb") as file:
             file.write(resp.read())
 
     # Proton
@@ -156,7 +149,7 @@ def _fetch_proton(
             "--silent",
             proton_url,
             "--output-dir",
-            cache.as_posix(),
+            tmp.as_posix(),
         ]
 
         msg: str = f"Downloading {proton_dir} ..."
@@ -176,21 +169,21 @@ def _fetch_proton(
                     f"github.com returned the status: {resp.status}"
                 )
                 raise HTTPException(err)
-            with cache.joinpath(proton).open(mode="wb") as file:
+            with tmp.joinpath(proton).open(mode="wb") as file:
                 file.write(resp.read())
 
     log.console("Completed.")
 
-    with cache.joinpath(proton).open(mode="rb") as file:
+    with tmp.joinpath(proton).open(mode="rb") as file:
         if (
             sha512(file.read()).hexdigest()
-            != cache.joinpath(hash).read_text().split(" ")[0]
+            != tmp.joinpath(hash).read_text().split(" ")[0]
         ):
             err: str = "Digests mismatched.\nFalling back to cache ..."
             raise ValueError(err)
         log.console(f"{proton}: SHA512 is OK")
 
-    _extract_dir(cache.joinpath(proton), steam_compat)
+    _extract_dir(tmp.joinpath(proton), steam_compat)
     environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
     env["PROTONPATH"] = environ["PROTONPATH"]
 
@@ -208,6 +201,8 @@ def _extract_dir(proton: Path, steam_compat: Path) -> None:
             log.warning("Archive will be extracted insecurely")
 
         log.console(f"Extracting {proton} -> {steam_compat} ...")
+        # TODO: Rather than extracting all of the contents, we should prefer
+        # the difference (e.g., rsync)
         tar.extractall(path=steam_compat.as_posix())  # noqa: S202
         log.console("Completed.")
 
@@ -228,9 +223,13 @@ def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None
 
 
 def _get_from_steamcompat(
-    env: Dict[str, str], steam_compat: Path, cache: Path
+    env: Dict[str, str], steam_compat: Path
 ) -> Union[Dict[str, str], None]:
-    """Refer to Steam compat folder for any existing Proton directories."""
+    """Refer to Steam compat folder for any existing Proton directories.
+
+    Executed when an error occurs when retrieving and setting the latest
+    Proton
+    """
     for proton in sorted(
         [
             proton
@@ -248,57 +247,8 @@ def _get_from_steamcompat(
     return None
 
 
-def _get_from_cache(
-    env: Dict[str, str],
-    steam_compat: Path,
-    cache: Path,
-    files: List[Tuple[str, str]],
-    use_latest: bool = True,
-) -> Union[Dict[str, str], None]:
-    """Refer to umu cache directory.
-
-    Use the latest in the cache when present. When download fails, use an old version
-    Older Proton versions are only referred to when: digests mismatch, user
-    interrupt, or download failure/no internet
-    """
-    resource: Tuple[Path, str] = None  # Path to the archive and its file name
-
-    for tarball in [
-        tarball
-        for tarball in cache.glob("*.tar.gz")
-        if tarball.name.startswith("umu-proton")
-        or tarball.name.startswith("ULWGL-Proton")
-    ]:
-        # Online
-        if files and tarball == cache.joinpath(files[1][0]) and use_latest:
-            resource = (tarball, tarball.name)
-            break
-        # Offline, download interrupt, digest mismatch
-        if not files or not use_latest:
-            resource = (tarball, tarball.name)
-            break
-
-    if not resource:
-        return None
-
-    path, name = resource
-    proton: str = name[: name.find(".tar.gz")]  # Proton dir
-    try:
-        log.console(f"{name} found in: {path}")
-        _extract_dir(path, steam_compat)
-        log.console(f"Using {proton}")
-        environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
-        env["PROTONPATH"] = environ["PROTONPATH"]
-        return env
-    except KeyboardInterrupt:
-        if steam_compat.joinpath(proton).is_dir():
-            log.console(f"Purging {proton} in {steam_compat} ...")
-            rmtree(steam_compat.joinpath(proton).as_posix())
-        raise
-
-
 def _get_latest(
-    env: Dict[str, str], steam_compat: Path, cache: Path, files: List[Tuple[str, str]]
+    env: Dict[str, str], steam_compat: Path, tmp: Path, files: List[Tuple[str, str]]
 ) -> Union[Dict[str, str], None]:
     """Download the latest Proton for new installs -- empty cache and Steam compat.
 
@@ -308,11 +258,22 @@ def _get_latest(
         return None
 
     try:
-        log.console("Fetching latest release ...")
         tarball: str = files[1][0]
+        sums: str = files[0][0]
         proton: str = tarball[: tarball.find(".tar.gz")]
-        _fetch_proton(env, steam_compat, cache, files)
-        log.console(f"Using {proton}")
+
+        if steam_compat.joinpath(proton).is_dir():
+            log.console("umu-proton is up to date")
+            environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
+            env["PROTONPATH"] = environ["PROTONPATH"]
+            return env
+
+        _fetch_proton(env, steam_compat, tmp, files)
+        log.debug("Removing: %s", tarball)
+        log.debug("Removing: %s", sums)
+        tmp.joinpath(tarball).unlink(missing_ok=True)
+        tmp.joinpath(sums).unlink(missing_ok=True)
+        log.console(f"Using umu-proton ({proton})")
         env["PROTONPATH"] = environ["PROTONPATH"]
     except ValueError:
         log.exception("Exception")
@@ -321,7 +282,7 @@ def _get_latest(
         # Digest mismatched
         # Refer to the cache for old version next
         # Since we do not want the user to use a suspect file, delete it
-        cache.joinpath(tarball).unlink(missing_ok=True)
+        tmp.joinpath(tarball).unlink(missing_ok=True)
         return None
     except KeyboardInterrupt:
         tarball: str = files[1][0]
@@ -330,7 +291,7 @@ def _get_latest(
         # Exit cleanly
         # Clean up extracted data and cache to prevent corruption/errors
         # Refer to the cache for old version next
-        _cleanup(tarball, proton_dir, cache, steam_compat)
+        _cleanup(tarball, proton_dir, tmp, steam_compat)
         return None
     except HTTPException:  # Download failed
         return None
