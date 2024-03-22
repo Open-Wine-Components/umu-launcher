@@ -890,11 +890,6 @@ class TestGameLauncher(unittest.TestCase):
         # In this case, assume the test variable will be downloaded
         files = [("", ""), (self.test_archive.name, "")]
 
-        # In the event of an interrupt, both the cache/compat dir will be
-        # checked for the latest release for removal
-        # We do this since the extraction process can be interrupted as well
-        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
-
         with patch("umu_dl_util._fetch_proton") as mock_function:
             # Mock the interrupt
             # We want the dir we tried to extract to be cleaned
@@ -968,148 +963,6 @@ class TestGameLauncher(unittest.TestCase):
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
             self.assertFalse(result, "Expected None to be returned from _get_latest")
 
-    def test_cache_interrupt(self):
-        """Test _get_from_cache on keyboard interrupt when extracting.
-
-        We extract from the cache to the Steam compat dir
-        """
-        # In the real usage, should be populated after successful callout for
-        # latest Proton releases
-        # Just mock it and assumes its the latest
-        files = [("", ""), (self.test_archive.name, "")]
-
-        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
-
-        self.assertTrue(
-            self.test_compat.joinpath(
-                self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
-            ).exists(),
-            "Expected Proton dir to exist in compat",
-        )
-
-        with patch("umu_dl_util._extract_dir") as mock_function:
-            with self.assertRaisesRegex(KeyboardInterrupt, ""):
-                # Mock the interrupt
-                # We want to simulate an interrupt mid-extraction in this case
-                # We want the dir we tried to extract to be cleaned
-                mock_function.side_effect = KeyboardInterrupt
-                umu_dl_util._get_from_cache(
-                    self.env, self.test_compat, self.test_cache, files, True
-                )
-
-                # After interrupt, we attempt to clean the compat dir for the
-                # file we tried to extract because it could be in an incomplete state
-                # Verify that the dir we tried to extract from cache is removed
-                # to avoid corruption on next launch
-                self.assertFalse(
-                    self.test_compat.joinpath(
-                        self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
-                    ).exists(),
-                    "Expected Proton dir in compat to be cleaned",
-                )
-
-    def test_cache_offline(self):
-        """Test _get_from_cache on fallback and when the user is offline.
-
-        In this case, we just get the first Proton that appears since we
-        cannot determine the latest
-        """
-        result = None
-        # When user is offline, there are no files
-        files = []
-
-        result = umu_dl_util._get_from_cache(
-            self.env, self.test_compat, self.test_cache, files, False
-        )
-
-        # Verify that the old Proton was assigned
-        # The test file should be there
-        self.assertTrue(result is self.env, "Expected the same reference")
-        self.assertTrue(
-            os.environ["PROTONPATH"], "Expected PROTONPATH env var to be set"
-        )
-        self.assertTrue(
-            self.env["PROTONPATH"],
-            "Expected PROTONPATH to be updated in dict",
-        )
-
-    def test_cache_old(self):
-        """Test _get_from_cache on fallback for Proton assigned.
-
-        We access the cache a second time when the digests mismatches,
-        interrupted or when the HTTP status code is not 200
-        """
-        result = None
-        files = [("", ""), ("umu-Proton-8.0-5-3.tar.gz", "")]
-
-        # Mock an old Proton version
-        test_proton_dir = Path("umu-Proton-8.0-5-2")
-        test_proton_dir.mkdir(exist_ok=True)
-        test_archive = self.test_cache.joinpath(f"{test_proton_dir.as_posix()}.tar.gz")
-
-        with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
-            tar.add(test_proton_dir.as_posix(), arcname=test_proton_dir.as_posix())
-
-        # By passing False, we do not attempt to find the latest
-        result = umu_dl_util._get_from_cache(
-            self.env, self.test_compat, self.test_cache, files, False
-        )
-
-        self.assertTrue(result is self.env, "Expected the same reference")
-
-        # Any Proton whether the earliest or most recent can be assigned
-        self.assertTrue(
-            os.environ["PROTONPATH"], "Expected PROTONPATH env var to be set"
-        )
-        self.assertTrue(
-            self.env["PROTONPATH"],
-            "Expected PROTONPATH to be updated in dict",
-        )
-
-        test_proton_dir.rmdir()
-
-    def test_cache_empty(self):
-        """Test _get_from_cache when the cache is empty."""
-        result = None
-        # In the real usage, should be populated after successful callout for
-        # latest Proton releases
-        # Just mock it and assumes its the latest
-        files = [("", ""), (self.test_archive.name, "")]
-
-        self.test_archive.unlink()
-
-        result = umu_dl_util._get_from_cache(
-            self.env, self.test_compat, self.test_cache, files, True
-        )
-        self.assertFalse(result, "Expected None when calling _get_from_cache")
-        self.assertFalse(
-            self.env["PROTONPATH"],
-            "Expected PROTONPATH to be empty when the cache is empty",
-        )
-
-    def test_cache(self):
-        """Test _get_from_cache.
-
-        Tests the case when the latest Proton already exists in the cache
-        """
-        result = None
-        # In the real usage, should be populated after successful callout for
-        # latest Proton releases
-        # Just mock it and assumes its the latest
-        files = [("", ""), (self.test_archive.name, "")]
-
-        result = umu_dl_util._get_from_cache(
-            self.env, self.test_compat, self.test_cache, files, True
-        )
-        self.assertTrue(result is self.env, "Expected the same reference")
-        self.assertEqual(
-            self.env["PROTONPATH"],
-            self.test_compat.joinpath(
-                self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
-            ).as_posix(),
-            "Expected PROTONPATH to be proton dir in compat",
-        )
-
     def test_steamcompat_nodir(self):
         """Test _get_from_steamcompat when Proton doesn't exist in compat dir.
 
@@ -1118,9 +971,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        result = umu_dl_util._get_from_steamcompat(
-            self.env, self.test_compat, self.test_cache
-        )
+        result = umu_dl_util._get_from_steamcompat(self.env, self.test_compat)
 
         self.assertFalse(result, "Expected None after calling _get_from_steamcompat")
         self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to not be set")
@@ -1135,9 +986,7 @@ class TestGameLauncher(unittest.TestCase):
 
         umu_dl_util._extract_dir(self.test_archive, self.test_compat)
 
-        result = umu_dl_util._get_from_steamcompat(
-            self.env, self.test_compat, self.test_cache
-        )
+        result = umu_dl_util._get_from_steamcompat(self.env, self.test_compat)
 
         self.assertTrue(result is self.env, "Expected the same reference")
         self.assertEqual(
