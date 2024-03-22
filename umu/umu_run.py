@@ -144,6 +144,11 @@ def check_env(
             os.environ["PROTONPATH"]
         ).as_posix()
 
+    # GE-Proton
+    if os.environ.get("PROTONPATH") and os.environ.get("PROTONPATH") == "GE-Proton":
+        log.debug("GE-Proton selected")
+        get_umu_proton(env)
+
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
         get_umu_proton(env)
