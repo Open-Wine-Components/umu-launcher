@@ -38,7 +38,7 @@ def set_env_toml(
     with Path(path_config).open(mode="rb") as file:
         toml = tomllib.load(file)
 
-    _check_env_toml(env, toml)
+    _check_env_toml(toml)
 
     for key, val in toml["umu"].items():
         if key == "prefix":
@@ -59,7 +59,7 @@ def set_env_toml(
     return env, opts
 
 
-def _check_env_toml(env: Dict[str, str], toml: Dict[str, Any]) -> Dict[str, Any]:
+def _check_env_toml(toml: Dict[str, Any]) -> Dict[str, Any]:
     """Check for required or empty key/value pairs when reading a TOML config.
 
     NOTE: Casing matters in the config and we do not check if the game id is set
@@ -170,8 +170,9 @@ def enable_zenity(command: str, opts: List[str], msg: str) -> int:
         err: str = f"{command} was not found in system"
         raise FileNotFoundError(err)
 
-    with Popen([cmd, *opts], stdout=PIPE, stderr=STDOUT) as proc:
-        with Popen(
+    with (
+        Popen([cmd, *opts], stdout=PIPE, stderr=STDOUT) as proc,
+        Popen(
             [
                 f"{bin}",
                 "--progress",
@@ -181,14 +182,15 @@ def enable_zenity(command: str, opts: List[str], msg: str) -> int:
                 "--pulsate",
             ],
             stdin=PIPE,
-        ) as zenity_proc:
-            try:
-                proc.wait(timeout=300)
-            except TimeoutExpired:
-                zenity_proc.terminate()
-                log.warning("%s timed out after 5 min.", cmd)
-                raise TimeoutError
+        ) as zenity_proc,
+    ):
+        try:
+            proc.wait(timeout=300)
+        except TimeoutExpired:
+            zenity_proc.terminate()
+            log.warning("%s timed out after 5 min.", cmd)
+            raise TimeoutError
 
-            zenity_proc.stdin.close()
+        zenity_proc.stdin.close()
 
-            return zenity_proc.wait()
+        return zenity_proc.wait()

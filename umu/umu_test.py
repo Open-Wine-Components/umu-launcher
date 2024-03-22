@@ -1931,15 +1931,13 @@ class TestGameLauncher(unittest.TestCase):
         An FileNotFoundError should be raised when we fail to set PROTONPATH
         """
         # Mock getting the Proton
-        with self.assertRaises(FileNotFoundError):
-            with patch.object(
-                umu_run,
-                "get_umu_proton",
-                return_value=self.env,
-            ):
-                os.environ["WINEPREFIX"] = self.test_file
-                os.environ["GAMEID"] = self.test_file
-                umu_run.check_env(self.env)
+        with (
+            self.assertRaises(FileNotFoundError),
+            patch.object(umu_run, "get_umu_proton", return_value=self.env),
+        ):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            umu_run.check_env(self.env)
 
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
 from umu_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
-from subprocess import run
+from subprocess import run, CalledProcessError
 from umu_dl_util import get_umu_proton
 from umu_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, UMU_LOCAL
 from umu_util import setup_umu
@@ -107,9 +107,7 @@ def setup_pfx(path: str) -> None:
         log.debug("User home directory exists: %s", wineuser)
 
 
-def check_env(
-    env: Dict[str, str], toml: Dict[str, Any] = None
-) -> Union[Dict[str, str], Dict[str, Any]]:
+def check_env(env: Dict[str, str]) -> Union[Dict[str, str], Dict[str, Any]]:
     """Before executing a game, check for environment variables and set them.
 
     GAMEID is strictly required
@@ -145,7 +143,7 @@ def check_env(
         ).as_posix()
 
     # GE-Proton
-    if os.environ.get("PROTONPATH") and os.environ.get("PROTONPATH") == "GE-Proton":
+    if os.environ.get("PROTONPATH") == "GE-Proton":
         log.debug("GE-Proton selected")
         get_umu_proton(env)
 
@@ -257,7 +255,7 @@ def build_command(
     return command
 
 
-def main() -> int:  # noqa: D103
+def main() -> None:  # noqa: D103
     env: Dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
@@ -352,18 +350,17 @@ def main() -> int:  # noqa: D103
     build_command(env, UMU_LOCAL, command, opts)
     log.debug("%s", command)
 
-    return run(command).returncode
+    return run(command, check=True)
 
 
 if __name__ == "__main__":
     try:
-        sys.exit(main())
+        main()
     except KeyboardInterrupt:
         log.warning("Keyboard Interrupt")
         sys.exit(1)
-    except SystemExit as e:
-        if e.code != 0:
-            raise Exception(e)
+    except CalledProcessError:
+        log.exception("CalledProcessError")
     except Exception:
         log.exception("Exception")
         sys.exit(1)

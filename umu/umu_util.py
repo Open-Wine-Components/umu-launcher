@@ -57,7 +57,7 @@ class UnixUser:
         return uid == self.puid
 
 
-def setup_runtime(root: Path, json: Dict[str, Any]) -> None:  # noqa: D103
+def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
     archive: str = "steam-container-runtime-complete.tar.gz"
     tmp: Path = Path(mkdtemp())
     # Access the 'runtime_platform' value
@@ -233,7 +233,7 @@ def _install_umu(
     copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
-    thread = Thread(target=setup_runtime, args=(root, json))
+    thread = Thread(target=setup_runtime, args=[json])
     thread.start()
 
     # Launcher files
@@ -327,7 +327,7 @@ def _update_umu(
                 if local.joinpath(runtime).is_dir():
                     rmtree(local.joinpath(runtime).as_posix())
 
-                thread = Thread(target=setup_runtime, args=(root, json_root))
+                thread = Thread(target=setup_runtime, args=[json_root])
                 thread.start()
                 log.console(f"Restoring Runtime Platform to {val} ...")
             elif (
@@ -339,7 +339,7 @@ def _update_umu(
                 log.console(f"Updating {key} to {val}")
                 rmtree(local.joinpath("pressure-vessel").as_posix())
                 rmtree(local.joinpath(runtime).as_posix())
-                thread = Thread(target=setup_runtime, args=(root, json_root))
+                thread = Thread(target=setup_runtime, args=[json_root])
                 thread.start()
 
                 json_local["umu"]["versions"]["runtime_platform"] = val

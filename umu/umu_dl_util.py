@@ -295,7 +295,7 @@ def _get_latest(
         log.console(f"Using {version} ({proton})")
         env["PROTONPATH"] = environ["PROTONPATH"]
     except ValueError:
-        log.exception("Exception")
+        log.exception("ValueError")
         tarball: str = files[1][0]
 
         # Digest mismatched
