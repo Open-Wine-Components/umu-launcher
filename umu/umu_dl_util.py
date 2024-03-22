@@ -38,7 +38,7 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
         log.debug("Sending request to api.github.com")
         files = _fetch_releases()
     except gaierror:
-        pass  # User is offline
+        log.debug("Network is unreachable")
 
     # Download the latest Proton
     if _get_latest(env, STEAM_COMPAT, tmp, files):

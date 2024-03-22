@@ -350,7 +350,7 @@ def main() -> int:  # noqa: D103
 
     # Run
     build_command(env, UMU_LOCAL, command, opts)
-    log.debug(command)
+    log.debug("%s", command)
 
     return run(command).returncode
 
