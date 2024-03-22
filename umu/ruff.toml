@@ -72,7 +72,15 @@ select = [
     "ISC",
     # Ensure we're smart when using the logger
     # Specific log statements should execute only when necessary
-    "G"
+    "G",
+    # Prefer collapsing nested if-elif in the else branch
+    "PLR5501",
+    # Simply and catch redundant logic
+    "SIM",
+    # Ensure no useless arguments/paramaters
+    "ARG",
+    # Ensure explicit check= for subprocess.run to avoid silent failures
+    "PLW1510"
 ]
 ignore = [
     # Format
