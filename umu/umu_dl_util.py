@@ -236,14 +236,24 @@ def _get_from_steamcompat(
     Executed when an error occurs when retrieving and setting the latest
     Proton
     """
-    for proton in sorted(
-        [
-            proton
-            for proton in steam_compat.glob("*")
-            if proton.name.startswith("umu-proton")
-            or proton.name.startswith("ULWGL-Proton")
-        ]
-    ):
+    version: Union[Tuple[str], str] = (
+        "GE-Proton"
+        if environ.get("PROTONPATH") == "GE-Proton"
+        else ("umu-proton", "ULWGL-Proton")
+    )
+    protons: List[Path] = sorted(
+        [proton for proton in steam_compat.glob("*") if proton.name.startswith(version)]
+    )
+
+    if protons and version == "GE-Proton":
+        proton: str = protons.pop()
+        log.console(f"{proton.name} found in: {steam_compat}")
+        log.console(f"Using {proton.name}")
+        environ["PROTONPATH"] = proton.as_posix()
+        env["PROTONPATH"] = environ["PROTONPATH"]
+        return env
+    if protons:
+        proton: str = protons.pop()
         log.console(f"{proton.name} found in: {steam_compat}")
         log.console(f"Using {proton.name}")
         environ["PROTONPATH"] = proton.as_posix()
