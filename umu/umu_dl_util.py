@@ -61,10 +61,14 @@ def _fetch_releases() -> List[Tuple[str, str]]:
     conn: HTTPConnection = HTTPSConnection(
         "api.github.com", timeout=30, context=create_default_context()
     )
+    repo: str = "/repos/Open-Wine-Components/umu-proton/releases"
+
+    if environ.get("PROTONPATH") == "GE-Proton":
+        repo = "/repos/GloriousEggroll/proton-ge-custom/releases"
 
     conn.request(
         "GET",
-        "/repos/Open-Wine-Components/umu-proton/releases",
+        repo,
         headers={
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
@@ -85,12 +89,14 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 
             for asset in assets:
                 if (
-                    "name" in asset
+                    asset.get("name")
                     and (
-                        asset["name"].endswith("sum")
+                        asset.get("name").endswith("sum")
                         or (
-                            asset["name"].endswith("tar.gz")
-                            and asset["name"].startswith(("umu-proton", "ULWGL-Proton"))
+                            asset.get("name").endswith("tar.gz")
+                            and asset.get("name").startswith(
+                                ("umu-proton", "ULWGL-Proton", "GE-Proton")
+                            )
                         )
                     )
                     and "browser_download_url" in asset
@@ -261,9 +267,12 @@ def _get_latest(
         tarball: str = files[1][0]
         sums: str = files[0][0]
         proton: str = tarball[: tarball.find(".tar.gz")]
+        version: str = (
+            "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "umu-proton"
+        )
 
         if steam_compat.joinpath(proton).is_dir():
-            log.console("umu-proton is up to date")
+            log.console(f"{version} is up to date")
             environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
             env["PROTONPATH"] = environ["PROTONPATH"]
             return env
@@ -273,7 +282,7 @@ def _get_latest(
         log.debug("Removing: %s", sums)
         tmp.joinpath(tarball).unlink(missing_ok=True)
         tmp.joinpath(sums).unlink(missing_ok=True)
-        log.console(f"Using umu-proton ({proton})")
+        log.console(f"Using {version} ({proton})")
         env["PROTONPATH"] = environ["PROTONPATH"]
     except ValueError:
         log.exception("Exception")
