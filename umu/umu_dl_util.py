@@ -236,10 +236,8 @@ def _get_from_steamcompat(
     Executed when an error occurs when retrieving and setting the latest
     Proton
     """
-    version: Union[Tuple[str], str] = (
-        "GE-Proton"
-        if environ.get("PROTONPATH") == "GE-Proton"
-        else ("umu-proton", "ULWGL-Proton")
+    version: str = (
+        "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
     )
     protons: List[Path] = sorted(
         [proton for proton in steam_compat.glob("*") if proton.name.startswith(version)]
@@ -278,7 +276,7 @@ def _get_latest(
         sums: str = files[0][0]
         proton: str = tarball[: tarball.find(".tar.gz")]
         version: str = (
-            "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "umu-proton"
+            "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
         )
 
         if steam_compat.joinpath(proton).is_dir():
