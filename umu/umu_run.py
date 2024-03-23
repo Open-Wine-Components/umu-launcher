@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
 from umu_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
-from subprocess import run, CalledProcessError
+from subprocess import run
 from umu_dl_util import get_umu_proton
 from umu_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, UMU_LOCAL
 from umu_util import setup_umu
@@ -255,7 +255,7 @@ def build_command(
     return command
 
 
-def main() -> None:  # noqa: D103
+def main() -> int:  # noqa: D103
     env: Dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
@@ -350,17 +350,18 @@ def main() -> None:  # noqa: D103
     build_command(env, UMU_LOCAL, command, opts)
     log.debug("%s", command)
 
-    return run(command, check=True)
+    return run(command, check=False).returncode
 
 
 if __name__ == "__main__":
     try:
-        main()
+        sys.exit(main())
     except KeyboardInterrupt:
         log.warning("Keyboard Interrupt")
         sys.exit(1)
-    except CalledProcessError:
-        log.exception("CalledProcessError")
+    except SystemExit as e:
+        if e.code != 0:
+            raise Exception(e)
     except Exception:
         log.exception("Exception")
         sys.exit(1)
