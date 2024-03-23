@@ -95,7 +95,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
                         or (
                             asset.get("name").endswith("tar.gz")
                             and asset.get("name").startswith(
-                                ("umu-proton", "ULWGL-Proton", "GE-Proton")
+                                ("UMU-Proton", "GE-Proton")
                             )
                         )
                     )
