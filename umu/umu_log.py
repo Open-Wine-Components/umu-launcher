@@ -1,41 +1,50 @@
-import logging
 from sys import stderr
 from umu_consts import SIMPLE_FORMAT, Color
+from logging import (
+    Logger,
+    DEBUG,
+    INFO,
+    WARNING,
+    ERROR,
+    Formatter,
+    StreamHandler,
+    getLogger,
+    LogRecord,
+)
 
 
-class CustomLogger(logging.Logger):  # noqa: D101
-    def __init__(self, log: logging.Logger) -> None:  # noqa: D107
+class CustomLogger(Logger):  # noqa: D101
+    def __init__(self, log: Logger) -> None:  # noqa: D107
         super().__init__(log.name, log.getEffectiveLevel())
 
     def console(self, msg: str) -> None:
         """Display non-debug-related statements to the console.
 
-        Intended to be used to notify umu setup progress state
+        Intended to be used to notify umu setup progress state for command
+        line usage
         """
         print(f"{Color.BOLD.value}{msg}{Color.RESET.value}", file=stderr)
 
 
-class CustomFormatter(logging.Formatter):  # noqa: D101
+class CustomFormatter(Formatter):  # noqa: D101
     def __init__(self, fmt: str = SIMPLE_FORMAT) -> None:
         """Apply colors to the record style for each level."""
         self._fmt = fmt
         self._formats = {
-            logging.DEBUG: f"{Color.DEBUG.value}{self._fmt}",
-            logging.INFO: f"{Color.INFO.value}{self._fmt}",
-            logging.WARNING: f"{Color.WARNING.value}{self._fmt}",
-            logging.ERROR: f"{Color.ERROR.value}{self._fmt}",
+            DEBUG: f"{Color.DEBUG.value}{self._fmt}",
+            INFO: f"{Color.INFO.value}{self._fmt}",
+            WARNING: f"{Color.WARNING.value}{self._fmt}",
+            ERROR: f"{Color.ERROR.value}{self._fmt}",
         }
 
-    def format(self, record: logging.LogRecord) -> str:  # noqa: D102
-        formatter: logging.Formatter = logging.Formatter(
-            self._formats.get(record.levelno)
-        )
+    def format(self, record: LogRecord) -> str:  # noqa: D102
+        formatter: Formatter = Formatter(self._formats.get(record.levelno))
 
         return formatter.format(record)
 
 
-log: CustomLogger = CustomLogger(logging.getLogger(__name__))
+log: CustomLogger = CustomLogger(getLogger(__name__))
 
-console_handler: logging.StreamHandler = logging.StreamHandler(stream=stderr)
+console_handler: StreamHandler = StreamHandler(stream=stderr)
 console_handler.setFormatter(CustomFormatter())
 log.addHandler(console_handler)
