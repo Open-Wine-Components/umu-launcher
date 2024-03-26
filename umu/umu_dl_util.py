@@ -302,6 +302,7 @@ def _get_latest(
         _cleanup(tarball, proton_dir, tmp, steam_compat)
         return None
     except HTTPException:  # Download failed
+        log.exception("HTTPException")
         return None
 
     return env
