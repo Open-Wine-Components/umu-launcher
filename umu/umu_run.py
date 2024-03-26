@@ -278,6 +278,7 @@ def main() -> int:  # noqa: D103
         "PROTON_VERB": "",
         "UMU_ID": "",
         "ULWGL_ID": "",
+        "UMU_ZENITY": "",
     }
     command: List[str] = []
     opts: List[str] = None

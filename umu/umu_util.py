@@ -1,5 +1,5 @@
 from tarfile import open as tar_open, TarInfo
-from os import getuid
+from os import getuid, environ
 from umu_consts import CONFIG, STEAM_COMPAT, UMU_LOCAL
 from typing import Any, Dict, List, Callable
 from json import load, dump
@@ -72,46 +72,35 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
     # Step  1: Define the URL of the file to download
     # We expect the archive name to not change
     base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/{archive}"
+    bin: str = "curl"
+    opts: List[str] = [
+        "-LJO",
+        "--silent",
+        f"{base_url}",
+        "--output-dir",
+        tmp.as_posix(),
+    ]
+    ret: int = 0  # Exit code from zenity
+
     log.debug("URL: %s", base_url)
 
     # Download the runtime
-    # Attempt to create a popup with zenity otherwise print
-    try:
-        bin: str = "curl"
-        opts: List[str] = [
-            "-LJO",
-            "--silent",
-            base_url,
-            "--output-dir",
-            tmp.as_posix(),
-        ]
-
-        msg: str = "Downloading Runtime, please wait..."
+    # Optionally create a popup with zenity
+    if environ.get("UMU_ZENITY") == "1":
+        msg: str = "Downloading UMU-Runtime ..."
         ret: int = enable_zenity(bin, opts, msg)
-
-        # Handle the symbol lookup error from the zenity flatpak in lutris
         if ret:
-            log.warning("zenity exited with the status code: %s", ret)
-            log.warning("zenity will not be used")
             tmp.joinpath(archive).unlink(missing_ok=True)
-            raise FileNotFoundError
-    except TimeoutError:
-        # Without the runtime, the launcher will not work
-        # Just exit on timeout or download failure
-        err: str = (
-            "Unable to download the Steam Runtime\n"
-            "repo.steampowered.com request timed out "
-            "or timeout limit was reached"
-        )
-        raise TimeoutError(err)
-    except FileNotFoundError:
-        log.console(f"Downloading {runtime_platform_value} ...")
-
-        # We hardcode the URL and trust it
-        with urlopen(base_url, timeout=60, context=create_default_context()) as resp:  # noqa: S310
+            log.warning("zenity exited with the status code: %s", ret)
+            log.console("Retrying from Python ...")
+    if not environ.get("UMU_ZENITY") or ret:
+        log.console(f"Downloading {runtime_platform_value}, please wait ...")
+        with urlopen(  # noqa: S310
+            base_url, timeout=300, context=create_default_context()
+        ) as resp:
             if resp.status != 200:
                 err: str = (
-                    "Unable to download the Steam Runtime\n"
+                    f"Unable to download {hash}\n"
                     f"repo.steampowered.com returned the status: {resp.status}"
                 )
                 raise HTTPException(err)
@@ -225,11 +214,11 @@ def _install_umu(
     local.mkdir(parents=True, exist_ok=True)
 
     # Config
-    log.console(f"Copying {CONFIG} -> {local} ...")
+    log.console(f"Copied {CONFIG} -> {local}")
     copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
 
     # Reaper
-    log.console(f"Copying reaper -> {local} ...")
+    log.console(f"Copied reaper -> {local}")
     copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
@@ -239,7 +228,7 @@ def _install_umu(
     # Launcher files
     for file in root.glob("*.py"):
         if not file.name.startswith("umu_test"):
-            log.console(f"Copying {file} -> {local} ...")
+            log.console(f"Copied {file} -> {local}")
             copy(file, local.joinpath(file.name))
 
     local.joinpath("umu-run").symlink_to("umu_run.py")
@@ -247,7 +236,7 @@ def _install_umu(
     # Runner
     steam_compat.mkdir(parents=True, exist_ok=True)
 
-    log.console(f"Copying umu-launcher -> {steam_compat} ...")
+    log.console(f"Copied umu-launcher -> {steam_compat}")
 
     # Remove existing files if they exist -- this is a clean install.
     if steam_compat.joinpath("umu-launcher").is_dir():

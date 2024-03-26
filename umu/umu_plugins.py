@@ -180,6 +180,7 @@ def enable_zenity(command: str, opts: List[str], msg: str) -> int:
                 f"--text={msg}",
                 "--percentage=0",
                 "--pulsate",
+                "--no-cancel",
             ],
             stdin=PIPE,
         ) as zenity_proc,

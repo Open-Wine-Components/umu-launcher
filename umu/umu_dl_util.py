@@ -25,9 +25,6 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
 
     Downloads the latest if not first found in:
     ~/.local/share/Steam/compatibilitytools.d
-
-    The cache directory ~/.cache/umu is referenced for the latest then as
-    fallback
     """
     files: List[Tuple[str, str]] = []
     tmp: Path = Path(mkdtemp())
@@ -124,6 +121,7 @@ def _fetch_proton(
     hash, hash_url = files[0]
     proton, proton_url = files[1]
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
+    ret: int = 0  # Exit code from zenity
 
     log.console(f"Downloading {hash} ...")
 
@@ -147,8 +145,8 @@ def _fetch_proton(
             file.write(resp.read())
 
     # Proton
-    # Check for Zenity otherwise print
-    try:
+    # Create a popup with zenity when the env var is set
+    if environ.get("UMU_ZENITY") == "1":
         bin: str = "curl"
         opts: List[str] = [
             "-LJO",
@@ -157,18 +155,18 @@ def _fetch_proton(
             "--output-dir",
             tmp.as_posix(),
         ]
-
         msg: str = f"Downloading {proton_dir} ..."
-        enable_zenity(bin, opts, msg)
-    except TimeoutError:
-        err: str = f"Unable to download {proton}\ngithub.com request timed out"
-        raise TimeoutError(err)
-    except FileNotFoundError:
+        ret = enable_zenity(bin, opts, msg)
+        if ret:
+            tmp.joinpath(proton).unlink(missing_ok=True)
+            log.warning("zenity exited with the status code: %s", ret)
+            log.console("Retrying from Python ...")
+    if not environ.get("UMU_ZENITY") or ret:
         log.console(f"Downloading {proton} ...")
-
-        with urlopen(proton_url, timeout=180, context=create_default_context()) as resp:  # noqa: S310
+        with urlopen(  # noqa: S310
+            proton_url, timeout=300, context=create_default_context()
+        ) as resp:
             # Without Proton, the launcher will not work
-            # Continue by referring to cache
             if resp.status != 200:
                 err: str = (
                     f"Unable to download {proton}\n"
@@ -185,7 +183,8 @@ def _fetch_proton(
             sha512(file.read()).hexdigest()
             != tmp.joinpath(hash).read_text().split(" ")[0]
         ):
-            err: str = "Digests mismatched.\nFalling back to cache ..."
+            err: str = "Digests mismatched"
+            log.warning(err)
             raise ValueError(err)
         log.console(f"{proton}: SHA512 is OK")
 
@@ -196,9 +195,9 @@ def _fetch_proton(
     return env
 
 
-def _extract_dir(proton: Path, steam_compat: Path) -> None:
+def _extract_dir(file: Path, steam_compat: Path) -> None:
     """Extract from the cache to another location."""
-    with tar_open(proton.as_posix(), "r:gz") as tar:
+    with tar_open(file.as_posix(), "r:gz") as tar:
         if tar_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
@@ -206,23 +205,23 @@ def _extract_dir(proton: Path, steam_compat: Path) -> None:
             log.debug("Using no filter for archive")
             log.warning("Archive will be extracted insecurely")
 
-        log.console(f"Extracting {proton} -> {steam_compat} ...")
+        log.console(f"Extracting {file} -> {steam_compat} ...")
         # TODO: Rather than extracting all of the contents, we should prefer
         # the difference (e.g., rsync)
         tar.extractall(path=steam_compat.as_posix())  # noqa: S202
         log.console("Completed.")
 
 
-def _cleanup(tarball: str, proton: str, cache: Path, steam_compat: Path) -> None:
+def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
     """Remove files that may have been left in an incomplete state to avoid corruption.
 
     We want to do this when a download for a new release is interrupted
     """
     log.console("Keyboard Interrupt.\nCleaning ...")
 
-    if cache.joinpath(tarball).is_file():
-        log.console(f"Purging {tarball} in {cache} ...")
-        cache.joinpath(tarball).unlink()
+    if tmp.joinpath(tarball).is_file():
+        log.console(f"Purging {tarball} in {tmp} ...")
+        tmp.joinpath(tarball).unlink()
     if steam_compat.joinpath(proton).is_dir():
         log.console(f"Purging {proton} in {steam_compat} ...")
         rmtree(steam_compat.joinpath(proton).as_posix())
