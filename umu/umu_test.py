@@ -13,6 +13,7 @@ from argparse import Namespace
 from unittest.mock import patch
 from pathlib import Path
 from shutil import rmtree, copytree, copy
+from pwd import getpwuid
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -42,6 +43,7 @@ class TestGameLauncher(unittest.TestCase):
             "STORE": "",
             "PROTON_VERB": "",
         }
+        self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
         # Proton verb
         # Used when testing build_command
@@ -1679,7 +1681,6 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         pattern = r"^/home/[\w\d]+"
-        user = umu_util.UnixUser()
         unexpanded_path = re.sub(
             pattern,
             "~",
@@ -1695,7 +1696,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Create the symlink to the test file itself
         Path(unexpanded_path).joinpath("drive_c/users").joinpath(
-            user.get_user()
+            self.user
         ).expanduser().symlink_to(Path(self.test_file).absolute())
         Path(unexpanded_path).joinpath("drive_c/users").joinpath(
             "steamuser"
@@ -1716,7 +1717,6 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         pattern = r"^/home/[\w\d]+"
-        user = umu_util.UnixUser()
         unexpanded_path = re.sub(
             pattern,
             "~",
@@ -1727,7 +1727,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Create only the user dir
         Path(unexpanded_path).joinpath("drive_c/users").joinpath(
-            user.get_user()
+            self.user
         ).expanduser().mkdir(parents=True, exist_ok=True)
 
         result = umu_run.setup_pfx(unexpanded_path)
@@ -1745,7 +1745,7 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertEqual(
             Path(self.test_file).joinpath("drive_c/users/steamuser").readlink(),
-            Path(user.get_user()),
+            Path(self.user),
             "Expected steamuser -> user",
         )
 
@@ -1755,7 +1755,6 @@ class TestGameLauncher(unittest.TestCase):
         Tests the case when only steamuser exist and the user dir does not exist
         """
         result = None
-        user = umu_util.UnixUser()
         pattern = r"^/home/[\w\d]+"
         unexpanded_path = re.sub(
             pattern,
@@ -1784,15 +1783,13 @@ class TestGameLauncher(unittest.TestCase):
             "Expected steamuser to be created",
         )
         self.assertTrue(
-            Path(unexpanded_path + "/drive_c/users/" + user.get_user())
+            Path(unexpanded_path + "/drive_c/users/" + self.user)
             .expanduser()
             .is_symlink(),
             "Expected symbolic link for unixuser",
         )
         self.assertEqual(
-            Path(self.test_file)
-            .joinpath(f"drive_c/users/{user.get_user()}")
-            .readlink(),
+            Path(self.test_file).joinpath(f"drive_c/users/{self.user}").readlink(),
             Path("steamuser"),
             "Expected unixuser -> steamuser",
         )
@@ -1876,7 +1873,6 @@ class TestGameLauncher(unittest.TestCase):
     def test_setup_pfx(self):
         """Test setup_pfx."""
         result = None
-        user = umu_util.UnixUser()
         result = umu_run.setup_pfx(self.test_file)
         self.assertIsNone(
             result,
@@ -1896,7 +1892,7 @@ class TestGameLauncher(unittest.TestCase):
             "Expected steamuser to be created",
         )
         self.assertTrue(
-            Path(self.test_file + "/drive_c/users/" + user.get_user())
+            Path(self.test_file + "/drive_c/users/" + self.user)
             .expanduser()
             .is_symlink(),
             "Expected symlink of username -> steamuser",
