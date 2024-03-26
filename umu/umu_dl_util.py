@@ -28,7 +28,6 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     """
     files: List[Tuple[str, str]] = []
     tmp: Path = Path(mkdtemp())
-
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
     try:
@@ -115,7 +114,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 
 
 def _fetch_proton(
-    env: Dict[str, str], steam_compat: Path, tmp: Path, files: List[Tuple[str, str]]
+    env: Dict[str, str], tmp: Path, files: List[Tuple[str, str]]
 ) -> Dict[str, str]:
     """Download the latest umu-proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
@@ -187,10 +186,6 @@ def _fetch_proton(
             log.warning(err)
             raise ValueError(err)
         log.console(f"{proton}: SHA512 is OK")
-
-    _extract_dir(tmp.joinpath(proton), steam_compat)
-    environ["PROTONPATH"] = steam_compat.joinpath(proton_dir).as_posix()
-    env["PROTONPATH"] = environ["PROTONPATH"]
 
     return env
 
@@ -284,7 +279,12 @@ def _get_latest(
             env["PROTONPATH"] = environ["PROTONPATH"]
             return env
 
-        _fetch_proton(env, steam_compat, tmp, files)
+        _fetch_proton(env, tmp, files)
+
+        _extract_dir(tmp.joinpath(tarball), steam_compat)
+        environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
+        env["PROTONPATH"] = environ["PROTONPATH"]
+
         log.debug("Removing: %s", tarball)
         log.debug("Removing: %s", sums)
         tmp.joinpath(tarball).unlink(missing_ok=True)
