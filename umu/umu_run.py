@@ -215,6 +215,9 @@ def set_env(
     env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + UMU_LOCAL.as_posix()
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
+    # Game drive
+    enable_steam_game_drive(env)
+
     return env
 
 
@@ -341,9 +344,6 @@ def main() -> int:  # noqa: D103
 
     # Configure the environment
     set_env(env, args)
-
-    # Game drive
-    enable_steam_game_drive(env)
 
     # Set all environment variables
     # NOTE: `env` after this block should be read only
