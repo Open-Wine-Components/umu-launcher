@@ -11,7 +11,6 @@ from umu_plugins import enable_zenity
 from urllib.request import urlopen
 from ssl import create_default_context
 from http.client import HTTPException
-from socket import AF_INET, SOCK_DGRAM, socket
 from tempfile import mkdtemp
 from threading import Thread
 
@@ -174,17 +173,6 @@ def setup_umu(root: Path, local: Path) -> None:
     """
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
-
-    try:
-        with socket(AF_INET, SOCK_DGRAM) as sock:
-            sock.settimeout(5)
-            sock.connect(("1.1.1.1", 53))
-    except TimeoutError:
-        log.debug("User is offline")
-        raise
-    except OSError:
-        raise
-
     json: Dict[str, Any] = _get_json(root, CONFIG)
 
     # New install or umu dir is empty
@@ -207,7 +195,6 @@ def _install_umu(
     SteamRT, Pressure Vessel, umu-launcher, umu Launcher files, Reaper
     and umu_version.json
     """
-    thread: Thread = None
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux ...")
 
@@ -221,10 +208,6 @@ def _install_umu(
     log.console(f"Copied reaper -> {local}")
     copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
-    # Runtime platform
-    thread = Thread(target=setup_runtime, args=[json])
-    thread.start()
-
     # Launcher files
     for file in root.glob("*.py"):
         if not file.name.startswith("umu_test"):
@@ -234,26 +217,24 @@ def _install_umu(
     local.joinpath("umu-run").symlink_to("umu_run.py")
 
     # Runner
-    steam_compat.mkdir(parents=True, exist_ok=True)
-
     log.console(f"Copied umu-launcher -> {steam_compat}")
-
+    steam_compat.mkdir(parents=True, exist_ok=True)
     # Remove existing files if they exist -- this is a clean install.
     if steam_compat.joinpath("umu-launcher").is_dir():
         rmtree(steam_compat.joinpath("umu-launcher").as_posix())
-
     copytree(
         root.joinpath("umu-launcher"),
         steam_compat.joinpath("umu-launcher"),
         dirs_exist_ok=True,
         symlinks=True,
     )
-
     steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
         "../../../umu/umu_run.py"
     )
 
-    thread.join()
+    # Runtime platform
+    setup_runtime(json)
+
     log.console("Completed.")
 
 

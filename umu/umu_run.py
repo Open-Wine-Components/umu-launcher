@@ -15,6 +15,8 @@ from umu_log import log, console_handler, CustomFormatter
 from umu_util import UnixUser
 from logging import INFO, WARNING, DEBUG
 from errno import ENETUNREACH
+from threading import Thread
+from socket import AF_INET, SOCK_DGRAM, socket
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
@@ -285,8 +287,7 @@ def main() -> int:  # noqa: D103
     # Expected files in this dir: pressure vessel, launcher files, runner,
     # config, reaper
     root: Path = Path(__file__).resolve().parent
-    # Expects this dir to be in sync with root
-    # On update, files will be selectively updated
+    thread: Thread = None
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
 
     if "musl" in os.environ.get("LD_LIBRARY_PATH", ""):
@@ -301,7 +302,11 @@ def main() -> int:  # noqa: D103
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
     try:
-        setup_umu(root, UMU_LOCAL)
+        with socket(AF_INET, SOCK_DGRAM) as sock:
+            sock.settimeout(5)
+            sock.connect(("1.1.1.1", 53))
+        thread = Thread(target=setup_umu, args=[root, UMU_LOCAL])
+        thread.start()
     except TimeoutError:  # Request to a server timed out
         if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
             err: str = (
@@ -346,6 +351,9 @@ def main() -> int:  # noqa: D103
     for key, val in env.items():
         log.info("%s=%s", key, val)
         os.environ[key] = val
+
+    if thread:
+        thread.join()
 
     # Run
     build_command(env, UMU_LOCAL, command, opts)
