@@ -34,14 +34,6 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
     # Step  1: Define the URL of the file to download
     # We expect the archive name to not change
     base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/{archive}"
-    bin: str = "curl"
-    opts: List[str] = [
-        "-LJO",
-        "--silent",
-        f"{base_url}",
-        "--output-dir",
-        tmp.as_posix(),
-    ]
     ret: int = 0  # Exit code from zenity
 
     log.debug("URL: %s", base_url)
@@ -49,6 +41,14 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
     # Download the runtime
     # Optionally create a popup with zenity
     if environ.get("UMU_ZENITY") == "1":
+        bin: str = "curl"
+        opts: List[str] = [
+            "-LJO",
+            "--silent",
+            f"{base_url}",
+            "--output-dir",
+            tmp.as_posix(),
+        ]
         msg: str = "Downloading UMU-Runtime ..."
         ret: int = enable_zenity(bin, opts, msg)
         if ret:
@@ -139,7 +139,6 @@ def setup_umu(root: Path, local: Path) -> None:
     json: Dict[str, Any] = _get_json(root, CONFIG)
 
     # New install or umu dir is empty
-    # Be lazy and don't implement fallback mechanisms
     if not local.exists() or not any(local.iterdir()):
         return _install_umu(root, local, STEAM_COMPAT, json)
 
