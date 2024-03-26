@@ -12,11 +12,11 @@ from umu_dl_util import get_umu_proton
 from umu_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, UMU_LOCAL
 from umu_util import setup_umu
 from umu_log import log, console_handler, CustomFormatter
-from umu_util import UnixUser
 from logging import INFO, WARNING, DEBUG
 from errno import ENETUNREACH
 from threading import Thread
 from socket import AF_INET, SOCK_DGRAM, socket
+from pwd import getpwuid
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
@@ -72,10 +72,9 @@ def setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
     pfx: Path = Path(path).joinpath("pfx").expanduser()
     steam: Path = Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
-    user: UnixUser = UnixUser()
-    wineuser: Path = (
-        Path(path).expanduser().joinpath("drive_c", "users", user.get_user())
-    )
+    # Login name of the user as determined by the password database (pwd)
+    user: str = getpwuid(os.getuid()).pw_name
+    wineuser: Path = Path(path).expanduser().joinpath("drive_c", "users", user)
 
     if pfx.is_symlink():
         pfx.unlink()
@@ -99,7 +98,7 @@ def setup_pfx(path: str) -> None:
     elif wineuser.is_dir() and not steam.is_dir() and not steam.is_symlink():
         # When there's a user dir: steamuser -> user
         steam.unlink(missing_ok=True)
-        steam.symlink_to(user.get_user())
+        steam.symlink_to(user)
     elif not wineuser.exists() and not wineuser.is_symlink() and steam.is_dir():
         wineuser.unlink(missing_ok=True)
         wineuser.symlink_to("steamuser")

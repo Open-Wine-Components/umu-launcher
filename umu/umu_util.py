@@ -1,11 +1,10 @@
 from tarfile import open as tar_open, TarInfo
-from os import getuid, environ
+from os import environ
 from umu_consts import CONFIG, STEAM_COMPAT, UMU_LOCAL
 from typing import Any, Dict, List, Callable
 from json import load, dump
 from umu_log import log
 from pathlib import Path
-from pwd import struct_passwd, getpwuid
 from shutil import rmtree, move, copy, copytree
 from umu_plugins import enable_zenity
 from urllib.request import urlopen
@@ -18,42 +17,6 @@ try:
     from tarfile import tar_filter
 except ImportError:
     tar_filter: Callable[[str, str], TarInfo] = None
-
-
-class UnixUser:
-    """Represents the User of the system as determined by password db (pwd).
-
-    This contrasts with environment variables or file system paths
-    """
-
-    def __init__(self) -> None:
-        """Immutable properties of the user determined by pwd.
-
-        Values are derived from the real user id
-        """
-        uid: int = getuid()
-        entry: struct_passwd = getpwuid(uid)
-        # Immutable properties, hence no setters
-        self.name: str = entry.pw_name
-        self.puid: str = entry.pw_uid  # Should be equivalent to the value from getuid
-        self.dir: str = entry.pw_dir
-        self.is_user: bool = self.puid == uid
-
-    def get_home_dir(self) -> Path:
-        """User home directory."""
-        return Path(self.dir).as_posix()
-
-    def get_user(self) -> str:
-        """Username (login name)."""
-        return self.name
-
-    def get_puid(self) -> int:
-        """Numerical user ID."""
-        return self.puid
-
-    def is_user(self, uid: int) -> bool:
-        """Compare the UID passed in to this instance."""
-        return uid == self.puid
 
 
 def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
