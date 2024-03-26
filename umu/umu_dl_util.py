@@ -47,6 +47,7 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
 
     # No internet and compat tool is empty, just return and raise an
     # exception from the caller
+    environ["PROTONPATH"] = ""
     return env
 
 
