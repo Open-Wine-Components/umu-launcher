@@ -237,13 +237,6 @@ def _get_from_steamcompat(
         [proton for proton in steam_compat.glob("*") if proton.name.startswith(version)]
     )
 
-    if protons and version == "GE-Proton":
-        proton: str = protons.pop()
-        log.console(f"{proton.name} found in: {steam_compat}")
-        log.console(f"Using {proton.name}")
-        environ["PROTONPATH"] = proton.as_posix()
-        env["PROTONPATH"] = environ["PROTONPATH"]
-        return env
     if protons:
         proton: str = protons.pop()
         log.console(f"{proton.name} found in: {steam_compat}")
@@ -290,7 +283,6 @@ def _get_latest(
         tmp.joinpath(tarball).unlink(missing_ok=True)
         tmp.joinpath(sums).unlink(missing_ok=True)
         log.console(f"Using {version} ({proton})")
-        env["PROTONPATH"] = environ["PROTONPATH"]
     except ValueError:
         log.exception("ValueError")
         tarball: str = files[1][0]
