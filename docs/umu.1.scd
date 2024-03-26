@@ -83,7 +83,8 @@ $ WINEPREFIX= GAMEID=0 umu-run foo.exe
 *Example 6. Run a game, automatically set Proton, and create a WINE prefix*
 
 ```
-# This will create the prefix as ~/Games/umu/<umu-$GAMEID>
+# This will create the prefix as ~/Games/umu/<umu-$GAMEID> and will
+# set the latest UMU-Proton for the game
 $ GAMEID=0 umu-run foo.exe
 ```
 
@@ -107,6 +108,13 @@ $ umu_LOG=1 WINEPREFIX= GAMEID=0 PROTONPATH= umu-run ~/foo.exe
 # The launcher will check for GE-Proton9-1 at
 # ~/.local/share/Steam/compatibilitytools.d
 $ WINEPREFIX= GAMEID=0 PROTONPATH=GE-Proton9-1 umu-run ~/foo.exe
+```
+
+*Example 10. Run a game and automatically use the latest GE-Proton*
+
+```
+# This will fetch for the latest GE-Proton build each run and set it
+$ WINEPREFIX= GAMEID=0 PROTONPATH=GE-Proton umu-run ~/foo.exe
 ```
 
 # AUTHORS
