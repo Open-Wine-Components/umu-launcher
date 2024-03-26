@@ -163,6 +163,53 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
 
+    def test_ge_proton(self):
+        """Test check_env when the code name GE-Proton is set for PROTONPATH.
+
+        Tests the case when the user has no internet connection or GE-Proton
+        wasn't found in local system.
+        """
+        test_archive = self.test_archive.rename("GE-Proton9-2.tar.gz")
+        umu_dl_util._extract_dir(test_archive, self.test_compat)
+
+        with (
+            self.assertRaises(FileNotFoundError),
+            patch.object(umu_dl_util, "_fetch_releases", return_value=None),
+            patch.object(umu_dl_util, "_get_latest", return_value=None),
+            patch.object(umu_dl_util, "_get_from_steamcompat", return_value=None),
+        ):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["PROTONPATH"] = "GE-Proton"
+            umu_run.check_env(self.env)
+            self.assertEqual(
+                self.env["PROTONPATH"],
+                self.test_compat.joinpath(
+                    self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
+                ).as_posix(),
+                "Expected PROTONPATH to be proton dir in compat",
+            )
+
+        test_archive.unlink()
+
+    def test_ge_proton_none(self):
+        """Test check_env when the code name GE-Proton is set for PROTONPATH.
+
+        Tests the case when the user has no internet connection or GE-Proton
+        wasn't found in local system.
+        """
+        with (
+            self.assertRaises(FileNotFoundError),
+            patch.object(umu_dl_util, "_fetch_releases", return_value=None),
+            patch.object(umu_dl_util, "_get_latest", return_value=None),
+            patch.object(umu_dl_util, "_get_from_steamcompat", return_value=None),
+        ):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["PROTONPATH"] = "GE-Proton"
+            umu_run.check_env(self.env)
+            self.assertFalse(os.environ.get("PROTONPATH"), "Expected empty string")
+
     def test_update_umu_empty(self):
         """Test _update_umu by mocking an update to the runtime tools.
 
