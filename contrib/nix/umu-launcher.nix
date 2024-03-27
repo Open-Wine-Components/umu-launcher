@@ -1,7 +1,7 @@
 {stdenv , umu-launcher, pkgs, ...}:
 stdenv.mkDerivation {
   pname = "umu-launcher";
-  version = "0.01";
+  version = "0.1";
   src = umu-launcher;
   depsBuildBuild = [
     pkgs.meson
