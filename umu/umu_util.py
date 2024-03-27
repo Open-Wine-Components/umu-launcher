@@ -233,7 +233,7 @@ def _update_umu(
             if not local.joinpath("reaper").is_file():
                 log.warning("Reaper not found")
                 copy(root.joinpath("reaper"), local.joinpath("reaper"))
-                log.console(f"Restored {key} to {val} ...")
+                log.console(f"Restored {key} to {val}")
 
             # Update
             if val != reaper:
