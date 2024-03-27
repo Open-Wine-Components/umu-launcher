@@ -7,11 +7,6 @@ let
 in
 buildFHSEnv {
   name = "umu";
-  #runScript = ''
-
-  #  ${exportLDPath}
-  #  ${package}/bin/umu-run
-  #'';
   runScript = writeShellScript "umu-env" ''
     ${exportLDPath}
     ${package}/bin/umu-run "$@"

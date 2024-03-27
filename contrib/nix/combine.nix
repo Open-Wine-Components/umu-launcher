@@ -1,4 +1,4 @@
-{ pkgs, env, package, symlinkJoin }:
+{ env, package, symlinkJoin }:
 symlinkJoin {
   name = "yes";
   paths = [
