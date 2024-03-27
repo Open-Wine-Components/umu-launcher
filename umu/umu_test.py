@@ -1012,6 +1012,77 @@ class TestGameLauncher(unittest.TestCase):
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
             self.assertFalse(result, "Expected None to be returned from _get_latest")
 
+    def test_latest_umu(self):
+        """Test _get_latest when online and when an empty PROTONPATH is set.
+
+        Tests that the latest UMU-Proton was set to PROTONPATH and old
+        stable versions were removed in the process.
+        """
+        result = None
+        latest = Path("UMU-Proton-9.0-beta16")
+        latest.mkdir()
+        Path(f"{latest}.sha512sum").touch()
+        files = [(f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", "")]
+
+        # Mock the latest Proton in /tmp
+        test_archive = self.test_cache.joinpath(f"{latest}.tar.gz")
+        with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
+            tar.add(latest.as_posix(), arcname=latest.as_posix())
+
+        # Mock old versions
+        self.test_compat.joinpath("UMU-Proton-9.0-beta15").mkdir()
+        self.test_compat.joinpath("UMU-Proton-9.0-beta14").mkdir()
+        self.test_compat.joinpath("ULWGL-Proton-8.0-5-2").mkdir()
+
+        # Create foo files and GE-Proton. We do *not* want unintended
+        # removals
+        self.test_compat.joinpath("foo").mkdir()
+        self.test_compat.joinpath("GE-Proton9-2").mkdir()
+
+        os.environ["PROTONPATH"] = ""
+
+        with (
+            patch("umu_dl_util._fetch_proton"),
+        ):
+            result = umu_dl_util._get_latest(
+                self.env, self.test_compat, self.test_cache, files
+            )
+            self.assertTrue(result is self.env, "Expected the same reference")
+            # Verify the latest was set
+            self.assertEqual(
+                self.env.get("PROTONPATH"),
+                self.test_compat.joinpath(latest).as_posix(),
+                "Expected latest to be set",
+            )
+            # Verify that the old versions were deleted
+            self.assertFalse(
+                self.test_compat.joinpath("UMU-Proton-9.0-beta15").exists(),
+                "Expected old version to be removed",
+            )
+            self.assertFalse(
+                self.test_compat.joinpath("UMU-Proton-9.0-beta14").exists(),
+                "Expected old version to be removed",
+            )
+            self.assertFalse(
+                self.test_compat.joinpath("ULWGL-Proton-8.0-5-2").exists(),
+                "Expected old version to be removed",
+            )
+            # Verify foo files survived
+            self.assertTrue(
+                self.test_compat.joinpath("foo").exists(), "Expected foo to survive"
+            )
+            self.assertTrue(
+                self.test_compat.joinpath("GE-Proton9-2").exists(),
+                "Expected GE-Proton9-2 to survive",
+            )
+            self.assertTrue(
+                self.test_compat.joinpath("UMU-Latest").is_symlink(),
+                "Expected UMU-Latest symlink",
+            )
+
+        latest.rmdir()
+        Path(f"{latest}.sha512sum").unlink()
+
     def test_steamcompat_nodir(self):
         """Test _get_from_steamcompat when Proton doesn't exist in compat dir.
 
