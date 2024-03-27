@@ -13,6 +13,7 @@ from socket import gaierror
 from umu_log import log
 from umu_consts import STEAM_COMPAT
 from tempfile import mkdtemp
+from threading import Thread
 
 try:
     from tarfile import tar_filter
@@ -275,7 +276,39 @@ def _get_latest(
 
         _fetch_proton(env, tmp, files)
 
-        _extract_dir(tmp.joinpath(tarball), steam_compat)
+        # Set latest UMU/GE-Proton
+        if version == "UMU-Proton":
+            threads: List[Thread] = []
+            log.debug("Updating UMU-Proton")
+            old_versions: List[Path] = sorted(
+                [
+                    file
+                    for file in steam_compat.glob("*")
+                    if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
+                ]
+            )
+            tar_path: Path = tmp.joinpath(tarball)
+
+            # Extract the latest archive and update UMU-Proton
+            # Will extract and remove the previous stable versions
+            # Though, ideally, an in-place differential update would be
+            # performed instead for this job but this will do for now
+            log.debug("Extracting %s -> %s", tar_path, steam_compat)
+            extract: Thread = Thread(target=_extract_dir, args=[tar_path, steam_compat])
+            extract.start()
+            threads.append(extract)
+            update: Thread = Thread(
+                target=_update_proton, args=[proton, steam_compat, old_versions]
+            )
+            update.start()
+            threads.append(update)
+            for thread in threads:
+                thread.join()
+        else:
+            # For GE-Proton, keep the previous build. Since it's a rebase
+            # of bleeding edge, regressions are more likely to occur
+            _extract_dir(tmp.joinpath(tarball), steam_compat)
+
         environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
 
@@ -289,7 +322,6 @@ def _get_latest(
         tarball: str = files[1][0]
 
         # Digest mismatched
-        # Refer to the cache for old version next
         # Since we do not want the user to use a suspect file, delete it
         tmp.joinpath(tarball).unlink(missing_ok=True)
         return None
@@ -299,7 +331,6 @@ def _get_latest(
 
         # Exit cleanly
         # Clean up extracted data and cache to prevent corruption/errors
-        # Refer to the cache for old version next
         _cleanup(tarball, proton_dir, tmp, steam_compat)
         return None
     except HTTPException:  # Download failed
@@ -307,3 +338,42 @@ def _get_latest(
         return None
 
     return env
+
+
+def _update_proton(proton: str, steam_compat: Path, old_versions: List[Path]) -> None:
+    """Create a symbolic link and remove the previous UMU-Proton.
+
+    The symbolic link will be used by clients to reference the PROTONPATH
+    which can be used for tasks such as killing the running wineserver in
+    the prefix
+
+    Assumes that the directories that are named ULWGL/UMU-Proton is ours
+    and will be removed.
+    """
+    threads: List[Thread] = []
+    old: Path = None
+    log.debug("Old: %s", old_versions)
+    log.debug("Linking UMU-Latest -> %s", proton)
+    steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
+    steam_compat.joinpath("UMU-Latest").symlink_to(proton)
+
+    if not old_versions:
+        return
+
+    old = old_versions.pop()
+    if old.is_dir():
+        log.debug("Removing: %s", old)
+        oldest: Thread = Thread(target=rmtree, args=[old.as_posix()])
+        oldest.start()
+        threads.append(oldest)
+
+    for proton in old_versions:
+        if proton.is_dir():
+            log.debug("Old stable build found")
+            log.debug("Removing: %s", proton)
+            sibling: Thread = Thread(target=rmtree, args=[proton.as_posix()])
+            sibling.start()
+            threads.append(sibling)
+
+    for thread in threads:
+        thread.join()
