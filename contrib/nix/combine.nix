@@ -1,12 +1,11 @@
 { env, package, symlinkJoin }:
 symlinkJoin {
-  name = "yes";
+  name = "umu-combine";
   paths = [
     env
     package
   ];
   postBuild = ''
     rm $out/bin/umu-run
-    echo hi
   '';
 }

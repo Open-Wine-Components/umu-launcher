@@ -6,8 +6,6 @@
   outputs = { self, nixpkgs }:
   let
     umu-package = nixpkgs.legacyPackages.x86_64-linux.callPackage ./umu-launcher.nix { umu-launcher=( builtins.toPath "${self}/../../"); };
-  in
-  let
     umu-run = nixpkgs.legacyPackages.x86_64-linux.callPackage ./umu-run.nix { package=umu-package; };
   in{
     packages.x86_64-linux.umu = nixpkgs.legacyPackages.x86_64-linux.callPackage ./combine.nix { env=umu-run; package=umu-package; };
