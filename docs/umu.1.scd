@@ -99,7 +99,7 @@ $ WINEPREFIX= GAMEID=0 PROTONPATH= PROTON_VERB=waitforexitandrun umu-run ~/foo.e
 ```
 # Shows environment variables and command at this level
 # Valid values for umu_LOG include: 1, warn, debug
-$ umu_LOG=1 WINEPREFIX= GAMEID=0 PROTONPATH= umu-run ~/foo.exe
+$ UMU_LOG=1 WINEPREFIX= GAMEID=0 PROTONPATH= umu-run ~/foo.exe
 ```
 
 *Example 9. Run a game and set a Proton by its version name*
