@@ -23,18 +23,17 @@ def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
     opt_args: Set[str] = {"--help", "-h", "--config"}
     parser: ArgumentParser = ArgumentParser(
         description="Unified Linux Wine Game Launcher",
-        epilog="See umu(1) for more info and examples.",
+        epilog=(
+            "See umu(1) for more info and examples, or visit\n"
+            "https://github.com/Open-Wine-Components/umu-launcher"
+        ),
         formatter_class=RawTextHelpFormatter,
     )
     parser.add_argument("--config", help="path to TOML file (requires Python 3.11+)")
 
     if not sys.argv[1:]:
-        err: str = (
-            "Please see project README.md for more info and examples.\n"
-            "https://github.com/Open-Wine-Components/umu-launcher"
-        )
         parser.print_help(sys.stderr)
-        raise SystemExit(err)
+        sys.exit(1)
 
     if sys.argv[1:][0] in opt_args:
         return parser.parse_args(sys.argv[1:])
@@ -294,7 +293,8 @@ def main() -> int:  # noqa: D103
 
     if "musl" in os.environ.get("LD_LIBRARY_PATH", ""):
         err: str = "This script is not designed to run on musl-based systems"
-        raise SystemExit(err)
+        log.error(err)
+        sys.exit(1)
 
     if "UMU_LOG" in os.environ:
         set_log()
@@ -366,13 +366,12 @@ if __name__ == "__main__":
         sys.exit(main())
     except KeyboardInterrupt:
         log.warning("Keyboard Interrupt")
-        sys.exit(1)
     except SystemExit as e:
-        if e.code != 0:
-            raise Exception(e)
-    except Exception:
-        log.exception("Exception")
-        sys.exit(1)
+        if e.code:
+            log.debug("subprocess exited the status code: %s", e.code)
+            sys.exit(e.code)
+    except BaseException:
+        log.exception("BaseException")
     finally:
         UMU_LOCAL.joinpath(".ref").unlink(
             missing_ok=True
