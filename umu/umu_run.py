@@ -228,11 +228,9 @@ def build_command(
 
     # Raise an error if the _v2-entry-point cannot be found
     if not local.joinpath("umu").is_file():
-        home: str = Path.home().as_posix()
-        dir: str = Path(__file__).parent.as_posix()
         msg: str = (
             "Path to _v2-entry-point cannot be found in: "
-            f"{home}/.local/share or {dir}\n"
+            f"{local}\n"
             "Please install a Steam Runtime platform"
         )
         raise FileNotFoundError(msg)
