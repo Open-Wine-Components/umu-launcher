@@ -291,6 +291,11 @@ def main() -> int:  # noqa: D103
     thread: Thread = None
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
 
+    if os.geteuid() == 0:
+        err: str = "This script should never be run as the root user"
+        log.error(err)
+        sys.exit(1)
+
     if "musl" in os.environ.get("LD_LIBRARY_PATH", ""):
         err: str = "This script is not designed to run on musl-based systems"
         log.error(err)
