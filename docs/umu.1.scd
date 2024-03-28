@@ -74,9 +74,10 @@ $ WINEPREFIX=~/foo GAMEID=0 PROTONPATH= umu-run ""
 *Example 5. Run a game and automatically set Proton*
 
 ```
-# First checks for a recent Proton at ~/.local/share/Steam/compatibilitytools.d
-# When Proton cannot be found, the latest umu-Proton will be downloaded
-# The cache ~/.cache/umu will be checked if the download fails or interrupted
+# Always checks for the latest release of UMU-Proton, and will download then
+# use it when available
+# NOTE: Previous stable versions of UMU-Proton will be auto removed in
+# compatibilitytools.d after the latest has been downloaded
 $ WINEPREFIX= GAMEID=0 umu-run foo.exe
 ```
 
