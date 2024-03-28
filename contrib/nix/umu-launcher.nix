@@ -7,7 +7,6 @@ stdenv.mkDerivation {
     pkgs.meson
     pkgs.ninja
     pkgs.scdoc
-    pkgs.git
   ];
   dontUseMesonConfigure = true;
   dontUseNinjaBuild = true;
