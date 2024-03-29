@@ -111,7 +111,7 @@ export PATH="$HOME/.local/bin:$PATH"
 ```
 
 # Packages:  
-## NisOS
+## NixOS
 if you want to add umu-launcher as a flake add this to your inputs in flake.nix
 ```nix
   inputs = {
