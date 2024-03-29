@@ -110,6 +110,26 @@ You will need to add `$HOME/.local/bin` in your `$PATH` to be able to run umu th
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
+# Packages:  
+## NisOS
+if you want to add umu-launcher as a flake add this to your inputs in flake.nix
+```nix
+  inputs = {
+    umu= {
+      url = "git+https://github.com/Open-Wine-Components/umu-launcher/?dir=packaging\/nix&submodules=1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  }
+```
+and in your configuration.nix (or obv any file in your config)
+```nix
+{inputs, pkgs, ... }:
+{
+  environment.systemPackages = [  inputs.umu.packages.${pkgs.system}.umu  ];
+}
+```
+if there is any problem with the flake feel free to open a bug report and tag any of the maintainers
+> maintainers: @beh-10257
 
 # Usage notes:  
 
