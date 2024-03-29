@@ -121,7 +121,7 @@ if you want to add umu-launcher as a flake add this to your inputs in flake.nix
     };
   }
 ```
-and in your configuration.nix (or obviously any file in your config)
+and in your configuration.nix
 ```nix
 {inputs, pkgs, ... }:
 {
