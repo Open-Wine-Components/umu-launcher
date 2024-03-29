@@ -1,11 +1,11 @@
 from tarfile import open as tar_open, TarInfo
 from os import environ
-from umu_consts import CONFIG, STEAM_COMPAT, UMU_LOCAL
+from umu_consts import CONFIG, STEAM_COMPAT, UMU_LOCAL, MODE
 from typing import Any, Dict, List, Callable
 from json import load, dump
 from umu_log import log
 from pathlib import Path
-from shutil import rmtree, move, copy, copytree
+from shutil import rmtree, move, copy
 from umu_plugins import enable_zenity
 from urllib.request import urlopen
 from ssl import create_default_context
@@ -154,8 +154,7 @@ def _install_umu(
     ~/.local/share/umu, ~/.local/share/Steam/compatibilitytools.d
 
     The tools that will be copied are:
-    SteamRT, Pressure Vessel, umu-launcher, umu Launcher files, Reaper
-    and umu_version.json
+    umu-launcher, umu Launcher files, reaper and umu_version.json
     """
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux ...")
@@ -164,17 +163,18 @@ def _install_umu(
 
     # Config
     log.console(f"Copied {CONFIG} -> {local}")
-    copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
+    _copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
 
     # Reaper
     log.console(f"Copied reaper -> {local}")
-    copy(root.joinpath("reaper"), local.joinpath("reaper"))
+    _copy(root.joinpath("reaper"), local.joinpath("reaper"), MODE.USER_RWX)
 
     # Launcher files
     for file in root.glob("*.py"):
-        if not file.name.startswith("umu_test"):
+        if not file.name.startswith(("umu_test", "umu_run")):
             log.console(f"Copied {file} -> {local}")
-            copy(file, local.joinpath(file.name))
+            _copy(file, local.joinpath(file.name))
+    _copy(root.joinpath("umu_run.py"), local.joinpath("umu_run.py"), MODE.USER_RWX)
 
     local.joinpath("umu-run").symlink_to("umu_run.py")
 
@@ -184,11 +184,9 @@ def _install_umu(
     # Remove existing files if they exist -- this is a clean install.
     if steam_compat.joinpath("umu-launcher").is_dir():
         rmtree(steam_compat.joinpath("umu-launcher").as_posix())
-    copytree(
+    _copytree(
         root.joinpath("umu-launcher"),
         steam_compat.joinpath("umu-launcher"),
-        dirs_exist_ok=True,
-        symlinks=True,
     )
     steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
         "../../../umu/umu_run.py"
@@ -232,7 +230,7 @@ def _update_umu(
             # Directory is absent
             if not local.joinpath("reaper").is_file():
                 log.warning("Reaper not found")
-                copy(root.joinpath("reaper"), local.joinpath("reaper"))
+                _copy(root.joinpath("reaper"), local.joinpath("reaper"), MODE.USER_RWX)
                 log.console(f"Restored {key} to {val}")
 
             # Update
@@ -240,7 +238,7 @@ def _update_umu(
                 log.console(f"Updating {key} to {val}")
 
                 local.joinpath("reaper").unlink(missing_ok=True)
-                copy(root.joinpath("reaper"), local.joinpath("reaper"))
+                _copy(root.joinpath("reaper"), local.joinpath("reaper"), MODE.USER_RWX)
 
                 json_local["umu"]["versions"]["reaper"] = val
         elif key == "runtime_platform":
@@ -286,9 +284,14 @@ def _update_umu(
 
                 # Python files
                 for file in root.glob("*.py"):
-                    if not file.name.startswith("umu_test"):
+                    if not file.name.startswith(("umu_test", "umu_run")):
                         local.joinpath(file.name).unlink(missing_ok=True)
-                        copy(file, local.joinpath(file.name))
+                        _copy(file, local.joinpath(file.name))
+                _copy(
+                    root.joinpath("umu_run.py"),
+                    local.joinpath("umu_run.py"),
+                    MODE.USER_RWX,
+                )
 
                 # Symlink
                 local.joinpath("umu-run").unlink(missing_ok=True)
@@ -298,14 +301,23 @@ def _update_umu(
                 continue
 
             # Check for missing files
-            for file in root.glob("*.py"):
-                if (
-                    not file.name.startswith("umu_test")
-                    and not local.joinpath(file.name).is_file()
-                ):
-                    is_missing = True
-                    log.warning("Missing %s", file.name)
-                    copy(file, local.joinpath(file.name))
+            for file in [
+                file
+                for file in root.glob("*.py")
+                if not file.name.startswith(("umu_test", "umu_run"))
+                and not local.joinpath(file.name).is_file()
+            ]:
+                is_missing = True
+                log.warning("Missing %s", file.name)
+                _copy(file, local.joinpath(file.name))
+
+            if not local.joinpath("umu_run.py"):
+                log.warning("Missing %s", file.name)
+                _copy(
+                    root.joinpath("umu_run.py"),
+                    local.joinpath("umu_run.py"),
+                    MODE.USER_RWX,
+                )
 
             if is_missing:
                 log.console(f"Restored {key} to {val}")
@@ -319,11 +331,9 @@ def _update_umu(
             if not steam_compat.joinpath("umu-launcher").is_dir():
                 log.warning("umu-launcher not found")
 
-                copytree(
+                _copytree(
                     root.joinpath("umu-launcher"),
                     steam_compat.joinpath("umu-launcher"),
-                    dirs_exist_ok=True,
-                    symlinks=True,
                 )
 
                 steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
@@ -335,11 +345,9 @@ def _update_umu(
                 log.console(f"Updating {key} to {val}")
 
                 rmtree(steam_compat.joinpath("umu-launcher").as_posix())
-                copytree(
+                _copytree(
                     root.joinpath("umu-launcher"),
                     steam_compat.joinpath("umu-launcher"),
-                    dirs_exist_ok=True,
-                    symlinks=True,
                 )
 
                 steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
@@ -384,3 +392,24 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
         raise ValueError(err)
 
     return json
+
+
+def _copy(src: Path, dst: Path, mode: MODE = MODE.USER_RW) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+
+    if src.is_symlink():
+        dst.symlink_to(src.readlink())
+        return
+
+    copy(src, dst)
+    dst.chmod(mode.value)
+
+
+def _copytree(src: Path, dest: Path, mode: MODE = MODE.USER_RW) -> None:
+    for file in src.iterdir():
+        if file.is_dir():
+            dest_subdir = dest / file.name
+            dest_subdir.mkdir(parents=True, exist_ok=True)
+            _copytree(file, dest_subdir)
+        else:
+            _copy(file, dest / file.name, mode)

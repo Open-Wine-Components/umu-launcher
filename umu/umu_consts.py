@@ -35,3 +35,10 @@ PROTON_VERBS = {
     "getcompatpath",
     "getnativepath",
 }
+
+
+class MODE(Enum):
+    """Represent the permission to apply to a file."""
+
+    USER_RW = 0o0644
+    USER_RWX = 0o0755

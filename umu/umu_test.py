@@ -14,6 +14,7 @@ from unittest.mock import patch
 from pathlib import Path
 from shutil import rmtree, copytree, copy
 from pwd import getpwuid
+from umu_consts import MODE
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -162,6 +163,106 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
+
+    def test_copy(self):
+        """Test _copy when copying a subset of core files from a system path."""
+        # Make files read-only
+        self.test_user_share.joinpath("reaper").chmod(0o0444)
+        self.test_user_share.joinpath("umu_run.py").chmod(0o0444)
+        self.test_user_share.joinpath("umu_consts.py").chmod(0o0444)
+        # Make umu-launcher files read-only
+        Path(self.test_user_share, "umu-launcher", "compatibilitytool.vdf").chmod(
+            0o0444
+        )
+        Path(self.test_user_share, "umu-launcher", "toolmanifest.vdf").chmod(0o0444)
+        # Verify read-only before copying to ~/.local/share/umu
+        self.assertTrue(
+            self.test_user_share.joinpath("reaper").stat().st_mode == 33060,
+            "Expected reaper to be read only",
+        )
+        self.assertTrue(
+            self.test_user_share.joinpath("umu_run.py").stat().st_mode == 33060,
+            "Expected umu_run to be read only",
+        )
+        self.assertTrue(
+            self.test_user_share.joinpath("umu_consts.py").stat().st_mode == 33060,
+            "Expected umu_consts to be read only",
+        )
+        self.assertTrue(
+            self.test_user_share.joinpath("umu-launcher", "compatibilitytool.vdf")
+            .stat()
+            .st_mode
+            == 33060,
+            "Expected compat vdf to be read only",
+        )
+        self.assertTrue(
+            self.test_user_share.joinpath("umu-launcher", "toolmanifest.vdf")
+            .stat()
+            .st_mode
+            == 33060,
+            "Expected manifest vdf to be read only",
+        )
+        # Copy from source dir
+        umu_util._copy(
+            self.test_user_share.joinpath("reaper"),
+            self.test_local_share.joinpath("reaper"),
+            MODE.USER_RWX,
+        )
+        umu_util._copy(
+            self.test_user_share.joinpath("umu_run.py"),
+            self.test_local_share.joinpath("umu_run.py"),
+            MODE.USER_RWX,
+        )
+        umu_util._copy(
+            self.test_user_share.joinpath("umu_consts.py"),
+            self.test_local_share.joinpath("umu_consts.py"),
+        )
+        umu_util._copytree(
+            self.test_user_share.joinpath("umu-launcher"),
+            self.test_local_share.joinpath("umu-launcher"),
+        )
+        # Test reaper for user rwx
+        # In particular, it's important umu_run and reaper are executable
+        # otherwise, the launcher will not work
+        self.assertTrue(
+            os.access(self.test_local_share.joinpath("reaper"), os.X_OK),
+            "Expected execute perm for reaper",
+        )
+        self.assertTrue(
+            os.access(self.test_local_share.joinpath("reaper"), os.W_OK),
+            "Expected write perm for reaper",
+        )
+        # Test umu_run.py for user rwx
+        self.assertTrue(
+            os.access(self.test_local_share.joinpath("umu_run.py"), os.X_OK),
+            "Expected execute perm for umu_run",
+        )
+        self.assertTrue(
+            os.access(self.test_local_share.joinpath("umu_run.py"), os.W_OK),
+            "Expected write perm for umu_run",
+        )
+        # Test launcher files for user rw
+        # Just test one of them since the default is rw and if one of them
+        # fails then that signals the rest will too
+        self.assertTrue(
+            os.access(self.test_local_share.joinpath("umu_consts.py"), os.W_OK),
+            "Expected write perm for launcher file",
+        )
+        # Test umu-launcher
+        self.assertTrue(
+            os.access(
+                self.test_local_share.joinpath("umu-launcher", "compatibilitytool.vdf"),
+                os.W_OK,
+            ),
+            "Expected write perm for launcher file",
+        )
+        self.assertTrue(
+            os.access(
+                self.test_local_share.joinpath("umu-launcher", "toolmanifest.vdf"),
+                os.W_OK,
+            ),
+            "Expected write perm for launcher file",
+        )
 
     def test_ge_proton(self):
         """Test check_env when the code name GE-Proton is set for PROTONPATH.
