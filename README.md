@@ -2,11 +2,11 @@
 Unified Linux Wine Game Launcher
 
 
-# WHAT IS THIS?
+# What is this?
 
 This is a unified launcher for windows games on linux. It is essentially a copy of the Steam Linux Runtime/Steam Runtime Tools (https://gitlab.steamos.cloud/steamrt/steam-runtime-tools) that Valve uses for proton, with some modifications made so that it can be used outside of Steam.
 
-# WHAT DOES IT DO?
+# What does it do?
 
 When steam launches a proton game, it launches it like this:
 
@@ -28,7 +28,7 @@ So, umu is basically a copy paste of SteamLinuxRuntime_sniper, which is a compil
 
 When you use `umu-run` to run a game, it uses the specified WINEPREFIX, proton version, executable, and arguements passed to it to run the game in proton, inside steam's runtime container JUST like if you were running the game through Steam, except now you're no longer limited to Steam's game library or forced to add the game to Steam's library, in fact, you don't even have to have steam installed.
 
-# HOW DO I USE IT?
+# How do I use it?
 
 Usage:
 
@@ -42,7 +42,7 @@ Optional (used mainly for protonfixes): `STORE`
 
   `WINEPREFIX=$HOME/Games/epic-games-store GAMEID=umu-dauntless STORE=egs PROTONPATH="$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28" ./umu-run "$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe" "-opengl -SkipBuildPatchPrereq"`
 
-# WHAT DOES THIS MEAN FOR OTHER LAUNCHERS (lutris/bottles/heroic/legendary,etc):
+# What does this mean for other launchers (lutris/bottles/heroic/legendary,etc):
 
 - everyone can use + contribute to the same protonfixes, no more managing individual install scripts per launcher
 - everyone can run their games through proton just like a native steam game
@@ -53,7 +53,7 @@ right now protonfixes packages a folder of 'gamefixes' however it could likely b
 
 The idea is to get all of these tools using this same `umu-run` and just feeding their envvars into it. That way any changes that need to happen can happen in proton-ge and/or protonfixes, or a 'unified proton' build based off GE, or whatever they want.
 
-# WHAT IS THE BASIC PLAN OF PUTTING THIS INTO ACTION?
+# What is the basic plan of putting this into action?
 
 1. We build a database containing various game titles, their IDs from different stores, and their correlating umu ID.
 2. Various launchers then search the database to pull the umu ID, and feed it as the game ID to umu-run alongside the store type, proton version, wine prefix, game executable, and launch arguements.
