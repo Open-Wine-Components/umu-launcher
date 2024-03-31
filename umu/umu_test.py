@@ -1180,6 +1180,12 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_compat.joinpath("UMU-Latest").is_symlink(),
                 "Expected UMU-Latest symlink",
             )
+            # Verify link
+            self.assertEqual(
+                self.test_compat.joinpath("UMU-Latest").readlink(),
+                latest,
+                f"Expected UMU-Latest link to be ./{latest}",
+            )
 
         latest.rmdir()
         Path(f"{latest}.sha512sum").unlink()
