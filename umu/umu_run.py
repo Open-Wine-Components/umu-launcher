@@ -371,7 +371,7 @@ if __name__ == "__main__":
         log.warning("Keyboard Interrupt")
     except SystemExit as e:
         if e.code:
-            log.debug("subprocess exited the status code: %s", e.code)
+            log.debug("subprocess exited with the status code: %s", e.code)
             sys.exit(e.code)
     except BaseException:
         log.exception("BaseException")
