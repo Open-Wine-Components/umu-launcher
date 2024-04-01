@@ -13,10 +13,15 @@ MANDIR  := $(DATADIR)/man
 
 DESTDIR ?=
 USERINSTALL ?= xfalse
+FLATPAK ?= xfalse
 
 
 .PHONY: all
+ifeq ($(FLATPAK), xtrue)
+all: version reaper umu umu-launcher
+else
 all: version reaper umu umu-docs umu-launcher
+endif
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
@@ -79,11 +84,14 @@ umu-dist-install:
 	install -Dm 644 umu/umu_dl_util.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_log.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_plugins.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 755 umu/umu_run.py     	 -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 755 umu/umu_run.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_util.py      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
+ifeq ($(FLATPAK), xtrue)
+umu-install: version-install umu-dist-install umu-bin-install
+else
 umu-install: version-install umu-dist-install umu-docs-install umu-bin-install
-
+endif
 
 # umu-launcher is separate to allow control over installing the bin target
 $(OBJDIR)/.build-umu-launcher: | $(OBJDIR)
