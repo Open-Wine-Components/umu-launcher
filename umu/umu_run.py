@@ -358,10 +358,16 @@ def main() -> int:  # noqa: D103
         thread.join()
 
     # Run
-    build_command(env, UMU_LOCAL, command, opts)
+    command = build_command(env, UMU_LOCAL, command, opts)
+    if os.environ.get("container") == "flatpak":
+        flatpak_command = ["flatpak-spawn", "--host"]
+        for name, value in env.items():
+            flatpak_command.append(f"--env={name}={value}")
+        command = flatpak_command + command
+        env = os.environ.copy()
     log.debug("%s", command)
 
-    return run(command, check=False).returncode
+    return run(command, env=env, check=False).returncode
 
 
 if __name__ == "__main__":
