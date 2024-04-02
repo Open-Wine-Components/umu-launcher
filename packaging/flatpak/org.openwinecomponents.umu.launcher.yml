@@ -150,7 +150,7 @@ modules:
     build-commands:
       - |
         git submodule update --init --recursive
-        ./configure --prefix=/app
+        ./configure.sh --prefix=/app
         make install
     sources:
       - type: git
