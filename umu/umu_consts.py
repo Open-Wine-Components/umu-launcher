@@ -47,5 +47,3 @@ FLATPAK_PATH: Path = Path(environ.get("XDG_DATA_HOME"), "umu") if FLATPAK_ID els
 UMU_LOCAL: Path = (
     FLATPAK_PATH if FLATPAK_PATH else Path.home().joinpath(".local", "share", "umu")
 )
-
-UMU_CACHE: Path = Path.home().joinpath(".cache", "umu")
