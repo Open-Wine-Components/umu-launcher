@@ -1,5 +1,6 @@
 from enum import Enum
 from pathlib import Path
+from os import environ
 
 
 class Color(Enum):
@@ -13,15 +14,18 @@ class Color(Enum):
     DEBUG = "\u001b[35m"
 
 
+class MODE(Enum):
+    """Represent the permission to apply to a file."""
+
+    USER_RW = 0o0644
+    USER_RWX = 0o0755
+
+
 SIMPLE_FORMAT = f"%(levelname)s:  {Color.BOLD.value}%(message)s{Color.RESET.value}"
 
 DEBUG_FORMAT = f"%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:{Color.BOLD.value}%(message)s{Color.RESET.value}"  # noqa: E501
 
 CONFIG = "umu_version.json"
-
-UMU_LOCAL: Path = Path.home().joinpath(".local", "share", "umu")
-
-UMU_CACHE: Path = Path.home().joinpath(".cache", "umu")
 
 STEAM_COMPAT: Path = Path.home().joinpath(
     ".local", "share", "Steam", "compatibilitytools.d"
@@ -36,9 +40,12 @@ PROTON_VERBS = {
     "getnativepath",
 }
 
+FLATPAK_ID = environ.get("FLATPAK_ID") if environ.get("FLATPAK_ID") else ""
 
-class MODE(Enum):
-    """Represent the permission to apply to a file."""
+FLATPAK_PATH: Path = Path(environ.get("XDG_DATA_HOME"), "umu") if FLATPAK_ID else None
 
-    USER_RW = 0o0644
-    USER_RWX = 0o0755
+UMU_LOCAL: Path = (
+    FLATPAK_PATH if FLATPAK_PATH else Path.home().joinpath(".local", "share", "umu")
+)
+
+UMU_CACHE: Path = Path.home().joinpath(".cache", "umu")
