@@ -251,7 +251,7 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
-    if FLATPAK_PATH and Path(__file__).resolve().parent == Path("/app/share"):
+    if FLATPAK_PATH and Path(__file__).resolve().parent == Path("/app/share/umu"):
         return enable_flatpak(env, local, command, env.get("PROTON_VERB"), opts)
 
     enable_reaper(env, command, local)
@@ -319,7 +319,7 @@ def main() -> int:  # noqa: D103
 
     log.debug("Arguments: %s", args)
 
-    if FLATPAK_PATH and root == Path("/app/share"):
+    if FLATPAK_PATH and root == Path("/app/share/umu"):
         log.debug("Flatpak environment detected")
         log.debug("FLATPAK_ID: %s", FLATPAK_ID)
         log.debug(
