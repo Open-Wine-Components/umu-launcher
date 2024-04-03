@@ -720,7 +720,7 @@ class TestGameLauncher(unittest.TestCase):
         # Subtract one because a symbolic link is dynamically created
         self.assertEqual(
             num_share,
-            num_local - 1,
+            num_local,
             "Expected .local/share/Steam/compatibilitytools.d/umu-launcher"
             "and /usr/share/umu/umu-launcher to contain same files",
         )
