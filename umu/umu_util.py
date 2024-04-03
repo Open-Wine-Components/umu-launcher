@@ -1,6 +1,6 @@
 from tarfile import open as tar_open, TarInfo
 from os import environ
-from umu_consts import CONFIG, STEAM_COMPAT, UMU_LOCAL, MODE
+from umu_consts import CONFIG, STEAM_COMPAT, UMU_LOCAL, MODE, FLATPAK_PATH
 from typing import Any, Dict, List, Callable
 from json import load, dump
 from umu_log import log
@@ -188,9 +188,11 @@ def _install_umu(
         root.joinpath("umu-launcher"),
         steam_compat.joinpath("umu-launcher"),
     )
-    steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
-        "../../../umu/umu_run.py"
-    )
+    # Only create the link for native system packages
+    if not (FLATPAK_PATH or root == Path("/app/share/umu")):
+        steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
+            "../../../umu/umu_run.py"
+        )
 
     # Runtime platform
     setup_runtime(json)
@@ -336,9 +338,10 @@ def _update_umu(
                     steam_compat.joinpath("umu-launcher"),
                 )
 
-                steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
-                    "../../../umu/umu_run.py"
-                )
+                if not (FLATPAK_PATH or root == Path("/app/share/umu")):
+                    steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
+                        "../../../umu/umu_run.py"
+                    )
                 log.console(f"Restored umu-launcher to {val}")
             elif steam_compat.joinpath("umu-launcher").is_dir() and val != runner:
                 # Update
@@ -350,9 +353,10 @@ def _update_umu(
                     steam_compat.joinpath("umu-launcher"),
                 )
 
-                steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
-                    "../../../umu/umu_run.py"
-                )
+                if not (FLATPAK_PATH or root == Path("/app/share/umu")):
+                    steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
+                        "../../../umu/umu_run.py"
+                    )
 
                 json_local["umu"]["versions"]["runner"] = val
 
