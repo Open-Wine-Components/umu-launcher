@@ -27,7 +27,6 @@ from umu_plugins import (
     enable_steam_game_drive,
     set_env_toml,
     enable_reaper,
-    enable_flatpak,
 )
 
 
@@ -250,9 +249,6 @@ def build_command(
     if not Path(env.get("PROTONPATH")).joinpath("proton").is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
-
-    if FLATPAK_PATH and Path(__file__).resolve().parent == Path("/app/share/umu"):
-        return enable_flatpak(env, local, command, env.get("PROTON_VERB"), opts)
 
     enable_reaper(env, command, local)
 

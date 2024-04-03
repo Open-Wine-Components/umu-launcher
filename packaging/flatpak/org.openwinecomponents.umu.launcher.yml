@@ -60,7 +60,6 @@ finish-args:
   - --share=network
   - --talk-name=org.freedesktop.Notifications
   - --talk-name=org.kde.StatusNotifierWatcher
-  - --talk-name=org.freedesktop.Flatpak
   # Required for bwrap to work
   - --talk-name=org.freedesktop.portal.Background
   # --- Steam ---
