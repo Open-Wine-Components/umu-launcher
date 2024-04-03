@@ -151,7 +151,7 @@ modules:
       - |
         git submodule update --init --recursive
         ./configure.sh --prefix=/app
-        make install
+        make FLATPAK=xtrue install
     sources:
       - type: git
         url: https://github.com/Open-Wine-Components/umu-launcher.git
