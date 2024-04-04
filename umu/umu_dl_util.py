@@ -270,6 +270,8 @@ def _get_latest(
 
         if steam_compat.joinpath(proton).is_dir():
             log.console(f"{version} is up to date")
+            steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
+            steam_compat.joinpath("UMU-Latest").symlink_to(proton)
             environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
             env["PROTONPATH"] = environ["PROTONPATH"]
             return env
