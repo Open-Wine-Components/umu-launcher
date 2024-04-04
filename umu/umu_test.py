@@ -1113,6 +1113,63 @@ class TestGameLauncher(unittest.TestCase):
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
             self.assertFalse(result, "Expected None to be returned from _get_latest")
 
+    def test_link_umu(self):
+        """Test __get_latest for recreating the UMU-Latest link.
+
+        This link should always be recreated to ensure clients can reliably
+        kill the wineserver process for the current prefix
+
+        In the real usage, this will fail if the user already has a UMU-Latest
+        directory for some reason or the link somehow gets deleted after it
+        gets recreated by the launcher
+        """
+        result = None
+        latest = Path("UMU-Proton-9.0-beta15")
+        latest.mkdir()
+        Path(f"{latest}.sha512sum").touch()
+        files = [(f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", "")]
+
+        # Mock the latest Proton in /tmp
+        test_archive = self.test_cache.joinpath(f"{latest}.tar.gz")
+        with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
+            tar.add(latest.as_posix(), arcname=latest.as_posix())
+
+        # UMU-Latest will not exist in this installation
+        self.test_compat.joinpath("UMU-Proton-9.0-beta15").mkdir()
+
+        os.environ["PROTONPATH"] = ""
+
+        self.assertFalse(
+            self.test_compat.joinpath("UMU-Latest").exists(),
+            "Expected UMU-Latest link to not exist",
+        )
+        with (
+            patch("umu_dl_util._fetch_proton"),
+        ):
+            result = umu_dl_util._get_latest(
+                self.env, self.test_compat, self.test_cache, files
+            )
+            self.assertTrue(result is self.env, "Expected the same reference")
+            # Verify the latest was set
+            self.assertEqual(
+                self.env.get("PROTONPATH"),
+                self.test_compat.joinpath(latest).as_posix(),
+                "Expected latest to be set",
+            )
+            self.assertTrue(
+                self.test_compat.joinpath("UMU-Latest").is_symlink(),
+                "Expected UMU-Latest symlink",
+            )
+            # Verify link
+            self.assertEqual(
+                self.test_compat.joinpath("UMU-Latest").readlink(),
+                latest,
+                f"Expected UMU-Latest link to be ./{latest}",
+            )
+
+        latest.rmdir()
+        Path(f"{latest}.sha512sum").unlink()
+
     def test_latest_umu(self):
         """Test _get_latest when online and when an empty PROTONPATH is set.
 
