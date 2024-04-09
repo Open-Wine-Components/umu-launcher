@@ -174,7 +174,7 @@ def set_env(
     """
     # PROTON_VERB
     # For invalid Proton verbs, just assign the waitforexitandrun
-    if "PROTON_VERB" in os.environ and os.environ["PROTON_VERB"] in PROTON_VERBS:
+    if os.environ.get("PROTON_VERB") in PROTON_VERBS:
         env["PROTON_VERB"] = os.environ["PROTON_VERB"]
     else:
         env["PROTON_VERB"] = "waitforexitandrun"
