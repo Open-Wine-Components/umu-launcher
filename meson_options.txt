@@ -1,0 +1,2 @@
+option('flatpak', type : 'boolean', value : false, description: 'Build for Flatpak distribution')
+#option('user_install', type : 'boolean', value : false, description: 'Install under current user\'s home directory')

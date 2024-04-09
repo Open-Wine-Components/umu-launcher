@@ -1,11 +1,11 @@
 git = find_program('git')
 
-umu_run_data = configuration_data()
-umu_run_data.set('INSTALL_PATH', get_option('prefix') / get_option('datadir') / meson.project_name())
+umu_run_cfg = configuration_data()
+umu_run_cfg.set('INSTALL_PATH', get_option('prefix') / umu_install_path / 'umu_run.py')
 configure_file(
     input : 'umu-run.in',
     output : 'umu-run',
-    configuration : umu_run_data,
+    configuration : umu_run_cfg,
     install : true,
     install_dir : get_option('bindir'),
     install_mode: 'rwxr-xr-x',
@@ -19,13 +19,13 @@ install_data(
         'umu_plugins.py',
         'umu_util.py',
     ],
-    install_dir: get_option('datadir') / meson.project_name(),
+    install_dir: umu_install_path,
 )
 install_data(
     [
         'umu_run.py',
     ],
-    install_dir: get_option('datadir') / meson.project_name(),
+    install_dir: umu_install_path,
     install_mode: 'rwxr-xr-x',
 )
 
@@ -43,7 +43,7 @@ configure_file(
     output : 'umu_version.json',
     configuration : umu_version_data,
     install : true,
-    install_dir: get_option('datadir') / meson.project_name(),
+    install_dir: umu_install_path,
 )
 
 subdir('umu-launcher')

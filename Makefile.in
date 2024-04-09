@@ -47,9 +47,11 @@ version-install: version
 	install -Dm 644 umu/umu_version.json -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 
+UMU_RUN_COMMAND = $(DATADIR)/$(INSTALLDIR)/umu_run.py
+
 $(OBJDIR)/.build-umu: | $(OBJDIR)
 	$(info :: Building umu )
-	sed 's|@INSTALL_PATH@|$(DATADIR)/$(INSTALLDIR)|g' umu/umu-run.in > $(OBJDIR)/umu-run
+	sed 's|@INSTALL_PATH@|$(UMU_RUN_COMMAND)|g' umu/umu-run.in > $(OBJDIR)/umu-run
 	touch $(@)
 
 .PHONY: umu
@@ -93,10 +95,11 @@ else
 umu-install: version-install umu-dist-install umu-docs-install umu-bin-install
 endif
 
+
 ifeq ($(FLATPAK), xtrue)
 UMU_LAUNCHER_COMMAND = org.openwinecomponents.umu.launcher
 else
-UMU_LAUNCHER_COMMAND = $(DATADIR)/$(INSTALLDIR)/umu_run.py
+UMU_LAUNCHER_COMMAND = $(UMU_RUN_COMMAND)
 endif
 
 # umu-launcher is separate to allow control over installing the bin target
