@@ -21,16 +21,16 @@ umu-run - Unified Launcher for Windows Games on Linux
 # DESCRIPTION
 
 The Unified Launcher for Windows Games on Linux (umu) was created to make
-Valve's Proton and the Protonfixes project accessible outside the Steam client,
+Valve's *Proton*[1] and the *protonfixes*[2] project accessible outside the Steam client,
 providing a standardized way for other clients (e.g., Lutris, Heroic Games
 Launcher, Bottles, or Rare) to run games via Proton and configure WINE
 prefixes.
 
 As a result, clients:
 - No longer require Steam or Steam binaries to be installed
-- Can contribute and benefit from Protonfixes
+- Can contribute and benefit from protonfixes
 - Can run games through Proton as it were a native Steam game
-- Can reference a unified online database of game fixes (Protonfixes)
+- Can reference a unified online database of game fixes (protonfixes)
 
 You can run umu directly from a terminal emulator, or through your launcher of 
 choice if supported.
@@ -117,6 +117,15 @@ $ WINEPREFIX= GAMEID=0 PROTONPATH=GE-Proton9-1 umu-run ~/foo.exe
 # This will fetch for the latest GE-Proton build each run and set it
 $ WINEPREFIX= GAMEID=0 PROTONPATH=GE-Proton umu-run ~/foo.exe
 ```
+
+# SEE ALSO
+
+_umu_(5)
+
+# NOTES
+
+. https://github.com/ValveSoftware/Proton
+. https://github.com/Open-Wine-Components/umu-protonfixes
 
 # AUTHORS
 

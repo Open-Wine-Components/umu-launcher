@@ -8,7 +8,7 @@ umu-run - configuration file
 
 umu-run can optionally read a configuration file instead of reading
 environment variables set from the command line. The configuration file for
-umu-run must be written in valid Tom's Obvious Minimal Language (TOML).
+umu-run must be written in *Tom's Obvious Minimal Language (TOML)*[1].
 
 In the configuration file, the table *umu* is required as well as the keys
 *prefix*, *proton* and *exe* which all must be basic strings. e.g.:
@@ -37,9 +37,9 @@ $ umu-run --config config.toml
 	Path to a WINE prefix directory. Value must be a basic *string*.
 
 *game_id*
-	The umu id to assign to the game. Depending on the value assigned, a Proton
-	fix will be applied to the prefix if available. Please refer to the umu
-	database for an extended list of game ids.
+	The umu id to assign to the game. Depending on the value assigned, a proton
+	fix will be applied to the prefix if available. Please refer to the *umu
+	database*[2] for an extended list of game ids.
 
 *store*
 	The distribution platform of the executable. Value must be a basic *string*.
@@ -49,6 +49,11 @@ $ umu-run --config config.toml
 	Launch arguments for the executable. Value must be a basic *string* or an
 	*array* of basic strings. When using a string, assumes each argument is
 	space-separated.
+
+# NOTES
+
+. https://toml.io/en/v1.0.0
+. https://github.com/Open-Wine-Components/umu-database/blob/main/umu-database.csv
 
 # AUTHORS
 
