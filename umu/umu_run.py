@@ -157,7 +157,7 @@ def check_env(env: Dict[str, str]) -> Union[Dict[str, str], Dict[str, Any]]:
     if not os.environ["PROTONPATH"]:
         err: str = (
             "Download failed\n"
-            "UMU-Proton could not be found in cache or compatibilitytools.d\n"
+            "UMU-Proton could not be found in compatibilitytools.d\n"
             "Please set $PROTONPATH or visit https://github.com/Open-Wine-Components/umu-proton/releases"
         )
         raise FileNotFoundError(err)
