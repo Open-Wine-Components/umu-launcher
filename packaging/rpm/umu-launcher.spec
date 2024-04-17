@@ -3,10 +3,10 @@
 
 %global build_timestamp %(date +"%Y%m%d")
 
-%global rel_build 1.%{build_timestamp}.%{shortcommit}%{?dist}
+%global rel_build RC4.%{build_timestamp}.%{shortcommit}%{?dist}
 
 Name:           umu-launcher
-Version:        1.0.0
+Version:        0.1
 Release:        %{rel_build}
 Summary:        A tool for launching non-steam games with proton
 
