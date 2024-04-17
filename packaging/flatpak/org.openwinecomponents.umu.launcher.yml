@@ -62,6 +62,10 @@ finish-args:
   - --talk-name=org.kde.StatusNotifierWatcher
   # Required for bwrap to work
   - --talk-name=org.freedesktop.portal.Background
+  # --- Steam ---
+  # Pressure Vessel
+  # See https://github.com/flathub/com.valvesoftware.Steam/commit/0538256facdb0837c33232bc65a9195a8a5bc750
+  - --env=XDG_DATA_DIRS=/app/share:/usr/lib/extensions/vulkan/share:/usr/share:/usr/share/runtime/share:/run/host/user-share:/run/host/share:/usr/lib/pressure-vessel/overrides/share
 
 add-extensions:
   org.freedesktop.Platform.Compat.i386:
@@ -143,14 +147,14 @@ modules:
   - name: umu-run
     buildsystem: simple
     build-commands:
-      - install -D umu-run-cli /app/bin/umu-run
-      - install -D umu-launcher.tar.gz /app/share/umu/umu-launcher.tar.gz
+      - |
+        git submodule update --init --recursive
+        ./configure.sh --prefix=/app
+        make FLATPAK=xtrue install
     sources:
-      - type: file
-        path: umu-run-cli
-      - type: file
-        url: https://github.com/Open-Wine-Components/umu-launcher/releases/download/0.1-RC3/umu-launcher.tar.gz
-        sha256: e25c4dd0636d04e7c8c534cf3c5bbdca5ae0d49f146ee8395306174700899952
+      - type: git
+        url: https://github.com/Open-Wine-Components/umu-launcher.git
+        branch: flatpak
 
   - name: platform-bootstrap
     buildsystem: simple

@@ -5,11 +5,9 @@ import sys
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from pathlib import Path
 from typing import Dict, Any, List, Set, Union, Tuple
-from umu_plugins import enable_steam_game_drive, set_env_toml, enable_reaper
 from re import match
 from subprocess import run
 from umu_dl_util import get_umu_proton
-from umu_consts import PROTON_VERBS, DEBUG_FORMAT, STEAM_COMPAT, UMU_LOCAL
 from umu_util import setup_umu
 from umu_log import log, console_handler, CustomFormatter
 from logging import INFO, WARNING, DEBUG
@@ -17,6 +15,19 @@ from errno import ENETUNREACH
 from threading import Thread
 from socket import AF_INET, SOCK_DGRAM, socket
 from pwd import getpwuid
+from umu_consts import (
+    PROTON_VERBS,
+    DEBUG_FORMAT,
+    STEAM_COMPAT,
+    UMU_LOCAL,
+    FLATPAK_PATH,
+    FLATPAK_ID,
+)
+from umu_plugins import (
+    enable_steam_game_drive,
+    set_env_toml,
+    enable_reaper,
+)
 
 
 def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
@@ -303,6 +314,13 @@ def main() -> int:  # noqa: D103
         set_log()
 
     log.debug("Arguments: %s", args)
+
+    if FLATPAK_PATH and root == Path("/app/share/umu"):
+        log.debug("Flatpak environment detected")
+        log.debug("FLATPAK_ID: %s", FLATPAK_ID)
+        log.debug(
+            "The following path will be used to persist the runtime: %s", FLATPAK_PATH
+        )
 
     # Setup the launcher and runtime files
     # An internet connection is required for new setups

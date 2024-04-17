@@ -195,3 +195,34 @@ def enable_zenity(command: str, opts: List[str], msg: str) -> int:
         zenity_proc.stdin.close()
 
         return zenity_proc.wait()
+
+
+def enable_flatpak(
+    env: Dict[str, str], local: Path, command: List[str], verb: str, opts: List[str]
+) -> List[str]:
+    """Run umu in a Flatpak environment."""
+    bin: str = which("flatpak-spawn")
+
+    if not bin:
+        err: str = "flatpak-spawn not found\numu will fail to run the executable"
+        raise RuntimeError(err)
+
+    command.append(bin, "--host")
+    for key, val in env.items():
+        command.append(f"--env={key}={val}")
+
+    enable_reaper(env, command, local)
+
+    command.extend([local.joinpath("umu").as_posix(), "--verb", verb, "--"])
+    command.extend(
+        [
+            Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
+            verb,
+            env.get("EXE"),
+        ]
+    )
+
+    if opts:
+        command.extend([*opts])
+
+    return command

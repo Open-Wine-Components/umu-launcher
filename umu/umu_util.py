@@ -188,9 +188,6 @@ def _install_umu(
         root.joinpath("umu-launcher"),
         steam_compat.joinpath("umu-launcher"),
     )
-    steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
-        "../../../umu/umu_run.py"
-    )
 
     # Runtime platform
     setup_runtime(json)
@@ -336,9 +333,6 @@ def _update_umu(
                     steam_compat.joinpath("umu-launcher"),
                 )
 
-                steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
-                    "../../../umu/umu_run.py"
-                )
                 log.console(f"Restored umu-launcher to {val}")
             elif steam_compat.joinpath("umu-launcher").is_dir() and val != runner:
                 # Update
@@ -348,10 +342,6 @@ def _update_umu(
                 _copytree(
                     root.joinpath("umu-launcher"),
                     steam_compat.joinpath("umu-launcher"),
-                )
-
-                steam_compat.joinpath("umu-launcher", "umu-run").symlink_to(
-                    "../../../umu/umu_run.py"
                 )
 
                 json_local["umu"]["versions"]["runner"] = val

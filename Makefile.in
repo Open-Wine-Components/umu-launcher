@@ -13,10 +13,15 @@ MANDIR  := $(DATADIR)/man
 
 DESTDIR ?=
 USERINSTALL ?= xfalse
+FLATPAK ?= xfalse
 
 
 .PHONY: all
+ifeq ($(FLATPAK), xtrue)
+all: version reaper umu umu-launcher
+else
 all: version reaper umu umu-docs umu-launcher
+endif
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
@@ -79,16 +84,25 @@ umu-dist-install:
 	install -Dm 644 umu/umu_dl_util.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_log.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_plugins.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 755 umu/umu_run.py     	 -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 755 umu/umu_run.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_util.py      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
+ifeq ($(FLATPAK), xtrue)
+umu-install: version-install umu-dist-install umu-bin-install
+else
 umu-install: version-install umu-dist-install umu-docs-install umu-bin-install
+endif
 
+ifeq ($(FLATPAK), xtrue)
+UMU_LAUNCHER_COMMAND = org.openwinecomponents.umu.launcher
+else
+UMU_LAUNCHER_COMMAND = $(DATADIR)/$(INSTALLDIR)/umu_run.py
+endif
 
 # umu-launcher is separate to allow control over installing the bin target
 $(OBJDIR)/.build-umu-launcher: | $(OBJDIR)
 	$(info :: Building umu-launcher )
-	sed 's|##INSTALL_PATH##|$(DATADIR)/$(INSTALLDIR)|g' umu/umu-launcher/umu-run.in > $(OBJDIR)/umu-launcher-run
+	sed 's|##INSTALL_PATH##|$(UMU_LAUNCHER_COMMAND)|g' umu/umu-launcher/umu-run.in > $(OBJDIR)/umu-launcher-run
 	touch $(@)
 
 .PHONY: umu-launcher
@@ -104,8 +118,7 @@ umu-launcher-dist-install:
 	install -Dm 644 umu/umu-launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-launcher
 	install -Dm 644 umu/umu-launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-launcher
 
-#umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
-umu-launcher-install: umu-launcher-dist-install
+umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
 
 $(OBJDIR)/.build-reaper: | $(OBJDIR)
