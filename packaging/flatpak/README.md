@@ -37,7 +37,7 @@ flatpak run --env=GAMEID=umu-starcitizen --env=WINEPREFIX=/home/tcrider/Games/um
 
 # running a game using the default latest UMU-Proton:
 ```
-flatpak run --env=GAMEID=umu-starcitizen --env=WINEPREFIX=/home/tcrider/Games/umu/umu-starcitizen org.openwinecomponents.umu.umu-launcher winecfg /path/to/some/game.exe
+flatpak run --env=GAMEID=umu-starcitizen --env=WINEPREFIX=/home/tcrider/Games/umu/umu-starcitizen org.openwinecomponents.umu.umu-launcher /path/to/some/game.exe
 ```
 
 # running a game using the latest GE-Proton:
