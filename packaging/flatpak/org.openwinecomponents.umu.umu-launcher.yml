@@ -1,4 +1,4 @@
-id: org.openwinecomponents.umu.launcher
+id: org.openwinecomponents.umu.umu-launcher
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '23.08'
 x-gl-version: &gl-version '1.4'
@@ -26,7 +26,7 @@ finish-args:
   - --filesystem=~/Games:rw
   - --filesystem=~/.local/share:rw
   - --filesystem=~/.var/app/com.valvesoftware.Steam:rw
-  - --filesystem=~/.var/app/org.openwinecomponents.umu.launcher:rw
+  - --filesystem=~/.var/app/org.openwinecomponents.umu.umu-launcher:rw
   - --filesystem=xdg-documents
   - --filesystem=xdg-desktop
   - --env=TZ=
