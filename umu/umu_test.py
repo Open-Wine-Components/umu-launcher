@@ -2217,6 +2217,21 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             umu_run.check_env(self.env)
 
+    def test_env_wine_empty(self):
+        """Test check_env when $WINEPREFIX is empty.
+
+        When the WINEPREFIX is empty, the current working directory of the
+        user will be used as the prefix directory which should not happen.
+
+        An ValueError should be raised
+        """
+        with (
+            self.assertRaises(ValueError),
+        ):
+            os.environ["WINEPREFIX"] = ""
+            os.environ["GAMEID"] = self.test_file
+            umu_run.check_env(self.env)
+
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
 
