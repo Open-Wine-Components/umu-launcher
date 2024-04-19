@@ -154,7 +154,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Open-Wine-Components/umu-launcher.git
-        branch: flatpak
+        branch: main
 
   - name: platform-bootstrap
     buildsystem: simple
