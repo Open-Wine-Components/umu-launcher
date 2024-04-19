@@ -2232,6 +2232,19 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             umu_run.check_env(self.env)
 
+    def test_env_gameid_empty(self):
+        """Test check_env when $GAMEID is empty.
+
+        When the GAMEID is empty in the non-config usage, no app ids will be
+        set. As a result, no fixes will be applied to the current prefix
+
+        An ValueError should be raised
+        """
+        with self.assertRaises(ValueError):
+            os.environ["WINEPREFIX"] = ""
+            os.environ["GAMEID"] = ""
+            umu_run.check_env(self.env)
+
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
 
