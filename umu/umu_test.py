@@ -1417,6 +1417,79 @@ class TestGameLauncher(unittest.TestCase):
             "Expected 'proton' file to exists in the proton dir",
         )
 
+    def test_game_drive_libpath_empty(self):
+        """Test enable_steam_game_drive when LD_LIBRARY_PATH is empty.
+
+        Distributions or GUI launchers may set the LD_LIBRARY_PATH environment
+        variable to reference their own runtime library paths. In the case for
+        Flatpaks, if this variable is not declared and set with paths in the
+        manifest then it's observed that the default is an empty string. As a
+        result, the current working directory will be added to the
+        STEAM_RUNTIME_LIBRARY_PATH result.
+        """
+        args = None
+        result_gamedrive = None
+        Path(self.test_file + "/proton").touch()
+
+        # Replicate main's execution and test up until enable_steam_game_drive
+        with patch("sys.argv", ["", ""]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["STORE"] = self.test_file
+            # Args
+            args = umu_run.parse_args()
+            # Config
+            umu_run.check_env(self.env)
+            # Prefix
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            umu_run.set_env(self.env, args)
+
+            if "LD_LIBRARY_PATH" in os.environ:
+                os.environ.pop("LD_LIBRARY_PATH")
+
+            # Flatpak defaults to an empty string
+            paths = ""
+            os.environ["LD_LIBRARY_PATH"] = paths
+
+            # Game drive
+            result_gamedrive = umu_plugins.enable_steam_game_drive(self.env)
+
+        for key, val in self.env.items():
+            os.environ[key] = val
+
+        # Game drive
+        self.assertTrue(result_gamedrive is self.env, "Expected the same reference")
+        self.assertTrue(
+            self.env["STEAM_RUNTIME_LIBRARY_PATH"],
+            "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
+        )
+
+        # Expect LD_LIBRARY_PATH was added ontop of /usr/lib and /usr/lib64
+        self.assertEqual(
+            len(self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")),
+            2,
+            "Expected two values in STEAM_RUNTIME_LIBRARY_PATH",
+        )
+
+        # An error should be raised if /usr/lib or /usr/lib64 is found twice
+        lib_paths = set()
+        for path in self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":"):
+            if path not in lib_paths:
+                lib_paths.add(path)
+            elif path in lib_paths:
+                err: str = f"Duplicate path found in STEAM_RUNTIME_LIBRARY_PATH: {path}"
+                raise AssertionError(err)
+
+        # Both of these values should be empty still after calling
+        # enable_steam_game_drive
+        self.assertFalse(
+            self.env["STEAM_COMPAT_INSTALL_PATH"],
+            "Expected STEAM_COMPAT_INSTALL_PATH to be empty when passing an empty EXE",
+        )
+        self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
+
     def test_game_drive_libpath(self):
         """Test enable_steam_game_drive for duplicate paths.
 
