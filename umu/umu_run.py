@@ -123,8 +123,8 @@ def check_env(env: Dict[str, str]) -> Union[Dict[str, str], Dict[str, Any]]:
 
     GAMEID is strictly required
     """
-    if "GAMEID" not in os.environ:
-        err: str = "Environment variable not set: GAMEID"
+    if not os.environ.get("GAMEID"):
+        err: str = "Environment variable not set or is empty: GAMEID"
         raise ValueError(err)
     env["GAMEID"] = os.environ["GAMEID"]
 
