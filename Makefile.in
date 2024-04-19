@@ -94,7 +94,7 @@ umu-install: version-install umu-dist-install umu-docs-install umu-bin-install
 endif
 
 ifeq ($(FLATPAK), xtrue)
-UMU_LAUNCHER_COMMAND = org.openwinecomponents.umu.launcher
+UMU_LAUNCHER_COMMAND = org.openwinecomponents.umu.umu-launcher
 else
 UMU_LAUNCHER_COMMAND = $(DATADIR)/$(INSTALLDIR)/umu_run.py
 endif
