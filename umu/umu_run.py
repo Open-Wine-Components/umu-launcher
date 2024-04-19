@@ -128,6 +128,9 @@ def check_env(env: Dict[str, str]) -> Union[Dict[str, str], Dict[str, Any]]:
         raise ValueError(err)
     env["GAMEID"] = os.environ["GAMEID"]
 
+    if os.environ.get("WINEPREFIX") == "":
+        err: str = "Environment variable is empty: WINEPREFIX"
+        raise ValueError(err)
     if "WINEPREFIX" not in os.environ:
         id: str = env["GAMEID"]
         pfx: Path = Path.home().joinpath("Games", "umu", f"{id}")
