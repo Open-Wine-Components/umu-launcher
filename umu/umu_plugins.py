@@ -126,7 +126,7 @@ def enable_steam_game_drive(env: Dict[str, str]) -> Dict[str, str]:
                 env["STEAM_COMPAT_LIBRARY_PATHS"] = path.as_posix()
             break
 
-    if "LD_LIBRARY_PATH" in environ:
+    if environ.get("LD_LIBRARY_PATH"):
         paths = {path for path in environ["LD_LIBRARY_PATH"].split(":")}
 
     if env["STEAM_COMPAT_INSTALL_PATH"]:
