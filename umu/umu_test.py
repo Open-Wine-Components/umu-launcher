@@ -14,7 +14,6 @@ from unittest.mock import patch
 from pathlib import Path
 from shutil import rmtree, copytree, copy
 from pwd import getpwuid
-from umu_consts import MODE
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -164,106 +163,6 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
 
-    def test_copy(self):
-        """Test _copy when copying a subset of core files from a system path."""
-        # Make files read-only
-        self.test_user_share.joinpath("reaper").chmod(0o0444)
-        self.test_user_share.joinpath("umu_run.py").chmod(0o0444)
-        self.test_user_share.joinpath("umu_consts.py").chmod(0o0444)
-        # Make umu-launcher files read-only
-        Path(self.test_user_share, "umu-launcher", "compatibilitytool.vdf").chmod(
-            0o0444
-        )
-        Path(self.test_user_share, "umu-launcher", "toolmanifest.vdf").chmod(0o0444)
-        # Verify read-only before copying to ~/.local/share/umu
-        self.assertTrue(
-            self.test_user_share.joinpath("reaper").stat().st_mode == 33060,
-            "Expected reaper to be read only",
-        )
-        self.assertTrue(
-            self.test_user_share.joinpath("umu_run.py").stat().st_mode == 33060,
-            "Expected umu_run to be read only",
-        )
-        self.assertTrue(
-            self.test_user_share.joinpath("umu_consts.py").stat().st_mode == 33060,
-            "Expected umu_consts to be read only",
-        )
-        self.assertTrue(
-            self.test_user_share.joinpath("umu-launcher", "compatibilitytool.vdf")
-            .stat()
-            .st_mode
-            == 33060,
-            "Expected compat vdf to be read only",
-        )
-        self.assertTrue(
-            self.test_user_share.joinpath("umu-launcher", "toolmanifest.vdf")
-            .stat()
-            .st_mode
-            == 33060,
-            "Expected manifest vdf to be read only",
-        )
-        # Copy from source dir
-        umu_util._copy(
-            self.test_user_share.joinpath("reaper"),
-            self.test_local_share.joinpath("reaper"),
-            MODE.USER_RWX,
-        )
-        umu_util._copy(
-            self.test_user_share.joinpath("umu_run.py"),
-            self.test_local_share.joinpath("umu_run.py"),
-            MODE.USER_RWX,
-        )
-        umu_util._copy(
-            self.test_user_share.joinpath("umu_consts.py"),
-            self.test_local_share.joinpath("umu_consts.py"),
-        )
-        umu_util._copytree(
-            self.test_user_share.joinpath("umu-launcher"),
-            self.test_local_share.joinpath("umu-launcher"),
-        )
-        # Test reaper for user rwx
-        # In particular, it's important umu_run and reaper are executable
-        # otherwise, the launcher will not work
-        self.assertTrue(
-            os.access(self.test_local_share.joinpath("reaper"), os.X_OK),
-            "Expected execute perm for reaper",
-        )
-        self.assertTrue(
-            os.access(self.test_local_share.joinpath("reaper"), os.W_OK),
-            "Expected write perm for reaper",
-        )
-        # Test umu_run.py for user rwx
-        self.assertTrue(
-            os.access(self.test_local_share.joinpath("umu_run.py"), os.X_OK),
-            "Expected execute perm for umu_run",
-        )
-        self.assertTrue(
-            os.access(self.test_local_share.joinpath("umu_run.py"), os.W_OK),
-            "Expected write perm for umu_run",
-        )
-        # Test launcher files for user rw
-        # Just test one of them since the default is rw and if one of them
-        # fails then that signals the rest will too
-        self.assertTrue(
-            os.access(self.test_local_share.joinpath("umu_consts.py"), os.W_OK),
-            "Expected write perm for launcher file",
-        )
-        # Test umu-launcher
-        self.assertTrue(
-            os.access(
-                self.test_local_share.joinpath("umu-launcher", "compatibilitytool.vdf"),
-                os.W_OK,
-            ),
-            "Expected write perm for launcher file",
-        )
-        self.assertTrue(
-            os.access(
-                self.test_local_share.joinpath("umu-launcher", "toolmanifest.vdf"),
-                os.W_OK,
-            ),
-            "Expected write perm for launcher file",
-        )
-
     def test_ge_proton(self):
         """Test check_env when the code name GE-Proton is set for PROTONPATH.
 
@@ -357,7 +256,6 @@ class TestGameLauncher(unittest.TestCase):
             result = umu_util._update_umu(
                 self.test_user_share,
                 self.test_local_share,
-                self.test_compat,
                 json_root,
                 json_local,
             )
@@ -404,52 +302,6 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected configuration files to be the same",
             )
 
-        # Runner
-        self.assertTrue(
-            self.test_compat.joinpath("umu-launcher").is_dir(),
-            "Expected umu-launcher in compat",
-        )
-
-        for file in self.test_compat.joinpath("umu-launcher").glob("*"):
-            src = b""
-            dst = b""
-
-            if file.name == "umu-run":
-                self.assertEqual(
-                    self.test_compat.joinpath("umu-launcher", "umu-run").readlink(),
-                    Path("../../../umu/umu_run.py"),
-                    "Expected both symlinks to point to same dest",
-                )
-                continue
-
-            with file.open(mode="rb") as filer:
-                dst = filer.read()
-            with self.test_user_share.joinpath("umu-launcher", file.name).open(
-                mode="rb"
-            ) as filer:
-                src = filer.read()
-
-            self.assertEqual(
-                hashlib.blake2b(src).digest(),
-                hashlib.blake2b(dst).digest(),
-                "Expected files to be equal",
-            )
-
-        # Launcher
-        for file in self.test_local_share.glob("*.py"):
-            if not file.name.startswith("umu_test"):
-                src = b""
-                dst = b""
-
-                with file.open(mode="rb") as filer:
-                    dst = filer.read()
-                with self.test_user_share.joinpath(file.name).open(mode="rb") as filer:
-                    src = filer.read()
-
-                if hashlib.blake2b(src).digest() != hashlib.blake2b(dst).digest():
-                    err = "Files did not get updated"
-                    raise AssertionError(err)
-
         # Runtime Platform
         self.assertTrue(
             self.test_local_share.joinpath(
@@ -458,45 +310,11 @@ class TestGameLauncher(unittest.TestCase):
             "Expected runtime to in local share",
         )
 
-        for file in self.test_local_share.joinpath(
-            json_local["umu"]["versions"]["runtime_platform"]
-        ).glob("*"):
-            if file.is_file():
-                src = b""
-                dst = b""
-
-                with file.open(mode="rb") as filer:
-                    dst = filer.read()
-                with self.test_user_share.joinpath(
-                    json_root["umu"]["versions"]["runtime_platform"], file.name
-                ).open(mode="rb") as filer:
-                    src = filer.read()
-
-                if hashlib.blake2b(src).digest() != hashlib.blake2b(dst).digest():
-                    err = "Files did not get updated"
-                    raise AssertionError(err)
-
         # Pressure Vessel
         self.assertTrue(
             self.test_local_share.joinpath("pressure-vessel").is_dir(),
             "Expected pressure vessel to in local share",
         )
-
-        for file in self.test_local_share.joinpath("pressure-vessel").glob("*"):
-            if file.is_file():
-                src = b""
-                dst = b""
-
-                with file.open(mode="rb") as filer:
-                    dst = filer.read()
-                with self.test_user_share.joinpath("pressure-vessel", file.name).open(
-                    mode="rb"
-                ) as filer:
-                    src = filer.read()
-
-                if hashlib.blake2b(src).digest() != hashlib.blake2b(dst).digest():
-                    err = "Files did not get updated"
-                    raise AssertionError(err)
 
     def test_update_umu(self):
         """Test _update_umu by mocking an update to the runtime tools.
@@ -536,9 +354,9 @@ class TestGameLauncher(unittest.TestCase):
         config = {
             "umu": {
                 "versions": {
-                    "launcher": "0.1-RC2",
-                    "runner": "0.1-RC2",
-                    "runtime_platform": "sniper_platform_0.20240125.75304",
+                    "launcher": "0.1-RC3",
+                    "runner": "0.1-RC3",
+                    "runtime_platform": "sniper_platform_0.20240125.75305",
                     "reaper": "1.0",
                     "pressure_vessel": "v0.20240212.0",
                 }
@@ -623,7 +441,6 @@ class TestGameLauncher(unittest.TestCase):
             result = umu_util._update_umu(
                 self.test_user_share,
                 self.test_local_share,
-                self.test_compat,
                 json_root,
                 json_local,
             )
@@ -683,7 +500,7 @@ class TestGameLauncher(unittest.TestCase):
         num_local = len([file for file in self.test_local_share.glob("*")])
         self.assertEqual(
             num_share,
-            num_local - 3,
+            num_local - 2,
             "Expected /usr/share/umu and .local/share/umu to contain same files",
         )
 
@@ -702,69 +519,6 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected configuration files to be the same",
             )
 
-        # Runner
-        # The hashes should be compared because we written data in the mocked files
-        self.assertTrue(
-            self.test_compat.joinpath("umu-launcher").is_dir(),
-            "Expected umu-launcher in compat",
-        )
-
-        # Verify the count for .local/share/Steam/umu-launcher
-        num_share = len(
-            [file for file in self.test_user_share.joinpath("umu-launcher").glob("*")]
-        )
-        num_local = len(
-            [file for file in self.test_compat.joinpath("umu-launcher").glob("*")]
-        )
-
-        # Subtract one because a symbolic link is dynamically created
-        self.assertEqual(
-            num_share,
-            num_local,
-            "Expected .local/share/Steam/compatibilitytools.d/umu-launcher"
-            "and /usr/share/umu/umu-launcher to contain same files",
-        )
-
-        for file in self.test_compat.joinpath("umu-launcher").glob("*"):
-            src = b""
-            dst = b""
-
-            if file.name == "umu-run":
-                self.assertEqual(
-                    self.test_compat.joinpath("umu-launcher", "umu-run").readlink(),
-                    Path("../../../umu/umu_run.py"),
-                    "Expected both symlinks to point to same dest",
-                )
-                continue
-
-            with file.open(mode="rb") as filer:
-                dst = filer.read()
-            with self.test_user_share.joinpath("umu-launcher", file.name).open(
-                mode="rb"
-            ) as filer:
-                src = filer.read()
-
-            self.assertEqual(
-                hashlib.blake2b(src).digest(),
-                hashlib.blake2b(dst).digest(),
-                "Expected files to be equal",
-            )
-
-        # Launcher
-        for file in self.test_local_share.glob("*.py"):
-            if not file.name.startswith("umu_test"):
-                src = b""
-                dst = b""
-
-                with file.open(mode="rb") as filer:
-                    dst = filer.read()
-                with self.test_user_share.joinpath(file.name).open(mode="rb") as filer:
-                    src = filer.read()
-
-                if hashlib.blake2b(src).digest() != hashlib.blake2b(dst).digest():
-                    err = "Files did not get updated"
-                    raise AssertionError(err)
-
         # Runtime Platform
         self.assertTrue(
             self.test_local_share.joinpath(
@@ -773,45 +527,11 @@ class TestGameLauncher(unittest.TestCase):
             "Expected runtime to in local share",
         )
 
-        for file in self.test_local_share.joinpath(
-            json_local["umu"]["versions"]["runtime_platform"]
-        ).glob("*"):
-            if file.is_file():
-                src = b""
-                dst = b""
-
-                with file.open(mode="rb") as filer:
-                    dst = filer.read()
-                with self.test_user_share.joinpath(
-                    json_root["umu"]["versions"]["runtime_platform"], file.name
-                ).open(mode="rb") as filer:
-                    src = filer.read()
-
-                if hashlib.blake2b(src).digest() != hashlib.blake2b(dst).digest():
-                    err = "Files did not get updated"
-                    raise AssertionError(err)
-
         # Pressure Vessel
         self.assertTrue(
             self.test_local_share.joinpath("pressure-vessel").is_dir(),
             "Expected pressure vessel to in local share",
         )
-
-        for file in self.test_local_share.joinpath("pressure-vessel").glob("*"):
-            if file.is_file():
-                src = b""
-                dst = b""
-
-                with file.open(mode="rb") as filer:
-                    dst = filer.read()
-                with self.test_user_share.joinpath("pressure-vessel", file.name).open(
-                    mode="rb"
-                ) as filer:
-                    src = filer.read()
-
-                if hashlib.blake2b(src).digest() != hashlib.blake2b(dst).digest():
-                    err = "Files did not get updated"
-                    raise AssertionError(err)
 
     def test_install_umu(self):
         """Test _install_umu by mocking a first launch.
@@ -828,15 +548,6 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         runner_files = {"compatibilitytool.vdf", "toolmanifest.vdf", "umu-run"}
-        py_files = {
-            "umu_consts.py",
-            "umu_dl_util.py",
-            "umu_log.py",
-            "umu_plugins.py",
-            "umu_run.py",
-            "umu_test.py",
-            "umu_util.py",
-        }
         json = umu_util._get_json(self.test_user_share, "umu_version.json")
 
         # Mock setting up the runtime
@@ -848,7 +559,7 @@ class TestGameLauncher(unittest.TestCase):
             return_value=None,
         ):
             result = umu_util._install_umu(
-                self.test_user_share, self.test_local_share, self.test_compat, json
+                self.test_user_share, self.test_local_share, json
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -921,27 +632,6 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertTrue(
             Path(self.test_local_share, "umu").is_file(), "Expected umu to exist"
-        )
-
-        # Python files
-        self.assertTrue(
-            list(self.test_local_share.glob("*.py")),
-            "Expected Python files to exist",
-        )
-        for file in self.test_local_share.glob("*.py"):
-            if file.name not in py_files:
-                err = "A non-launcher file was copied"
-                raise AssertionError(err)
-
-        # Symlink
-        self.assertTrue(
-            Path(self.test_local_share, "umu-run").is_symlink(),
-            "Expected umu to exist",
-        )
-        self.assertEqual(
-            Path(self.test_local_share, "umu-run").readlink(),
-            Path("umu_run.py"),
-            "Expected umu-run -> umu_run.py",
         )
 
     def test_get_json_err(self):
@@ -1697,9 +1387,7 @@ class TestGameLauncher(unittest.TestCase):
             "setup_runtime",
             return_value=None,
         ):
-            umu_util._install_umu(
-                self.test_user_share, self.test_local_share, self.test_compat, json
-            )
+            umu_util._install_umu(self.test_user_share, self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
