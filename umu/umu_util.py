@@ -1,6 +1,6 @@
 from tarfile import open as tar_open, TarInfo
 from os import environ
-from umu_consts import CONFIG, STEAM_COMPAT, UMU_LOCAL, MODE
+from umu_consts import CONFIG, UMU_LOCAL
 from typing import Any, Dict, List, Callable
 from json import load, dump
 from umu_log import log
@@ -140,14 +140,12 @@ def setup_umu(root: Path, local: Path) -> None:
 
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
-        return _install_umu(root, local, STEAM_COMPAT, json)
+        return _install_umu(root, local, json)
 
-    return _update_umu(root, local, STEAM_COMPAT, json, _get_json(local, CONFIG))
+    return _update_umu(root, local, json, _get_json(local, CONFIG))
 
 
-def _install_umu(
-    root: Path, local: Path, steam_compat: Path, json: Dict[str, Any]
-) -> None:
+def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
     """For new installations, copy all of the umu tools at a user-writable location.
 
     The designated locations to copy to will be:
@@ -178,7 +176,6 @@ def _install_umu(
 def _update_umu(
     root: Path,
     local: Path,
-    steam_compat: Path,
     json_root: Dict[str, Any],
     json_local: Dict[str, Any],
 ) -> None:
