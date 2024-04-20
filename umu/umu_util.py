@@ -163,31 +163,11 @@ def _install_umu(
 
     # Config
     log.console(f"Copied {CONFIG} -> {local}")
-    _copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
+    copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
 
     # Reaper
     log.console(f"Copied reaper -> {local}")
-    _copy(root.joinpath("reaper"), local.joinpath("reaper"), MODE.USER_RWX)
-
-    # Launcher files
-    for file in root.glob("*.py"):
-        if not file.name.startswith(("umu_test", "umu_run")):
-            log.console(f"Copied {file} -> {local}")
-            _copy(file, local.joinpath(file.name))
-    _copy(root.joinpath("umu_run.py"), local.joinpath("umu_run.py"), MODE.USER_RWX)
-
-    local.joinpath("umu-run").symlink_to("umu_run.py")
-
-    # Runner
-    log.console(f"Copied umu-launcher -> {steam_compat}")
-    steam_compat.mkdir(parents=True, exist_ok=True)
-    # Remove existing files if they exist -- this is a clean install.
-    if steam_compat.joinpath("umu-launcher").is_dir():
-        rmtree(steam_compat.joinpath("umu-launcher").as_posix())
-    _copytree(
-        root.joinpath("umu-launcher"),
-        steam_compat.joinpath("umu-launcher"),
-    )
+    copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
     setup_runtime(json)
@@ -223,25 +203,19 @@ def _update_umu(
     for key, val in json_root["umu"]["versions"].items():
         if key == "reaper":
             reaper: str = json_local["umu"]["versions"]["reaper"]
-
             # Directory is absent
             if not local.joinpath("reaper").is_file():
                 log.warning("Reaper not found")
-                _copy(root.joinpath("reaper"), local.joinpath("reaper"), MODE.USER_RWX)
+                copy(root.joinpath("reaper"), local.joinpath("reaper"))
                 log.console(f"Restored {key} to {val}")
-
             # Update
             if val != reaper:
                 log.console(f"Updating {key} to {val}")
-
                 local.joinpath("reaper").unlink(missing_ok=True)
-                _copy(root.joinpath("reaper"), local.joinpath("reaper"), MODE.USER_RWX)
-
+                copy(root.joinpath("reaper"), local.joinpath("reaper"))
                 json_local["umu"]["versions"]["reaper"] = val
         elif key == "runtime_platform":
-            # Old runtime
             runtime: str = json_local["umu"]["versions"]["runtime_platform"]
-
             # Redownload the runtime if absent or pressure vessel is absent
             if (
                 not local.joinpath(runtime).is_dir()
@@ -253,7 +227,6 @@ def _update_umu(
                     rmtree(local.joinpath("pressure-vessel").as_posix())
                 if local.joinpath(runtime).is_dir():
                     rmtree(local.joinpath(runtime).as_posix())
-
                 thread = Thread(target=setup_runtime, args=[json_root])
                 thread.start()
                 log.console(f"Restoring Runtime Platform to {val} ...")
@@ -268,83 +241,7 @@ def _update_umu(
                 rmtree(local.joinpath(runtime).as_posix())
                 thread = Thread(target=setup_runtime, args=[json_root])
                 thread.start()
-
                 json_local["umu"]["versions"]["runtime_platform"] = val
-        elif key == "launcher":
-            # Launcher
-            is_missing: bool = False
-            launcher: str = json_local["umu"]["versions"]["launcher"]
-
-            # Update
-            if val != launcher:
-                log.console(f"Updating {key} to {val}")
-
-                # Python files
-                for file in root.glob("*.py"):
-                    if not file.name.startswith(("umu_test", "umu_run")):
-                        local.joinpath(file.name).unlink(missing_ok=True)
-                        _copy(file, local.joinpath(file.name))
-                _copy(
-                    root.joinpath("umu_run.py"),
-                    local.joinpath("umu_run.py"),
-                    MODE.USER_RWX,
-                )
-
-                # Symlink
-                local.joinpath("umu-run").unlink(missing_ok=True)
-                local.joinpath("umu-run").symlink_to("umu_run.py")
-
-                json_local["umu"]["versions"]["launcher"] = val
-                continue
-
-            # Check for missing files
-            for file in [
-                file
-                for file in root.glob("*.py")
-                if not file.name.startswith(("umu_test", "umu_run"))
-                and not local.joinpath(file.name).is_file()
-            ]:
-                is_missing = True
-                log.warning("Missing %s", file.name)
-                _copy(file, local.joinpath(file.name))
-
-            if not local.joinpath("umu_run.py"):
-                log.warning("Missing %s", file.name)
-                _copy(
-                    root.joinpath("umu_run.py"),
-                    local.joinpath("umu_run.py"),
-                    MODE.USER_RWX,
-                )
-
-            if is_missing:
-                log.console(f"Restored {key} to {val}")
-                local.joinpath("umu-run").unlink(missing_ok=True)
-                local.joinpath("umu-run").symlink_to("umu_run.py")
-        elif key == "runner":
-            # Runner
-            runner: str = json_local["umu"]["versions"]["runner"]
-
-            # Directory is absent
-            if not steam_compat.joinpath("umu-launcher").is_dir():
-                log.warning("umu-launcher not found")
-
-                _copytree(
-                    root.joinpath("umu-launcher"),
-                    steam_compat.joinpath("umu-launcher"),
-                )
-
-                log.console(f"Restored umu-launcher to {val}")
-            elif steam_compat.joinpath("umu-launcher").is_dir() and val != runner:
-                # Update
-                log.console(f"Updating {key} to {val}")
-
-                rmtree(steam_compat.joinpath("umu-launcher").as_posix())
-                _copytree(
-                    root.joinpath("umu-launcher"),
-                    steam_compat.joinpath("umu-launcher"),
-                )
-
-                json_local["umu"]["versions"]["runner"] = val
 
     if thread:
         thread.join()
@@ -382,24 +279,3 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
         raise ValueError(err)
 
     return json
-
-
-def _copy(src: Path, dst: Path, mode: MODE = MODE.USER_RW) -> None:
-    dst.parent.mkdir(parents=True, exist_ok=True)
-
-    if src.is_symlink():
-        dst.symlink_to(src.readlink())
-        return
-
-    copy(src, dst)
-    dst.chmod(mode.value)
-
-
-def _copytree(src: Path, dest: Path, mode: MODE = MODE.USER_RW) -> None:
-    for file in src.iterdir():
-        if file.is_dir():
-            dest_subdir = dest / file.name
-            dest_subdir.mkdir(parents=True, exist_ok=True)
-            _copytree(file, dest_subdir)
-        else:
-            _copy(file, dest / file.name, mode)
