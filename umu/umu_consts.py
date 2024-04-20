@@ -14,13 +14,6 @@ class Color(Enum):
     DEBUG = "\u001b[35m"
 
 
-class MODE(Enum):
-    """Represent the permission to apply to a file."""
-
-    USER_RW = 0o0644
-    USER_RWX = 0o0755
-
-
 SIMPLE_FORMAT = f"%(levelname)s:  {Color.BOLD.value}%(message)s{Color.RESET.value}"
 
 DEBUG_FORMAT = f"%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:{Color.BOLD.value}%(message)s{Color.RESET.value}"  # noqa: E501
