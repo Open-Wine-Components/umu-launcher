@@ -40,10 +40,8 @@ PROTON_VERBS = {
     "getnativepath",
 }
 
-FLATPAK_ID = environ.get("FLATPAK_ID") if environ.get("FLATPAK_ID") else ""
+FLATPAK_ID = environ.get("FLATPAK_ID") or ""
 
 FLATPAK_PATH: Path = Path(environ.get("XDG_DATA_HOME"), "umu") if FLATPAK_ID else None
 
-UMU_LOCAL: Path = (
-    FLATPAK_PATH if FLATPAK_PATH else Path.home().joinpath(".local", "share", "umu")
-)
+UMU_LOCAL: Path = FLATPAK_PATH or Path.home().joinpath(".local", "share", "umu")
