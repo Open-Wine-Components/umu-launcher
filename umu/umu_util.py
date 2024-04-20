@@ -1,6 +1,6 @@
 from tarfile import open as tar_open, TarInfo
 from os import environ
-from umu_consts import CONFIG, STEAM_COMPAT, UMU_LOCAL
+from umu_consts import CONFIG, UMU_LOCAL
 from typing import Any, Dict, List, Callable
 from json import load, dump
 from umu_log import log
@@ -137,9 +137,9 @@ def setup_umu(root: Path, local: Path) -> None:
 
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
-        return _install_umu(root, local, STEAM_COMPAT, json)
+        return _install_umu(root, local, json)
 
-    return _update_umu(root, local, STEAM_COMPAT, json, _get_json(local, CONFIG))
+    return _update_umu(root, local, json, _get_json(local, CONFIG))
 
 
 def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
