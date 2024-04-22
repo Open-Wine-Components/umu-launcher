@@ -139,7 +139,7 @@ release: $(RELEASEDIR) | version
 	$(info :: Creating source distribution for release )
 	mkdir -p $(<)
 	rm -rf umu/__pycache__
-	cp -r umu packaging subprojects Makefile.in configure.sh README.md LICENSE $(<)
+	cp -r umu packaging Makefile.in configure.sh README.md LICENSE $(<)
 	tar -cvzf $(<).tar.gz $(<)
 
 
