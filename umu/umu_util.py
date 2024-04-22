@@ -61,10 +61,7 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
             base_url, timeout=300, context=create_default_context()
         ) as resp:
             if resp.status != 200:
-                err: str = (
-                    f"Unable to download {hash}\n"
-                    f"repo.steampowered.com returned the status: {resp.status}"
-                )
+                err: str = f"repo.steampowered.com returned the status: {resp.status}"
                 raise HTTPException(err)
             log.debug("Writing: %s", tmp.joinpath(archive))
             with tmp.joinpath(archive).open(mode="wb") as file:
