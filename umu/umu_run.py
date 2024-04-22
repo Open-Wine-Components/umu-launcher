@@ -26,7 +26,6 @@ from umu_consts import (
 from umu_plugins import (
     enable_steam_game_drive,
     set_env_toml,
-    enable_reaper,
 )
 
 
@@ -253,7 +252,6 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
-    enable_reaper(env, command, local)
 
     command.extend([local.joinpath("umu").as_posix(), "--verb", verb, "--"])
     command.extend(
