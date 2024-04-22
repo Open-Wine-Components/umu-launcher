@@ -380,22 +380,43 @@ class TestGameLauncherPlugins(unittest.TestCase):
         test_command_result = umu_run.build_command(
             self.env, self.test_local_share, test_command
         )
+        umu_id = self.env.get("UMU_ID")
         self.assertTrue(
             test_command_result is test_command, "Expected the same reference"
         )
-
-        # Verify contents of the command
-        reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [
-            *test_command
-        ]
+        self.assertIsInstance(test_command, list, "Expected a List from build_command")
+        self.assertEqual(
+            len(test_command), 12, "Expected 12 elements in the list from build_command"
+        )
+        (
+            reaper,
+            opt0,
+            opt1,
+            opt2,
+            id,
+            entry_point,
+            opt3,
+            verb,
+            opt4,
+            proton,
+            verb2,
+            exe,
+        ) = [*test_command]
         # The entry point dest could change. Just check if there's a value
-        self.assertTrue(reaper, "Expected reaper")
+        self.assertTrue(reaper, "Expected systemd")
+        self.assertEqual(opt0, "--user", "Expected --user")
+        self.assertEqual(opt1, "--scope", "Expected --scope")
+        self.assertEqual(opt2, "--description", "Expected --description")
+        self.assertEqual(
+            id,
+            f"UMU_ID={umu_id}",
+            f"Expected UMU_ID={umu_id}",
+        )
         self.assertTrue(id, "Expected a tag for reaper")
-        self.assertTrue(opt0, "Expected --")
         self.assertTrue(entry_point, "Expected an entry point")
-        self.assertEqual(opt1, "--verb", "Expected --verb")
+        self.assertEqual(opt3, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")
-        self.assertEqual(opt2, "--", "Expected --")
+        self.assertEqual(opt4, "--", "Expected --")
         self.assertEqual(
             proton,
             Path(self.env.get("PROTONPATH") + "/proton").as_posix(),
