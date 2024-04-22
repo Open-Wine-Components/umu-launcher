@@ -142,7 +142,7 @@ def setup_umu(root: Path, local: Path) -> None:
     if not local.exists() or not any(local.iterdir()):
         return _install_umu(root, local, json)
 
-    return _update_umu(root, local, json, _get_json(local, CONFIG))
+    return _update_umu(local, json, _get_json(local, CONFIG))
 
 
 def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
@@ -170,7 +170,6 @@ def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
 
 
 def _update_umu(
-    root: Path,
     local: Path,
     json_root: Dict[str, Any],
     json_local: Dict[str, Any],
@@ -194,7 +193,7 @@ def _update_umu(
     # When a directory for a specific tool doesn't exist, remake the copy
     # Be lazy and just trust the integrity of local
     for key, val in json_root["umu"]["versions"].items():
-        elif key == "runtime_platform":
+        if key == "runtime_platform":
             runtime: str = json_local["umu"]["versions"]["runtime_platform"]
             # Redownload the runtime if absent or pressure vessel is absent
             if (
