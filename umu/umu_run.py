@@ -15,6 +15,7 @@ from errno import ENETUNREACH
 from threading import Thread
 from socket import AF_INET, SOCK_DGRAM, socket
 from pwd import getpwuid
+from shutil import which
 from umu_consts import (
     PROTON_VERBS,
     DEBUG_FORMAT,
@@ -238,6 +239,7 @@ def build_command(
 ) -> List[str]:
     """Build the command to be executed."""
     verb: str = env["PROTON_VERB"]
+    systemd: str = which("systemd-run")
 
     # Raise an error if the _v2-entry-point cannot be found
     if not local.joinpath("umu").is_file():
@@ -252,6 +254,16 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
+    if systemd and not FLATPAK_PATH:
+        command.extend(
+            [
+                systemd,
+                "--user",
+                "--scope",
+                "--description",
+                f"UMU_ID={env.get('UMU_ID')}",
+            ]
+        )
 
     command.extend([local.joinpath("umu").as_posix(), "--verb", verb, "--"])
     command.extend(
