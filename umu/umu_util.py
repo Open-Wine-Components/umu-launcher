@@ -131,8 +131,8 @@ def setup_umu(root: Path, local: Path) -> None:
 
     Performs full copies of tools on new installs and selectively on new updates
     The tools that will be copied are:
-    Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the umu-launcher
-    The umu-launcher will be copied to .local/share/Steam/compatibilitytools.d
+
+    Pressure Vessel and the SteamRT
     """
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
@@ -152,7 +152,7 @@ def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
     ~/.local/share/umu, ~/.local/share/Steam/compatibilitytools.d
 
     The tools that will be copied are:
-    umu-launcher, umu Launcher files, reaper and umu_version.json
+    umu-launcher, umu Launcher files, and umu_version.json
     """
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux ...")
