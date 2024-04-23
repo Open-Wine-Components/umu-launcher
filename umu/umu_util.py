@@ -11,7 +11,7 @@ from urllib.request import urlopen
 from ssl import create_default_context
 from http.client import HTTPException
 from tempfile import mkdtemp
-from threading import Thread
+from concurrent.futures import ThreadPoolExecutor, Future
 
 try:
     from tarfile import tar_filter
@@ -210,7 +210,8 @@ def _update_umu(
     In the case that existing writable directories we copy to are in a partial
     state, a best effort is made to restore the missing files
     """
-    thread: Thread = None
+    executor: ThreadPoolExecutor = ThreadPoolExecutor()
+    futures: List[Future] = []
     log.debug("Existing install detected")
 
     # Attempt to copy only the updated versions
@@ -251,8 +252,7 @@ def _update_umu(
                 if local.joinpath(runtime).is_dir():
                     rmtree(local.joinpath(runtime).as_posix())
 
-                thread = Thread(target=setup_runtime, args=[json_root])
-                thread.start()
+                futures.append(executor.submit(setup_runtime, json_root))
                 log.console(f"Restoring Runtime Platform to {val} ...")
             elif (
                 local.joinpath(runtime).is_dir()
@@ -263,8 +263,7 @@ def _update_umu(
                 log.console(f"Updating {key} to {val}")
                 rmtree(local.joinpath("pressure-vessel").as_posix())
                 rmtree(local.joinpath(runtime).as_posix())
-                thread = Thread(target=setup_runtime, args=[json_root])
-                thread.start()
+                futures.append(executor.submit(setup_runtime, json_root))
 
                 json_local["umu"]["versions"]["runtime_platform"] = val
         elif key == "launcher":
@@ -343,8 +342,9 @@ def _update_umu(
 
                 json_local["umu"]["versions"]["runner"] = val
 
-    if thread:
-        thread.join()
+    for _ in futures:
+        _.result()
+    executor.shutdown()
 
     # Finally, update the local config file
     with local.joinpath(CONFIG).open(mode="w") as file:
