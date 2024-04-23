@@ -340,8 +340,6 @@ def _update_proton(proton: str, steam_compat: Path, old_versions: List[Path]) ->
     Assumes that the directories that are named ULWGL/UMU-Proton is ours
     and will be removed.
     """
-    threads: List[Thread] = []
-    old: Path = None
     log.debug("Old: %s", old_versions)
     log.debug("Linking UMU-Latest -> %s", proton)
     steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
@@ -350,20 +348,16 @@ def _update_proton(proton: str, steam_compat: Path, old_versions: List[Path]) ->
     if not old_versions:
         return
 
-    old = old_versions.pop()
-    if old.is_dir():
-        log.debug("Removing: %s", old)
-        oldest: Thread = Thread(target=rmtree, args=[old.as_posix()])
-        oldest.start()
-        threads.append(oldest)
-
-    for proton in old_versions:
-        if proton.is_dir():
-            log.debug("Old stable build found")
-            log.debug("Removing: %s", proton)
-            sibling: Thread = Thread(target=rmtree, args=[proton.as_posix()])
-            sibling.start()
-            threads.append(sibling)
-
-    for thread in threads:
-        thread.join()
+    with ThreadPoolExecutor() as executor:
+        recent_version: Path = old_versions.pop()
+        futures: List[Future] = []
+        if recent_version.is_dir():
+            log.debug("Removing: %s", recent_version)
+            futures.append(executor.submit(rmtree, recent_version.as_posix()))
+        for proton in old_versions:
+            if proton.is_dir():
+                log.debug("Old stable build found")
+                log.debug("Removing: %s", proton)
+                futures.append(executor.submit(rmtree, proton.as_posix()))
+        for _ in futures:
+            _.result()
