@@ -12,7 +12,8 @@ from umu_plugins import enable_zenity
 from umu_log import log
 from umu_consts import STEAM_COMPAT
 from tempfile import mkdtemp
-from threading import Thread
+from concurrent.futures import ThreadPoolExecutor, Future
+
 SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
 try:
@@ -272,7 +273,6 @@ def _get_latest(
 
         # Set latest UMU/GE-Proton
         if version == "UMU-Proton":
-            threads: List[Thread] = []
             log.debug("Updating UMU-Proton")
             old_versions: List[Path] = sorted(
                 [
@@ -288,16 +288,12 @@ def _get_latest(
             # Though, ideally, an in-place differential update would be
             # performed instead for this job but this will do for now
             log.debug("Extracting %s -> %s", tar_path, steam_compat)
-            extract: Thread = Thread(target=_extract_dir, args=[tar_path, steam_compat])
-            extract.start()
-            threads.append(extract)
-            update: Thread = Thread(
-                target=_update_proton, args=[proton, steam_compat, old_versions]
-            )
-            update.start()
-            threads.append(update)
-            for thread in threads:
-                thread.join()
+            with ThreadPoolExecutor() as executor:
+                for f in [
+                    executor.submit(_extract_dir, tar_path, steam_compat),
+                    executor.submit(_update_proton, proton, steam_compat, old_versions),
+                ]:
+                    f.result()
         else:
             # For GE-Proton, keep the previous build. Since it's a rebase
             # of bleeding edge, regressions are more likely to occur
