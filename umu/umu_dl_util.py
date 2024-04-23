@@ -1,19 +1,19 @@
 from tarfile import open as tar_open, TarInfo
 from pathlib import Path
 from os import environ
-from typing import Dict, List, Tuple, Any, Union, Callable
+from typing import Dict, List, Tuple, Union, Callable
 from hashlib import sha512
 from shutil import rmtree
-from http.client import HTTPSConnection, HTTPResponse, HTTPException, HTTPConnection
-from ssl import create_default_context
+from http.client import HTTPException
+from ssl import create_default_context, SSLContext
 from json import loads as loads_json
-from urllib.request import urlopen
+from urllib.request import urlopen, Request, URLError
 from umu_plugins import enable_zenity
-from socket import gaierror
 from umu_log import log
 from umu_consts import STEAM_COMPAT
 from tempfile import mkdtemp
 from threading import Thread
+SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
 try:
     from tarfile import tar_filter
@@ -34,7 +34,7 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     try:
         log.debug("Sending request to api.github.com")
         files = _fetch_releases()
-    except gaierror:
+    except URLError:
         log.debug("Network is unreachable")
 
     # Download the latest Proton
@@ -55,37 +55,28 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
 def _fetch_releases() -> List[Tuple[str, str]]:
     """Fetch the latest releases from the Github API."""
     files: List[Tuple[str, str]] = []
-    resp: HTTPResponse = None
-    conn: HTTPConnection = HTTPSConnection(
-        "api.github.com", timeout=30, context=create_default_context()
-    )
+    url: str = "https://api.github.com"
     repo: str = "/repos/Open-Wine-Components/umu-proton/releases"
+    headers: Dict[str, str] = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "",
+    }
 
     if environ.get("PROTONPATH") == "GE-Proton":
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases"
 
-    conn.request(
-        "GET",
-        repo,
-        headers={
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": "",
-        },
-    )
-
-    resp = conn.getresponse()
-
-    if resp.status != 200:
-        return files
-
-    # Attempt to acquire the tarball and checksum from the JSON data
-    releases: List[Dict[str, Any]] = loads_json(resp.read().decode("utf-8"))
-    for release in releases:
-        if "assets" in release:
-            assets: List[Dict[str, Any]] = release["assets"]
-
-            for asset in assets:
+    with urlopen(  # noqa: S310
+        Request(f"{url}{repo}", headers=headers),  # noqa: S310
+        timeout=30,
+        context=SSL_DEFAULT_CONTEXT,
+    ) as resp:
+        if resp.status != 200:
+            return files
+        for release in loads_json(resp.read().decode("utf-8")):
+            if not release.get("assets"):
+                continue
+            for asset in release.get("assets"):
                 if (
                     asset.get("name")
                     and (
@@ -97,19 +88,20 @@ def _fetch_releases() -> List[Tuple[str, str]]:
                             )
                         )
                     )
-                    and "browser_download_url" in asset
+                    and asset.get("browser_download_url")
                 ):
                     if asset["name"].endswith("sum"):
                         files.append((asset["name"], asset["browser_download_url"]))
                     else:
                         files.append((asset["name"], asset["browser_download_url"]))
-
                 if len(files) == 2:
                     break
-        break
-    conn.close()
+            break
+
     if len(files) != 2:
-        err: str = "Failed to get complete information for Proton release"
+        err: str = (
+            "Failed to get complete information for Proton release from api.github.com"
+        )
         raise RuntimeError(err)
 
     return files
