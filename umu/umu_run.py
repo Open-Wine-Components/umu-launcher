@@ -12,7 +12,7 @@ from umu_util import setup_umu
 from umu_log import log, console_handler, CustomFormatter
 from logging import INFO, WARNING, DEBUG
 from errno import ENETUNREACH
-from threading import Thread
+from concurrent.futures import ThreadPoolExecutor, Future
 from socket import AF_INET, SOCK_DGRAM, socket
 from pwd import getpwuid
 from umu_consts import (
@@ -300,7 +300,8 @@ def main() -> int:  # noqa: D103
     # Expected files in this dir: pressure vessel, launcher files, runner,
     # config, reaper
     root: Path = Path(__file__).resolve().parent
-    thread: Thread = None
+    executor: ThreadPoolExecutor = ThreadPoolExecutor()
+    future: Future = None
     args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
 
     if os.geteuid() == 0:
@@ -331,8 +332,7 @@ def main() -> int:  # noqa: D103
         with socket(AF_INET, SOCK_DGRAM) as sock:
             sock.settimeout(5)
             sock.connect(("1.1.1.1", 53))
-        thread = Thread(target=setup_umu, args=[root, UMU_LOCAL])
-        thread.start()
+        future = executor.submit(setup_umu, root, UMU_LOCAL)
     except TimeoutError:  # Request to a server timed out
         if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
             err: str = (
@@ -375,8 +375,9 @@ def main() -> int:  # noqa: D103
         log.info("%s=%s", key, val)
         os.environ[key] = val
 
-    if thread:
-        thread.join()
+    if future:
+        future.result()
+    executor.shutdown()
 
     # Run
     build_command(env, UMU_LOCAL, command, opts)
