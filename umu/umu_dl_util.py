@@ -127,7 +127,7 @@ def _fetch_proton(
     # Digest file
     # Ruff currently cannot get this right
     # See https://github.com/astral-sh/ruff/issues/7918
-    with urlopen(hash_url, timeout=30, context=create_default_context()) as resp:  # noqa: S310
+    with urlopen(hash_url, timeout=30, context=SSL_DEFAULT_CONTEXT) as resp:  # noqa: S310
         if resp.status != 200:
             err: str = (
                 f"Unable to download {hash}\n"
@@ -157,7 +157,7 @@ def _fetch_proton(
     if not environ.get("UMU_ZENITY") or ret:
         log.console(f"Downloading {proton} ...")
         with urlopen(  # noqa: S310
-            proton_url, timeout=300, context=create_default_context()
+            proton_url, timeout=300, context=SSL_DEFAULT_CONTEXT
         ) as resp:
             # Without Proton, the launcher will not work
             if resp.status != 200:
