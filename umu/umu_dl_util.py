@@ -246,9 +246,15 @@ def _get_from_steamcompat(
 def _get_latest(
     env: Dict[str, str], steam_compat: Path, tmp: Path, files: List[Tuple[str, str]]
 ) -> Union[Dict[str, str], None]:
-    """Download the latest Proton for new installs -- empty cache and Steam compat.
+    """Download the latest Proton for new installs.
 
-    When the digests mismatched or when interrupted, refer to cache for an old version
+    Either GE-Proton or UMU-Proton can be downloaded. When download the latest
+    UMU-Proton build, previous stable versions of that build will be deleted
+    automatically. Previous GE-Proton builds will remain on the system because
+    regressions are likely to occur in bleeding-edge based builds
+
+    When the digests mismatched or when interrupted, an old build will in
+    ~/.local/share/Steam/compatibilitytool.d will be used
     """
     if not files:
         return None
@@ -283,17 +289,15 @@ def _get_latest(
             )
             tar_path: Path = tmp.joinpath(tarball)
 
-            # Extract the latest archive and update UMU-Proton
-            # Will extract and remove the previous stable versions
-            # Though, ideally, an in-place differential update would be
+            # Ideally, an in-place differential update would be
             # performed instead for this job but this will do for now
             log.debug("Extracting %s -> %s", tar_path, steam_compat)
             with ThreadPoolExecutor() as executor:
-                for f in [
+                for _ in [
                     executor.submit(_extract_dir, tar_path, steam_compat),
                     executor.submit(_update_proton, proton, steam_compat, old_versions),
                 ]:
-                    f.result()
+                    _.result()
         else:
             # For GE-Proton, keep the previous build. Since it's a rebase
             # of bleeding edge, regressions are more likely to occur
@@ -335,10 +339,10 @@ def _update_proton(proton: str, steam_compat: Path, old_versions: List[Path]) ->
 
     The symbolic link will be used by clients to reference the PROTONPATH
     which can be used for tasks such as killing the running wineserver in
-    the prefix
+    the prefix. The link will be recreated each run
 
-    Assumes that the directories that are named ULWGL/UMU-Proton is ours
-    and will be removed.
+    Assumes that the directories that are named ULWGL/UMU-Proton are ours and
+    will be removed, so users should not be storing important files there
     """
     log.debug("Old: %s", old_versions)
     log.debug("Linking UMU-Latest -> %s", proton)
