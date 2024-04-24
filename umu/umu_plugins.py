@@ -141,19 +141,6 @@ def enable_steam_game_drive(env: Dict[str, str]) -> Dict[str, str]:
     return env
 
 
-def enable_reaper(env: Dict[str, str], command: List[str], local: Path) -> List[str]:
-    """Enable Reaper to monitor and keep track of descendent processes."""
-    command.extend(
-        [
-            local.joinpath("reaper").as_posix(),
-            "UMU_ID=" + env["UMU_ID"],
-            "--",
-        ]
-    )
-
-    return command
-
-
 def enable_zenity(command: str, opts: List[str], msg: str) -> int:
     """Execute the command and pipe the output to Zenity.
 
