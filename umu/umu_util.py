@@ -202,7 +202,6 @@ def _update_umu(
                 not local.joinpath(runtime).is_dir()
                 or not local.joinpath("pressure-vessel").is_dir()
             ):
-                # Redownload
                 log.warning("Runtime Platform not found")
                 if local.joinpath("pressure-vessel").is_dir():
                     rmtree(local.joinpath("pressure-vessel").as_posix())
@@ -210,7 +209,8 @@ def _update_umu(
                     rmtree(local.joinpath(runtime).as_posix())
                 futures.append(executor.submit(setup_runtime, json_root))
                 log.console(f"Restoring Runtime Platform to {val} ...")
-            elif (
+                continue
+            if (
                 local.joinpath(runtime).is_dir()
                 and local.joinpath("pressure-vessel").is_dir()
                 and val != runtime
@@ -221,6 +221,16 @@ def _update_umu(
                 rmtree(local.joinpath(runtime).as_posix())
                 futures.append(executor.submit(setup_runtime, json_root))
                 json_local["umu"]["versions"]["runtime_platform"] = val
+        elif key == "launcher":
+            if val == json_local["umu"]["versions"]["launcher"]:
+                continue
+            log.console(f"Updating {key} to {val}")
+            json_local["umu"]["versions"]["launcher"] = val
+        elif key == "runner":
+            if val == json_local["umu"]["versions"]["runner"]:
+                continue
+            log.console(f"Updating {key} to {val}")
+            json_local["umu"]["versions"]["runner"] = val
 
     for _ in futures:
         _.result()
