@@ -139,7 +139,7 @@ def setup_umu(root: Path, local: Path) -> None:
     if not local.exists() or not any(local.iterdir()):
         return _install_umu(root, local, json)
 
-    return _update_umu(root, local, json, _get_json(local, CONFIG))
+    return _update_umu(local, json, _get_json(local, CONFIG))
 
 
 def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
@@ -153,16 +153,11 @@ def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
     """
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux ...")
-
     local.mkdir(parents=True, exist_ok=True)
 
     # Config
     log.console(f"Copied {CONFIG} -> {local}")
     copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
-
-    # Reaper
-    log.console(f"Copied reaper -> {local}")
-    copy(root.joinpath("reaper"), local.joinpath("reaper"))
 
     # Runtime platform
     setup_runtime(json)
@@ -171,7 +166,6 @@ def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
 
 
 def _update_umu(
-    root: Path,
     local: Path,
     json_root: Dict[str, Any],
     json_local: Dict[str, Any],
@@ -197,18 +191,10 @@ def _update_umu(
     # Be lazy and just trust the integrity of local
     for key, val in json_root["umu"]["versions"].items():
         if key == "reaper":
-            reaper: str = json_local["umu"]["versions"]["reaper"]
-            # Directory is absent
-            if not local.joinpath("reaper").is_file():
-                log.warning("Reaper not found")
-                copy(root.joinpath("reaper"), local.joinpath("reaper"))
-                log.console(f"Restored {key} to {val}")
-            # Update
-            if val != reaper:
-                log.console(f"Updating {key} to {val}")
-                local.joinpath("reaper").unlink(missing_ok=True)
-                copy(root.joinpath("reaper"), local.joinpath("reaper"))
-                json_local["umu"]["versions"]["reaper"] = val
+            if val == json_local["umu"]["versions"]["reaper"]:
+                continue
+            log.console(f"Updating {key} to {val}")
+            json_local["umu"]["versions"]["reaper"] = val
         elif key == "runtime_platform":
             runtime: str = json_local["umu"]["versions"]["runtime_platform"]
             # Redownload the runtime if absent or pressure vessel is absent
