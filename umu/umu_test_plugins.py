@@ -236,7 +236,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "_v2-entry-point"):
-            umu_run.build_command(self.env, self.test_local_share, test_command)
+            umu_run.build_command(
+                self.env, self.test_local_share, self.test_user_share, test_command
+            )
 
     def test_build_command_proton(self):
         """Test build_command.
@@ -307,7 +309,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            umu_run.build_command(self.env, self.test_local_share, test_command)
+            umu_run.build_command(
+                self.env, self.test_local_share, self.test_user_share, test_command
+            )
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -378,7 +382,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         test_command_result = umu_run.build_command(
-            self.env, self.test_local_share, test_command
+            self.env, self.test_local_share, self.test_user_share, test_command
         )
         self.assertTrue(
             test_command_result is test_command, "Expected the same reference"

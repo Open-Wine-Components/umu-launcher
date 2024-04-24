@@ -254,7 +254,6 @@ class TestGameLauncher(unittest.TestCase):
             return_value=None,
         ):
             result = umu_util._update_umu(
-                self.test_user_share,
                 self.test_local_share,
                 json_root,
                 json_local,
@@ -439,7 +438,6 @@ class TestGameLauncher(unittest.TestCase):
             return_value=None,
         ):
             result = umu_util._update_umu(
-                self.test_user_share,
                 self.test_local_share,
                 json_root,
                 json_local,
@@ -500,7 +498,7 @@ class TestGameLauncher(unittest.TestCase):
         num_local = len([file for file in self.test_local_share.glob("*")])
         self.assertEqual(
             num_share,
-            num_local - 2,
+            num_local - 1,
             "Expected /usr/share/umu and .local/share/umu to contain same files",
         )
 
@@ -1406,7 +1404,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Build
         test_command = umu_run.build_command(
-            self.env, self.test_local_share, test_command
+            self.env, self.test_local_share, self.test_user_share, test_command
         )
         self.assertIsInstance(test_command, list, "Expected a List from build_command")
         self.assertEqual(
