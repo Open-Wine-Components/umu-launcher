@@ -26,7 +26,6 @@ from umu_consts import (
 from umu_plugins import (
     enable_steam_game_drive,
     set_env_toml,
-    enable_reaper,
 )
 
 
@@ -235,7 +234,11 @@ def set_env(
 
 
 def build_command(
-    env: Dict[str, str], local: Path, command: List[str], opts: List[str] = None
+    env: Dict[str, str],
+    local: Path,
+    root: Path,
+    command: List[str],
+    opts: List[str] = None,
 ) -> List[str]:
     """Build the command to be executed."""
     verb: str = env["PROTON_VERB"]
@@ -253,8 +256,13 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
-    enable_reaper(env, command, local)
-
+    command.extend(
+        [
+            root.joinpath("reaper").as_posix(),
+            f"UMU_ID={env.get('UMU_ID')}",
+            "--",
+        ]
+    )
     command.extend([local.joinpath("umu").as_posix(), "--verb", verb, "--"])
     command.extend(
         [
@@ -378,7 +386,7 @@ def main() -> int:  # noqa: D103
     executor.shutdown()
 
     # Run
-    build_command(env, UMU_LOCAL, command, opts)
+    build_command(env, UMU_LOCAL, root, command, opts)
     log.debug("%s", command)
 
     return run(command, check=False).returncode
