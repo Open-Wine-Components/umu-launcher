@@ -29,6 +29,7 @@ finish-args:
   - --filesystem=~/.var/app/org.openwinecomponents.umu.umu-launcher:rw
   - --filesystem=xdg-documents
   - --filesystem=xdg-desktop
+  - --filesystem=xdg-download
   - --env=TZ=
   - --unset-env=TZ
   - --env=LC_ADDRESS=C
