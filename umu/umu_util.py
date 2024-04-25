@@ -62,14 +62,14 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
             with tmp.joinpath(archive).open(mode="wb") as file:
                 file.write(resp.read())
 
-    log.debug("Opening: %s", tmp.joinpath(archive))
     # Open the tar file
+    log.debug("Opening: %s", tmp.joinpath(archive))
     with tar_open(tmp.joinpath(archive), "r:xz") as tar:
         if tar_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
         else:
-            log.debug("Using no filter for archive")
+            log.warning("Using no filter for archive")
             log.warning("Archive will be extracted insecurely")
 
         # Ensure the target directory exists
@@ -103,9 +103,8 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
         log.debug("Removing: %s", tmp.joinpath(archive))
         tmp.joinpath(archive).unlink(missing_ok=True)
 
-        log.debug("Renaming: _v2-entry-point -> umu")
-
         # Rename _v2-entry-point
+        log.debug("Renaming: _v2-entry-point -> umu")
         UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
 
 
