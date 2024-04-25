@@ -173,10 +173,6 @@ def _update_umu(
     futures: List[Future] = []
     log.debug("Existing install detected")
 
-    # Attempt to copy only the updated versions
-    # Compare the local to the root config
-    # When a directory for a specific tool doesn't exist, remake the copy
-    # Be lazy and just trust the integrity of local
     for key, val in json_root["umu"]["versions"].items():
         if key == "reaper":
             if val == json_local["umu"]["versions"]["reaper"]:
@@ -228,7 +224,6 @@ def _update_umu(
         _.result()
     executor.shutdown()
 
-    # Finally, update the local config file
     with local.joinpath(CONFIG).open(mode="w") as file:
         dump(json_local, file, indent=4)
 
@@ -243,7 +238,7 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
     """
     json: Dict[str, Any] = None
 
-    # The file in /usr/share/umu should always exist
+    # umu_version.json in the system path should always exist
     if not path.joinpath(config).is_file():
         err: str = (
             f"File not found: {config}\n"
