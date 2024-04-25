@@ -1,3 +1,4 @@
+from sys import version
 from tarfile import open as tar_open, TarInfo
 from os import environ
 from umu_consts import CONFIG, UMU_LOCAL
@@ -8,10 +9,12 @@ from pathlib import Path
 from shutil import rmtree, move, copy
 from umu_plugins import enable_zenity
 from urllib.request import urlopen
-from ssl import create_default_context
+from ssl import create_default_context, SSLContext
 from http.client import HTTPException
 from tempfile import mkdtemp
 from concurrent.futures import ThreadPoolExecutor, Future
+
+SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
 try:
     from tarfile import tar_filter
@@ -20,22 +23,15 @@ except ImportError:
 
 
 def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
-    archive: str = "steam-container-runtime-complete.tar.gz"
     tmp: Path = Path(mkdtemp())
-    # Access the 'runtime_platform' value
-    runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
-
-    # Assuming runtime_platform_value is "sniper_platform_0.20240125.75305"
-    # Split the string at 'sniper_platform_'
-    # TODO Change logic so we don't split on a hardcoded string
-    version: str = runtime_platform_value.split("sniper_platform_")[1]
-    log.debug("Version: %s", version)
-
-    # Step  1: Define the URL of the file to download
-    # We expect the archive name to not change
-    base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/{archive}"
     ret: int = 0  # Exit code from zenity
+    archive: str = "SteamLinuxRuntime_sniper.tar.xz"  # Archive containing the rt
+    runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
+    codename: str = "steamrt3"
+    log.debug("Version: %s", runtime_platform_value)
 
+    # Define the URL of the file to download
+    base_url: str = f"https://repo.steampowered.com/{codename}/images/{runtime_platform_value}/{archive}"
     log.debug("URL: %s", base_url)
 
     # Download the runtime
@@ -50,15 +46,15 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
             tmp.as_posix(),
         ]
         msg: str = "Downloading UMU-Runtime ..."
-        ret: int = enable_zenity(bin, opts, msg)
+        ret = enable_zenity(bin, opts, msg)
         if ret:
             tmp.joinpath(archive).unlink(missing_ok=True)
             log.warning("zenity exited with the status code: %s", ret)
             log.console("Retrying from Python ...")
     if not environ.get("UMU_ZENITY") or ret:
-        log.console(f"Downloading {runtime_platform_value}, please wait ...")
+        log.console(f"Downloading {codename} {runtime_platform_value}, please wait ...")
         with urlopen(  # noqa: S310
-            base_url, timeout=300, context=create_default_context()
+            base_url, timeout=300, context=SSL_DEFAULT_CONTEXT
         ) as resp:
             if resp.status != 200:
                 err: str = f"repo.steampowered.com returned the status: {resp.status}"
@@ -67,15 +63,15 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
             with tmp.joinpath(archive).open(mode="wb") as file:
                 file.write(resp.read())
 
-    log.debug("Opening: %s", tmp.joinpath(archive))
-
     # Open the tar file
-    with tar_open(tmp.joinpath(archive), "r:gz") as tar:
+    log.debug("Opening: %s", tmp.joinpath(archive))
+    with tar_open(tmp.joinpath(archive), "r:xz") as tar:
         if tar_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
         else:
-            log.debug("Using no filter for archive")
+            log.warning("Python: %s", version)
+            log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
 
         # Ensure the target directory exists
@@ -84,52 +80,46 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
         # Extract the 'depot' folder to the target directory
         log.debug("Extracting archive files -> %s", tmp)
         for member in tar.getmembers():
-            if member.name.startswith("steam-container-runtime/depot/"):
+            if member.name.startswith("SteamLinuxRuntime_sniper/"):
                 tar.extract(member, path=tmp)
 
-        # Step  4: move the files to the correct location
-        source_dir = tmp.joinpath("steam-container-runtime", "depot")
-
+        # Move the files to the correct location
+        source_dir = tmp.joinpath("SteamLinuxRuntime_sniper")
         log.debug("Source: %s", source_dir)
         log.debug("Destination: %s", UMU_LOCAL)
 
         # Move each file to the destination directory, overwriting if it exists
-        for file in source_dir.glob("*"):
-            src_file: Path = source_dir.joinpath(file.name)
-            dest_file: Path = UMU_LOCAL.joinpath(file.name)
-
-            if dest_file.is_file() or dest_file.is_symlink():
-                log.debug("Removing file: %s", dest_file)
-                dest_file.unlink()
-            elif dest_file.is_dir():
-                log.debug("Removing directory: %s", dest_file)
-                if dest_file.exists():
-                    rmtree(dest_file.as_posix())  # remove dir and all contains
-
-            log.debug("Moving %s -> %s", src_file, dest_file)
-            move(src_file.as_posix(), dest_file.as_posix())
+        with ThreadPoolExecutor() as executor:
+            futures: List[Future] = [
+                executor.submit(_move, file, source_dir, UMU_LOCAL)
+                for file in source_dir.glob("*")
+            ]
+            for _ in futures:
+                _.result()
 
         # Remove the extracted directory and all its contents
-        log.debug("Removing: %s/steam-container-runtime", tmp)
-        if tmp.joinpath("steam-container-runtime").exists():
-            rmtree(tmp.joinpath("steam-container-runtime").as_posix())
+        log.debug("Removing: %s/SteamLinuxRuntime_sniper", tmp)
+        if tmp.joinpath("SteamLinuxRuntime_sniper").exists():
+            rmtree(tmp.joinpath("SteamLinuxRuntime_sniper").as_posix())
 
         log.debug("Removing: %s", tmp.joinpath(archive))
         tmp.joinpath(archive).unlink(missing_ok=True)
 
-        log.debug("Renaming: _v2-entry-point -> umu")
-
         # Rename _v2-entry-point
+        log.debug("Renaming: _v2-entry-point -> umu")
         UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
 
 
 def setup_umu(root: Path, local: Path) -> None:
-    """Copy the launcher and its tools to ~/.local/share/umu.
+    """Install or update umu files for the current user.
 
-    Performs full copies of tools on new installs and selectively on new updates
-    The tools that will be copied are:
-    Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the umu-launcher
-    The umu-launcher will be copied to .local/share/Steam/compatibilitytools.d
+    When launching umu for the first time, umu_version.json and a runtime
+    platform will be downloaded for Proton
+
+    The file umu_version.json defines all of the tools that umu will use and
+    it will be persisted at ~/.local/share/umu, which will be used to update
+    the runtime. The configuration file in that path will be updated at launch
+    whenever there's a new release
     """
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
@@ -143,13 +133,13 @@ def setup_umu(root: Path, local: Path) -> None:
 
 
 def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
-    """For new installations, copy all of the umu tools at a user-writable location.
+    """Copy the configuration file and download the runtime.
 
-    The designated locations to copy to will be:
-    ~/.local/share/umu, ~/.local/share/Steam/compatibilitytools.d
+    The launcher will only copy umu_version.json to ~/.local/share/umu
 
-    The tools that will be copied are:
-    umu-launcher, umu Launcher files, reaper and umu_version.json
+    The subreaper and the launcher files will remain in the system path
+    defined at build time, with the exception of umu-launcher which will be
+    installed in $PREFIX/share/steam/compatibilitytools.d
     """
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux ...")
@@ -170,25 +160,21 @@ def _update_umu(
     json_root: Dict[str, Any],
     json_local: Dict[str, Any],
 ) -> None:
-    """For existing installations, update the umu tools at a user-writable location.
+    """For existing installations, update the runtime and umu_version.json.
 
-    The configuration file (umu_version.json) saved in the root dir
-    will determine whether an update will be performed or not
+    The umu_version.json saved in the prefix directory (e.g., /usr/share/umu)
+    will determine whether an update will be performed for the runtime or not.
+    When umu_version.json at ~/.local/share/umu is different than the one in
+    the system path, an update will be performed. If the runtime is missing,
+    it will be restored
 
-    This happens by way of comparing the key/values of the local
-    umu_version.json against the root configuration file
-
-    In the case that existing writable directories we copy to are in a partial
-    state, a best effort is made to restore the missing files
+    Updates to the launcher files or subreaper installed in the system path
+    will be reflected in umu_version.json at ~/.local/share/umu each launch
     """
     executor: ThreadPoolExecutor = ThreadPoolExecutor()
     futures: List[Future] = []
     log.debug("Existing install detected")
 
-    # Attempt to copy only the updated versions
-    # Compare the local to the root config
-    # When a directory for a specific tool doesn't exist, remake the copy
-    # Be lazy and just trust the integrity of local
     for key, val in json_root["umu"]["versions"].items():
         if key == "reaper":
             if val == json_local["umu"]["versions"]["reaper"]:
@@ -196,29 +182,33 @@ def _update_umu(
             log.console(f"Updating {key} to {val}")
             json_local["umu"]["versions"]["reaper"] = val
         elif key == "runtime_platform":
-            runtime: str = json_local["umu"]["versions"]["runtime_platform"]
-            # Redownload the runtime if absent or pressure vessel is absent
-            if (
-                not local.joinpath(runtime).is_dir()
-                or not local.joinpath("pressure-vessel").is_dir()
-            ):
+            current: str = json_local["umu"]["versions"]["runtime_platform"]
+            runtime: Path = None
+
+            for dir in local.glob(f"*{current}"):
+                log.debug("Current runtime: %s", dir)
+                runtime = dir
+                break
+
+            # Redownload the runtime if absent
+            if not runtime or not local.joinpath("pressure-vessel").is_dir():
                 log.warning("Runtime Platform not found")
+                if runtime and runtime.is_dir():
+                    rmtree(runtime.as_posix())
                 if local.joinpath("pressure-vessel").is_dir():
                     rmtree(local.joinpath("pressure-vessel").as_posix())
-                if local.joinpath(runtime).is_dir():
-                    rmtree(local.joinpath(runtime).as_posix())
                 futures.append(executor.submit(setup_runtime, json_root))
                 log.console(f"Restoring Runtime Platform to {val} ...")
-                continue
-            if (
-                local.joinpath(runtime).is_dir()
+                json_local["umu"]["versions"]["runtime_platform"] = val
+            elif (
+                runtime
                 and local.joinpath("pressure-vessel").is_dir()
-                and val != runtime
+                and val != current
             ):
                 # Update
                 log.console(f"Updating {key} to {val}")
+                rmtree(runtime.as_posix())
                 rmtree(local.joinpath("pressure-vessel").as_posix())
-                rmtree(local.joinpath(runtime).as_posix())
                 futures.append(executor.submit(setup_runtime, json_root))
                 json_local["umu"]["versions"]["runtime_platform"] = val
         elif key == "launcher":
@@ -236,20 +226,21 @@ def _update_umu(
         _.result()
     executor.shutdown()
 
-    # Finally, update the local config file
     with local.joinpath(CONFIG).open(mode="w") as file:
         dump(json_local, file, indent=4)
 
 
 def _get_json(path: Path, config: str) -> Dict[str, Any]:
-    """Check the state of the configuration file (umu_version.json) in the given path.
+    """Validate the state of the configuration file umu_version.json in a path.
 
-    The configuration files are expected to reside in:
-    a root directory (e.g., /usr/share/umu) and ~/.local/share/umu
+    The configuration file will be used to update the runtime and it reflects
+    the tools currently used by launcher.
+
+    The key/value pairs 'umu' and 'versions' must exist
     """
     json: Dict[str, Any] = None
 
-    # The file in /usr/share/umu should always exist
+    # umu_version.json in the system path should always exist
     if not path.joinpath(config).is_file():
         err: str = (
             f"File not found: {config}\n"
@@ -269,3 +260,22 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
         raise ValueError(err)
 
     return json
+
+
+def _move(file: Path, src: Path, dst: Path) -> None:
+    """Move a file or directory to a destination.
+
+    In order for the source and destination directory to be identical, when
+    moving a directory, the contents of that same directory at the
+    destination will be removed
+    """
+    src_file: Path = src.joinpath(file.name)
+    dest_file: Path = dst.joinpath(file.name)
+
+    if dest_file.is_dir():
+        log.debug("Removing directory: %s", dest_file)
+        rmtree(dest_file.as_posix())
+
+    if src.is_file() or src.is_dir():
+        log.debug("Moving: %s -> %s", src_file, dest_file)
+        move(src_file, dest_file)

@@ -213,10 +213,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Mock setting up the runtime
         # Don't copy _v2-entry-point
-        with patch.object(
-            umu_util,
-            "setup_runtime",
-            return_value=None,
+        with (
+            patch.object(umu_util, "setup_runtime", return_value=None),
         ):
             umu_util._install_umu(self.test_user_share, self.test_local_share, json)
             copytree(
@@ -282,10 +280,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
             umu_plugins.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
-        with patch.object(
-            umu_util,
-            "setup_runtime",
-            return_value=None,
+        with (
+            patch.object(umu_util, "setup_runtime", return_value=None),
         ):
             umu_util._install_umu(self.test_user_share, self.test_local_share, json)
             copytree(
@@ -355,10 +351,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
             umu_plugins.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
-        with patch.object(
-            umu_util,
-            "setup_runtime",
-            return_value=None,
+        with (
+            patch.object(umu_util, "setup_runtime", return_value=None),
         ):
             umu_util._install_umu(self.test_user_share, self.test_local_share, json)
             copytree(
