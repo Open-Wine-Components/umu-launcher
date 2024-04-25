@@ -141,19 +141,6 @@ def enable_steam_game_drive(env: Dict[str, str]) -> Dict[str, str]:
     return env
 
 
-def enable_reaper(env: Dict[str, str], command: List[str], local: Path) -> List[str]:
-    """Enable Reaper to monitor and keep track of descendent processes."""
-    command.extend(
-        [
-            local.joinpath("reaper").as_posix(),
-            "UMU_ID=" + env["UMU_ID"],
-            "--",
-        ]
-    )
-
-    return command
-
-
 def enable_zenity(command: str, opts: List[str], msg: str) -> int:
     """Execute the command and pipe the output to Zenity.
 
@@ -195,34 +182,3 @@ def enable_zenity(command: str, opts: List[str], msg: str) -> int:
         zenity_proc.stdin.close()
 
         return zenity_proc.wait()
-
-
-def enable_flatpak(
-    env: Dict[str, str], local: Path, command: List[str], verb: str, opts: List[str]
-) -> List[str]:
-    """Run umu in a Flatpak environment."""
-    bin: str = which("flatpak-spawn")
-
-    if not bin:
-        err: str = "flatpak-spawn not found\numu will fail to run the executable"
-        raise RuntimeError(err)
-
-    command.append(bin, "--host")
-    for key, val in env.items():
-        command.append(f"--env={key}={val}")
-
-    enable_reaper(env, command, local)
-
-    command.extend([local.joinpath("umu").as_posix(), "--verb", verb, "--"])
-    command.extend(
-        [
-            Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
-            verb,
-            env.get("EXE"),
-        ]
-    )
-
-    if opts:
-        command.extend([*opts])
-
-    return command

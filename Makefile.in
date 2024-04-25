@@ -109,14 +109,14 @@ $(OBJDIR)/.build-umu-launcher: | $(OBJDIR)
 umu-launcher: $(OBJDIR)/.build-umu-launcher
 
 umu-launcher-bin-install: umu-launcher
-	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-launcher
-	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-launcher/umu-run
+	install -d $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
+	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher/umu-run
 
 umu-launcher-dist-install:
 	$(info :: Installing umu-launcher )
-	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-launcher
-	install -Dm 644 umu/umu-launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-launcher
-	install -Dm 644 umu/umu-launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)/umu-launcher
+	install -d $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
+	install -Dm 644 umu/umu-launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
+	install -Dm 644 umu/umu-launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
 
 umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 

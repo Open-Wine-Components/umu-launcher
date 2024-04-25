@@ -218,9 +218,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             "setup_runtime",
             return_value=None,
         ):
-            umu_util._install_umu(
-                self.test_user_share, self.test_local_share, self.test_compat, json
-            )
+            umu_util._install_umu(self.test_user_share, self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
@@ -238,7 +236,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "_v2-entry-point"):
-            umu_run.build_command(self.env, self.test_local_share, test_command)
+            umu_run.build_command(
+                self.env, self.test_local_share, self.test_user_share, test_command
+            )
 
     def test_build_command_proton(self):
         """Test build_command.
@@ -287,9 +287,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             "setup_runtime",
             return_value=None,
         ):
-            umu_util._install_umu(
-                self.test_user_share, self.test_local_share, self.test_compat, json
-            )
+            umu_util._install_umu(self.test_user_share, self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
@@ -311,7 +309,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            umu_run.build_command(self.env, self.test_local_share, test_command)
+            umu_run.build_command(
+                self.env, self.test_local_share, self.test_user_share, test_command
+            )
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -360,9 +360,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             "setup_runtime",
             return_value=None,
         ):
-            umu_util._install_umu(
-                self.test_user_share, self.test_local_share, self.test_compat, json
-            )
+            umu_util._install_umu(self.test_user_share, self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
@@ -384,7 +382,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         test_command_result = umu_run.build_command(
-            self.env, self.test_local_share, test_command
+            self.env, self.test_local_share, self.test_user_share, test_command
         )
         self.assertTrue(
             test_command_result is test_command, "Expected the same reference"
