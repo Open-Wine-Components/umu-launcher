@@ -8,10 +8,12 @@ from pathlib import Path
 from shutil import rmtree, move, copy
 from umu_plugins import enable_zenity
 from urllib.request import urlopen
-from ssl import create_default_context
+from ssl import create_default_context, SSLContext
 from http.client import HTTPException
 from tempfile import mkdtemp
 from concurrent.futures import ThreadPoolExecutor, Future
+
+SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
 try:
     from tarfile import tar_filter
@@ -20,22 +22,15 @@ except ImportError:
 
 
 def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
-    archive: str = "steam-container-runtime-complete.tar.gz"
     tmp: Path = Path(mkdtemp())
-    # Access the 'runtime_platform' value
-    runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
-
-    # Assuming runtime_platform_value is "sniper_platform_0.20240125.75305"
-    # Split the string at 'sniper_platform_'
-    # TODO Change logic so we don't split on a hardcoded string
-    version: str = runtime_platform_value.split("sniper_platform_")[1]
-    log.debug("Version: %s", version)
-
-    # Step  1: Define the URL of the file to download
-    # We expect the archive name to not change
-    base_url: str = f"https://repo.steampowered.com/steamrt3/images/{version}/{archive}"
     ret: int = 0  # Exit code from zenity
+    archive: str = "SteamLinuxRuntime_sniper.tar.xz"  # Archive containing the rt
+    runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
+    codename: str = "steamrt3"
+    log.debug("Version: %s", runtime_platform_value)
 
+    # Define the URL of the file to download
+    base_url: str = f"https://repo.steampowered.com/{codename}/images/{runtime_platform_value}/{archive}"
     log.debug("URL: %s", base_url)
 
     # Download the runtime
@@ -50,15 +45,15 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
             tmp.as_posix(),
         ]
         msg: str = "Downloading UMU-Runtime ..."
-        ret: int = enable_zenity(bin, opts, msg)
+        ret = enable_zenity(bin, opts, msg)
         if ret:
             tmp.joinpath(archive).unlink(missing_ok=True)
             log.warning("zenity exited with the status code: %s", ret)
             log.console("Retrying from Python ...")
     if not environ.get("UMU_ZENITY") or ret:
-        log.console(f"Downloading {runtime_platform_value}, please wait ...")
+        log.console(f"Downloading {codename} {runtime_platform_value}, please wait ...")
         with urlopen(  # noqa: S310
-            base_url, timeout=300, context=create_default_context()
+            base_url, timeout=300, context=SSL_DEFAULT_CONTEXT
         ) as resp:
             if resp.status != 200:
                 err: str = f"repo.steampowered.com returned the status: {resp.status}"
@@ -68,9 +63,8 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
                 file.write(resp.read())
 
     log.debug("Opening: %s", tmp.joinpath(archive))
-
     # Open the tar file
-    with tar_open(tmp.joinpath(archive), "r:gz") as tar:
+    with tar_open(tmp.joinpath(archive), "r:xz") as tar:
         if tar_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
@@ -84,35 +78,27 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
         # Extract the 'depot' folder to the target directory
         log.debug("Extracting archive files -> %s", tmp)
         for member in tar.getmembers():
-            if member.name.startswith("steam-container-runtime/depot/"):
+            if member.name.startswith("SteamLinuxRuntime_sniper/"):
                 tar.extract(member, path=tmp)
 
-        # Step  4: move the files to the correct location
-        source_dir = tmp.joinpath("steam-container-runtime", "depot")
-
+        # Move the files to the correct location
+        source_dir = tmp.joinpath("SteamLinuxRuntime_sniper")
         log.debug("Source: %s", source_dir)
         log.debug("Destination: %s", UMU_LOCAL)
 
         # Move each file to the destination directory, overwriting if it exists
-        for file in source_dir.glob("*"):
-            src_file: Path = source_dir.joinpath(file.name)
-            dest_file: Path = UMU_LOCAL.joinpath(file.name)
-
-            if dest_file.is_file() or dest_file.is_symlink():
-                log.debug("Removing file: %s", dest_file)
-                dest_file.unlink()
-            elif dest_file.is_dir():
-                log.debug("Removing directory: %s", dest_file)
-                if dest_file.exists():
-                    rmtree(dest_file.as_posix())  # remove dir and all contains
-
-            log.debug("Moving %s -> %s", src_file, dest_file)
-            move(src_file.as_posix(), dest_file.as_posix())
+        with ThreadPoolExecutor() as executor:
+            futures: List[Future] = [
+                executor.submit(_move, file, source_dir, UMU_LOCAL)
+                for file in source_dir.glob("*")
+            ]
+            for _ in futures:
+                _.result()
 
         # Remove the extracted directory and all its contents
-        log.debug("Removing: %s/steam-container-runtime", tmp)
-        if tmp.joinpath("steam-container-runtime").exists():
-            rmtree(tmp.joinpath("steam-container-runtime").as_posix())
+        log.debug("Removing: %s/SteamLinuxRuntime_sniper", tmp)
+        if tmp.joinpath("SteamLinuxRuntime_sniper").exists():
+            rmtree(tmp.joinpath("SteamLinuxRuntime_sniper").as_posix())
 
         log.debug("Removing: %s", tmp.joinpath(archive))
         tmp.joinpath(archive).unlink(missing_ok=True)
@@ -196,29 +182,33 @@ def _update_umu(
             log.console(f"Updating {key} to {val}")
             json_local["umu"]["versions"]["reaper"] = val
         elif key == "runtime_platform":
-            runtime: str = json_local["umu"]["versions"]["runtime_platform"]
-            # Redownload the runtime if absent or pressure vessel is absent
-            if (
-                not local.joinpath(runtime).is_dir()
-                or not local.joinpath("pressure-vessel").is_dir()
-            ):
+            current: str = json_local["umu"]["versions"]["runtime_platform"]
+            runtime: Path = None
+
+            for dir in local.glob(f"*{current}"):
+                log.debug("Current runtime: %s", dir)
+                runtime = dir
+                break
+
+            # Redownload the runtime if absent
+            if not runtime or not local.joinpath("pressure-vessel").is_dir():
                 log.warning("Runtime Platform not found")
+                if runtime and runtime.is_dir():
+                    rmtree(runtime.as_posix())
                 if local.joinpath("pressure-vessel").is_dir():
                     rmtree(local.joinpath("pressure-vessel").as_posix())
-                if local.joinpath(runtime).is_dir():
-                    rmtree(local.joinpath(runtime).as_posix())
                 futures.append(executor.submit(setup_runtime, json_root))
                 log.console(f"Restoring Runtime Platform to {val} ...")
-                continue
-            if (
-                local.joinpath(runtime).is_dir()
+                json_local["umu"]["versions"]["runtime_platform"] = val
+            elif (
+                runtime
                 and local.joinpath("pressure-vessel").is_dir()
-                and val != runtime
+                and val != current
             ):
                 # Update
                 log.console(f"Updating {key} to {val}")
+                rmtree(runtime.as_posix())
                 rmtree(local.joinpath("pressure-vessel").as_posix())
-                rmtree(local.joinpath(runtime).as_posix())
                 futures.append(executor.submit(setup_runtime, json_root))
                 json_local["umu"]["versions"]["runtime_platform"] = val
         elif key == "launcher":
@@ -269,3 +259,22 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
         raise ValueError(err)
 
     return json
+
+
+def _move(file: Path, src: Path, dst: Path) -> None:
+    """Move a file or directory to a destination.
+
+    In order for the source and destination directory to be identical, when
+    moving a directory, the contents of that same directory at the
+    destination will be removed
+    """
+    src_file: Path = src.joinpath(file.name)
+    dest_file: Path = dst.joinpath(file.name)
+
+    if dest_file.is_dir():
+        log.debug("Removing directory: %s", dest_file)
+        rmtree(dest_file.as_posix())
+
+    if src.is_file() or src.is_dir():
+        log.debug("Moving: %s -> %s", src_file, dest_file)
+        move(src_file, dest_file)
