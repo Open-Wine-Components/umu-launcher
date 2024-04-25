@@ -109,12 +109,15 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
 
 
 def setup_umu(root: Path, local: Path) -> None:
-    """Copy the launcher and its tools to ~/.local/share/umu.
+    """Install or update umu files for the current user.
 
-    Performs full copies of tools on new installs and selectively on new updates
-    The tools that will be copied are:
-    Pressure Vessel, Reaper, SteamRT, ULWLG launcher and the umu-launcher
-    The umu-launcher will be copied to .local/share/Steam/compatibilitytools.d
+    When launching umu for the first time, umu_version.json and a runtime
+    platform will be downloaded for Proton
+
+    The file umu_version.json defines all of the tools that umu will use and
+    it will be persisted at ~/.local/share/umu, which will be used to update
+    the runtime. The configuration file in that path will be updated at launch
+    whenever there's a new release
     """
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
@@ -128,13 +131,13 @@ def setup_umu(root: Path, local: Path) -> None:
 
 
 def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
-    """For new installations, copy all of the umu tools at a user-writable location.
+    """Copy the configuration file and download the runtime.
 
-    The designated locations to copy to will be:
-    ~/.local/share/umu, ~/.local/share/Steam/compatibilitytools.d
+    The launcher will only copy umu_version.json to ~/.local/share/umu
 
-    The tools that will be copied are:
-    umu-launcher, umu Launcher files, reaper and umu_version.json
+    The subreaper and the launcher files will remain in the system path
+    defined at build time, with the exception of umu-launcher which will be
+    installed in $PREFIX/share/steam/compatibilitytools.d
     """
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux ...")
@@ -155,16 +158,16 @@ def _update_umu(
     json_root: Dict[str, Any],
     json_local: Dict[str, Any],
 ) -> None:
-    """For existing installations, update the umu tools at a user-writable location.
+    """For existing installations, update the runtime and umu_version.json.
 
-    The configuration file (umu_version.json) saved in the root dir
-    will determine whether an update will be performed or not
+    The umu_version.json saved in the prefix directory (e.g., /usr/share/umu)
+    will determine whether an update will be performed for the runtime or not.
+    When umu_version.json at ~/.local/share/umu is different than the one in
+    the system path, an update will be performed. If the runtime is missing,
+    it will be restored
 
-    This happens by way of comparing the key/values of the local
-    umu_version.json against the root configuration file
-
-    In the case that existing writable directories we copy to are in a partial
-    state, a best effort is made to restore the missing files
+    Updates to the launcher files or subreaper installed in the system path
+    will be reflected in umu_version.json at ~/.local/share/umu each launch
     """
     executor: ThreadPoolExecutor = ThreadPoolExecutor()
     futures: List[Future] = []
@@ -231,10 +234,12 @@ def _update_umu(
 
 
 def _get_json(path: Path, config: str) -> Dict[str, Any]:
-    """Check the state of the configuration file (umu_version.json) in the given path.
+    """Validate the state of the configuration file umu_version.json in a path.
 
-    The configuration files are expected to reside in:
-    a root directory (e.g., /usr/share/umu) and ~/.local/share/umu
+    The configuration file will be used to update the runtime and it reflects
+    the tools currently used by launcher.
+
+    The key/value pairs 'umu' and 'versions' must exist
     """
     json: Dict[str, Any] = None
 
