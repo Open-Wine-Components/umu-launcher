@@ -1,3 +1,4 @@
+from sys import version
 from tarfile import open as tar_open, TarInfo
 from pathlib import Path
 from os import environ
@@ -192,7 +193,8 @@ def _extract_dir(file: Path, steam_compat: Path) -> None:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
         else:
-            log.debug("Using no filter for archive")
+            log.warning("Python: %s", version)
+            log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
 
         log.console(f"Extracting {file} -> {steam_compat} ...")

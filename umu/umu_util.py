@@ -1,3 +1,4 @@
+from sys import version
 from tarfile import open as tar_open, TarInfo
 from os import environ
 from umu_consts import CONFIG, UMU_LOCAL
@@ -69,7 +70,8 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
         else:
-            log.warning("Using no filter for archive")
+            log.warning("Python: %s", version)
+            log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
 
         # Ensure the target directory exists
