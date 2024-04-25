@@ -240,10 +240,8 @@ class TestGameLauncher(unittest.TestCase):
         )
 
         # Update
-        with patch.object(
-            umu_util,
-            "setup_runtime",
-            return_value=None,
+        with (
+            patch.object(umu_util, "setup_runtime", return_value=None),
         ):
             result = umu_util._update_umu(
                 self.test_local_share,
@@ -265,7 +263,6 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
-            # When the runtime updates, pressure vessel needs to be updated
             copytree(
                 Path(self.test_user_share, "pressure-vessel"),
                 Path(self.test_local_share, "pressure-vessel"),
@@ -391,10 +388,8 @@ class TestGameLauncher(unittest.TestCase):
         self.test_local_share.joinpath("pressure-vessel", "bar").touch()
 
         # Update
-        with patch.object(
-            umu_util,
-            "setup_runtime",
-            return_value=None,
+        with (
+            patch.object(umu_util, "setup_runtime", return_value=None),
         ):
             result = umu_util._update_umu(
                 self.test_local_share,
@@ -416,7 +411,6 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
-            # When the runtime updates, pressure vessel needs to be updated
             copytree(
                 Path(self.test_user_share, "pressure-vessel"),
                 Path(self.test_local_share, "pressure-vessel"),
@@ -494,10 +488,8 @@ class TestGameLauncher(unittest.TestCase):
         # Mock setting up the runtime
         # In the real usage, we callout to acquire the archive and
         # extract to .local/share/umu
-        with patch.object(
-            umu_util,
-            "setup_runtime",
-            return_value=None,
+        with (
+            patch.object(umu_util, "setup_runtime", return_value=None),
         ):
             result = umu_util._install_umu(
                 self.test_user_share, self.test_local_share, json
@@ -1307,10 +1299,8 @@ class TestGameLauncher(unittest.TestCase):
             os.environ[key] = val
 
         # Mock setting up the runtime
-        with patch.object(
-            umu_util,
-            "setup_runtime",
-            return_value=None,
+        with (
+            patch.object(umu_util, "setup_runtime", return_value=None),
         ):
             umu_util._install_umu(self.test_user_share, self.test_local_share, json)
             copytree(
