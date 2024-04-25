@@ -155,6 +155,53 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
 
+    def test_move(self):
+        """Test _move when copying a directory or a file.
+
+        This function simply wraps shutil.move but deletes the dest directory
+        before moving the source directory. While not strictly necesssary,
+        doing this maintains the integrity of the runtime platform's directory
+        tree defined in the mtree.txt.gz file
+        """
+        test_dir = self.test_user_share.joinpath("foo")
+        test_file = self.test_user_share.joinpath("bar")
+        test_dir.mkdir()
+        test_file.touch()
+        self.test_user_share.joinpath("qux").symlink_to(test_file)
+
+        # Directory
+        umu_util._move(test_dir, self.test_user_share, self.test_local_share)
+        self.assertFalse(
+            self.test_user_share.joinpath("foo").exists(), "foo did not move from src"
+        )
+        self.assertTrue(
+            self.test_local_share.joinpath("foo").exists(), "foo did not move to dst"
+        )
+
+        # File
+        umu_util._move(test_file, self.test_user_share, self.test_local_share)
+        self.assertFalse(
+            self.test_user_share.joinpath("bar").exists(), "bar did not move from src"
+        )
+        self.assertTrue(
+            self.test_local_share.joinpath("bar").exists(), "bar did not move to dst"
+        )
+
+        # Link
+        umu_util._move(
+            self.test_user_share.joinpath("qux"),
+            self.test_user_share,
+            self.test_local_share,
+        )
+        self.assertFalse(
+            self.test_user_share.joinpath("qux").is_symlink(),
+            "qux did not move from src",
+        )
+        self.assertTrue(
+            self.test_local_share.joinpath("qux").is_symlink(),
+            "qux did not move to dst",
+        )
+
     def test_ge_proton(self):
         """Test check_env when the code name GE-Proton is set for PROTONPATH.
 
