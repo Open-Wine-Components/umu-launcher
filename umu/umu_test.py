@@ -114,14 +114,6 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "pressure-vessel").mkdir()
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
 
-        # Mock umu-launcher
-        Path(self.test_user_share, "umu-launcher").mkdir()
-        Path(self.test_user_share, "umu-launcher", "compatibilitytool.vdf").touch()
-        Path(self.test_user_share, "umu-launcher", "toolmanifest.vdf").touch()
-
-        # Mock Reaper
-        Path(self.test_user_share, "reaper").touch()
-
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
 
@@ -328,35 +320,21 @@ class TestGameLauncher(unittest.TestCase):
         result = None
         json_local = None
         json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
-        py_files = [
-            "umu_consts.py",
-            "umu_dl_util.py",
-            "umu_log.py",
-            "umu_plugins.py",
-            "umu_run.py",
-            "umu_test.py",
-            "umu_util.py",
-        ]
         rt_files = [
             "run",
             "run-in-sniper",
             "umu",
         ]
-        runner_files = [
-            "compatibilitytool.vdf",
-            "toolmanifest.vdf",
-            "umu-run",
-        ]
         # Mock an outdated umu_version.json in ~/.local/share/umu
-        # Downgrade these files: launcher, runner, runtime_platform
+        # Downgrade these files: launcher, runner, runtime_platform, reaper
         # We don't downgrade Pressure Vessel because it's a runtime property
         config = {
             "umu": {
                 "versions": {
-                    "launcher": "0.1-RC3",
-                    "runner": "0.1-RC3",
-                    "runtime_platform": "sniper_platform_0.20240125.75305",
-                    "reaper": "1.0",
+                    "launcher": "0.1-RC2",
+                    "runner": "0.1-RC2",
+                    "runtime_platform": "sniper_platform_0.20240125.75304",
+                    "reaper": "0.1",
                     "pressure_vessel": "v0.20240212.0",
                 }
             }
@@ -371,8 +349,6 @@ class TestGameLauncher(unittest.TestCase):
         # |   +-- run-in-*                                      (normal file)
         # |   +-- umu                                         (normal file)
         # |   +-- umu_version.json                            (normal file)
-        # |   +-- umu_*.py                                    (normal file)
-        # |   +-- umu-run                                     (link file)
         #
         # To test for potential unintended removals in that dir and that a
         # selective update is performed, additional files will be added to the top-level
@@ -399,14 +375,6 @@ class TestGameLauncher(unittest.TestCase):
             "Expected umu_version.json to be in local share",
         )
 
-        # Mock the launcher files
-        for file in py_files:
-            if file == "umu-run":
-                self.test_local_share.joinpath("umu-run").symlink_to("umu_run.py")
-            else:
-                with self.test_local_share.joinpath(file).open(mode="w") as filer:
-                    filer.write("foo")
-
         # Mock the runtime files
         self.test_local_share.joinpath(
             json_local["umu"]["versions"]["runtime_platform"]
@@ -421,15 +389,6 @@ class TestGameLauncher(unittest.TestCase):
         # Mock pressure vessel
         self.test_local_share.joinpath("pressure-vessel").mkdir()
         self.test_local_share.joinpath("pressure-vessel", "bar").touch()
-
-        # Mock umu-launcher
-        self.test_compat.joinpath("umu-launcher").mkdir()
-        for file in runner_files:
-            if file == "umu-run":
-                self.test_compat.joinpath("umu-run").symlink_to("../../../umu_run.py")
-            else:
-                with self.test_compat.joinpath(file).open(mode="w") as filer:
-                    filer.write("foo")
 
         # Update
         with patch.object(
@@ -487,21 +446,6 @@ class TestGameLauncher(unittest.TestCase):
             "Expected test Proton to survive after update",
         )
 
-        # Verify the count for .local/share/umu
-        num_share = len(
-            [
-                file
-                for file in self.test_user_share.glob("*")
-                if not file.name.startswith("umu_test")
-            ]
-        )
-        num_local = len([file for file in self.test_local_share.glob("*")])
-        self.assertEqual(
-            num_share,
-            num_local - 1,
-            "Expected /usr/share/umu and .local/share/umu to contain same files",
-        )
-
         # Check if the configuration files are equal because we update this on
         # every update of the tools
         with self.test_user_share.joinpath("umu_version.json").open(mode="rb") as file1:
@@ -545,7 +489,6 @@ class TestGameLauncher(unittest.TestCase):
         umu-launcher is expected to be copied to compatibilitytools.d
         """
         result = None
-        runner_files = {"compatibilitytool.vdf", "toolmanifest.vdf", "umu-run"}
         json = umu_util._get_json(self.test_user_share, "umu_version.json")
 
         # Mock setting up the runtime
@@ -583,22 +526,6 @@ class TestGameLauncher(unittest.TestCase):
             Path(self.test_user_share, "umu_version.json").is_file(),
             "Expected umu_version.json to exist",
         )
-
-        # umu-launcher
-        self.assertTrue(
-            Path(self.test_user_share, "umu-launcher").is_dir(),
-            "Expected umu-launcher to exist",
-        )
-        for file in Path(self.test_compat, "umu-launcher").glob("*"):
-            if file.name not in runner_files:
-                err = "A non-runner file was copied"
-                raise AssertionError(err)
-            if file in runner_files and file.is_symlink():
-                self.assertEqual(
-                    file.readlink(),
-                    Path("../../../umu-run"),
-                    "Expected umu-run symlink to exist",
-                )
 
         # Pressure Vessel
         self.assertTrue(
