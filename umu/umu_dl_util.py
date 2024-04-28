@@ -262,7 +262,6 @@ def _get_latest(
 
     try:
         tarball: str = files[1][0]
-        sums: str = files[0][0]
         proton: str = tarball[: tarball.find(".tar.gz")]
         version: str = (
             "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
@@ -281,7 +280,7 @@ def _get_latest(
         # Set latest UMU/GE-Proton
         if version == "UMU-Proton":
             log.debug("Updating UMU-Proton")
-            old_versions: List[Path] = sorted(
+            protons: List[Path] = sorted(  # Previous stable builds
                 [
                     file
                     for file in steam_compat.glob("*")
@@ -296,7 +295,7 @@ def _get_latest(
             with ThreadPoolExecutor() as executor:
                 for _ in [
                     executor.submit(_extract_dir, tar_path, steam_compat),
-                    executor.submit(_update_proton, proton, steam_compat, old_versions),
+                    executor.submit(_update_proton, proton, steam_compat, protons),
                 ]:
                     _.result()
         else:
@@ -308,9 +307,7 @@ def _get_latest(
         env["PROTONPATH"] = environ["PROTONPATH"]
 
         log.debug("Removing: %s", tarball)
-        log.debug("Removing: %s", sums)
         tmp.joinpath(tarball).unlink(missing_ok=True)
-        tmp.joinpath(sums).unlink(missing_ok=True)
         log.console(f"Using {version} ({proton})")
     except ValueError:
         log.exception("ValueError")
@@ -335,7 +332,7 @@ def _get_latest(
     return env
 
 
-def _update_proton(proton: str, steam_compat: Path, old_versions: List[Path]) -> None:
+def _update_proton(proton: str, steam_compat: Path, protons: List[Path]) -> None:
     """Create a symbolic link and remove the previous UMU-Proton.
 
     The symbolic link will be used by clients to reference the PROTONPATH
@@ -345,23 +342,19 @@ def _update_proton(proton: str, steam_compat: Path, old_versions: List[Path]) ->
     Assumes that the directories that are named ULWGL/UMU-Proton are ours and
     will be removed, so users should not be storing important files there
     """
-    log.debug("Old: %s", old_versions)
+    log.debug("Previous builds: %s", protons)
     log.debug("Linking UMU-Latest -> %s", proton)
     steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
     steam_compat.joinpath("UMU-Latest").symlink_to(proton)
 
-    if not old_versions:
+    if not protons:
         return
 
     with ThreadPoolExecutor() as executor:
-        recent_version: Path = old_versions.pop()
         futures: List[Future] = []
-        if recent_version.is_dir():
-            log.debug("Removing: %s", recent_version)
-            futures.append(executor.submit(rmtree, recent_version.as_posix()))
-        for proton in old_versions:
+        for proton in protons:
             if proton.is_dir():
-                log.debug("Old stable build found")
+                log.debug("Previous stable build found")
                 log.debug("Removing: %s", proton)
                 futures.append(executor.submit(rmtree, proton.as_posix()))
         for _ in futures:
