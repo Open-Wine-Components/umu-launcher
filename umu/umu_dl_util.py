@@ -7,7 +7,7 @@ from hashlib import sha512
 from shutil import rmtree
 from http.client import HTTPException
 from ssl import create_default_context, SSLContext
-from json import loads as loads_json
+from json import loads
 from urllib.request import urlopen, Request, URLError
 from umu_plugins import enable_zenity
 from umu_log import log
@@ -75,7 +75,7 @@ def _fetch_releases() -> List[Tuple[str, str]]:
     ) as resp:
         if resp.status != 200:
             return files
-        for release in loads_json(resp.read().decode("utf-8")):
+        for release in loads(resp.read().decode("utf-8")):
             if not release.get("assets"):
                 continue
             for asset in release.get("assets"):
@@ -117,6 +117,7 @@ def _fetch_proton(
     proton, proton_url = files[1]
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
     ret: int = 0  # Exit code from zenity
+    digest: str = ""  # Digest of the Proton archive
 
     log.console(f"Downloading {hash} ...")
 
@@ -129,15 +130,18 @@ def _fetch_proton(
     # Digest file
     # Ruff currently cannot get this right
     # See https://github.com/astral-sh/ruff/issues/7918
-    with urlopen(hash_url, timeout=30, context=SSL_DEFAULT_CONTEXT) as resp:  # noqa: S310
+    with (
+        urlopen(hash_url, timeout=30, context=SSL_DEFAULT_CONTEXT) as resp,  # noqa: S310
+    ):
         if resp.status != 200:
             err: str = (
                 f"Unable to download {hash}\n"
                 f"github.com returned the status: {resp.status}"
             )
             raise HTTPException(err)
-        with tmp.joinpath(hash).open(mode="wb") as file:
-            file.write(resp.read())
+        for line in resp.read().decode("utf-8").splitlines():
+            if line.endswith(proton):
+                digest = line.split(" ")[0]
 
     # Proton
     # Create a popup with zenity when the env var is set
