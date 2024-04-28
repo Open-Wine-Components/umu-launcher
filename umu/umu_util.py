@@ -13,6 +13,7 @@ from ssl import create_default_context, SSLContext
 from http.client import HTTPException
 from tempfile import mkdtemp
 from concurrent.futures import ThreadPoolExecutor, Future
+from hashlib import sha256
 
 SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
@@ -28,10 +29,10 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
     archive: str = "SteamLinuxRuntime_sniper.tar.xz"  # Archive containing the rt
     runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
     codename: str = "steamrt3"
+    base_url: str = (
+        f"https://repo.steampowered.com/{codename}/images/{runtime_platform_value}"
+    )
     log.debug("Version: %s", runtime_platform_value)
-
-    # Define the URL of the file to download
-    base_url: str = f"https://repo.steampowered.com/{codename}/images/{runtime_platform_value}/{archive}"
     log.debug("URL: %s", base_url)
 
     # Download the runtime
@@ -41,7 +42,7 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
         opts: List[str] = [
             "-LJO",
             "--silent",
-            f"{base_url}",
+            f"{base_url}/{archive}",
             "--output-dir",
             tmp.as_posix(),
         ]
@@ -52,18 +53,41 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
             log.warning("zenity exited with the status code: %s", ret)
             log.console("Retrying from Python ...")
     if not environ.get("UMU_ZENITY") or ret:
+        digest: str = ""
+
+        # Get the digest for the runtime archive
+        with (
+            urlopen(  # noqa: S310
+                f"{base_url}/SHA256SUMS", timeout=30, context=SSL_DEFAULT_CONTEXT
+            ) as resp,
+        ):
+            if resp.status != 200:
+                err: str = f"repo.steampowered.com returned the status: {resp.status}"
+                raise HTTPException(err)
+            for line in resp.read().decode("utf-8").splitlines():
+                if line.endswith(archive):
+                    digest = line.split(" ")[0]
+                    break
+
+        # Download the runtime and verify its digest
         log.console(f"Downloading {codename} {runtime_platform_value}, please wait ...")
-        with urlopen(  # noqa: S310
-            base_url, timeout=300, context=SSL_DEFAULT_CONTEXT
-        ) as resp:
+        with (
+            urlopen(  # noqa: S310
+                f"{base_url}/{archive}", timeout=300, context=SSL_DEFAULT_CONTEXT
+            ) as resp,
+            tmp.joinpath(archive).open(mode="wb") as file,
+        ):
+            data: bytes = b""
             if resp.status != 200:
                 err: str = f"repo.steampowered.com returned the status: {resp.status}"
                 raise HTTPException(err)
             log.debug("Writing: %s", tmp.joinpath(archive))
-            with tmp.joinpath(archive).open(mode="wb") as file:
-                file.write(resp.read())
-
-    # Open the tar file
+            data = resp.read()
+            if sha256(data).hexdigest() != digest:
+                err: str = f"Digests mismatched for {archive}"
+                raise ValueError(err)
+            log.console(f"{codename} {runtime_platform_value}: SHA256 is OK")
+            file.write(data)
     log.debug("Opening: %s", tmp.joinpath(archive))
     with tar_open(tmp.joinpath(archive), "r:xz") as tar:
         if tar_filter:
