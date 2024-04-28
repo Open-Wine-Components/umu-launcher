@@ -162,30 +162,26 @@ def _fetch_proton(
             log.console("Retrying from Python ...")
     if not environ.get("UMU_ZENITY") or ret:
         log.console(f"Downloading {proton} ...")
-        with urlopen(  # noqa: S310
-            proton_url, timeout=300, context=SSL_DEFAULT_CONTEXT
-        ) as resp:
+        with (
+            urlopen(  # noqa: S310
+                proton_url, timeout=300, context=SSL_DEFAULT_CONTEXT
+            ) as resp,
+            tmp.joinpath(proton).open(mode="wb") as file,
+        ):
             # Without Proton, the launcher will not work
+            data: bytes = b""
             if resp.status != 200:
                 err: str = (
                     f"Unable to download {proton}\n"
                     f"github.com returned the status: {resp.status}"
                 )
                 raise HTTPException(err)
-            with tmp.joinpath(proton).open(mode="wb") as file:
-                file.write(resp.read())
-
-    log.console("Completed.")
-
-    with tmp.joinpath(proton).open(mode="rb") as file:
-        if (
-            sha512(file.read()).hexdigest()
-            != tmp.joinpath(hash).read_text().split(" ")[0]
-        ):
-            err: str = "Digests mismatched"
-            log.warning(err)
-            raise ValueError(err)
-        log.console(f"{proton}: SHA512 is OK")
+            data = resp.read()
+            if sha512(data).hexdigest() != digest:
+                err: str = f"Digests mismatched for {proton}"
+                raise ValueError(err)
+            log.console(f"{proton}: SHA512 is OK")
+            file.write(data)
 
     return env
 
@@ -205,7 +201,6 @@ def _extract_dir(file: Path, steam_compat: Path) -> None:
         # TODO: Rather than extracting all of the contents, we should prefer
         # the difference (e.g., rsync)
         tar.extractall(path=steam_compat.as_posix())  # noqa: S202
-        log.console("Completed.")
 
 
 def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
