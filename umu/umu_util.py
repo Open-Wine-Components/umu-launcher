@@ -14,6 +14,7 @@ from http.client import HTTPException
 from tempfile import mkdtemp
 from concurrent.futures import ThreadPoolExecutor, Future
 from hashlib import sha256
+from subprocess import run
 
 SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
@@ -88,8 +89,13 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
                 raise ValueError(err)
             log.console(f"{codename} {runtime_platform_value}: SHA256 is OK")
             file.write(data)
+
+    # Open the tar file and move the files
     log.debug("Opening: %s", tmp.joinpath(archive))
-    with tar_open(tmp.joinpath(archive), "r:xz") as tar:
+    with (
+        tar_open(tmp.joinpath(archive), "r:xz") as tar,
+        ThreadPoolExecutor() as executor,
+    ):
         if tar_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
@@ -101,25 +107,26 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
         # Ensure the target directory exists
         UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
-        # Extract the 'depot' folder to the target directory
         log.debug("Extracting archive files -> %s", tmp)
         for member in tar.getmembers():
             if member.name.startswith("SteamLinuxRuntime_sniper/"):
                 tar.extract(member, path=tmp)
 
         # Move the files to the correct location
-        source_dir = tmp.joinpath("SteamLinuxRuntime_sniper")
+        source_dir: Path = tmp.joinpath("SteamLinuxRuntime_sniper")
         log.debug("Source: %s", source_dir)
         log.debug("Destination: %s", UMU_LOCAL)
 
+        # Validate the runtime before moving the files
+        check_runtime(source_dir, json)
+
         # Move each file to the destination directory, overwriting if it exists
-        with ThreadPoolExecutor() as executor:
-            futures: List[Future] = [
-                executor.submit(_move, file, source_dir, UMU_LOCAL)
-                for file in source_dir.glob("*")
-            ]
-            for _ in futures:
-                _.result()
+        futures: List[Future] = [
+            executor.submit(_move, file, source_dir, UMU_LOCAL)
+            for file in source_dir.glob("*")
+        ]
+        for _ in futures:
+            _.result()
 
         # Remove the extracted directory and all its contents
         log.debug("Removing: %s/SteamLinuxRuntime_sniper", tmp)
@@ -175,8 +182,6 @@ def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
 
     # Runtime platform
     setup_runtime(json)
-
-    log.console("Completed.")
 
 
 def _update_umu(
@@ -303,3 +308,33 @@ def _move(file: Path, src: Path, dst: Path) -> None:
     if src.is_file() or src.is_dir():
         log.debug("Moving: %s -> %s", src_file, dest_file)
         move(src_file, dest_file)
+
+
+def check_runtime(src: Path, json: Dict[str, Any]) -> None:
+    """Validate the file hierarchy of the runtime platform.
+
+    The mtree file included in the Steam runtime platform will be used to
+    validate the integrity of the runtime's metadata before its moved to the
+    home directory and used to run games
+
+    Validation is intended to only be performed after verifying the integrity
+    of the archive and its contents
+    """
+    runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
+    codename: str = "steamrt3"
+    pv_verify: Path = src.joinpath("pressure-vessel", "bin", "pv-verify")
+    ret: int = 0
+
+    if not pv_verify.is_file():
+        log.warning("%s %s: validation failed", codename, runtime_platform_value)
+        log.warning("pv-verify not in: %s", src)
+        return
+
+    log.console(f"Verifiying integrity of {codename} {runtime_platform_value} ...")
+    ret = run([pv_verify.as_posix(), "--quiet"], check=False).returncode
+
+    if pv_verify.is_file() and ret:
+        log.warning("%s %s: validation failed", codename, runtime_platform_value)
+        log.debug("pv-verify exited with the status code: %s", run)
+    else:
+        log.console(f"{codename} {runtime_platform_value}: mtree is OK")
