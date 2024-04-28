@@ -14,6 +14,7 @@ from unittest.mock import patch
 from pathlib import Path
 from shutil import rmtree, copytree, copy
 from pwd import getpwuid
+from subprocess import CompletedProcess
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -111,8 +112,9 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "umu").touch()
 
         # Mock pressure vessel
-        Path(self.test_user_share, "pressure-vessel").mkdir()
+        Path(self.test_user_share, "pressure-vessel", "bin").mkdir(parents=True)
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
+        Path(self.test_user_share, "pressure-vessel", "bin", "pv-verify").touch()
 
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
@@ -154,6 +156,37 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
+
+    def test_check_runtime(self):
+        """Test check_runtime when pv-verify does not exist.
+
+        check_runtime calls pv-verify to verify the integrity of the runtime
+        archive's contents, and will only be called when restoring or setting
+        up the runtime
+
+        If the pv-verify binary does not exist, a warning should be logged and
+        the function should return
+        """
+        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
+        self.test_user_share.joinpath("pressure-vessel", "bin", "pv-verify").unlink()
+        result = umu_util.check_runtime(self.test_user_share, json_root)
+        self.assertEqual(result, 1, "Expected the exit code 1")
+
+    def test_check_runtime_fail(self):
+        """Test check_runtime when runtime validation fails."""
+        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
+        mock = CompletedProcess(["foo"], 1)
+        with patch.object(umu_util, "run", return_value=mock):
+            result = umu_util.check_runtime(self.test_user_share, json_root)
+            self.assertEqual(result, 1, "Expected the exit code 1")
+
+    def test_check_runtime_success(self):
+        """Test check_runtime when runtime validation succeeds."""
+        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
+        mock = CompletedProcess(["foo"], 0)
+        with patch.object(umu_util, "run", return_value=mock):
+            result = umu_util.check_runtime(self.test_user_share, json_root)
+            self.assertEqual(result, 0, "Expected the exit code 0")
 
     def test_move(self):
         """Test _move when copying a directory or a file.
