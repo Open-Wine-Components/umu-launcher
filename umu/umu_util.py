@@ -255,7 +255,7 @@ def _update_umu(
         _.result()
     executor.shutdown()
 
-    with local.joinpath(CONFIG).open(mode="w") as file:
+    with local.joinpath(CONFIG).open(mode="w", encoding="utf-8") as file:
         dump(json_local, file, indent=4)
 
 
@@ -277,7 +277,7 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
         )
         raise FileNotFoundError(err)
 
-    with path.joinpath(config).open(mode="r") as file:
+    with path.joinpath(config).open(mode="r", encoding="utf-8") as file:
         json = load(file)
 
     # Raise an error if "umu" and "versions" doesn't exist
