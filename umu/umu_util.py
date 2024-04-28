@@ -310,7 +310,7 @@ def _move(file: Path, src: Path, dst: Path) -> None:
         move(src_file, dest_file)
 
 
-def check_runtime(src: Path, json: Dict[str, Any]) -> None:
+def check_runtime(src: Path, json: Dict[str, Any]) -> int:
     """Validate the file hierarchy of the runtime platform.
 
     The mtree file included in the Steam runtime platform will be used to
@@ -323,12 +323,12 @@ def check_runtime(src: Path, json: Dict[str, Any]) -> None:
     runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
     codename: str = "steamrt3"
     pv_verify: Path = src.joinpath("pressure-vessel", "bin", "pv-verify")
-    ret: int = 0
+    ret: int = 1
 
     if not pv_verify.is_file():
         log.warning("%s %s: validation failed", codename, runtime_platform_value)
         log.warning("pv-verify not in: %s", src)
-        return
+        return ret
 
     log.console(f"Verifiying integrity of {codename} {runtime_platform_value} ...")
     ret = run([pv_verify.as_posix(), "--quiet"], check=False).returncode
@@ -338,3 +338,5 @@ def check_runtime(src: Path, json: Dict[str, Any]) -> None:
         log.debug("pv-verify exited with the status code: %s", run)
     else:
         log.console(f"{codename} {runtime_platform_value}: mtree is OK")
+
+    return ret
