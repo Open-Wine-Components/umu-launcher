@@ -80,7 +80,9 @@ select = [
     # Ensure no useless arguments/paramaters
     "ARG",
     # Ensure explicit check= for subprocess.run to avoid silent failures
-    "PLW1510"
+    "PLW1510",
+    "UP",
+    "FURB"
 ]
 ignore = [
     # Format
@@ -98,7 +100,8 @@ ignore = [
     # This will be deprecated in Ruff soon
     "ANN101",
     # Single line implicit concat conflicts with the formatter
-    "ISC001"
+    "ISC001",
+    "S404"
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
