@@ -166,7 +166,6 @@ def _fetch_proton(
             urlopen(  # noqa: S310
                 proton_url, timeout=300, context=SSL_DEFAULT_CONTEXT
             ) as resp,
-            tmp.joinpath(proton).open(mode="wb") as file,
         ):
             # Without Proton, the launcher will not work
             data: bytes = b""
@@ -181,7 +180,7 @@ def _fetch_proton(
                 err: str = f"Digests mismatched for {proton}"
                 raise ValueError(err)
             log.console(f"{proton}: SHA512 is OK")
-            file.write(data)
+            tmp.joinpath(proton).write_bytes(data)
 
     return env
 

@@ -76,7 +76,6 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
             urlopen(  # noqa: S310
                 f"{base_url}/{archive}", timeout=300, context=SSL_DEFAULT_CONTEXT
             ) as resp,
-            tmp.joinpath(archive).open(mode="wb") as file,
         ):
             data: bytes = b""
             if resp.status != 200:
@@ -88,7 +87,7 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
                 err: str = f"Digests mismatched for {archive}"
                 raise ValueError(err)
             log.console(f"{codename} {runtime_platform_value}: SHA256 is OK")
-            file.write(data)
+            tmp.joinpath(archive).write_bytes(data)
 
     # Open the tar file and move the files
     log.debug("Opening: %s", tmp.joinpath(archive))
