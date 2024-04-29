@@ -256,24 +256,37 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
+    if opts:
+        command.extend(
+            [
+                root.joinpath("reaper").as_posix(),
+                f"UMU_ID={env.get('UMU_ID')}",
+                "--",
+                local.joinpath("umu").as_posix(),
+                "--verb",
+                verb,
+                "--",
+                Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
+                verb,
+                env.get("EXE"),
+                *opts,
+            ],
+        )
+        return command
     command.extend(
         [
             root.joinpath("reaper").as_posix(),
             f"UMU_ID={env.get('UMU_ID')}",
             "--",
-        ]
-    )
-    command.extend([local.joinpath("umu").as_posix(), "--verb", verb, "--"])
-    command.extend(
-        [
+            local.joinpath("umu").as_posix(),
+            "--verb",
+            verb,
+            "--",
             Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
             verb,
             env.get("EXE"),
-        ]
+        ],
     )
-
-    if opts:
-        command.extend([*opts])
 
     return command
 
