@@ -1,15 +1,15 @@
 from subprocess import Popen, TimeoutExpired, PIPE, STDOUT
 from os import environ
 from pathlib import Path
-from typing import Dict, Set, Any, List, Tuple
+from typing import Any
 from argparse import Namespace
 from shutil import which
 from umu_log import log
 
 
 def set_env_toml(
-    env: Dict[str, str], args: Namespace
-) -> Tuple[Dict[str, str], List[str]]:
+    env: dict[str, str], args: Namespace
+) -> tuple[dict[str, str], list[str]]:
     """Read a TOML file then sets the environment variables for the Steam RT.
 
     In the TOML file, certain keys map to Steam RT environment variables. For example:
@@ -25,9 +25,9 @@ def set_env_toml(
         msg: str = "tomllib requires Python 3.11"
         raise ModuleNotFoundError(msg)
 
-    toml: Dict[str, Any] = None
+    toml: dict[str, Any] = None
     path_config: str = Path(getattr(args, "config", None)).expanduser().as_posix()
-    opts: List[str] = []
+    opts: list[str] = []
 
     if not Path(path_config).is_file():
         msg: str = "Path to configuration is not a file: " + getattr(
@@ -59,13 +59,13 @@ def set_env_toml(
     return env, opts
 
 
-def _check_env_toml(toml: Dict[str, Any]) -> Dict[str, Any]:
+def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
     """Check for required or empty key/value pairs when reading a TOML config.
 
     NOTE: Casing matters in the config and we do not check if the game id is set
     """
     table: str = "umu"
-    required_keys: List[str] = ["proton", "prefix", "exe"]
+    required_keys: list[str] = ["proton", "prefix", "exe"]
 
     if table not in toml:
         err: str = f"Table '{table}' in TOML is not defined."
@@ -105,13 +105,13 @@ def _check_env_toml(toml: Dict[str, Any]) -> Dict[str, Any]:
     return toml
 
 
-def enable_steam_game_drive(env: Dict[str, str]) -> Dict[str, str]:
+def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     """Enable Steam Game Drive functionality.
 
     Expects STEAM_COMPAT_INSTALL_PATH to be set
     STEAM_RUNTIME_LIBRARY_PATH will not be set if the exe directory does not exist
     """
-    paths: Set[str] = set()
+    paths: set[str] = set()
     root: Path = Path("/")
 
     # Check for mount points going up toward the root
@@ -141,7 +141,7 @@ def enable_steam_game_drive(env: Dict[str, str]) -> Dict[str, str]:
     return env
 
 
-def enable_zenity(command: str, opts: List[str], msg: str) -> int:
+def enable_zenity(command: str, opts: list[str], msg: str) -> int:
     """Execute the command and pipe the output to Zenity.
 
     Intended to be used for long running operations (e.g. large file downloads)

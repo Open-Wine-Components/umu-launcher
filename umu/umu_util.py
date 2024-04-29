@@ -2,7 +2,8 @@ from sys import version
 from tarfile import open as tar_open, TarInfo
 from os import environ
 from umu_consts import CONFIG, UMU_LOCAL
-from typing import Any, Dict, List, Callable
+from typing import Any
+from collections.abc import Callable
 from json import load, dump
 from umu_log import log
 from pathlib import Path
@@ -24,7 +25,7 @@ except ImportError:
     tar_filter: Callable[[str, str], TarInfo] = None
 
 
-def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
+def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
     tmp: Path = Path(mkdtemp())
     ret: int = 0  # Exit code from zenity
     archive: str = "SteamLinuxRuntime_sniper.tar.xz"  # Archive containing the rt
@@ -40,7 +41,7 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
     # Optionally create a popup with zenity
     if environ.get("UMU_ZENITY") == "1":
         bin: str = "curl"
-        opts: List[str] = [
+        opts: list[str] = [
             "-LJO",
             "--silent",
             f"{base_url}/{archive}",
@@ -120,7 +121,7 @@ def setup_runtime(json: Dict[str, Any]) -> None:  # noqa: D103
         check_runtime(source_dir, json)
 
         # Move each file to the destination directory, overwriting if it exists
-        futures: List[Future] = [
+        futures: list[Future] = [
             executor.submit(_move, file, source_dir, UMU_LOCAL)
             for file in source_dir.glob("*")
         ]
@@ -153,7 +154,7 @@ def setup_umu(root: Path, local: Path) -> None:
     """
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
-    json: Dict[str, Any] = _get_json(root, CONFIG)
+    json: dict[str, Any] = _get_json(root, CONFIG)
 
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
@@ -162,7 +163,7 @@ def setup_umu(root: Path, local: Path) -> None:
     return _update_umu(local, json, _get_json(local, CONFIG))
 
 
-def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
+def _install_umu(root: Path, local: Path, json: dict[str, Any]) -> None:
     """Copy the configuration file and download the runtime.
 
     The launcher will only copy umu_version.json to ~/.local/share/umu
@@ -185,8 +186,8 @@ def _install_umu(root: Path, local: Path, json: Dict[str, Any]) -> None:
 
 def _update_umu(
     local: Path,
-    json_root: Dict[str, Any],
-    json_local: Dict[str, Any],
+    json_root: dict[str, Any],
+    json_local: dict[str, Any],
 ) -> None:
     """For existing installations, update the runtime and umu_version.json.
 
@@ -200,7 +201,7 @@ def _update_umu(
     will be reflected in umu_version.json at ~/.local/share/umu each launch
     """
     executor: ThreadPoolExecutor = ThreadPoolExecutor()
-    futures: List[Future] = []
+    futures: list[Future] = []
     log.debug("Existing install detected")
 
     for key, val in json_root["umu"]["versions"].items():
@@ -258,7 +259,7 @@ def _update_umu(
         dump(json_local, file, indent=4)
 
 
-def _get_json(path: Path, config: str) -> Dict[str, Any]:
+def _get_json(path: Path, config: str) -> dict[str, Any]:
     """Validate the state of the configuration file umu_version.json in a path.
 
     The configuration file will be used to update the runtime and it reflects
@@ -266,7 +267,7 @@ def _get_json(path: Path, config: str) -> Dict[str, Any]:
 
     The key/value pairs 'umu' and 'versions' must exist
     """
-    json: Dict[str, Any] = None
+    json: dict[str, Any] = None
 
     # umu_version.json in the system path should always exist
     if not path.joinpath(config).is_file():
@@ -309,7 +310,7 @@ def _move(file: Path, src: Path, dst: Path) -> None:
         move(src_file, dest_file)
 
 
-def check_runtime(src: Path, json: Dict[str, Any]) -> int:
+def check_runtime(src: Path, json: dict[str, Any]) -> int:
     """Validate the file hierarchy of the runtime platform.
 
     The mtree file included in the Steam runtime platform will be used to

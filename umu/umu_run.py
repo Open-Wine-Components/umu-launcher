@@ -4,7 +4,7 @@ import os
 import sys
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from pathlib import Path
-from typing import Dict, Any, List, Set, Union, Tuple
+from typing import Any
 from re import match
 from subprocess import run
 from umu_dl_util import get_umu_proton
@@ -29,8 +29,8 @@ from umu_plugins import (
 )
 
 
-def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
-    opt_args: Set[str] = {"--help", "-h", "--config"}
+def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
+    opt_args: set[str] = {"--help", "-h", "--config"}
     parser: ArgumentParser = ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog=(
@@ -58,7 +58,7 @@ def parse_args() -> Union[Namespace, Tuple[str, List[str]]]:  # noqa: D103
 
 def set_log() -> None:
     """Adjust the log level for the logger."""
-    levels: Set[str] = {"1", "warn", "debug"}
+    levels: set[str] = {"1", "warn", "debug"}
 
     if os.environ["UMU_LOG"] not in levels:
         return
@@ -117,7 +117,7 @@ def setup_pfx(path: str) -> None:
         log.debug("User home directory exists: %s", wineuser)
 
 
-def check_env(env: Dict[str, str]) -> Union[Dict[str, str], Dict[str, Any]]:
+def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
     """Before executing a game, check for environment variables and set them.
 
     GAMEID is strictly required
@@ -179,8 +179,8 @@ def check_env(env: Dict[str, str]) -> Union[Dict[str, str], Dict[str, Any]]:
 
 
 def set_env(
-    env: Dict[str, str], args: Union[Namespace, Tuple[str, List[str]]]
-) -> Dict[str, str]:
+    env: dict[str, str], args: Namespace | tuple[str, list[str]]
+) -> dict[str, str]:
     """Set various environment variables for the Steam RT.
 
     Filesystem paths will be formatted and expanded as POSIX
@@ -234,23 +234,23 @@ def set_env(
 
 
 def build_command(
-    env: Dict[str, str],
+    env: dict[str, str],
     local: Path,
     root: Path,
-    command: List[str],
-    opts: List[str] = None,
-) -> List[str]:
+    command: list[str],
+    opts: list[str] = None,
+) -> list[str]:
     """Build the command to be executed."""
     verb: str = env["PROTON_VERB"]
 
     # Raise an error if the _v2-entry-point cannot be found
     if not local.joinpath("umu").is_file():
-        msg: str = (
+        err: str = (
             "Path to _v2-entry-point cannot be found in: "
             f"{local}\n"
             "Please install a Steam Runtime platform"
         )
-        raise FileNotFoundError(msg)
+        raise FileNotFoundError(err)
 
     if not Path(env.get("PROTONPATH")).joinpath("proton").is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
@@ -279,7 +279,7 @@ def build_command(
 
 
 def main() -> int:  # noqa: D103
-    env: Dict[str, str] = {
+    env: list[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
         "PROTON_CRASH_REPORT_DIR": "/tmp/umu_crashreports",
@@ -303,14 +303,12 @@ def main() -> int:  # noqa: D103
         "ULWGL_ID": "",
         "UMU_ZENITY": "",
     }
-    command: List[str] = []
-    opts: List[str] = None
-    # Expected files in this dir: pressure vessel, launcher files, runner,
-    # config, reaper
+    command: list[str] = []
+    opts: list[str] = None
     root: Path = Path(__file__).resolve().parent
     executor: ThreadPoolExecutor = ThreadPoolExecutor()
     future: Future = None
-    args: Union[Namespace, Tuple[str, List[str]]] = parse_args()
+    args: Namespace | tuple[str, list[str]] = parse_args()
 
     if os.geteuid() == 0:
         err: str = "This script should never be run as the root user"

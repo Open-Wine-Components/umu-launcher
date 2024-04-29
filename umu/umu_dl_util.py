@@ -2,7 +2,7 @@ from sys import version
 from tarfile import open as tar_open, TarInfo
 from pathlib import Path
 from os import environ
-from typing import Dict, List, Tuple, Union, Callable
+from collections.abc import Callable
 from hashlib import sha512
 from shutil import rmtree
 from http.client import HTTPException
@@ -23,13 +23,13 @@ except ImportError:
     tar_filter: Callable[[str, str], TarInfo] = None
 
 
-def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
+def get_umu_proton(env: dict[str, str]) -> dict[str, str]:
     """Attempt to find existing Proton from the system.
 
     Downloads the latest if not first found in:
     ~/.local/share/Steam/compatibilitytools.d
     """
-    files: List[Tuple[str, str]] = []
+    files: list[tuple[str, str]] = []
     tmp: Path = Path(mkdtemp())
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
@@ -54,12 +54,12 @@ def get_umu_proton(env: Dict[str, str]) -> Union[Dict[str, str]]:
     return env
 
 
-def _fetch_releases() -> List[Tuple[str, str]]:
+def _fetch_releases() -> list[tuple[str, str]]:
     """Fetch the latest releases from the Github API."""
-    files: List[Tuple[str, str]] = []
+    files: list[tuple[str, str]] = []
     url: str = "https://api.github.com"
     repo: str = "/repos/Open-Wine-Components/umu-proton/releases"
-    headers: Dict[str, str] = {
+    headers: dict[str, str] = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
         "User-Agent": "",
@@ -110,8 +110,8 @@ def _fetch_releases() -> List[Tuple[str, str]]:
 
 
 def _fetch_proton(
-    env: Dict[str, str], tmp: Path, files: List[Tuple[str, str]]
-) -> Dict[str, str]:
+    env: dict[str, str], tmp: Path, files: list[tuple[str, str]]
+) -> dict[str, str]:
     """Download the latest umu-proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
     proton, proton_url = files[1]
@@ -147,7 +147,7 @@ def _fetch_proton(
     # Create a popup with zenity when the env var is set
     if environ.get("UMU_ZENITY") == "1":
         bin: str = "curl"
-        opts: List[str] = [
+        opts: list[str] = [
             "-LJO",
             "--silent",
             proton_url,
@@ -218,8 +218,8 @@ def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
 
 
 def _get_from_steamcompat(
-    env: Dict[str, str], steam_compat: Path
-) -> Union[Dict[str, str], None]:
+    env: dict[str, str], steam_compat: Path
+) -> dict[str, str] | None:
     """Refer to Steam compat folder for any existing Proton directories.
 
     Executed when an error occurs when retrieving and setting the latest
@@ -228,7 +228,7 @@ def _get_from_steamcompat(
     version: str = (
         "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
     )
-    protons: List[Path] = sorted(
+    protons: list[Path] = sorted(
         [proton for proton in steam_compat.glob("*") if proton.name.startswith(version)]
     )
 
@@ -244,8 +244,8 @@ def _get_from_steamcompat(
 
 
 def _get_latest(
-    env: Dict[str, str], steam_compat: Path, tmp: Path, files: List[Tuple[str, str]]
-) -> Union[Dict[str, str], None]:
+    env: dict[str, str], steam_compat: Path, tmp: Path, files: list[tuple[str, str]]
+) -> dict[str, str] | None:
     """Download the latest Proton for new installs.
 
     Either GE-Proton or UMU-Proton can be downloaded. When download the latest
@@ -279,7 +279,7 @@ def _get_latest(
         # Set latest UMU/GE-Proton
         if version == "UMU-Proton":
             log.debug("Updating UMU-Proton")
-            protons: List[Path] = sorted(  # Previous stable builds
+            protons: list[Path] = sorted(  # Previous stable builds
                 [
                     file
                     for file in steam_compat.glob("*")
@@ -331,7 +331,7 @@ def _get_latest(
     return env
 
 
-def _update_proton(proton: str, steam_compat: Path, protons: List[Path]) -> None:
+def _update_proton(proton: str, steam_compat: Path, protons: list[Path]) -> None:
     """Create a symbolic link and remove the previous UMU-Proton.
 
     The symbolic link will be used by clients to reference the PROTONPATH
@@ -350,7 +350,7 @@ def _update_proton(proton: str, steam_compat: Path, protons: List[Path]) -> None
         return
 
     with ThreadPoolExecutor() as executor:
-        futures: List[Future] = []
+        futures: list[Future] = []
         for proton in protons:
             if proton.is_dir():
                 log.debug("Previous stable build found")
