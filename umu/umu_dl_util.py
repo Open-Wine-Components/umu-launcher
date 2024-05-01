@@ -199,7 +199,7 @@ def _extract_dir(file: Path, steam_compat: Path) -> None:
         log.console(f"Extracting {file} -> {steam_compat} ...")
         # TODO: Rather than extracting all of the contents, we should prefer
         # the difference (e.g., rsync)
-        tar.extractall(path=steam_compat.as_posix())  # noqa: S202
+        tar.extractall(path=steam_compat)  # noqa: S202
 
 
 def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
