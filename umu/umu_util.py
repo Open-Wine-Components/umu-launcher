@@ -330,7 +330,7 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
         log.warning("pv-verify not in: %s", src)
         return ret
 
-    log.console(f"Verifiying integrity of {codename} {runtime_platform_value} ...")
+    log.console(f"Verifying integrity of {codename} {runtime_platform_value} ...")
     ret = run([pv_verify.as_posix(), "--quiet"], check=False).returncode
 
     if pv_verify.is_file() and ret:
