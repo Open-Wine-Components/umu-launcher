@@ -279,13 +279,11 @@ def _get_latest(
         # Set latest UMU/GE-Proton
         if version == "UMU-Proton":
             log.debug("Updating UMU-Proton")
-            protons: list[Path] = sorted(  # Previous stable builds
-                [
-                    file
-                    for file in steam_compat.glob("*")
-                    if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
-                ]
-            )
+            protons: list[Path] = [  # Previous stable builds
+                file
+                for file in steam_compat.glob("*")
+                if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
+            ]
             tar_path: Path = tmp.joinpath(tarball)
 
             # Ideally, an in-place differential update would be
