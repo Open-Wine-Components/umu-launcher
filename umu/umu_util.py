@@ -60,7 +60,7 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
         # Get the digest for the runtime archive
         with (
             urlopen(  # noqa: S310
-                f"{base_url}/SHA256SUMS", timeout=30, context=SSL_DEFAULT_CONTEXT
+                f"{base_url}/SHA256SUMS", context=SSL_DEFAULT_CONTEXT
             ) as resp,
         ):
             if resp.status != 200:
@@ -75,7 +75,7 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
         log.console(f"Downloading {codename} {runtime_platform_value}, please wait ...")
         with (
             urlopen(  # noqa: S310
-                f"{base_url}/{archive}", timeout=300, context=SSL_DEFAULT_CONTEXT
+                f"{base_url}/{archive}", context=SSL_DEFAULT_CONTEXT
             ) as resp,
         ):
             data: bytes = b""
