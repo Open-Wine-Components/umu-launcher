@@ -40,7 +40,7 @@ choice if supported.
 *Example 1. Run a game*
 
 ```
-$ WINEPREFIX= GAMEID=0 PROTONPATH= umu-run ~/foo.exe
+$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=~/GE-Proton9-4 umu-run ~/foo.exe
 ```
 
 *Example 2. Run a game and apply a Protonfix*
@@ -48,7 +48,7 @@ $ WINEPREFIX= GAMEID=0 PROTONPATH= umu-run ~/foo.exe
 ```
 # Applies a GOG Protonfix to the current WINE prefix
 # See https://github.com/Open-Wine-Components/umu-protonfixes
-$ WINEPREFIX= GAMEID=umu-1228964594 PROTONPATH= STORE=gog umu-run ~/foo.exe
+$ WINEPREFIX=~/.wine GAMEID=umu-1228964594 PROTONPATH=~/GE-Proton9-4 STORE=gog umu-run ~/foo.exe
 ```
 
 *Example 3. Run a game via a configuration file*
@@ -68,7 +68,7 @@ $ umu-run --config config.toml
 *Example 4. Create a umu WINE prefix*
 
 ```
-$ WINEPREFIX=~/foo GAMEID=0 PROTONPATH= umu-run ""
+$ WINEPREFIX=~/foo GAMEID=0 PROTONPATH=~/GE-Proton9-4 umu-run ""
 ```
 
 *Example 5. Run a game and automatically set Proton*
@@ -78,7 +78,7 @@ $ WINEPREFIX=~/foo GAMEID=0 PROTONPATH= umu-run ""
 # use it when available
 # NOTE: Previous stable versions of UMU-Proton will be auto removed in
 # compatibilitytools.d after the latest has been downloaded
-$ WINEPREFIX= GAMEID=0 umu-run foo.exe
+$ WINEPREFIX=~/.wine GAMEID=0 umu-run foo.exe
 ```
 
 *Example 6. Run a game, automatically set Proton, and create a WINE prefix*
@@ -92,7 +92,7 @@ $ GAMEID=0 umu-run foo.exe
 *Example 7. Run a game and explicitly set a valid Proton verb*
 
 ```
-$ WINEPREFIX= GAMEID=0 PROTONPATH= PROTON_VERB=waitforexitandrun umu-run ~/foo.exe
+$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=~/GE-Proton9-4 PROTON_VERB=waitforexitandrun umu-run ~/foo.exe
 ```
 
 *Example 8. Run a game and enable debug logs*
@@ -100,7 +100,7 @@ $ WINEPREFIX= GAMEID=0 PROTONPATH= PROTON_VERB=waitforexitandrun umu-run ~/foo.e
 ```
 # Shows environment variables and command at this level
 # Valid values for UMU_LOG include: 1, warn, debug
-$ UMU_LOG=1 WINEPREFIX= GAMEID=0 PROTONPATH= umu-run ~/foo.exe
+$ UMU_LOG=1 WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=~/GE-Proton9-4 umu-run ~/foo.exe
 ```
 
 *Example 9. Run a game and set a Proton by its version name*
@@ -108,14 +108,14 @@ $ UMU_LOG=1 WINEPREFIX= GAMEID=0 PROTONPATH= umu-run ~/foo.exe
 ```
 # The launcher will check for GE-Proton9-1 at
 # ~/.local/share/Steam/compatibilitytools.d
-$ WINEPREFIX= GAMEID=0 PROTONPATH=GE-Proton9-1 umu-run ~/foo.exe
+$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=GE-Proton9-1 umu-run ~/foo.exe
 ```
 
 *Example 10. Run a game and automatically use the latest GE-Proton*
 
 ```
 # This will fetch for the latest GE-Proton build each run and set it
-$ WINEPREFIX= GAMEID=0 PROTONPATH=GE-Proton umu-run ~/foo.exe
+$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=GE-Proton umu-run ~/foo.exe
 ```
 
 # SEE ALSO
