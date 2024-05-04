@@ -84,7 +84,7 @@ $ WINEPREFIX=~/.wine GAMEID=0 umu-run foo.exe
 *Example 6. Run a game, automatically set Proton, and create a WINE prefix*
 
 ```
-# This will create the prefix as ~/Games/umu/<umu-$GAMEID> and will
+# This will create the prefix as ~/Games/umu/$GAMEID and will
 # set the latest UMU-Proton for the game
 $ GAMEID=0 umu-run foo.exe
 ```
