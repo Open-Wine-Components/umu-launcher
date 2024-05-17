@@ -259,7 +259,9 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     if env["STEAM_COMPAT_INSTALL_PATH"]:
         paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
 
-    # Include all paths that are supported by the container runtime framework
+    # Include all paths that are currently supported by the container
+    # runtime framework
+    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md
     for path in [
         "/usr/lib64",
         "/usr/lib32",
