@@ -82,7 +82,10 @@ select = [
     # Ensure explicit check= for subprocess.run to avoid silent failures
     "PLW1510",
     "UP",
-    "FURB"
+    "FURB",
+    # Enforce the encoding argument when opening files
+    # Encoding for text should be utf-8
+    "PLW1514"
 ]
 ignore = [
     # Format
