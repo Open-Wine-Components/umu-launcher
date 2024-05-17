@@ -1286,6 +1286,14 @@ class TestGameLauncher(unittest.TestCase):
         """
         args = None
         result_gamedrive = None
+        # Expected library paths for the container runtime framework
+        libpaths = {
+            "/usr/lib64",
+            "/usr/lib32",
+            "/usr/lib",
+            "/usr/lib/x86_64-linux-gnu",
+            "/usr/lib/i386-linux-gnu",
+        }
         Path(self.test_file + "/proton").touch()
 
         # Replicate main's execution and test up until enable_steam_game_drive
@@ -1334,12 +1342,11 @@ class TestGameLauncher(unittest.TestCase):
             "Expected two values in STEAM_RUNTIME_LIBRARY_PATH",
         )
 
-        # We need to sort the elements because the values were originally in a set
-        str1, str2 = [*sorted(self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":"))]
-
-        # Check that there are no trailing colons or unexpected characters
-        self.assertEqual(str1, "/usr/lib", "Expected /usr/lib")
-        self.assertEqual(str2, "/usr/lib32", "Expected /usr/lib32")
+        # Check that there are no trailing colons, unexpected characters
+        # and is officially supported
+        str1, str2 = self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")
+        self.assertTrue(str1 in libpaths, f"Expected a path in: {libpaths}")
+        self.assertTrue(str2 in libpaths, f"Expected a path in: {libpaths}")
 
         # Both of these values should be empty still after calling
         # enable_steam_game_drive
