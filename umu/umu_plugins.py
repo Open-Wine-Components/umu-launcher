@@ -1,5 +1,4 @@
 from subprocess import Popen, TimeoutExpired, PIPE, STDOUT
-from os import environ
 from pathlib import Path
 from typing import Any
 from argparse import Namespace
@@ -103,8 +102,6 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(err)
 
     return toml
-
-
 
 
 def enable_zenity(command: str, opts: list[str], msg: str) -> int:
