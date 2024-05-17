@@ -3,7 +3,6 @@ import umu_run
 import os
 import argparse
 import re
-import umu_plugins
 import umu_dl_util
 import tarfile
 import umu_util
@@ -1141,7 +1140,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["LD_LIBRARY_PATH"] = paths
 
             # Game drive
-            result_gamedrive = umu_plugins.enable_steam_game_drive(self.env)
+            result_gamedrive = umu_run.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
@@ -1226,7 +1225,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["LD_LIBRARY_PATH"] = paths
 
             # Game drive
-            result_gamedrive = umu_plugins.enable_steam_game_drive(self.env)
+            result_gamedrive = umu_run.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val
@@ -1305,7 +1304,7 @@ class TestGameLauncher(unittest.TestCase):
                 os.environ.pop("LD_LIBRARY_PATH")
 
             # Game drive
-            result_gamedrive = umu_plugins.enable_steam_game_drive(self.env)
+            result_gamedrive = umu_run.enable_steam_game_drive(self.env)
 
         # Ubuntu sources this variable and will be added once Game Drive is enabled
         # Just test the case without it
@@ -1373,7 +1372,7 @@ class TestGameLauncher(unittest.TestCase):
             # Env
             umu_run.set_env(self.env, result_args)
             # Game drive
-            umu_plugins.enable_steam_game_drive(self.env)
+            umu_run.enable_steam_game_drive(self.env)
 
         for key, val in self.env.items():
             os.environ[key] = val

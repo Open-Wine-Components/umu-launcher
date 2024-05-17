@@ -209,7 +209,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             # Env
             umu_run.set_env(self.env, result)
             # Game drive
-            umu_plugins.enable_steam_game_drive(self.env)
+            umu_run.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
         # Don't copy _v2-entry-point
@@ -277,7 +277,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             # Env
             umu_run.set_env(self.env, result)
             # Game drive
-            umu_plugins.enable_steam_game_drive(self.env)
+            umu_run.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
         with (
@@ -348,7 +348,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             # Env
             umu_run.set_env(self.env, result)
             # Game drive
-            umu_plugins.enable_steam_game_drive(self.env)
+            umu_run.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
         with (
