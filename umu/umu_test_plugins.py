@@ -88,7 +88,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
         # Mock a valid configuration file at /usr/share/umu:
         # tmp.BXk2NnvW2m/umu_version.json
         Path(self.test_user_share, "umu_version.json").touch()
-        with Path(self.test_user_share, "umu_version.json").open(mode="w") as file:
+        with Path(self.test_user_share, "umu_version.json").open(
+            mode="w", encoding="utf-8"
+        ) as file:
             file.write(self.test_config)
 
         # Mock the launcher files
@@ -192,7 +194,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         # Mock the proton file
         Path(self.test_file, "proton").touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -260,7 +262,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         test_command = []
         Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -331,7 +333,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         Path(self.test_file + "/proton").touch()
         Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -421,7 +423,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -457,7 +459,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -493,7 +495,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -529,7 +531,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -648,7 +650,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
         with patch.object(
@@ -718,7 +720,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         Path(toml_path).touch()
 
-        with Path(toml_path).open(mode="w") as file:
+        with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
         with patch.object(

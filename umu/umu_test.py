@@ -91,7 +91,9 @@ class TestGameLauncher(unittest.TestCase):
         # Mock a valid configuration file at /usr/share/umu:
         # tmp.BXk2NnvW2m/umu_version.json
         Path(self.test_user_share, "umu_version.json").touch()
-        with Path(self.test_user_share, "umu_version.json").open(mode="w") as file:
+        with Path(self.test_user_share, "umu_version.json").open(
+            mode="w", encoding="utf-8"
+        ) as file:
             file.write(self.test_config)
 
         # Mock the launcher files
@@ -666,7 +668,9 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "umu_version.json").unlink(missing_ok=True)
 
         Path(self.test_user_share, "umu_version.json").touch()
-        with Path(self.test_user_share, "umu_version.json").open(mode="w") as file:
+        with Path(self.test_user_share, "umu_version.json").open(
+            mode="w", encoding="utf-8"
+        ) as file:
             file.write(test_config)
 
         # Test when "umu" doesn't exist
@@ -677,7 +681,9 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "umu_version.json").unlink(missing_ok=True)
 
         Path(self.test_user_share, "umu_version.json").touch()
-        with Path(self.test_user_share, "umu_version.json").open(mode="w") as file:
+        with Path(self.test_user_share, "umu_version.json").open(
+            mode="w", encoding="utf-8"
+        ) as file:
             file.write(test_config2)
 
         with self.assertRaisesRegex(ValueError, "load"):
