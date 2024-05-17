@@ -15,6 +15,8 @@ from errno import ENETUNREACH
 from concurrent.futures import ThreadPoolExecutor, Future
 from socket import AF_INET, SOCK_DGRAM, socket
 from pwd import getpwuid
+from umu_plugins import set_env_toml
+from ctypes.util import find_library
 from umu_consts import (
     PROTON_VERBS,
     DEBUG_FORMAT,
@@ -22,10 +24,6 @@ from umu_consts import (
     UMU_LOCAL,
     FLATPAK_PATH,
     FLATPAK_ID,
-)
-from umu_plugins import (
-    enable_steam_game_drive,
-    set_env_toml,
 )
 
 
@@ -229,6 +227,49 @@ def set_env(
 
     # Game drive
     enable_steam_game_drive(env)
+
+    return env
+
+
+def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
+    """Enable Steam Game Drive functionality.
+
+    Expects STEAM_COMPAT_INSTALL_PATH to be set
+    STEAM_RUNTIME_LIBRARY_PATH will not be set if the exe directory does not exist
+    """
+    paths: set[str] = set()
+    root: Path = Path("/")
+    libc: str = find_library("c")
+
+    # Check for mount points going up toward the root
+    # NOTE: Subvolumes can be mount points
+    for path in Path(env["STEAM_COMPAT_INSTALL_PATH"]).parents:
+        if path.is_mount() and path != root:
+            if os.environ.get("STEAM_COMPAT_LIBRARY_PATHS"):
+                env["STEAM_COMPAT_LIBRARY_PATHS"] = (
+                    os.environ["STEAM_COMPAT_LIBRARY_PATHS"] + ":" + path.as_posix()
+                )
+            else:
+                env["STEAM_COMPAT_LIBRARY_PATHS"] = path.as_posix()
+            break
+
+    if os.environ.get("LD_LIBRARY_PATH"):
+        paths = {path for path in os.environ["LD_LIBRARY_PATH"].split(":")}
+
+    if env["STEAM_COMPAT_INSTALL_PATH"]:
+        paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
+
+    # Include all paths that are supported by the container runtime framework
+    for path in [
+        "/usr/lib64",
+        "/usr/lib32",
+        "/usr/lib",
+        "/usr/lib/x86_64-linux-gnu",
+        "/usr/lib/i386-linux-gnu",
+    ]:
+        if not Path(path).is_symlink() and Path(path, libc).is_file():
+            paths.add(path)
+    env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
 
     return env
 
