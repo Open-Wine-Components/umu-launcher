@@ -1,5 +1,4 @@
 from subprocess import Popen, TimeoutExpired, PIPE, STDOUT
-from os import environ
 from pathlib import Path
 from typing import Any
 from argparse import Namespace
@@ -103,42 +102,6 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(err)
 
     return toml
-
-
-def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
-    """Enable Steam Game Drive functionality.
-
-    Expects STEAM_COMPAT_INSTALL_PATH to be set
-    STEAM_RUNTIME_LIBRARY_PATH will not be set if the exe directory does not exist
-    """
-    paths: set[str] = set()
-    root: Path = Path("/")
-
-    # Check for mount points going up toward the root
-    # NOTE: Subvolumes can be mount points
-    for path in Path(env["STEAM_COMPAT_INSTALL_PATH"]).parents:
-        if path.is_mount() and path != root:
-            if env["STEAM_COMPAT_LIBRARY_PATHS"]:
-                env["STEAM_COMPAT_LIBRARY_PATHS"] = (
-                    env["STEAM_COMPAT_LIBRARY_PATHS"] + ":" + path.as_posix()
-                )
-            else:
-                env["STEAM_COMPAT_LIBRARY_PATHS"] = path.as_posix()
-            break
-
-    if environ.get("LD_LIBRARY_PATH"):
-        paths = {path for path in environ["LD_LIBRARY_PATH"].split(":")}
-
-    if env["STEAM_COMPAT_INSTALL_PATH"]:
-        paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
-
-    # Hard code for now because these paths seem to be pretty standard
-    # This way we avoid shelling to ldconfig
-    paths.add("/usr/lib")
-    paths.add("/usr/lib32")
-    env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
-
-    return env
 
 
 def enable_zenity(command: str, opts: list[str], msg: str) -> int:
