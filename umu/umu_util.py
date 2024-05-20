@@ -215,7 +215,7 @@ def _update_umu(
             runtime: Path = None
 
             for dir in local.glob(f"*{current}"):
-                log.debug("Current runtime: %s", dir)
+                log.debug("Runtime: %s", dir.name)
                 runtime = dir
                 break
 
