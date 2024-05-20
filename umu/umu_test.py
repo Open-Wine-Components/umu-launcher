@@ -1471,21 +1471,45 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.check_env(self.env)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
+
             # Env
+            # Confirm that non-normalized paths were passed before setting environment
+            # The client will pass paths to WINEPREFIX, PROTONPATH and EXE
+            self.assertNotEqual(
+                Path(self.test_exe),
+                Path(self.test_exe).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["WINEPREFIX"]),
+                Path(os.environ["WINEPREFIX"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["PROTONPATH"]),
+                Path(os.environ["PROTONPATH"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
             result = umu_run.set_env(self.env, result[0:])
             self.assertTrue(result is self.env, "Expected the same reference")
 
-            path_exe = Path(self.test_exe).expanduser().as_posix()
-            path_file = Path(self.test_file).expanduser().as_posix()
+            path_exe = Path(self.test_exe).expanduser().resolve().as_posix()
+            path_file = Path(self.test_file).expanduser().resolve().as_posix()
 
             # After calling set_env all paths should be expanded POSIX form
-            self.assertEqual(self.env["EXE"], path_exe, "Expected EXE to be expanded")
+            self.assertEqual(
+                self.env["EXE"], path_exe, "Expected EXE to be normalized and expanded"
+            )
             self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
             self.assertEqual(
-                self.env["PROTONPATH"], path_file, "Expected PROTONPATH to be set"
+                self.env["PROTONPATH"],
+                path_file,
+                "Expected PROTONPATH to be normalized and expanded",
             )
             self.assertEqual(
-                self.env["WINEPREFIX"], path_file, "Expected WINEPREFIX to be set"
+                self.env["WINEPREFIX"],
+                path_file,
+                "Expected WINEPREFIX to be normalized and expanded",
             )
             self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
             self.assertEqual(
@@ -1534,17 +1558,30 @@ class TestGameLauncher(unittest.TestCase):
             result = umu_run.set_env(self.env, result[0:])
             self.assertTrue(result is self.env, "Expected the same reference")
 
-            path_exe = Path(self.test_exe).expanduser().as_posix()
-            path_file = Path(self.test_file).expanduser().as_posix()
+            path_exe = Path(self.test_exe).expanduser().resolve().as_posix()
+            path_file = Path(self.test_file).expanduser().resolve().as_posix()
 
             # After calling set_env all paths should be expanded POSIX form
-            self.assertEqual(self.env["EXE"], path_exe, "Expected EXE to be expanded")
-            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
             self.assertEqual(
-                self.env["PROTONPATH"], path_file, "Expected PROTONPATH to be set"
+                self.env["EXE"],
+                path_exe,
+                "Expected EXE to be normalized and expanded",
             )
             self.assertEqual(
-                self.env["WINEPREFIX"], path_file, "Expected WINEPREFIX to be set"
+                self.env["STEAM_COMPAT_INSTALL_PATH"],
+                Path(path_exe).parent.as_posix(),
+                "Expected STEAM_COMPAT_INSTALL_PATH to be set",
+            )
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
+            self.assertEqual(
+                self.env["PROTONPATH"],
+                path_file,
+                "Expected PROTONPATH to be normalized and expanded",
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"],
+                path_file,
+                "Expected WINEPREFIX to be normalized and expanded",
             )
             self.assertEqual(self.env["GAMEID"], umu_id, "Expected GAMEID to be set")
             self.assertEqual(
@@ -1618,7 +1655,9 @@ class TestGameLauncher(unittest.TestCase):
             self.assertIsInstance(result[0], str, "Expected a string")
             self.assertIsInstance(result[1], list, "Expected a list as options")
             self.assertEqual(
-                result[0], "./tmp.WMYQiPb9A/foo", "Expected EXE to be unexpanded"
+                result[0],
+                "./tmp.WMYQiPb9A/foo",
+                "Expected EXE to be unexpanded",
             )
             self.assertFalse(
                 result[1], "Expected an empty list when passing no options"
@@ -1628,20 +1667,46 @@ class TestGameLauncher(unittest.TestCase):
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
+            self.assertNotEqual(
+                Path(self.test_exe),
+                Path(self.test_exe).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["WINEPREFIX"]),
+                Path(os.environ["WINEPREFIX"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["PROTONPATH"]),
+                Path(os.environ["PROTONPATH"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
             result = umu_run.set_env(self.env, result[0:])
             self.assertTrue(result is self.env, "Expected the same reference")
 
-            path_exe = Path(self.test_exe).expanduser().as_posix()
-            path_file = Path(self.test_file).expanduser().as_posix()
+            path_exe = Path(self.test_exe).expanduser().resolve().as_posix()
+            path_file = Path(self.test_file).expanduser().resolve().as_posix()
 
             # After calling set_env all paths should be expanded POSIX form
-            self.assertEqual(self.env["EXE"], path_exe, "Expected EXE to be expanded")
-            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
             self.assertEqual(
-                self.env["PROTONPATH"], path_file, "Expected PROTONPATH to be set"
+                self.env["EXE"], path_exe, "Expected EXE to be normalized and expanded"
             )
             self.assertEqual(
-                self.env["WINEPREFIX"], path_file, "Expected WINEPREFIX to be set"
+                self.env["STEAM_COMPAT_INSTALL_PATH"],
+                Path(path_exe).parent.as_posix(),
+                "Expected STEAM_COMPAT_INSTALL_PATH to be set",
+            )
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
+            self.assertEqual(
+                self.env["PROTONPATH"],
+                path_file,
+                "Expected PROTONPATH to be normalized and expanded",
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"],
+                path_file,
+                "Expected WINEPREFIX to be normalized and expanded",
             )
             self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
             self.assertEqual(
@@ -1874,9 +1939,6 @@ class TestGameLauncher(unittest.TestCase):
             "tracked_files file",
         )
         self.assertTrue(
-            Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
-        )
-        self.assertTrue(
             Path(self.test_file + "/tracked_files").is_file(),
             "Expected tracked_files to be a file",
         )
@@ -1923,6 +1985,14 @@ class TestGameLauncher(unittest.TestCase):
     def test_setup_pfx(self):
         """Test setup_pfx."""
         result = None
+
+        # Confirm the input is a relative path
+        # The path will be normalized when the launcher creates the prefix link
+        self.assertNotEqual(
+            Path(self.test_file),
+            Path(self.test_file).resolve(),
+            "Expected path to be non-normalized",
+        )
         result = umu_run.setup_pfx(self.test_file)
         self.assertIsNone(
             result,
@@ -1931,6 +2001,11 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertTrue(
             Path(self.test_file + "/pfx").is_symlink(), "Expected pfx to be a symlink"
+        )
+        # Check if the symlink is normalized when passed a relative path
+        self.assertEqual(
+            Path(self.test_file + "/pfx").readlink().as_posix(),
+            Path(self.test_file).resolve().as_posix(),
         )
         self.assertTrue(
             Path(self.test_file + "/tracked_files").is_file(),
