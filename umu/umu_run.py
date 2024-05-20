@@ -240,6 +240,16 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     paths: set[str] = set()
     root: Path = Path("/")
     libc: str = find_library("c")
+    # All library paths that are currently supported by the container runtime framework
+    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md
+    # Non-FHS filesystems should run in a FHS chroot to comply
+    steamrt_paths: list[str] = [
+        "/usr/lib64",
+        "/usr/lib32",
+        "/usr/lib",
+        "/usr/lib/x86_64-linux-gnu",
+        "/usr/lib/i386-linux-gnu",
+    ]
 
     # Check for mount points going up toward the root
     # NOTE: Subvolumes can be mount points
@@ -259,16 +269,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     if env["STEAM_COMPAT_INSTALL_PATH"]:
         paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
 
-    # Include all paths that are currently supported by the container
-    # runtime framework
-    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md
-    for path in [
-        "/usr/lib64",
-        "/usr/lib32",
-        "/usr/lib",
-        "/usr/lib/x86_64-linux-gnu",
-        "/usr/lib/i386-linux-gnu",
-    ]:
+    for path in steamrt_paths:
         if not Path(path).is_symlink() and Path(path, libc).is_file():
             paths.add(path)
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
