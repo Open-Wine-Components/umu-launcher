@@ -87,7 +87,7 @@ def setup_pfx(path: str) -> None:
         pfx.unlink()
 
     if not pfx.is_dir():
-        pfx.symlink_to(Path(path).expanduser())
+        pfx.symlink_to(Path(path).expanduser().resolve(strict=True))
 
     Path(path).joinpath("tracked_files").expanduser().touch()
 
@@ -137,7 +137,6 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
         pfx: Path = Path(os.environ["WINEPREFIX"])
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = pfx.as_posix()
-
     env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
     # Proton Version
@@ -197,8 +196,14 @@ def set_env(
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         env["PROTON_VERB"] = "waitforexitandrun"
     elif isinstance(args, tuple):
-        env["EXE"] = Path(args[0]).expanduser().as_posix()
-        env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
+        try:
+            env["EXE"] = Path(args[0]).expanduser().resolve(strict=True).as_posix()
+            env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
+        except FileNotFoundError:
+            # Assume that the executable will be inside the wine prefix or container
+            env["EXE"] = Path(args[0]).as_posix()
+            env["STEAM_COMPAT_INSTALL_PATH"] = ""
+            log.warning("Executable not found: %s", env["EXE"])
     else:
         # Config branch
         env["EXE"] = Path(env["EXE"]).expanduser().as_posix()
@@ -218,8 +223,12 @@ def set_env(
     env["SteamGameId"] = env["SteamAppId"]
 
     # PATHS
-    env["WINEPREFIX"] = Path(env["WINEPREFIX"]).expanduser().as_posix()
-    env["PROTONPATH"] = Path(env["PROTONPATH"]).expanduser().as_posix()
+    env["WINEPREFIX"] = (
+        Path(env["WINEPREFIX"]).expanduser().resolve(strict=True).as_posix()
+    )
+    env["PROTONPATH"] = (
+        Path(env["PROTONPATH"]).expanduser().resolve(strict=True).as_posix()
+    )
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
     env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + UMU_LOCAL.as_posix()
@@ -362,7 +371,7 @@ def main() -> int:  # noqa: D103
     }
     command: list[str] = []
     opts: list[str] = None
-    root: Path = Path(__file__).resolve().parent
+    root: Path = Path(__file__).resolve(strict=True).parent
     executor: ThreadPoolExecutor = ThreadPoolExecutor()
     future: Future = None
     args: Namespace | tuple[str, list[str]] = parse_args()
