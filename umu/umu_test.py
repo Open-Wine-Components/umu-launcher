@@ -1632,6 +1632,126 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected STEAM_COMPAT_MOUNTS to be set",
             )
 
+    def test_set_env_exe(self):
+        """Test set_env when the executable fails to be resolved.
+
+        A FileNotFoundError should be raised and handled. Afterwards, the launcher will
+        assume that the executable exists inside the WINE prefix or container
+        (e.g., winecfg)
+        """
+        result = None
+        test_str = "foo"
+
+        # Replicate the usage:
+        # WINEPREFIX= PROTONPATH= GAMEID= STORE= PROTON_VERB= umu_run ...
+        with patch("sys.argv", ["", test_str]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = test_str
+            os.environ["STORE"] = test_str
+            os.environ["PROTON_VERB"] = self.test_verb
+            # Args
+            result = umu_run.parse_args()
+            self.assertIsInstance(result, tuple, "Expected a tuple")
+            self.assertIsInstance(result[1], list, "Expected a list as options")
+            self.assertTrue(
+                result[0] == test_str,
+                "Expected EXE to be test string",
+            )
+            self.assertFalse(Path(result[0]).is_file(), "Expected EXE to not exist")
+            self.assertFalse(
+                result[1], "Expected an empty list when passing no options"
+            )
+            # Check
+            umu_run.check_env(self.env)
+            # Prefix
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            self.assertNotEqual(
+                Path(self.test_exe),
+                Path(self.test_exe).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["WINEPREFIX"]),
+                Path(os.environ["WINEPREFIX"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["PROTONPATH"]),
+                Path(os.environ["PROTONPATH"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            result = umu_run.set_env(self.env, result[0:])
+            self.assertTrue(result is self.env, "Expected the same reference")
+
+            path_exe = Path(test_str).as_posix()
+            path_file = Path(self.test_file).expanduser().resolve().as_posix()
+
+            # After calling set_env all paths should be expanded POSIX form
+            self.assertEqual(self.env["EXE"], path_exe, "Expected EXE")
+            self.assertFalse(
+                self.env["STEAM_COMPAT_INSTALL_PATH"],
+                "Expected STEAM_COMPAT_INSTALL_PATH to be empty",
+            )
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
+            self.assertEqual(
+                self.env["PROTONPATH"],
+                path_file,
+                "Expected PROTONPATH to be normalized and expanded",
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"],
+                path_file,
+                "Expected WINEPREFIX to be normalized and expanded",
+            )
+            self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
+            self.assertEqual(
+                self.env["PROTON_VERB"],
+                self.test_verb,
+                "Expected PROTON_VERB to be set",
+            )
+            # umu
+            self.assertEqual(
+                self.env["UMU_ID"],
+                self.env["GAMEID"],
+                "Expected UMU_ID to be GAMEID",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_APP_ID"],
+                "0",
+                "Expected STEAM_COMPAT_APP_ID to be 0",
+            )
+            self.assertEqual(
+                self.env["SteamAppId"],
+                self.env["STEAM_COMPAT_APP_ID"],
+                "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
+            )
+            self.assertEqual(
+                self.env["SteamGameId"],
+                self.env["SteamAppId"],
+                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
+            )
+
+            # PATHS
+            self.assertEqual(
+                self.env["STEAM_COMPAT_SHADER_PATH"],
+                self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache",
+                "Expected STEAM_COMPAT_SHADER_PATH to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                self.env["PROTONPATH"]
+                + ":"
+                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                "Expected STEAM_COMPAT_TOOL_PATHS to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_MOUNTS"],
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                "Expected STEAM_COMPAT_MOUNTS to be set",
+            )
+
     def test_set_env(self):
         """Test set_env.
 
