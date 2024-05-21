@@ -1,6 +1,6 @@
 from sys import version
 from tarfile import open as tar_open, TarInfo
-from os import environ
+from os import environ, access, W_OK
 from umu_consts import CONFIG, UMU_LOCAL
 from typing import Any
 from collections.abc import Callable
@@ -16,6 +16,7 @@ from tempfile import mkdtemp
 from concurrent.futures import ThreadPoolExecutor, Future
 from hashlib import sha256
 from subprocess import run
+from stat import S_IWUSR
 
 SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
@@ -172,13 +173,20 @@ def _install_umu(root: Path, local: Path, json: dict[str, Any]) -> None:
     defined at build time, with the exception of umu-launcher which will be
     installed in $PREFIX/share/steam/compatibilitytools.d
     """
+    json_local: Path = local.joinpath(CONFIG)
+
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux ...")
     local.mkdir(parents=True, exist_ok=True)
 
     # Config
     log.console(f"Copied {CONFIG} -> {local}")
-    copy(root.joinpath(CONFIG), local.joinpath(CONFIG))
+    copy(root.joinpath(CONFIG), json_local)
+
+    # Ensure the config file is writable for the owner after copied
+    # See https://github.com/Open-Wine-Components/umu-launcher/issues/106
+    if not access(local.joinpath(CONFIG), W_OK):
+        json_local.chmod(json_local.stat().st_mode | S_IWUSR)
 
     # Runtime platform
     setup_runtime(json)
