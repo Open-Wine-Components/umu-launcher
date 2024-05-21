@@ -8,6 +8,9 @@ stdenv.mkDerivation {
     pkgs.ninja
     pkgs.scdoc
   ];
+  propagatedBuildInputs = [
+    pkgs.python3
+  ];
   dontUseMesonConfigure = true;
   dontUseNinjaBuild = true;
   dontUseNinjaInstall = true;
