@@ -185,7 +185,7 @@ def _install_umu(root: Path, local: Path, json: dict[str, Any]) -> None:
 
     # Ensure the config file is writable for the owner after copied
     # See https://github.com/Open-Wine-Components/umu-launcher/issues/106
-    if not access(local.joinpath(CONFIG), W_OK):
+    if not access(json_local, W_OK):
         json_local.chmod(json_local.stat().st_mode | S_IWUSR)
 
     # Runtime platform
