@@ -279,8 +279,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
         paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
 
     for path in steamrt_paths:
-        if not Path(path).is_symlink() and Path(path, libc).is_file():
-            paths.add(path)
+        paths.add(path)
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
 
     return env
