@@ -273,13 +273,19 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
             break
 
     if os.environ.get("LD_LIBRARY_PATH"):
+        log.debug("LD_LIBRARY_PATH=%s", os.environ["LD_LIBRARY_PATH"])
         paths = {path for path in os.environ["LD_LIBRARY_PATH"].split(":")}
 
     if env["STEAM_COMPAT_INSTALL_PATH"]:
         paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
 
+    # Set the shared library paths of the system after finding libc.so
+    # In some cases, using ldconfig to determine library paths can fail in Non-FHS
+    # compliant filesystems (e.g., NixOS). In those cases, depend on LD_LIBRARY_PATH
+    # See https://github.com/Open-Wine-Components/umu-launcher/issues/106
     for path in steamrt_paths:
-        paths.add(path)
+        if not Path(path).is_symlink() and libc and Path(path, libc).is_file():
+            paths.add(path)
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
 
     return env
