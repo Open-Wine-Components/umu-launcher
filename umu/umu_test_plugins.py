@@ -13,7 +13,7 @@ from tomllib import TOMLDecodeError
 
 import umu_plugins
 import umu_run
-import umu_util
+import umu_runtime
 
 
 class TestGameLauncherPlugins(unittest.TestCase):

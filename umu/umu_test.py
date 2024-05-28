@@ -12,9 +12,9 @@ from shutil import copy, copytree, rmtree
 from subprocess import CompletedProcess
 from unittest.mock import patch
 
-import umu_dl_util
+import umu_proton
 import umu_run
-import umu_util
+import umu_runtime
 
 
 class TestGameLauncher(unittest.TestCase):
