@@ -27,7 +27,7 @@ from umu_consts import (
 from umu_log import CustomFormatter, console_handler, log
 from umu_plugins import set_env_toml
 from umu_proton import get_umu_proton
-from umu_util import get_libc, setup_umu
+from umu_util import get_libc
 
 
 def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
