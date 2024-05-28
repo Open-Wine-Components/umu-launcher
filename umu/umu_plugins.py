@@ -1,8 +1,9 @@
-from subprocess import Popen, TimeoutExpired, PIPE, STDOUT
-from pathlib import Path
-from typing import Any
 from argparse import Namespace
+from pathlib import Path
 from shutil import which
+from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+from typing import Any
+
 from umu_log import log
 
 

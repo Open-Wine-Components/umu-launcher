@@ -3,28 +3,30 @@
 import os
 import sys
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
-from pathlib import Path
-from typing import Any
-from re import match
-from subprocess import run
-from umu_dl_util import get_umu_proton
-from umu_util import setup_umu
-from umu_log import log, console_handler, CustomFormatter
-from logging import INFO, WARNING, DEBUG
+from collections.abc import Callable
+from concurrent.futures import Future, ThreadPoolExecutor
+from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
-from concurrent.futures import ThreadPoolExecutor, Future
-from socket import AF_INET, SOCK_DGRAM, socket
+from logging import DEBUG, INFO, WARNING
+from pathlib import Path
 from pwd import getpwuid
-from umu_plugins import set_env_toml
-from ctypes.util import find_library
+from re import match
+from socket import AF_INET, SOCK_DGRAM, socket
+from subprocess import Popen, run
+from typing import Any
+
 from umu_consts import (
-    PROTON_VERBS,
     DEBUG_FORMAT,
+    FLATPAK_ID,
+    FLATPAK_PATH,
+    PROTON_VERBS,
     STEAM_COMPAT,
     UMU_LOCAL,
-    FLATPAK_PATH,
-    FLATPAK_ID,
 )
+from umu_dl_util import get_umu_proton
+from umu_log import CustomFormatter, console_handler, log
+from umu_plugins import set_env_toml
+from umu_util import get_libc, setup_umu
 
 
 def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103

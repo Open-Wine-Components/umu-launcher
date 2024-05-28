@@ -1,6 +1,6 @@
 from enum import Enum
-from pathlib import Path
 from os import environ
+from pathlib import Path
 
 
 class Color(Enum):

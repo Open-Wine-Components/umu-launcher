@@ -1,22 +1,24 @@
-from sys import version
-from tarfile import open as tar_open, TarInfo
-from os import environ, access, W_OK
-from umu_consts import CONFIG, UMU_LOCAL
-from typing import Any
 from collections.abc import Callable
-from json import load, dump
-from umu_log import log
-from pathlib import Path
-from shutil import rmtree, move, copy
-from umu_plugins import enable_zenity
-from urllib.request import urlopen
-from ssl import create_default_context, SSLContext
-from http.client import HTTPException
-from tempfile import mkdtemp
-from concurrent.futures import ThreadPoolExecutor, Future
+from concurrent.futures import Future, ThreadPoolExecutor
+from ctypes.util import find_library
+from functools import lru_cache
 from hashlib import sha256
-from subprocess import run
-from stat import S_IWUSR
+from http.client import HTTPException
+from json import load
+from os import environ
+from pathlib import Path
+from shutil import move, rmtree, which
+from ssl import SSLContext, create_default_context
+from subprocess import PIPE, STDOUT, Popen, TimeoutExpired, run
+from sys import version
+from tarfile import TarInfo
+from tarfile import open as taropen
+from tempfile import mkdtemp
+from typing import Any
+from urllib.request import urlopen
+
+from umu_consts import CONFIG, UMU_LOCAL
+from umu_log import log
 
 SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 

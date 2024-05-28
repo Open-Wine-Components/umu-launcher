@@ -1,19 +1,21 @@
-from sys import version
-from tarfile import open as tar_open, TarInfo
-from pathlib import Path
-from os import environ
 from collections.abc import Callable
+from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha512
-from shutil import rmtree
 from http.client import HTTPException
-from ssl import create_default_context, SSLContext
 from json import loads
-from urllib.request import urlopen, Request, URLError
-from umu_plugins import enable_zenity
-from umu_log import log
-from umu_consts import STEAM_COMPAT
+from os import environ
+from pathlib import Path
+from shutil import rmtree
+from ssl import SSLContext, create_default_context
+from sys import version
+from tarfile import TarInfo
+from tarfile import open as tar_open
 from tempfile import mkdtemp
-from concurrent.futures import ThreadPoolExecutor, Future
+from urllib.request import Request, URLError, urlopen
+
+from umu_consts import STEAM_COMPAT
+from umu_log import log
+from umu_util import run_zenity
 
 SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 

@@ -1,17 +1,19 @@
-import unittest
-import umu_run
-import os
 import argparse
-import re
-import umu_plugins
-import tarfile
 import json
-import umu_util
+import os
+import re
+import tarfile
+import unittest
 from argparse import Namespace
-from unittest.mock import patch
 from pathlib import Path
+from shutil import copy, copytree, rmtree
+from unittest.mock import patch
+
 from tomllib import TOMLDecodeError
-from shutil import rmtree, copy, copytree
+
+import umu_plugins
+import umu_run
+import umu_util
 
 
 class TestGameLauncherPlugins(unittest.TestCase):

@@ -1,19 +1,20 @@
-import unittest
-import umu_run
-import os
 import argparse
-import re
-import umu_dl_util
-import tarfile
-import umu_util
 import hashlib
 import json
+import os
+import re
+import tarfile
+import unittest
 from argparse import Namespace
-from unittest.mock import patch
 from pathlib import Path
-from shutil import rmtree, copytree, copy
 from pwd import getpwuid
+from shutil import copy, copytree, rmtree
 from subprocess import CompletedProcess
+from unittest.mock import patch
+
+import umu_dl_util
+import umu_run
+import umu_util
 
 
 class TestGameLauncher(unittest.TestCase):

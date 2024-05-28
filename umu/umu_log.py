@@ -1,16 +1,17 @@
-from sys import stderr
-from umu_consts import SIMPLE_FORMAT, Color
 from logging import (
-    Logger,
     DEBUG,
+    ERROR,
     INFO,
     WARNING,
-    ERROR,
     Formatter,
+    Logger,
+    LogRecord,
     StreamHandler,
     getLogger,
-    LogRecord,
 )
+from sys import stderr
+
+from umu_consts import SIMPLE_FORMAT, Color
 
 
 class CustomLogger(Logger):  # noqa: D101
