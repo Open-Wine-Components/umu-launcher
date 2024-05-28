@@ -22,8 +22,8 @@ def set_env_toml(
     try:
         import tomllib
     except ModuleNotFoundError:
-        msg: str = "tomllib requires Python 3.11"
-        raise ModuleNotFoundError(msg)
+        err: str = "tomllib requires Python 3.11"
+        raise ModuleNotFoundError(err)
 
     toml: dict[str, Any] = None
     path_config: str = Path(getattr(args, "config", None)).expanduser().as_posix()
