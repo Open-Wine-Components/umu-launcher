@@ -13,9 +13,10 @@ from tarfile import open as tar_open
 from tempfile import mkdtemp
 from urllib.request import Request, URLError, urlopen
 
+from umu_util import run_zenity
+
 from umu_consts import STEAM_COMPAT
 from umu_log import log
-from umu_util import run_zenity
 
 SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
@@ -121,7 +122,7 @@ def _fetch_proton(
     ret: int = 0  # Exit code from zenity
     digest: str = ""  # Digest of the Proton archive
 
-    log.console(f"Downloading {hash} ...")
+    log.console(f"Downloading {hash}...")
 
     # Verify the scheme from Github for resources
     if not proton_url.startswith("https:") or not hash_url.startswith("https:"):
@@ -156,14 +157,16 @@ def _fetch_proton(
             "--output-dir",
             tmp.as_posix(),
         ]
-        msg: str = f"Downloading {proton_dir} ..."
-        ret = enable_zenity(bin, opts, msg)
-        if ret:
-            tmp.joinpath(proton).unlink(missing_ok=True)
-            log.warning("zenity exited with the status code: %s", ret)
-            log.console("Retrying from Python ...")
+        msg: str = f"Downloading {proton_dir}..."
+        ret = run_zenity(bin, opts, msg)
+
+    if ret:
+        tmp.joinpath(proton).unlink(missing_ok=True)
+        log.warning("zenity exited with the status code: %s", ret)
+        log.console("Retrying from Python...")
+
     if not environ.get("UMU_ZENITY") or ret:
-        log.console(f"Downloading {proton} ...")
+        log.console(f"Downloading {proton}...")
         with (
             urlopen(  # noqa: S310
                 proton_url, timeout=300, context=SSL_DEFAULT_CONTEXT
@@ -198,7 +201,7 @@ def _extract_dir(file: Path, steam_compat: Path) -> None:
             log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
 
-        log.console(f"Extracting {file} -> {steam_compat} ...")
+        log.console(f"Extracting {file} -> {steam_compat}...")
         # TODO: Rather than extracting all of the contents, we should prefer
         # the difference (e.g., rsync)
         tar.extractall(path=steam_compat)  # noqa: S202
@@ -209,13 +212,13 @@ def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
 
     We want to do this when a download for a new release is interrupted
     """
-    log.console("Keyboard Interrupt.\nCleaning ...")
+    log.console("Keyboard Interrupt.\nCleaning...")
 
     if tmp.joinpath(tarball).is_file():
-        log.console(f"Purging {tarball} in {tmp} ...")
+        log.console(f"Purging {tarball} in {tmp}...")
         tmp.joinpath(tarball).unlink()
     if steam_compat.joinpath(proton).is_dir():
-        log.console(f"Purging {proton} in {steam_compat} ...")
+        log.console(f"Purging {proton} in {steam_compat}...")
         rmtree(steam_compat.joinpath(proton).as_posix())
 
 
@@ -230,15 +233,14 @@ def _get_from_steamcompat(
     version: str = (
         "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
     )
-    protons: list[Path] = sorted(
+    latest: Path = max(
         [proton for proton in steam_compat.glob("*") if proton.name.startswith(version)]
     )
 
-    if protons:
-        proton: str = protons.pop()
-        log.console(f"{proton.name} found in: {steam_compat}")
-        log.console(f"Using {proton.name}")
-        environ["PROTONPATH"] = proton.as_posix()
+    if latest:
+        log.console(f"{latest.name} found in: {steam_compat}")
+        log.console(f"Using {latest.name}")
+        environ["PROTONPATH"] = latest.as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
         return env
 
@@ -304,7 +306,6 @@ def _get_latest(
 
         environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
-
         log.debug("Removing: %s", tarball)
         tmp.joinpath(tarball).unlink(missing_ok=True)
         log.console(f"Using {version} ({proton})")
