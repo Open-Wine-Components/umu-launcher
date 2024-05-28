@@ -234,6 +234,9 @@ def set_env(
     env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + UMU_LOCAL.as_posix()
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
+    # Zenity
+    env["UMU_ZENITY"] = os.environ.get("UMU_ZENITY") or ""
+
     # Game drive
     enable_steam_game_drive(env)
 
