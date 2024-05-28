@@ -351,7 +351,7 @@ def build_command(
 
 
 def main() -> int:  # noqa: D103
-    env: list[str, str] = {
+    env: dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
         "PROTON_CRASH_REPORT_DIR": "/tmp/umu_crashreports",
