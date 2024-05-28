@@ -216,7 +216,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         with (
             patch.object(umu_runtime, "setup_runtime", return_value=None),
         ):
-            umu_runtime._install_umu(self.test_user_share, self.test_local_share, json)
+            umu_runtime._install_umu(self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
@@ -281,7 +281,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         with (
             patch.object(umu_runtime, "setup_runtime", return_value=None),
         ):
-            umu_runtime._install_umu(self.test_user_share, self.test_local_share, json)
+            umu_runtime._install_umu(self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
@@ -350,7 +350,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         with (
             patch.object(umu_runtime, "setup_runtime", return_value=None),
         ):
-            umu_runtime._install_umu(self.test_user_share, self.test_local_share, json)
+            umu_runtime._install_umu(self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
