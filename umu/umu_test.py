@@ -99,12 +99,13 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock the launcher files
         Path(self.test_user_share, "umu_consts.py").touch()
-        Path(self.test_user_share, "umu_dl_util.py").touch()
+        Path(self.test_user_share, "umu_proton.py").touch()
         Path(self.test_user_share, "umu_log.py").touch()
         Path(self.test_user_share, "umu_plugins.py").touch()
         Path(self.test_user_share, "umu_run.py").touch()
-        Path(self.test_user_share, "umu_util.py").touch()
+        Path(self.test_user_share, "umu_runtime.py").touch()
         Path(self.test_user_share, "umu-run").symlink_to("umu_run.py")
+        Path(self.test_user_share, "umu_util.py").touch()
 
         # Mock the runtime files
         Path(self.test_user_share, "sniper_platform_0.20240125.75305").mkdir()
@@ -169,25 +170,25 @@ class TestGameLauncher(unittest.TestCase):
         If the pv-verify binary does not exist, a warning should be logged and
         the function should return
         """
-        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
+        json_root = umu_runtime._get_json(self.test_user_share, "umu_version.json")
         self.test_user_share.joinpath("pressure-vessel", "bin", "pv-verify").unlink()
-        result = umu_util.check_runtime(self.test_user_share, json_root)
+        result = umu_runtime.check_runtime(self.test_user_share, json_root)
         self.assertEqual(result, 1, "Expected the exit code 1")
 
     def test_check_runtime_fail(self):
         """Test check_runtime when runtime validation fails."""
-        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
+        json_root = umu_runtime._get_json(self.test_user_share, "umu_version.json")
         mock = CompletedProcess(["foo"], 1)
-        with patch.object(umu_util, "run", return_value=mock):
-            result = umu_util.check_runtime(self.test_user_share, json_root)
+        with patch.object(umu_runtime, "run", return_value=mock):
+            result = umu_runtime.check_runtime(self.test_user_share, json_root)
             self.assertEqual(result, 1, "Expected the exit code 1")
 
     def test_check_runtime_success(self):
         """Test check_runtime when runtime validation succeeds."""
-        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
+        json_root = umu_runtime._get_json(self.test_user_share, "umu_version.json")
         mock = CompletedProcess(["foo"], 0)
-        with patch.object(umu_util, "run", return_value=mock):
-            result = umu_util.check_runtime(self.test_user_share, json_root)
+        with patch.object(umu_runtime, "run", return_value=mock):
+            result = umu_runtime.check_runtime(self.test_user_share, json_root)
             self.assertEqual(result, 0, "Expected the exit code 0")
 
     def test_move(self):
@@ -205,7 +206,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_user_share.joinpath("qux").symlink_to(test_file)
 
         # Directory
-        umu_util._move(test_dir, self.test_user_share, self.test_local_share)
+        umu_runtime._move(test_dir, self.test_user_share, self.test_local_share)
         self.assertFalse(
             self.test_user_share.joinpath("foo").exists(), "foo did not move from src"
         )
@@ -214,7 +215,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
         # File
-        umu_util._move(test_file, self.test_user_share, self.test_local_share)
+        umu_runtime._move(test_file, self.test_user_share, self.test_local_share)
         self.assertFalse(
             self.test_user_share.joinpath("bar").exists(), "bar did not move from src"
         )
@@ -223,7 +224,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
         # Link
-        umu_util._move(
+        umu_runtime._move(
             self.test_user_share.joinpath("qux"),
             self.test_user_share,
             self.test_local_share,
@@ -244,13 +245,13 @@ class TestGameLauncher(unittest.TestCase):
         wasn't found in local system.
         """
         test_archive = self.test_archive.rename("GE-Proton9-2.tar.gz")
-        umu_dl_util._extract_dir(test_archive, self.test_compat)
+        umu_proton._extract_dir(test_archive, self.test_compat)
 
         with (
             self.assertRaises(FileNotFoundError),
-            patch.object(umu_dl_util, "_fetch_releases", return_value=None),
-            patch.object(umu_dl_util, "_get_latest", return_value=None),
-            patch.object(umu_dl_util, "_get_from_steamcompat", return_value=None),
+            patch.object(umu_proton, "_fetch_releases", return_value=None),
+            patch.object(umu_proton, "_get_latest", return_value=None),
+            patch.object(umu_proton, "_get_from_steamcompat", return_value=None),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
@@ -274,9 +275,9 @@ class TestGameLauncher(unittest.TestCase):
         """
         with (
             self.assertRaises(FileNotFoundError),
-            patch.object(umu_dl_util, "_fetch_releases", return_value=None),
-            patch.object(umu_dl_util, "_get_latest", return_value=None),
-            patch.object(umu_dl_util, "_get_from_steamcompat", return_value=None),
+            patch.object(umu_proton, "_fetch_releases", return_value=None),
+            patch.object(umu_proton, "_get_latest", return_value=None),
+            patch.object(umu_proton, "_get_from_steamcompat", return_value=None),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
@@ -292,7 +293,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         json_local = None
-        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
+        json_root = umu_runtime._get_json(self.test_user_share, "umu_version.json")
         # Mock an update-to-date config file
         config = {
             "umu": {
@@ -314,7 +315,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_local_share.joinpath("umu_version.json").touch()
         with self.test_local_share.joinpath("umu_version.json").open(mode="w") as file:
             file.write(data)
-        json_local = umu_util._get_json(self.test_local_share, "umu_version.json")
+        json_local = umu_runtime._get_json(self.test_local_share, "umu_version.json")
 
         self.assertTrue(
             self.test_local_share.joinpath("umu_version.json").is_file(),
@@ -323,9 +324,9 @@ class TestGameLauncher(unittest.TestCase):
 
         # Update
         with (
-            patch.object(umu_util, "setup_runtime", return_value=None),
+            patch.object(umu_runtime, "setup_runtime", return_value=None),
         ):
-            result = umu_util._update_umu(
+            result = umu_runtime._update_umu(
                 self.test_local_share,
                 json_root,
                 json_local,
@@ -398,7 +399,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         json_local = None
-        json_root = umu_util._get_json(self.test_user_share, "umu_version.json")
+        json_root = umu_runtime._get_json(self.test_user_share, "umu_version.json")
         rt_files = [
             "run",
             "run-in-sniper",
@@ -447,7 +448,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_local_share.joinpath("umu_version.json").touch()
         with self.test_local_share.joinpath("umu_version.json").open(mode="w") as file:
             file.write(data)
-        json_local = umu_util._get_json(self.test_local_share, "umu_version.json")
+        json_local = umu_runtime._get_json(self.test_local_share, "umu_version.json")
 
         self.assertTrue(
             self.test_local_share.joinpath("umu_version.json").is_file(),
@@ -471,9 +472,9 @@ class TestGameLauncher(unittest.TestCase):
 
         # Update
         with (
-            patch.object(umu_util, "setup_runtime", return_value=None),
+            patch.object(umu_runtime, "setup_runtime", return_value=None),
         ):
-            result = umu_util._update_umu(
+            result = umu_runtime._update_umu(
                 self.test_local_share,
                 json_root,
                 json_local,
@@ -565,15 +566,15 @@ class TestGameLauncher(unittest.TestCase):
         umu-launcher is expected to be copied to compatibilitytools.d
         """
         result = None
-        json = umu_util._get_json(self.test_user_share, "umu_version.json")
+        json = umu_runtime._get_json(self.test_user_share, "umu_version.json")
 
         # Mock setting up the runtime
         # In the real usage, we callout to acquire the archive and
         # extract to .local/share/umu
         with (
-            patch.object(umu_util, "setup_runtime", return_value=None),
+            patch.object(umu_runtime, "setup_runtime", return_value=None),
         ):
-            result = umu_util._install_umu(
+            result = umu_runtime._install_umu(
                 self.test_user_share, self.test_local_share, json
             )
             copytree(
@@ -676,7 +677,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Test when "umu" doesn't exist
         with self.assertRaisesRegex(ValueError, "load"):
-            umu_util._get_json(self.test_user_share, "umu_version.json")
+            umu_runtime._get_json(self.test_user_share, "umu_version.json")
 
         # Test when "versions" doesn't exist
         Path(self.test_user_share, "umu_version.json").unlink(missing_ok=True)
@@ -688,7 +689,7 @@ class TestGameLauncher(unittest.TestCase):
             file.write(test_config2)
 
         with self.assertRaisesRegex(ValueError, "load"):
-            umu_util._get_json(self.test_user_share, "umu_version.json")
+            umu_runtime._get_json(self.test_user_share, "umu_version.json")
 
     def test_get_json_foo(self):
         """Test _get_json when not specifying umu_version.json as 2nd arg.
@@ -696,7 +697,7 @@ class TestGameLauncher(unittest.TestCase):
         A FileNotFoundError should be raised
         """
         with self.assertRaisesRegex(FileNotFoundError, "configuration"):
-            umu_util._get_json(self.test_user_share, "foo")
+            umu_runtime._get_json(self.test_user_share, "foo")
 
     def test_get_json(self):
         """Test _get_json.
@@ -716,7 +717,7 @@ class TestGameLauncher(unittest.TestCase):
             "Expected umu_version.json to exist",
         )
 
-        result = umu_util._get_json(self.test_user_share, "umu_version.json")
+        result = umu_runtime._get_json(self.test_user_share, "umu_version.json")
         self.assertIsInstance(result, dict, "Expected a dict")
 
     def test_latest_interrupt(self):
@@ -733,11 +734,11 @@ class TestGameLauncher(unittest.TestCase):
         # In this case, assume the test variable will be downloaded
         files = [("", ""), (self.test_archive.name, "")]
 
-        with patch("umu_dl_util._fetch_proton") as mock_function:
+        with patch("umu_proton._fetch_proton") as mock_function:
             # Mock the interrupt
             # We want the dir we tried to extract to be cleaned
             mock_function.side_effect = KeyboardInterrupt
-            result = umu_dl_util._get_latest(
+            result = umu_proton._get_latest(
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
@@ -774,10 +775,10 @@ class TestGameLauncher(unittest.TestCase):
             "Expected test file in cache to exist",
         )
 
-        with patch("umu_dl_util._fetch_proton") as mock_function:
+        with patch("umu_proton._fetch_proton") as mock_function:
             # Mock the interrupt
             mock_function.side_effect = ValueError
-            result = umu_dl_util._get_latest(
+            result = umu_proton._get_latest(
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
@@ -799,8 +800,8 @@ class TestGameLauncher(unittest.TestCase):
 
         os.environ["PROTONPATH"] = ""
 
-        with patch("umu_dl_util._fetch_proton"):
-            result = umu_dl_util._get_latest(
+        with patch("umu_proton._fetch_proton"):
+            result = umu_proton._get_latest(
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
@@ -837,9 +838,9 @@ class TestGameLauncher(unittest.TestCase):
             "Expected UMU-Latest link to not exist",
         )
         with (
-            patch("umu_dl_util._fetch_proton"),
+            patch("umu_proton._fetch_proton"),
         ):
-            result = umu_dl_util._get_latest(
+            result = umu_proton._get_latest(
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertTrue(result is self.env, "Expected the same reference")
@@ -893,9 +894,9 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["PROTONPATH"] = ""
 
         with (
-            patch("umu_dl_util._fetch_proton"),
+            patch("umu_proton._fetch_proton"),
         ):
-            result = umu_dl_util._get_latest(
+            result = umu_proton._get_latest(
                 self.env, self.test_compat, self.test_cache, files
             )
             self.assertTrue(result is self.env, "Expected the same reference")
@@ -948,7 +949,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        result = umu_dl_util._get_from_steamcompat(self.env, self.test_compat)
+        result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
 
         self.assertFalse(result, "Expected None after calling _get_from_steamcompat")
         self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to not be set")
@@ -961,9 +962,9 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
+        umu_proton._extract_dir(self.test_archive, self.test_compat)
 
-        result = umu_dl_util._get_from_steamcompat(self.env, self.test_compat)
+        result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
 
         self.assertTrue(result is self.env, "Expected the same reference")
         self.assertEqual(
@@ -986,7 +987,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
+        umu_proton._extract_dir(self.test_archive, self.test_compat)
 
         # Create a file in the cache and compat
         self.test_cache.joinpath("foo").touch()
@@ -1013,7 +1014,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
         # Pass files that do not exist
-        result = umu_dl_util._cleanup(
+        result = umu_proton._cleanup(
             "foo.tar.gz",
             "foo",
             self.test_cache,
@@ -1052,8 +1053,8 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        umu_dl_util._extract_dir(self.test_archive, self.test_compat)
-        result = umu_dl_util._cleanup(
+        umu_proton._extract_dir(self.test_archive, self.test_compat)
+        result = umu_proton._cleanup(
             self.test_proton_dir.as_posix() + ".tar.gz",
             self.test_proton_dir.as_posix(),
             self.test_cache,
@@ -1086,7 +1087,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
         with self.assertRaisesRegex(tarfile.ReadError, "gzip"):
-            umu_dl_util._extract_dir(test_archive, self.test_compat)
+            umu_proton._extract_dir(test_archive, self.test_compat)
 
         if test_archive.exists():
             test_archive.unlink()
@@ -1099,7 +1100,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        result = umu_dl_util._extract_dir(self.test_archive, self.test_compat)
+        result = umu_proton._extract_dir(self.test_archive, self.test_compat)
         self.assertFalse(result, "Expected None after extracting")
         self.assertTrue(
             self.test_compat.joinpath(self.test_proton_dir).exists(),
@@ -1393,9 +1394,9 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock setting up the runtime
         with (
-            patch.object(umu_util, "setup_runtime", return_value=None),
+            patch.object(umu_runtime, "setup_runtime", return_value=None),
         ):
-            umu_util._install_umu(self.test_user_share, self.test_local_share, json)
+            umu_runtime._install_umu(self.test_user_share, self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
