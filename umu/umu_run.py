@@ -239,16 +239,12 @@ def set_env(
 
 
 def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
-    """Enable Steam Game Drive functionality.
-
-    Expects STEAM_COMPAT_INSTALL_PATH to be set
-    STEAM_RUNTIME_LIBRARY_PATH will not be set if the exe directory does not exist
-    """
+    """Enable Steam Game Drive functionality."""
     paths: set[str] = set()
     root: Path = Path("/")
-    libc: str = find_library("c")
+    libc: str = get_libc()
     # All library paths that are currently supported by the container runtime framework
-    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md
+    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#filesystem-layout
     # Non-FHS filesystems should run in a FHS chroot to comply
     steamrt_paths: list[str] = [
         "/usr/lib64",
@@ -271,18 +267,25 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
             break
 
     if os.environ.get("LD_LIBRARY_PATH"):
-        log.debug("LD_LIBRARY_PATH=%s", os.environ["LD_LIBRARY_PATH"])
         paths = {path for path in os.environ["LD_LIBRARY_PATH"].split(":")}
 
     if env["STEAM_COMPAT_INSTALL_PATH"]:
         paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
 
-    # Set the shared library paths of the system after finding libc.so
-    # In some cases, using ldconfig to determine library paths can fail in Non-FHS
-    # compliant filesystems (e.g., NixOS). In those cases, depend on LD_LIBRARY_PATH
+    # When libc.so could not be found, depend on LD_LIBRARY_PATH
+    # In some cases, using ldconfig to determine library paths can fail in non-FHS
+    # compliant filesystems (e.g., NixOS).
     # See https://github.com/Open-Wine-Components/umu-launcher/issues/106
+    if not libc:
+        log.warning("libc.so could not be found")
+        log.info("LD_LIBRARY_PATH=%s", os.environ.get("LD_LIBRARY_PATH") or "")
+        env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
+        return env
+
+    # Set the shared library paths of the system after finding libc.so
+    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#filesystem-layout
     for path in steamrt_paths:
-        if not Path(path).is_symlink() and libc and Path(path, libc).is_file():
+        if not Path(path).is_symlink() and Path(path, libc).is_file():
             paths.add(path)
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
 
