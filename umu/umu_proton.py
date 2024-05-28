@@ -13,10 +13,9 @@ from tarfile import open as tar_open
 from tempfile import mkdtemp
 from urllib.request import Request, URLError, urlopen
 
-from umu_util import run_zenity
-
 from umu_consts import STEAM_COMPAT
 from umu_log import log
+from umu_util import run_zenity
 
 SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
