@@ -232,18 +232,21 @@ def _get_from_steamcompat(
     version: str = (
         "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
     )
-    latest: Path = max(
-        [proton for proton in steam_compat.glob("*") if proton.name.startswith(version)]
-    )
+    protons: list[Path] = [
+        proton for proton in steam_compat.glob("*") if proton.name.startswith(version)
+    ]
+    latest: Path = None
 
-    if latest:
-        log.console(f"{latest.name} found in: {steam_compat}")
-        log.console(f"Using {latest.name}")
-        environ["PROTONPATH"] = latest.as_posix()
-        env["PROTONPATH"] = environ["PROTONPATH"]
-        return env
+    if not protons:
+        return None
 
-    return None
+    latest = max(protons)
+    log.console(f"{latest.name} found in: {steam_compat}")
+    log.console(f"Using {latest.name}")
+    environ["PROTONPATH"] = latest.as_posix()
+    env["PROTONPATH"] = environ["PROTONPATH"]
+
+    return env
 
 
 def _get_latest(
