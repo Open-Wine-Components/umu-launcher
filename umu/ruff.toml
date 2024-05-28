@@ -83,9 +83,10 @@ select = [
     "PLW1510",
     "UP",
     "FURB",
-    # Enforce the encoding argument when opening files
-    # Encoding for text should be utf-8
-    "PLW1514"
+    # Enforce the utf-8 encoding argument when opening files
+    "PLW1514",
+    # Sort imports
+    "I"
 ]
 ignore = [
     # Format
