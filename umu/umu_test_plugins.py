@@ -73,8 +73,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
                     "runtime_platform": "sniper_platform_0.20240125.75305",
-                    "reaper": "1.0",
-                    "pressure_vessel": "v0.20240212.0",
                 }
             }
         }
@@ -120,9 +118,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
         Path(self.test_user_share, "umu-launcher").mkdir()
         Path(self.test_user_share, "umu-launcher", "compatibilitytool.vdf").touch()
         Path(self.test_user_share, "umu-launcher", "toolmanifest.vdf").touch()
-
-        # Mock Reaper
-        Path(self.test_user_share, "reaper").touch()
 
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
@@ -239,9 +234,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "_v2-entry-point"):
-            umu_run.build_command(
-                self.env, self.test_local_share, self.test_user_share, test_command
-            )
+            umu_run.build_command(self.env, self.test_local_share, test_command)
 
     def test_build_command_proton(self):
         """Test build_command.
@@ -310,9 +303,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            umu_run.build_command(
-                self.env, self.test_local_share, self.test_user_share, test_command
-            )
+            umu_run.build_command(self.env, self.test_local_share, test_command)
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -381,20 +372,15 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         test_command_result = umu_run.build_command(
-            self.env, self.test_local_share, self.test_user_share, test_command
+            self.env, self.test_local_share, test_command
         )
         self.assertTrue(
             test_command_result is test_command, "Expected the same reference"
         )
 
         # Verify contents of the command
-        reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [
-            *test_command
-        ]
+        entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
-        self.assertTrue(reaper, "Expected reaper")
-        self.assertTrue(id, "Expected a tag for reaper")
-        self.assertTrue(opt0, "Expected --")
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")

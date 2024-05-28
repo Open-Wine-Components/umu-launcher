@@ -1,5 +1,4 @@
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -75,8 +74,6 @@ class TestGameLauncher(unittest.TestCase):
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
                     "runtime_platform": "sniper_platform_0.20240125.75305",
-                    "reaper": "1.0",
-                    "pressure_vessel": "v0.20240212.0",
                 }
             }
         }
@@ -574,9 +571,7 @@ class TestGameLauncher(unittest.TestCase):
         with (
             patch.object(umu_runtime, "setup_runtime", return_value=None),
         ):
-            result = umu_runtime._install_umu(
-                self.test_user_share, self.test_local_share, json
-            )
+            result = umu_runtime._install_umu(self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
@@ -646,9 +641,7 @@ class TestGameLauncher(unittest.TestCase):
                 "versions": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
-                    "runtime_platform": "sniper_platform_0.20240125.75305",
-                    "reaper": "1.0",
-                    "pressure_vessel": "v0.20240212.0"
+                    "runtime_platform": "sniper_platform_0.20240125.75305"
                 }
             }
         }
@@ -659,9 +652,7 @@ class TestGameLauncher(unittest.TestCase):
                 "foo": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
-                    "runtime_platform": "sniper_platform_0.20240125.75305",
-                    "reaper": "1.0",
-                    "pressure_vessel": "v0.20240212.0"
+                    "runtime_platform": "sniper_platform_0.20240125.75305"
                 }
             }
         }
@@ -1396,7 +1387,7 @@ class TestGameLauncher(unittest.TestCase):
         with (
             patch.object(umu_runtime, "setup_runtime", return_value=None),
         ):
-            umu_runtime._install_umu(self.test_user_share, self.test_local_share, json)
+            umu_runtime._install_umu(self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
@@ -1415,19 +1406,14 @@ class TestGameLauncher(unittest.TestCase):
 
         # Build
         test_command = umu_run.build_command(
-            self.env, self.test_local_share, self.test_user_share, test_command
+            self.env, self.test_local_share, test_command
         )
         self.assertIsInstance(test_command, list, "Expected a List from build_command")
         self.assertEqual(
-            len(test_command), 10, "Expected 10 elements in the list from build_command"
+            len(test_command), 7, "Expected 7 elements in the list from build_command"
         )
-        reaper, id, opt0, entry_point, opt1, verb, opt2, proton, verb2, exe = [
-            *test_command
-        ]
+        entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
-        self.assertTrue(reaper, "Expected reaper")
-        self.assertTrue(id, "Expected a tag for reaper")
-        self.assertTrue(opt0, "Expected --")
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")
