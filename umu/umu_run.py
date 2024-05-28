@@ -208,8 +208,7 @@ def set_env(
         env["EXE"] = Path(env["EXE"]).expanduser().as_posix()
         env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
 
-    if "STORE" in os.environ:
-        env["STORE"] = os.environ["STORE"]
+    env["STORE"] = os.environ.get("STORE") or ""
 
     # UMU_ID
     env["UMU_ID"] = env["GAMEID"]
