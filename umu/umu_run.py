@@ -27,6 +27,7 @@ from umu_consts import (
 from umu_log import CustomFormatter, console_handler, log
 from umu_plugins import set_env_toml
 from umu_proton import get_umu_proton
+from umu_runtime import setup_umu
 from umu_util import get_libc
 
 
