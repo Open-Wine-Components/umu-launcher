@@ -142,12 +142,9 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
     env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
     # Proton Version
-    # Ensure a string is passed instead of a path
-    # Since shells auto expand paths, pathlib will destroy the STEAM_COMPAT
-    # stem when it encounters a separator
     if (
         os.environ.get("PROTONPATH")
-        and Path(f"{STEAM_COMPAT}/" + os.environ.get("PROTONPATH")).is_dir()
+        and Path(STEAM_COMPAT, os.environ.get("PROTONPATH")).is_dir()
     ):
         log.debug("Proton version selected")
         os.environ["PROTONPATH"] = STEAM_COMPAT.joinpath(
