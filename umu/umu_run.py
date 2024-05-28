@@ -19,6 +19,7 @@ from umu_consts import (
     DEBUG_FORMAT,
     FLATPAK_ID,
     FLATPAK_PATH,
+    PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
     STEAM_COMPAT,
     UMU_LOCAL,
@@ -295,7 +296,6 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 def build_command(
     env: dict[str, str],
     local: Path,
-    root: Path,
     command: list[str],
     opts: list[str] = None,
 ) -> list[str]:
@@ -318,9 +318,6 @@ def build_command(
     if opts:
         command.extend(
             [
-                root.joinpath("reaper").as_posix(),
-                f"UMU_ID={env.get('UMU_ID')}",
-                "--",
                 local.joinpath("umu").as_posix(),
                 "--verb",
                 verb,
@@ -334,9 +331,6 @@ def build_command(
         return command
     command.extend(
         [
-            root.joinpath("reaper").as_posix(),
-            f"UMU_ID={env.get('UMU_ID')}",
-            "--",
             local.joinpath("umu").as_posix(),
             "--verb",
             verb,
@@ -348,6 +342,58 @@ def build_command(
     )
 
     return command
+
+
+def run_command(command: list[str]) -> int:
+    """Run the executable using Proton within the container."""
+    # Configure a process via libc prctl()
+    # See prctl(2) for more details
+    prctl: Callable[
+        [c_int, c_ulong, c_ulong, c_ulong, c_ulong],
+        c_int,
+    ] = None
+    proc: Popen = None
+    libc: str = get_libc()
+
+    if not command:
+        err: str = f"Command list is empty or None: {command}"
+        raise ValueError(err)
+
+    if not libc:
+        log.warning("Will not set subprocess as subreaper")
+
+    # Create a subprocess but do not set it as subreaper
+    # Unnecessary in a Flatpak and prctl() will fail if libc could not be found
+    if FLATPAK_PATH or not libc:
+        return run(command, start_new_session=True, check=False).returncode
+
+    prctl = CDLL(libc).prctl
+    prctl.restype = c_int
+    prctl.argtypes = [
+        c_int,
+        c_ulong,
+        c_ulong,
+        c_ulong,
+        c_ulong,
+    ]
+
+    # Create a subprocess and set it as subreaper
+    # When the launcher dies, the subprocess and its descendents will continue to run in
+    # the background
+    proc = Popen(
+        command,
+        start_new_session=True,
+        preexec_fn=lambda: prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0),
+    )
+
+    while True:
+        try:
+            wait_pid, wait_status = os.waitpid(proc.pid, 0)
+            log.debug("Child %s exited with wait status: %s", wait_pid, wait_status)
+        except ChildProcessError:  # No more children
+            break
+
+    return proc.returncode
 
 
 def main() -> int:  # noqa: D103
@@ -456,10 +502,10 @@ def main() -> int:  # noqa: D103
     executor.shutdown()
 
     # Run
-    build_command(env, UMU_LOCAL, root, command, opts)
+    build_command(env, UMU_LOCAL, command, opts)
     log.debug("%s", command)
 
-    return run(command, check=False).returncode
+    return run_command(command)
 
 
 if __name__ == "__main__":
@@ -469,7 +515,6 @@ if __name__ == "__main__":
         log.warning("Keyboard Interrupt")
     except SystemExit as e:
         if e.code:
-            log.debug("subprocess exited with the status code: %s", e.code)
             sys.exit(e.code)
     except BaseException:
         log.exception("BaseException")

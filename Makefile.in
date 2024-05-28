@@ -18,16 +18,16 @@ FLATPAK ?= xfalse
 
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)
-all: version reaper umu umu-launcher
+all: version umu umu-launcher
 else
-all: version reaper umu umu-docs umu-launcher
+all: version umu umu-docs umu-launcher
 endif
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
-install: reaper-install umu-install umu-launcher-install user-install
+install: umu-install umu-launcher-install user-install
 else
-install: reaper-install umu-install umu-launcher-install
+install: umu-install umu-launcher-install
 endif
 
 # Special case, do this inside the source directory for release distribution
@@ -35,7 +35,6 @@ umu/umu_version.json: umu/umu_version.json.in
 	$(info :: Updating $(@) )
 	cp $(<) $(<).tmp
 	sed 's|##UMU_VERSION##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
-	sed 's|##REAPER_VERSION##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
 	mv $(<).tmp $(@)
 
 .PHONY: version
@@ -81,11 +80,12 @@ umu-dist-install:
 	$(info :: Installing umu )
 	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_consts.py    -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_dl_util.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 umu/umu_proton.py    -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_log.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_plugins.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 755 umu/umu_run.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 	install -Dm 644 umu/umu_util.py      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -Dm 644 umu/umu_runtime.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 ifeq ($(FLATPAK), xtrue)
 umu-install: version-install umu-dist-install umu-bin-install
@@ -119,20 +119,6 @@ umu-launcher-dist-install:
 	install -Dm 644 umu/umu-launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
 
 umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
-
-
-$(OBJDIR)/.build-reaper: | $(OBJDIR)
-	$(info :: Building reaper )
-	meson setup $(OBJDIR)/reaper subprojects/reaper
-	ninja -C $(OBJDIR)/reaper -v
-	touch $(@)
-
-.PHONY: reaper
-reaper: $(OBJDIR)/.build-reaper
-
-reaper-install: reaper
-	$(info :: Installing reaper )
-	install -Dm 755 $(OBJDIR)/$</$< -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 
 $(OBJDIR):

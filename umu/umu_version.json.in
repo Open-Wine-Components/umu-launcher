@@ -3,8 +3,7 @@
     "versions": {
       "launcher": "##UMU_VERSION##",
       "runner": "##UMU_VERSION##",
-      "runtime_platform": "0.20240423.85483",
-      "reaper": "##REAPER_VERSION##"
+      "runtime_platform": "steamrt3"
     }
   }
 }
