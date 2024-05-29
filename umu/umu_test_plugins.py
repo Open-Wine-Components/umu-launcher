@@ -105,7 +105,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Mock the runtime files
         Path(self.test_user_share, "sniper_platform_0.20240125.75305").mkdir()
-        Path(self.test_user_share, "sniper_platform_0.20240125.75305", "foo").touch()
+        Path(
+            self.test_user_share, "sniper_platform_0.20240125.75305", "foo"
+        ).touch()
         Path(self.test_user_share, "run").touch()
         Path(self.test_user_share, "run-in-sniper").touch()
         Path(self.test_user_share, "umu").touch()
@@ -116,7 +118,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Mock umu-launcher
         Path(self.test_user_share, "umu-launcher").mkdir()
-        Path(self.test_user_share, "umu-launcher", "compatibilitytool.vdf").touch()
+        Path(
+            self.test_user_share, "umu-launcher", "compatibilitytool.vdf"
+        ).touch()
         Path(self.test_user_share, "umu-launcher", "toolmanifest.vdf").touch()
 
         # Mock the proton file in the dir
@@ -140,14 +144,15 @@ class TestGameLauncherPlugins(unittest.TestCase):
         # |   +-- proton              (normal file)
         with tarfile.open(self.test_archive.as_posix(), "w:gz") as tar:
             tar.add(
-                self.test_proton_dir.as_posix(), arcname=self.test_proton_dir.as_posix()
+                self.test_proton_dir.as_posix(),
+                arcname=self.test_proton_dir.as_posix(),
             )
 
         Path(self.test_file).mkdir(exist_ok=True)
         Path(self.test_exe).touch()
 
     def tearDown(self):
-        """Unset environment variables and delete test files after each test."""
+        """Unset environment variables and delete test files after tests."""
         for key, val in self.env.items():
             if key in os.environ:
                 os.environ.pop(key)
@@ -219,11 +224,16 @@ class TestGameLauncherPlugins(unittest.TestCase):
             umu_runtime._install_umu(self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
-                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                Path(
+                    self.test_local_share, "sniper_platform_0.20240125.75305"
+                ),
                 dirs_exist_ok=True,
                 symlinks=True,
             )
-            copy(Path(self.test_user_share, "run"), Path(self.test_local_share, "run"))
+            copy(
+                Path(self.test_user_share, "run"),
+                Path(self.test_local_share, "run"),
+            )
             copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
@@ -234,12 +244,15 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "_v2-entry-point"):
-            umu_run.build_command(self.env, self.test_local_share, test_command)
+            umu_run.build_command(
+                self.env, self.test_local_share, test_command
+            )
 
     def test_build_command_proton(self):
         """Test build_command.
 
-        A FileNotFoundError should be raised if $PROTONPATH/proton does not exist
+        A FileNotFoundError should be raised if $PROTONPATH/proton does not
+        exist
 
         Also, FileNotFoundError will be raised if the _v2-entry-point (umu)
         is not in $HOME/.local/share/umu
@@ -284,11 +297,16 @@ class TestGameLauncherPlugins(unittest.TestCase):
             umu_runtime._install_umu(self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
-                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                Path(
+                    self.test_local_share, "sniper_platform_0.20240125.75305"
+                ),
                 dirs_exist_ok=True,
                 symlinks=True,
             )
-            copy(Path(self.test_user_share, "run"), Path(self.test_local_share, "run"))
+            copy(
+                Path(self.test_user_share, "run"),
+                Path(self.test_local_share, "run"),
+            )
             copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
@@ -303,12 +321,15 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            umu_run.build_command(self.env, self.test_local_share, test_command)
+            umu_run.build_command(
+                self.env, self.test_local_share, test_command
+            )
 
     def test_build_command_toml(self):
         """Test build_command.
 
-        After parsing a valid TOML file, be sure we do not raise a FileNotFoundError
+        After parsing a valid TOML file, be sure we do not raise a
+        FileNotFoundError
         """
         test_toml = "foo.toml"
         toml_str = f"""
@@ -353,11 +374,16 @@ class TestGameLauncherPlugins(unittest.TestCase):
             umu_runtime._install_umu(self.test_local_share, json)
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
-                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
+                Path(
+                    self.test_local_share, "sniper_platform_0.20240125.75305"
+                ),
                 dirs_exist_ok=True,
                 symlinks=True,
             )
-            copy(Path(self.test_user_share, "run"), Path(self.test_local_share, "run"))
+            copy(
+                Path(self.test_user_share, "run"),
+                Path(self.test_local_share, "run"),
+            )
             copy(
                 Path(self.test_user_share, "run-in-sniper"),
                 Path(self.test_local_share, "run-in-sniper"),
@@ -425,7 +451,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            self.assertTrue(
+                vars(result).get("config"), "Expected a value for --config"
+            )
             # Env
             with self.assertRaisesRegex(FileNotFoundError, "exe"):
                 umu_plugins.set_env_toml(self.env, result)
@@ -497,7 +525,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            self.assertTrue(
+                vars(result).get("config"), "Expected a value for --config"
+            )
             # Env
             with self.assertRaisesRegex(NotADirectoryError, "proton"):
                 umu_plugins.set_env_toml(self.env, result)
@@ -533,7 +563,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            self.assertTrue(
+                vars(result).get("config"), "Expected a value for --config"
+            )
             # Env
             with self.assertRaisesRegex(ValueError, "umu"):
                 umu_plugins.set_env_toml(self.env, result)
@@ -547,7 +579,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
         config file as well as the prefix, proton and exe keys
         """
         test_toml = "foo.toml"
-        pattern = r"^/home/[\w\d]+"  # Expects only unicode decimals and alphanumerics
+        # Expects only unicode decimals and alphanumerics
+        pattern = r"^/home/[\w\d]+"
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -596,17 +629,23 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            self.assertTrue(
+                vars(result).get("config"), "Expected a value for --config"
+            )
             # Env
             result_set_env = umu_plugins.set_env_toml(self.env, result)
-            self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
+            self.assertTrue(
+                isinstance(result_set_env, tuple), "Expected a tuple"
+            )
 
             # Check that the paths are still in the unexpanded form after
             # setting the env
             # In main, we only expand them after this function exits to
             # prepare for building the command
             self.assertEqual(
-                self.env["EXE"], unexpanded_exe, "Expected path not to be expanded"
+                self.env["EXE"],
+                unexpanded_exe,
+                "Expected path not to be expanded",
             )
             self.assertEqual(
                 self.env["PROTONPATH"],
@@ -619,7 +658,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 "Expected path not to be expanded",
             )
             self.assertEqual(
-                self.env["GAMEID"], unexpanded_path, "Expectd path not to be expanded"
+                self.env["GAMEID"],
+                unexpanded_path,
+                "Expectd path not to be expanded",
             )
 
     def test_set_env_toml_opts(self):
@@ -652,19 +693,24 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            self.assertTrue(
+                vars(result).get("config"), "Expected a value for --config"
+            )
 
             # Env
             # The first argument is the env
             result_set_env = umu_plugins.set_env_toml(self.env, result)
-            self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
+            self.assertTrue(
+                isinstance(result_set_env, tuple), "Expected a tuple"
+            )
             self.assertTrue(
                 result_set_env[0] is self.env, "Expected the same reference"
             )
 
             # Verify the launch arguments
             self.assertTrue(
-                isinstance(result_set_env[1], list), "Expected a list for game options"
+                isinstance(result_set_env[1], list),
+                "Expected a list for game options",
             )
             self.assertEqual(
                 result_set_env[1][0],
@@ -722,10 +768,14 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
-            self.assertTrue(vars(result).get("config"), "Expected a value for --config")
+            self.assertTrue(
+                vars(result).get("config"), "Expected a value for --config"
+            )
             # Env
             result_set_env = umu_plugins.set_env_toml(self.env, result)
-            self.assertTrue(isinstance(result_set_env, tuple), "Expected a tuple")
+            self.assertTrue(
+                isinstance(result_set_env, tuple), "Expected a tuple"
+            )
             self.assertTrue(self.env["EXE"], "Expected EXE to be set")
             self.assertEqual(
                 self.env["PROTONPATH"],

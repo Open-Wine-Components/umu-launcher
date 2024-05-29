@@ -12,12 +12,13 @@ def set_env_toml(
 ) -> tuple[dict[str, str], list[str]]:
     """Read a TOML file then sets the environment variables for the Steam RT.
 
-    In the TOML file, certain keys map to Steam RT environment variables. For example:
-          proton -> $PROTONPATH
-          prefix -> $WINEPREFIX
-          game_id -> $GAMEID
-          exe -> $EXE
-    At the moment we expect the tables: 'umu'
+    In the TOML file, certain keys map to Steam runtime unvironment variables.
+    For example:
+
+    proton -> $PROTONPATH
+    prefix -> $WINEPREFIX
+    game_id -> $GAMEID
+    exe -> $EXE
     """
     try:
         import tomllib
@@ -26,7 +27,9 @@ def set_env_toml(
         raise ModuleNotFoundError(err)
 
     toml: dict[str, Any] = None
-    path_config: str = Path(getattr(args, "config", None)).expanduser().as_posix()
+    path_config: str = (
+        Path(getattr(args, "config", None)).expanduser().as_posix()
+    )
     opts: list[str] = []
 
     if not Path(path_config).is_file():
@@ -62,7 +65,7 @@ def set_env_toml(
 def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
     """Check for required or empty key/value pairs when reading a TOML config.
 
-    NOTE: Casing matters in the config and we do not check if the game id is set
+    Casing matters in the config and we do not check if the game id is set.
     """
     table: str = "umu"
     required_keys: list[str] = ["proton", "prefix", "exe"]
@@ -73,7 +76,9 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
 
     for key in required_keys:
         if key not in toml[table]:
-            err: str = f"The following key in table '{table}' is required: {key}"
+            err: str = (
+                f"The following key in table '{table}' is required: {key}"
+            )
             raise ValueError(err)
 
         # Raise an error for executables that do not exist
@@ -86,11 +91,17 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
             raise FileNotFoundError(err)
 
         # The proton and wine prefix need to be folders
-        if (key == "proton" and not Path(toml[table][key]).expanduser().is_dir()) or (
-            key == "prefix" and not Path(toml[table][key]).expanduser().is_dir()
+        if (
+            key == "proton"
+            and not Path(toml[table][key]).expanduser().is_dir()
+        ) or (
+            key == "prefix"
+            and not Path(toml[table][key]).expanduser().is_dir()
         ):
             dir: str = Path(toml[table][key]).expanduser().as_posix()
-            err: str = f"Value for key '{key}' in TOML is not a directory: {dir}"
+            err: str = (
+                f"Value for key '{key}' in TOML is not a directory: {dir}"
+            )
             raise NotADirectoryError(err)
 
     # Check for empty keys
@@ -98,7 +109,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
         if not val and isinstance(val, str):
             err: str = (
                 f"Value is empty for '{key}' in TOML.\n"
-                f"Please specify a value or remove the following entry:\n{key} = {val}"
+                f"Please specify a value or remove the entry:\n{key} = {val}"
             )
             raise ValueError(err)
 
@@ -108,7 +119,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
 def enable_zenity(command: str, opts: list[str], msg: str) -> int:
     """Execute the command and pipe the output to Zenity.
 
-    Intended to be used for long running operations (e.g. large file downloads)
+    Intended to be used for long running tasks (e.g. large file downloads).
     """
     bin: str = which("zenity")
     cmd: str = which(command)

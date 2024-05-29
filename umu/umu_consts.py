@@ -14,7 +14,9 @@ class Color(Enum):
     DEBUG = "\u001b[35m"
 
 
-SIMPLE_FORMAT = f"%(levelname)s:  {Color.BOLD.value}%(message)s{Color.RESET.value}"
+SIMPLE_FORMAT = (
+    f"%(levelname)s:  {Color.BOLD.value}%(message)s{Color.RESET.value}"
+)
 
 DEBUG_FORMAT = f"%(levelname)s [%(module)s.%(funcName)s:%(lineno)s]:{Color.BOLD.value}%(message)s{Color.RESET.value}"  # noqa: E501
 
@@ -35,9 +37,13 @@ PROTON_VERBS = {
 
 FLATPAK_ID = environ.get("FLATPAK_ID") or ""
 
-FLATPAK_PATH: Path = Path(environ.get("XDG_DATA_HOME"), "umu") if FLATPAK_ID else None
+FLATPAK_PATH: Path = (
+    Path(environ.get("XDG_DATA_HOME"), "umu") if FLATPAK_ID else None
+)
 
-UMU_LOCAL: Path = FLATPAK_PATH or Path.home().joinpath(".local", "share", "umu")
+UMU_LOCAL: Path = FLATPAK_PATH or Path.home().joinpath(
+    ".local", "share", "umu"
+)
 
 # Constants defined in prctl.h
 # See prctl(2) for more details

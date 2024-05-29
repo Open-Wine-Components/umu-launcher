@@ -29,11 +29,14 @@ except ImportError:
 
 def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
     tmp: Path = Path(mkdtemp())
-    ret: int = 0  # Exit code from zenity
-    archive: str = "SteamLinuxRuntime_sniper.tar.xz"  # Archive containing the runtime
+    # Exit code from zenity
+    ret: int = 0
+    # Archive containing the runtime
+    archive: str = "SteamLinuxRuntime_sniper.tar.xz"
     codename: str = json["umu"]["versions"]["runtime_platform"]
     base_url: str = f"https://repo.steampowered.com/{codename}/images/latest-container-runtime-public-beta"
-    build_id: str = ""  # Value that corresponds to the runtime directory version
+    # Value that corresponds to the runtime directory version
+    build_id: str = ""
     log.debug("Codename: %s", codename)
     log.debug("URL: %s", base_url)
 
@@ -52,7 +55,7 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
             "--output-dir",
             tmp.as_posix(),
         ]
-        msg: str = "Downloading UMU-Runtime..."
+        msg: str = "Downloading umu runtime, please wait..."
         ret = run_zenity(bin, opts, msg)
 
     # Handle the exit code from zenity
@@ -64,9 +67,13 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
         digest: str = ""
 
         # Get the version of the runtime
-        with urlopen(f"{base_url}/BUILD_ID.txt", context=SSL_DEFAULT_CONTEXT) as resp:  # noqa: S310
+        with urlopen(  # noqa: S310
+            f"{base_url}/BUILD_ID.txt", context=SSL_DEFAULT_CONTEXT
+        ) as resp:
             if resp.status != 200:
-                err: str = f"repo.steampowered.com returned the status: {resp.status}"
+                err: str = (
+                    f"repo.steampowered.com returned the status: {resp.status}"
+                )
                 raise HTTPException(err)
             for line in resp.read().decode("utf-8").splitlines():
                 build_id = line
@@ -79,7 +86,9 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
             ) as resp,
         ):
             if resp.status != 200:
-                err: str = f"repo.steampowered.com returned the status: {resp.status}"
+                err: str = (
+                    f"repo.steampowered.com returned the status: {resp.status}"
+                )
                 raise HTTPException(err)
             for line in resp.read().decode("utf-8").splitlines():
                 if line.endswith(archive):
@@ -95,7 +104,9 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
         ):
             data: bytes = b""
             if resp.status != 200:
-                err: str = f"repo.steampowered.com returned the status: {resp.status}"
+                err: str = (
+                    f"repo.steampowered.com returned the status: {resp.status}"
+                )
                 raise HTTPException(err)
             log.debug("Writing: %s", tmp.joinpath(archive))
             data = resp.read()
@@ -154,7 +165,8 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
 
         # Write BUILD_ID.txt
         UMU_LOCAL.joinpath("BUILD_ID.txt").write_text(
-            build_id or tmp.joinpath("BUILD_ID.txt").read_text(encoding="utf-8"),
+            build_id
+            or tmp.joinpath("BUILD_ID.txt").read_text(encoding="utf-8"),
             encoding="utf-8",
         )
 
@@ -162,7 +174,10 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
         check_runtime(
             UMU_LOCAL,
             json,
-            build_id or tmp.joinpath("BUILD_ID.txt").read_text(encoding="utf-8"),
+            build_id
+            or tmp.joinpath("BUILD_ID.txt")
+            .read_text(encoding="utf-8")
+            .strip(),
         )
 
 
@@ -182,8 +197,8 @@ def setup_umu(root: Path, local: Path) -> None:
 def _install_umu(local: Path, json: dict[str, Any]) -> None:
     """Prepare and download the runtime platform.
 
-    The launcher files will remain in the system path defined at build time, except
-    umu-launcher which will be installed in $PREFIX/share/steam/compatibilitytools.d
+    The launcher files will remain in the system path defined at build time,
+    except umu-launcher which is in PREFIX/share/steam/compatibilitytools.d.
     """
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux...")
@@ -197,33 +212,39 @@ def _update_umu(
 ) -> None:
     """For existing installations, check for updates to the runtime.
 
-    The runtime platform will be updated to the latest public beta by comparing the
-    local VERSIONS.txt against the remote one.
+    The runtime platform will be updated to the latest public beta by comparing
+    the local VERSIONS.txt against the remote one.
     """
     codename: str = json["umu"]["versions"]["runtime_platform"]
-    # NOTE: If we ever build our custom runtime, this url will need to change as well as
-    # the hard coded file paths below
+    # NOTE: If we ever build our custom runtime, this url will need to change
+    # as well as the hard coded file paths below
     base_url: str = f"https://repo.steampowered.com/{codename}/images/latest-container-runtime-public-beta"
     runtime: Path = None
     build: str = ""
     log.debug("Existing install detected")
 
-    # The BUILD_ID.txt is used to identify the runtime directory. Restore it if it is
-    # missing. BUILD_ID.txt is a hard coded path and in the case it gets changed, the
-    # launcher should not crash
+    # The BUILD_ID.txt is used to identify the runtime directory.
+    # Restore if it is missing and do not crash if it does not exist remotely
     if not local.joinpath("BUILD_ID.txt").is_file():
-        with urlopen(f"{base_url}/BUILD_ID.txt", context=SSL_DEFAULT_CONTEXT) as resp:  # noqa: S310
+        with urlopen(  # noqa: S310
+            f"{base_url}/BUILD_ID.txt", context=SSL_DEFAULT_CONTEXT
+        ) as resp:
             if resp.status != 200:
                 log.warning(
-                    "repo.steampowered.com returned the status: %s", resp.status
+                    "repo.steampowered.com returned the status: %s",
+                    resp.status,
                 )
             else:
                 build = resp.read().decode("utf-8").strip()
                 local.joinpath("BUILD_ID.txt").write_text(build)
 
+    # Find the runtime directory
     if local.joinpath("BUILD_ID.txt").is_file():
-        runtime = local.joinpath(
-            local.joinpath("BUILD_ID.txt").read_text(encoding="utf-8").strip()
+        build = (
+            build
+            or local.joinpath("BUILD_ID.txt")
+            .read_text(encoding="utf-8")
+            .strip()
         )
 
     if (
@@ -237,30 +258,35 @@ def _update_umu(
         return
 
     # Restore VERSIONS.txt
-    # NOTE: Change 'SteamLinuxRuntime_sniper.VERSIONS.txt' when the version changes
-    # (e.g., steamrt4 -> SteamLinuxRuntime_medic.VERSIONS.txt)
+    # NOTE: Change 'SteamLinuxRuntime_sniper.VERSIONS.txt' when the version
+    # changes (e.g., steamrt4 -> SteamLinuxRuntime_medic.VERSIONS.txt)
     if not local.joinpath("VERSIONS.txt").is_file():
         url: str = f"https://repo.steampowered.com/{codename}/images/{build}"
         log.warning("VERSIONS.txt not found")
         log.console("Restoring VERSIONS.txt...")
         with urlopen(  # noqa: S310
-            f"{url}/SteamLinuxRuntime_sniper.VERSIONS.txt",  # Hard coded file path
+            f"{url}/SteamLinuxRuntime_sniper.VERSIONS.txt",
             context=SSL_DEFAULT_CONTEXT,
         ) as resp:
             if resp.status != 200:
                 log.warning(
-                    "repo.steampowered.com returned the status: %s", resp.status
+                    "repo.steampowered.com returned the status: %s",
+                    resp.status,
                 )
             else:
-                local.joinpath("VERSIONS.txt").write_text(resp.read().decode("utf-8"))
+                local.joinpath("VERSIONS.txt").write_text(
+                    resp.read().decode("utf-8")
+                )
 
-    # Update the runtime if necessary by comparing against the remote VERSIONS.txt
+    # Update the runtime if necessary by comparing VERSIONS.txt to the remote
     with urlopen(  # noqa: S310
         f"{base_url}/SteamLinuxRuntime_sniper.VERSIONS.txt",
         context=SSL_DEFAULT_CONTEXT,
     ) as resp:
         if resp.status != 200:
-            log.warning("repo.steampowered.com returned the status: %s", resp.status)
+            log.warning(
+                "repo.steampowered.com returned the status: %s", resp.status
+            )
             return
         if (
             sha256(resp.read()).digest()
@@ -276,8 +302,8 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
     """Validate the state of the configuration file umu_version.json in a path.
 
     The configuration file will be used to update the runtime and it reflects
-    the tools currently used by launcher. The key/value pairs 'umu' and 'versions' must
-    exist.
+    the tools currently used by launcher. The key/value pairs umu and versions
+    must exist.
     """
     json: dict[str, Any] = None
 
@@ -295,8 +321,7 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
     # Raise an error if "umu" and "versions" doesn't exist
     if not json or not json.get("umu") or not json.get("umu").get("versions"):
         err: str = (
-            f"Failed to load {config} or 'umu' or 'versions' not in: {config}\n"
-            "Please reinstall the package"
+            f"Failed to load {config} or 'umu' or 'versions' not in: {config}"
         )
         raise ValueError(err)
 
@@ -307,8 +332,8 @@ def _move(file: Path, src: Path, dst: Path) -> None:
     """Move a file or directory to a destination.
 
     In order for the source and destination directory to be identical, when
-    moving a directory, the contents of that same directory at the
-    destination will be removed
+    moving a directory, the contents of that same directory at the destination
+    will be removed.
     """
     src_file: Path = src.joinpath(file.name)
     dest_file: Path = dst.joinpath(file.name)

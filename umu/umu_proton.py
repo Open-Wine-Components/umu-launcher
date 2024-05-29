@@ -95,16 +95,20 @@ def _fetch_releases() -> list[tuple[str, str]]:
                     and asset.get("browser_download_url")
                 ):
                     if asset["name"].endswith("sum"):
-                        files.append((asset["name"], asset["browser_download_url"]))
+                        files.append(
+                            (asset["name"], asset["browser_download_url"])
+                        )
                     else:
-                        files.append((asset["name"], asset["browser_download_url"]))
+                        files.append(
+                            (asset["name"], asset["browser_download_url"])
+                        )
                 if len(files) == 2:
                     break
             break
 
     if len(files) != 2:
         err: str = (
-            "Failed to get complete information for Proton release from api.github.com"
+            "Failed to get complete information for Proton at api.github.com"
         )
         raise RuntimeError(err)
 
@@ -124,7 +128,9 @@ def _fetch_proton(
     log.console(f"Downloading {hash}...")
 
     # Verify the scheme from Github for resources
-    if not proton_url.startswith("https:") or not hash_url.startswith("https:"):
+    if not proton_url.startswith("https:") or not hash_url.startswith(
+        "https:"
+    ):
         urls = [proton_url, hash_url]
         err: str = f"Scheme in URLs is not 'https:': {urls}"
         raise ValueError(err)
@@ -190,7 +196,7 @@ def _fetch_proton(
 
 
 def _extract_dir(file: Path, steam_compat: Path) -> None:
-    """Extract from the cache to another location."""
+    """Extract from a path to another location."""
     with tar_open(file.as_posix(), "r:gz") as tar:
         if tar_filter:
             log.debug("Using filter for archive")
@@ -207,9 +213,10 @@ def _extract_dir(file: Path, steam_compat: Path) -> None:
 
 
 def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
-    """Remove files that may have been left in an incomplete state to avoid corruption.
+    """Remove files that may have been left in an incomplete state.
 
-    We want to do this when a download for a new release is interrupted
+    We want to do this when a download for a new release is interrupted to
+    avoid corruption.
     """
     log.console("Keyboard Interrupt.\nCleaning...")
 
@@ -224,16 +231,19 @@ def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
 def _get_from_steamcompat(
     env: dict[str, str], steam_compat: Path
 ) -> dict[str, str] | None:
-    """Refer to Steam compat folder for any existing Proton directories.
+    """Refer to compatibilitytools.d folder for any existing Protons.
 
-    Executed when an error occurs when retrieving and setting the latest
-    Proton
+    Executed when an error occurs when retrieving and setting the Proton.
     """
     version: str = (
-        "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
+        "GE-Proton"
+        if environ.get("PROTONPATH") == "GE-Proton"
+        else "UMU-Proton"
     )
     protons: list[Path] = [
-        proton for proton in steam_compat.glob("*") if proton.name.startswith(version)
+        proton
+        for proton in steam_compat.glob("*")
+        if proton.name.startswith(version)
     ]
     latest: Path = None
 
@@ -250,17 +260,20 @@ def _get_from_steamcompat(
 
 
 def _get_latest(
-    env: dict[str, str], steam_compat: Path, tmp: Path, files: list[tuple[str, str]]
+    env: dict[str, str],
+    steam_compat: Path,
+    tmp: Path,
+    files: list[tuple[str, str]],
 ) -> dict[str, str] | None:
     """Download the latest Proton for new installs.
 
     Either GE-Proton or UMU-Proton can be downloaded. When download the latest
     UMU-Proton build, previous stable versions of that build will be deleted
     automatically. Previous GE-Proton builds will remain on the system because
-    regressions are likely to occur in bleeding-edge based builds
+    regressions are likely to occur in bleeding-edge based builds.
 
     When the digests mismatched or when interrupted, an old build will in
-    ~/.local/share/Steam/compatibilitytool.d will be used
+    ~/.local/share/Steam/compatibilitytool.d will be used.
     """
     if not files:
         return None
@@ -269,7 +282,9 @@ def _get_latest(
         tarball: str = files[1][0]
         proton: str = tarball[: tarball.find(".tar.gz")]
         version: str = (
-            "GE-Proton" if environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
+            "GE-Proton"
+            if environ.get("PROTONPATH") == "GE-Proton"
+            else "UMU-Proton"
         )
 
         if steam_compat.joinpath(proton).is_dir():
@@ -298,7 +313,9 @@ def _get_latest(
             with ThreadPoolExecutor() as executor:
                 for _ in [
                     executor.submit(_extract_dir, tar_path, steam_compat),
-                    executor.submit(_update_proton, proton, steam_compat, protons),
+                    executor.submit(
+                        _update_proton, proton, steam_compat, protons
+                    ),
                 ]:
                     _.result()
         else:
@@ -334,15 +351,17 @@ def _get_latest(
     return env
 
 
-def _update_proton(proton: str, steam_compat: Path, protons: list[Path]) -> None:
+def _update_proton(
+    proton: str, steam_compat: Path, protons: list[Path]
+) -> None:
     """Create a symbolic link and remove the previous UMU-Proton.
 
-    The symbolic link will be used by clients to reference the PROTONPATH
-    which can be used for tasks such as killing the running wineserver in
-    the prefix. The link will be recreated each run
+    The symbolic link will be used by clients to reference the PROTONPATH which
+    can be used for tasks such as killing the running wineserver in the prefix.
+    The link will be recreated each run.
 
     Assumes that the directories that are named ULWGL/UMU-Proton are ours and
-    will be removed, so users should not be storing important files there
+    will be removed, so users should not be storing important files there.
     """
     log.debug("Previous builds: %s", protons)
     log.debug("Linking UMU-Latest -> %s", proton)

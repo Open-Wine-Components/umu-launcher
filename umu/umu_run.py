@@ -41,7 +41,9 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         ),
         formatter_class=RawTextHelpFormatter,
     )
-    parser.add_argument("--config", help="path to TOML file (requires Python 3.11+)")
+    parser.add_argument(
+        "--config", help=("path to TOML file (requires Python 3.11+)")
+    )
 
     if not sys.argv[1:]:
         parser.print_help(sys.stderr)
@@ -82,7 +84,9 @@ def set_log() -> None:
 def setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
     pfx: Path = Path(path).joinpath("pfx").expanduser()
-    steam: Path = Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
+    steam: Path = (
+        Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
+    )
     # Login name of the user as determined by the password database (pwd)
     user: str = getpwuid(os.getuid()).pw_name
     wineuser: Path = Path(path).expanduser().joinpath("drive_c", "users", user)
@@ -110,7 +114,9 @@ def setup_pfx(path: str) -> None:
         # When there's a user dir: steamuser -> user
         steam.unlink(missing_ok=True)
         steam.symlink_to(user)
-    elif not wineuser.exists() and not wineuser.is_symlink() and steam.is_dir():
+    elif (
+        not wineuser.exists() and not wineuser.is_symlink() and steam.is_dir()
+    ):
         wineuser.unlink(missing_ok=True)
         wineuser.symlink_to("steamuser")
     else:
@@ -122,7 +128,9 @@ def setup_pfx(path: str) -> None:
 def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
     """Before executing a game, check for environment variables and set them.
 
-    GAMEID is strictly required
+    GAMEID is strictly required and the client is responsible for setting this.
+    When the client only sets the GAMEID, the WINE prefix directory will be
+    created as ~/Games/umu/GAMEID.
     """
     if not os.environ.get("GAMEID"):
         err: str = "Environment variable not set or is empty: GAMEID"
@@ -179,10 +187,7 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
 def set_env(
     env: dict[str, str], args: Namespace | tuple[str, list[str]]
 ) -> dict[str, str]:
-    """Set various environment variables for the Steam RT.
-
-    Filesystem paths will be formatted and expanded as POSIX
-    """
+    """Set various environment variables for the Steam Runtime."""
     # PROTON_VERB
     # For invalid Proton verbs, just assign the waitforexitandrun
     if os.environ.get("PROTON_VERB") in PROTON_VERBS:
@@ -198,10 +203,14 @@ def set_env(
         env["PROTON_VERB"] = "waitforexitandrun"
     elif isinstance(args, tuple):
         try:
-            env["EXE"] = Path(args[0]).expanduser().resolve(strict=True).as_posix()
-            env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
+            env["EXE"] = (
+                Path(args[0]).expanduser().resolve(strict=True).as_posix()
+            )
+            env["STEAM_COMPAT_INSTALL_PATH"] = Path(
+                env["EXE"]
+            ).parent.as_posix()
         except FileNotFoundError:
-            # Assume that the executable will be inside the wine prefix or container
+            # Assume that the executable will be inside prefix or container
             env["EXE"] = Path(args[0]).as_posix()
             env["STEAM_COMPAT_INSTALL_PATH"] = ""
             log.warning("Executable not found: %s", env["EXE"])
@@ -218,7 +227,9 @@ def set_env(
     env["STEAM_COMPAT_APP_ID"] = "0"
 
     if match(r"^umu-[\d\w]+$", env["UMU_ID"]):
-        env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][env["UMU_ID"].find("-") + 1 :]
+        env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][
+            env["UMU_ID"].find("-") + 1 :
+        ]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
 
@@ -230,8 +241,12 @@ def set_env(
         Path(env["PROTONPATH"]).expanduser().resolve(strict=True).as_posix()
     )
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
-    env["STEAM_COMPAT_SHADER_PATH"] = env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
-    env["STEAM_COMPAT_TOOL_PATHS"] = env["PROTONPATH"] + ":" + UMU_LOCAL.as_posix()
+    env["STEAM_COMPAT_SHADER_PATH"] = (
+        env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
+    )
+    env["STEAM_COMPAT_TOOL_PATHS"] = (
+        env["PROTONPATH"] + ":" + UMU_LOCAL.as_posix()
+    )
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Zenity
@@ -248,7 +263,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     paths: set[str] = set()
     root: Path = Path("/")
     libc: str = get_libc()
-    # All library paths that are currently supported by the container runtime framework
+    # All library paths that are currently supported by the container framework
     # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#filesystem-layout
     # Non-FHS filesystems should run in a FHS chroot to comply
     steamrt_paths: list[str] = [
@@ -265,7 +280,9 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
         if path.is_mount() and path != root:
             if os.environ.get("STEAM_COMPAT_LIBRARY_PATHS"):
                 env["STEAM_COMPAT_LIBRARY_PATHS"] = (
-                    os.environ["STEAM_COMPAT_LIBRARY_PATHS"] + ":" + path.as_posix()
+                    os.environ["STEAM_COMPAT_LIBRARY_PATHS"]
+                    + ":"
+                    + path.as_posix()
                 )
             else:
                 env["STEAM_COMPAT_LIBRARY_PATHS"] = path.as_posix()
@@ -278,8 +295,8 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
         paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
 
     # When libc.so could not be found, depend on LD_LIBRARY_PATH
-    # In some cases, using ldconfig to determine library paths can fail in non-FHS
-    # compliant filesystems (e.g., NixOS).
+    # In some cases, using ldconfig to determine library paths can fail in non-
+    # FHS compliant filesystems (e.g., NixOS).
     # See https://github.com/Open-Wine-Components/umu-launcher/issues/106
     if not libc:
         log.warning("libc.so could not be found")
@@ -349,7 +366,7 @@ def build_command(
 
 
 def run_command(command: list[str]) -> int:
-    """Run the executable using Proton within the container."""
+    """Run the executable using Proton within the Steam Runtime."""
     # Configure a process via libc prctl()
     # See prctl(2) for more details
     prctl: Callable[
@@ -382,8 +399,8 @@ def run_command(command: list[str]) -> int:
     ]
 
     # Create a subprocess and set it as subreaper
-    # When the launcher dies, the subprocess and its descendents will continue to run in
-    # the background
+    # When the launcher dies, the subprocess and its descendents will continue
+    # to run in the background
     proc = Popen(
         command,
         start_new_session=True,
@@ -393,7 +410,9 @@ def run_command(command: list[str]) -> int:
     while True:
         try:
             wait_pid, wait_status = os.waitpid(proc.pid, 0)
-            log.debug("Child %s exited with wait status: %s", wait_pid, wait_status)
+            log.debug(
+                "Child %s exited with wait status: %s", wait_pid, wait_status
+            )
         except ChildProcessError:  # No more children
             break
 
