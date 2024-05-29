@@ -365,7 +365,7 @@ def check_runtime(src: Path, json: dict[str, Any], build: str) -> int:
         check=False,
     ).returncode
 
-    if pv_verify.is_file() and ret:
+    if ret:
         log.warning("%s: runtime validation failed", runtime_platform_value)
         log.debug("pv-verify exited with the status code: %s", ret)
         return ret
