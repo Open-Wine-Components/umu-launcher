@@ -167,11 +167,7 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
 
 
 def setup_umu(root: Path, local: Path) -> None:
-    """Install or update umu files for the current user.
-
-    When launching umu for the first time, a runtime platform will be downloaded for
-    Proton
-    """
+    """Install or update the runtime for the current user."""
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
     json: dict[str, Any] = _get_json(root, CONFIG)
