@@ -246,6 +246,9 @@ def _update_umu(
             .read_text(encoding="utf-8")
             .strip()
         )
+        for file in local.glob(f"*{build_id}"):
+            runtime = file
+            break
 
     if (
         not runtime
