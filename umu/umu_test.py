@@ -17,7 +17,7 @@ import umu_runtime
 
 
 class TestGameLauncher(unittest.TestCase):
-    """Test suite for umu_run.py."""
+    """Test suite for umu-launcher."""
 
     def setUp(self):
         """Create the test directory, exe and environment variables."""
@@ -73,7 +73,7 @@ class TestGameLauncher(unittest.TestCase):
                 "versions": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
-                    "runtime_platform": "sniper_platform_0.20240125.75305",
+                    "runtime_platform": "steamrt3",
                 }
             }
         }
@@ -167,9 +167,10 @@ class TestGameLauncher(unittest.TestCase):
         If the pv-verify binary does not exist, a warning should be logged and
         the function should return
         """
+        build = "0.20240125.75305"
         json_root = umu_runtime._get_json(self.test_user_share, "umu_version.json")
         self.test_user_share.joinpath("pressure-vessel", "bin", "pv-verify").unlink()
-        result = umu_runtime.check_runtime(self.test_user_share, json_root)
+        result = umu_runtime.check_runtime(self.test_user_share, json_root, build)
         self.assertEqual(result, 1, "Expected the exit code 1")
 
     def test_check_runtime_fail(self):
@@ -177,15 +178,16 @@ class TestGameLauncher(unittest.TestCase):
         json_root = umu_runtime._get_json(self.test_user_share, "umu_version.json")
         mock = CompletedProcess(["foo"], 1)
         with patch.object(umu_runtime, "run", return_value=mock):
-            result = umu_runtime.check_runtime(self.test_user_share, json_root)
+            result = umu_runtime.check_runtime(self.test_user_share, json_root, "")
             self.assertEqual(result, 1, "Expected the exit code 1")
 
     def test_check_runtime_success(self):
         """Test check_runtime when runtime validation succeeds."""
+        build = "0.20240125.75305"
         json_root = umu_runtime._get_json(self.test_user_share, "umu_version.json")
         mock = CompletedProcess(["foo"], 0)
         with patch.object(umu_runtime, "run", return_value=mock):
-            result = umu_runtime.check_runtime(self.test_user_share, json_root)
+            result = umu_runtime.check_runtime(self.test_user_share, json_root, build)
             self.assertEqual(result, 0, "Expected the exit code 0")
 
     def test_move(self):
@@ -374,7 +376,7 @@ class TestGameLauncher(unittest.TestCase):
                 "versions": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
-                    "runtime_platform": "sniper_platform_0.20240125.75305"
+                    "runtime_platform": "steamrt3"
                 }
             }
         }
@@ -385,7 +387,7 @@ class TestGameLauncher(unittest.TestCase):
                 "foo": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
-                    "runtime_platform": "sniper_platform_0.20240125.75305"
+                    "runtime_platform": "steamrt3"
                 }
             }
         }
