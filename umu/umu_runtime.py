@@ -132,9 +132,6 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
         log.debug("Source: %s", source_dir)
         log.debug("Destination: %s", UMU_LOCAL)
 
-        # Validate the runtime before moving the files
-        check_runtime(source_dir, json)
-
         # Move each file to the destination directory, overwriting if it exists
         futures: list[Future] = [
             executor.submit(_move, file, source_dir, UMU_LOCAL)
@@ -161,17 +158,19 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
             encoding="utf-8",
         )
 
+        # Validate the runtime after moving the files
+        check_runtime(
+            UMU_LOCAL,
+            json,
+            build_id or tmp.joinpath("BUILD_ID.txt").read_text(encoding="utf-8"),
+        )
+
 
 def setup_umu(root: Path, local: Path) -> None:
     """Install or update umu files for the current user.
 
-    When launching umu for the first time, umu_version.json and a runtime
-    platform will be downloaded for Proton
-
-    The file umu_version.json defines all of the tools that umu will use and
-    it will be persisted at ~/.local/share/umu, which will be used to update
-    the runtime. The configuration file in that path will be updated at launch
-    whenever there's a new release
+    When launching umu for the first time, a runtime platform will be downloaded for
+    Proton
     """
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
@@ -327,32 +326,53 @@ def _move(file: Path, src: Path, dst: Path) -> None:
         move(src_file, dest_file)
 
 
-def check_runtime(src: Path, json: dict[str, Any]) -> int:
+def check_runtime(src: Path, json: dict[str, Any], build: str) -> int:
     """Validate the file hierarchy of the runtime platform.
 
     The mtree file included in the Steam runtime platform will be used to
-    validate the integrity of the runtime's metadata before its moved to the
-    home directory and used to run games
-
-    Validation is intended to only be performed after verifying the integrity
-    of the archive and its contents
+    validate the integrity of the runtime's metadata after its moved to the
+    home directory and used to run games.
     """
     runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
     pv_verify: Path = src.joinpath("pressure-vessel", "bin", "pv-verify")
     ret: int = 1
+    runtime: Path = None
+
+    if not build:
+        log.warning("%s: runtime validation failed", runtime_platform_value)
+        log.warning("Build: %s", build)
+        return ret
+
+    # Find the runtime directory by its build id
+    for dir in src.glob(f"*{build}"):
+        runtime = dir
+        break
+
+    if not runtime or not runtime.is_dir():
+        log.warning("%s: runtime validation failed", runtime_platform_value)
+        log.warning("Could not find runtime in: %s", src)
+        return ret
 
     if not pv_verify.is_file():
-        log.warning("%s: validation failed", runtime_platform_value)
-        log.warning("pv-verify not in: %s", src)
+        log.warning("%s: runtime validation failed", runtime_platform_value)
+        log.warning("File does not exist: %s", pv_verify)
         return ret
 
-    log.console(f"Verifying integrity of {runtime_platform_value}...")
-    ret = run([pv_verify.as_posix(), "--quiet"], check=False).returncode
+    log.console(f"Verifying integrity of {runtime_platform_value} {build}...")
+    ret = run(
+        [
+            pv_verify.as_posix(),
+            "--quiet",
+            "--minimized-runtime",
+            runtime.joinpath("files").as_posix(),
+        ],
+        check=False,
+    ).returncode
 
     if pv_verify.is_file() and ret:
-        log.warning("%s: validation failed", runtime_platform_value)
+        log.warning("%s: runtime validation failed", runtime_platform_value)
         log.debug("pv-verify exited with the status code: %s", ret)
         return ret
-    log.console(f"{runtime_platform_value}: mtree is OK")
+    log.console(f"{runtime_platform_value} {build}: mtree is OK")
 
     return ret
