@@ -33,7 +33,7 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
     archive: str = "SteamLinuxRuntime_sniper.tar.xz"  # Archive containing the runtime
     codename: str = json["umu"]["versions"]["runtime_platform"]
     base_url: str = f"https://repo.steampowered.com/{codename}/images/latest-container-runtime-public-beta"
-    build_id: str = ""
+    build_id: str = ""  # Value that corresponds to the runtime directory version
     log.debug("Codename: %s", codename)
     log.debug("URL: %s", base_url)
 
@@ -42,9 +42,13 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
     if environ.get("UMU_ZENITY") == "1":
         bin: str = "curl"
         opts: list[str] = [
-            "-LJO",
+            "-LJ",
             "--silent",
+            "--parallel",
+            "-O",
             f"{base_url}/{archive}",
+            "-O",
+            f"{base_url}/BUILD_ID.txt",
             "--output-dir",
             tmp.as_posix(),
         ]
@@ -152,7 +156,10 @@ def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
         UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
 
         # Write BUILD_ID.txt
-        UMU_LOCAL.joinpath("BUILD_ID.txt").write_text(build_id, encoding="utf-8")
+        UMU_LOCAL.joinpath("BUILD_ID.txt").write_text(
+            build_id or tmp.joinpath("BUILD_ID.txt").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
 
 
 def setup_umu(root: Path, local: Path) -> None:
