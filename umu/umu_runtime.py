@@ -183,9 +183,9 @@ def _setup_runtime(json: dict[str, Any]) -> None:
 
 def setup_umu(root: Path, local: Path) -> None:
     """Install or update the runtime for the current user."""
+    json: dict[str, Any] = _get_json(root, CONFIG)
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
-    json: dict[str, Any] = _get_json(root, CONFIG)
 
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
