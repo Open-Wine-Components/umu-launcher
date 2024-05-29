@@ -231,9 +231,11 @@ def _update_umu(
             local.joinpath("BUILD_ID.txt").read_text(encoding="utf-8").strip()
         )
 
-    if (not runtime and not runtime.is_dir()) or not local.joinpath(
-        "pressure-vessel"
-    ).is_dir():
+    if (
+        not runtime
+        or not runtime.is_dir()
+        or not local.joinpath("pressure-vessel").is_dir()
+    ):
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
         setup_runtime(json)
