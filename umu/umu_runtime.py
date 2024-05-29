@@ -220,7 +220,7 @@ def _update_umu(
     # as well as the hard coded file paths below
     base_url: str = f"https://repo.steampowered.com/{codename}/images/latest-container-runtime-public-beta"
     runtime: Path = None
-    build: str = ""
+    build_id: str = ""
     log.debug("Existing install detected")
 
     # The BUILD_ID.txt is used to identify the runtime directory.
@@ -235,13 +235,13 @@ def _update_umu(
                     resp.status,
                 )
             else:
-                build = resp.read().decode("utf-8").strip()
-                local.joinpath("BUILD_ID.txt").write_text(build)
+                build_id = resp.read().decode("utf-8").strip()
+                local.joinpath("BUILD_ID.txt").write_text(build_id)
 
     # Find the runtime directory
     if local.joinpath("BUILD_ID.txt").is_file():
-        build = (
-            build
+        build_id = (
+            build_id
             or local.joinpath("BUILD_ID.txt")
             .read_text(encoding="utf-8")
             .strip()
@@ -261,7 +261,9 @@ def _update_umu(
     # NOTE: Change 'SteamLinuxRuntime_sniper.VERSIONS.txt' when the version
     # changes (e.g., steamrt4 -> SteamLinuxRuntime_medic.VERSIONS.txt)
     if not local.joinpath("VERSIONS.txt").is_file():
-        url: str = f"https://repo.steampowered.com/{codename}/images/{build}"
+        url: str = (
+            f"https://repo.steampowered.com/{codename}/images/{build_id}"
+        )
         log.warning("VERSIONS.txt not found")
         log.console("Restoring VERSIONS.txt...")
         with urlopen(  # noqa: S310
@@ -347,7 +349,7 @@ def _move(file: Path, src: Path, dst: Path) -> None:
         move(src_file, dest_file)
 
 
-def check_runtime(src: Path, json: dict[str, Any], build: str) -> int:
+def check_runtime(src: Path, json: dict[str, Any], build_id: str) -> int:
     """Validate the file hierarchy of the runtime platform.
 
     The mtree file included in the Steam runtime platform will be used to
@@ -359,14 +361,13 @@ def check_runtime(src: Path, json: dict[str, Any], build: str) -> int:
     ret: int = 1
     runtime: Path = None
 
-    if not build:
+    if not build_id:
         log.warning("%s: runtime validation failed", runtime_platform_value)
-        log.warning("Build: %s", build)
         return ret
 
     # Find the runtime directory by its build id
-    for dir in src.glob(f"*{build}"):
-        runtime = dir
+    for file in src.glob(f"*{build_id}"):
+        runtime = file
         break
 
     if not runtime or not runtime.is_dir():
@@ -379,7 +380,9 @@ def check_runtime(src: Path, json: dict[str, Any], build: str) -> int:
         log.warning("File does not exist: %s", pv_verify)
         return ret
 
-    log.console(f"Verifying integrity of {runtime_platform_value} {build}...")
+    log.console(
+        f"Verifying integrity of {runtime_platform_value} {build_id}..."
+    )
     ret = run(
         [
             pv_verify.as_posix(),
@@ -394,6 +397,6 @@ def check_runtime(src: Path, json: dict[str, Any], build: str) -> int:
         log.warning("%s: runtime validation failed", runtime_platform_value)
         log.debug("pv-verify exited with the status code: %s", ret)
         return ret
-    log.console(f"{runtime_platform_value} {build}: mtree is OK")
+    log.console(f"{runtime_platform_value} {build_id}: mtree is OK")
 
     return ret
