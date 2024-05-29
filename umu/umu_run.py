@@ -374,6 +374,7 @@ def run_command(command: list[str]) -> int:
         c_int,
     ] = None
     proc: Popen = None
+    ret: int = 0
     libc: str = get_libc()
 
     if not command:
@@ -406,17 +407,10 @@ def run_command(command: list[str]) -> int:
         start_new_session=True,
         preexec_fn=lambda: prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0),
     )
+    ret = proc.wait()
+    log.debug("Child %s exited with wait status: %s", proc.pid, ret)
 
-    while True:
-        try:
-            wait_pid, wait_status = os.waitpid(proc.pid, 0)
-            log.debug(
-                "Child %s exited with wait status: %s", wait_pid, wait_status
-            )
-        except ChildProcessError:  # No more children
-            break
-
-    return proc.returncode
+    return ret
 
 
 def main() -> int:  # noqa: D103
