@@ -27,7 +27,7 @@ except ImportError:
     tar_filter: Callable[[str, str], TarInfo] = None
 
 
-def setup_runtime(json: dict[str, Any]) -> None:  # noqa: D103
+def _setup_runtime(json: dict[str, Any]) -> None:
     tmp: Path = Path(mkdtemp())
     # Exit code from zenity
     ret: int = 0
@@ -203,7 +203,7 @@ def _install_umu(local: Path, json: dict[str, Any]) -> None:
     log.debug("New install detected")
     log.console("Setting up Unified Launcher for Windows Games on Linux...")
     local.mkdir(parents=True, exist_ok=True)
-    setup_runtime(json)
+    _setup_runtime(json)
 
 
 def _update_umu(
@@ -254,7 +254,7 @@ def _update_umu(
     ):
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
-        setup_runtime(json)
+        _setup_runtime(json)
         return
 
     # Restore VERSIONS.txt
@@ -293,7 +293,7 @@ def _update_umu(
             != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
         ):
             log.console(f"Updating {codename} to latest...")
-            setup_runtime(json)
+            _setup_runtime(json)
         else:
             log.console(f"{codename} is up to date")
 
