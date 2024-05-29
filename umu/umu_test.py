@@ -215,6 +215,19 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(result, 0, "Expected the exit code 0")
 
+    def test_check_runtime_dir(self):
+        """Test check_runtime when passed a BUILD_ID that does not exist."""
+        build = "foo"
+        json_root = umu_runtime._get_json(
+            self.test_user_share, "umu_version.json"
+        )
+        mock = CompletedProcess(["foo"], 1)
+        with patch.object(umu_runtime, "run", return_value=mock):
+            result = umu_runtime.check_runtime(
+                self.test_user_share, json_root, build
+            )
+            self.assertEqual(result, 1, "Expected the exit code 1")
+
     def test_move(self):
         """Test _move when copying a directory or a file.
 
