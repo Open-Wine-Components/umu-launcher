@@ -345,7 +345,7 @@ class TestGameLauncher(unittest.TestCase):
         # In the real usage, we callout to acquire the archive and
         # extract to .local/share/umu
         with (
-            patch.object(umu_runtime, "setup_runtime", return_value=None),
+            patch.object(umu_runtime, "_setup_runtime", return_value=None),
         ):
             result = umu_runtime._install_umu(self.test_local_share, json)
             copytree(
@@ -1214,7 +1214,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock setting up the runtime
         with (
-            patch.object(umu_runtime, "setup_runtime", return_value=None),
+            patch.object(umu_runtime, "_setup_runtime", return_value=None),
         ):
             umu_runtime._install_umu(self.test_local_share, json)
             copytree(
