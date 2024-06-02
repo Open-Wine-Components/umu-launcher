@@ -30,6 +30,8 @@ from umu_proton import get_umu_proton
 from umu_runtime import setup_umu
 from umu_util import get_libc
 
+THREAD_POOL: ThreadPoolExecutor = ThreadPoolExecutor()
+
 
 def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     opt_args: set[str] = {"--help", "-h", "--config"}
@@ -164,11 +166,11 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
     # GE-Proton
     if os.environ.get("PROTONPATH") == "GE-Proton":
         log.debug("GE-Proton selected")
-        get_umu_proton(env)
+        get_umu_proton(env, THREAD_POOL)
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
-        get_umu_proton(env)
+        get_umu_proton(env, THREAD_POOL)
 
     env["PROTONPATH"] = os.environ["PROTONPATH"]
 
@@ -441,7 +443,6 @@ def main() -> int:  # noqa: D103
     command: list[str] = []
     opts: list[str] = None
     root: Path = Path(__file__).resolve(strict=True).parent
-    executor: ThreadPoolExecutor = ThreadPoolExecutor()
     future: Future = None
     args: Namespace | tuple[str, list[str]] = parse_args()
 
@@ -471,7 +472,7 @@ def main() -> int:  # noqa: D103
         with socket(AF_INET, SOCK_DGRAM) as sock:
             sock.settimeout(5)
             sock.connect(("1.1.1.1", 53))
-        future = executor.submit(setup_umu, root, UMU_LOCAL)
+        future = THREAD_POOL.submit(setup_umu, root, UMU_LOCAL, THREAD_POOL)
     except TimeoutError:  # Request to a server timed out
         if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
             err: str = (
@@ -516,7 +517,7 @@ def main() -> int:  # noqa: D103
 
     if future:
         future.result()
-    executor.shutdown()
+    THREAD_POOL.shutdown()
 
     # Run
     build_command(env, UMU_LOCAL, command, opts)
