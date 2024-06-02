@@ -27,7 +27,9 @@ except ImportError:
     tar_filter: Callable[[str, str], TarInfo] = None
 
 
-def _setup_runtime(json: dict[str, Any]) -> None:
+def _install_umu(
+    json: dict[str, Any], thread_pool: ThreadPoolExecutor
+) -> None:
     tmp: Path = Path(mkdtemp())
     # Exit code from zenity
     ret: int = 0
@@ -120,7 +122,6 @@ def _setup_runtime(json: dict[str, Any]) -> None:
     log.debug("Opening: %s", tmp.joinpath(archive))
     with (
         taropen(tmp.joinpath(archive), "r:xz") as tar,
-        ThreadPoolExecutor() as executor,
     ):
         if tar_filter:
             log.debug("Using filter for archive")
@@ -145,7 +146,7 @@ def _setup_runtime(json: dict[str, Any]) -> None:
 
         # Move each file to the destination directory, overwriting if it exists
         futures: list[Future] = [
-            executor.submit(_move, file, source_dir, UMU_LOCAL)
+            thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
             for file in source_dir.glob("*")
         ]
         for _ in futures:
@@ -181,7 +182,9 @@ def _setup_runtime(json: dict[str, Any]) -> None:
         )
 
 
-def setup_umu(root: Path, local: Path) -> None:
+def setup_umu(
+    root: Path, local: Path, thread_pool: ThreadPoolExecutor
+) -> None:
     """Install or update the runtime for the current user."""
     json: dict[str, Any] = _get_json(root, CONFIG)
     log.debug("Root: %s", root)
@@ -189,13 +192,20 @@ def setup_umu(root: Path, local: Path) -> None:
 
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
+        log.debug("New install detected")
+        log.console(
+            "Setting up Unified Launcher for Windows Games on Linux..."
+        )
+        local.mkdir(parents=True, exist_ok=True)
+        _install_umu(local, json, thread_pool)
+        return
 
-    return _update_umu(local, json)
+    _update_umu(local, json, thread_pool)
+    return
 
 
 def _update_umu(
-    local: Path,
-    json: dict[str, Any],
+    local: Path, json: dict[str, Any], thread_pool: ThreadPoolExecutor
 ) -> None:
     """For existing installations, check for updates to the runtime.
 
@@ -244,7 +254,7 @@ def _update_umu(
     ):
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
-        _setup_runtime(json)
+        _install_umu(json, thread_pool)
         return
 
     # Restore VERSIONS.txt
@@ -285,7 +295,7 @@ def _update_umu(
             != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
         ):
             log.console(f"Updating {codename} to latest...")
-            _setup_runtime(json)
+            _install_umu(json, thread_pool)
         else:
             log.console(f"{codename} is up to date")
 
