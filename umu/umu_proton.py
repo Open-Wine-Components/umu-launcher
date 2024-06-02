@@ -25,7 +25,9 @@ except ImportError:
     tar_filter: Callable[[str, str], TarInfo] = None
 
 
-def get_umu_proton(env: dict[str, str]) -> dict[str, str]:
+def get_umu_proton(
+    env: dict[str, str], thread_pool: ThreadPoolExecutor
+) -> dict[str, str]:
     """Attempt to find existing Proton from the system.
 
     Downloads the latest if not first found in:
@@ -42,7 +44,7 @@ def get_umu_proton(env: dict[str, str]) -> dict[str, str]:
         log.debug("Network is unreachable")
 
     # Download the latest Proton
-    if _get_latest(env, STEAM_COMPAT, tmp, files):
+    if _get_latest(env, STEAM_COMPAT, tmp, files, thread_pool):
         return env
 
     # When offline or an error occurs, use the first Proton in
@@ -264,6 +266,7 @@ def _get_latest(
     steam_compat: Path,
     tmp: Path,
     files: list[tuple[str, str]],
+    thread_pool: ThreadPoolExecutor,
 ) -> dict[str, str] | None:
     """Download the latest Proton for new installs.
 
@@ -310,14 +313,13 @@ def _get_latest(
             # Ideally, an in-place differential update would be
             # performed instead for this job but this will do for now
             log.debug("Extracting %s -> %s", tar_path, steam_compat)
-            with ThreadPoolExecutor() as executor:
-                for _ in [
-                    executor.submit(_extract_dir, tar_path, steam_compat),
-                    executor.submit(
-                        _update_proton, proton, steam_compat, protons
-                    ),
-                ]:
-                    _.result()
+            for _ in [
+                thread_pool.submit(_extract_dir, tar_path, steam_compat),
+                thread_pool.submit(
+                    _update_proton, proton, steam_compat, protons, thread_pool
+                ),
+            ]:
+                _.result()
         else:
             # For GE-Proton, keep the previous build. Since it's a rebase
             # of bleeding edge, regressions are more likely to occur
@@ -352,7 +354,10 @@ def _get_latest(
 
 
 def _update_proton(
-    proton: str, steam_compat: Path, protons: list[Path]
+    proton: str,
+    steam_compat: Path,
+    protons: list[Path],
+    thread_pool: ThreadPoolExecutor,
 ) -> None:
     """Create a symbolic link and remove the previous UMU-Proton.
 
@@ -363,6 +368,8 @@ def _update_proton(
     Assumes that the directories that are named ULWGL/UMU-Proton are ours and
     will be removed, so users should not be storing important files there.
     """
+    futures: list[Future] = []
+
     log.debug("Previous builds: %s", protons)
     log.debug("Linking UMU-Latest -> %s", proton)
     steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
@@ -371,12 +378,10 @@ def _update_proton(
     if not protons:
         return
 
-    with ThreadPoolExecutor() as executor:
-        futures: list[Future] = []
-        for proton in protons:
-            if proton.is_dir():
-                log.debug("Previous stable build found")
-                log.debug("Removing: %s", proton)
-                futures.append(executor.submit(rmtree, proton.as_posix()))
-        for _ in futures:
-            _.result()
+    for proton in protons:
+        if proton.is_dir():
+            log.debug("Previous stable build found")
+            log.debug("Removing: %s", proton)
+            futures.append(thread_pool.submit(rmtree, proton.as_posix()))
+    for _ in futures:
+        _.result()
