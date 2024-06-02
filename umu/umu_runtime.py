@@ -197,7 +197,7 @@ def setup_umu(
             "Setting up Unified Launcher for Windows Games on Linux..."
         )
         local.mkdir(parents=True, exist_ok=True)
-        _install_umu(local, json, thread_pool)
+        _install_umu(json, thread_pool)
         return
 
     _update_umu(local, json, thread_pool)
