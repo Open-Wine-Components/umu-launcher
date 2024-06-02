@@ -280,11 +280,23 @@ def _update_umu(
     # NOTE: Change 'SteamLinuxRuntime_sniper.VERSIONS.txt' when the version
     # changes (e.g., steamrt4 -> SteamLinuxRuntime_medic.VERSIONS.txt)
     if not local.joinpath("VERSIONS.txt").is_file():
-        endpoint_sniper: str = f"/{codename}/images/{build_id}"
+        versions: str = "SteamLinuxRuntime_sniper.VERSIONS.txt"
+        endpoint_sniper: str = f"/{codename}/images/{build_id}/{versions}"
         CLIENT_SESSION.request("GET", endpoint_sniper)
         resp = CLIENT_SESSION.getresponse()
         log.warning("VERSIONS.txt not found")
         log.console("Restoring VERSIONS.txt...")
+
+        # Handle the redirect
+        if resp.status == 301:
+            location: str = resp.getheader("Location")
+            log.debug("Location: %s", resp.getheader("Location"))
+            # The stdlib requires reading the entire response body before
+            # making another request
+            resp.read()
+            CLIENT_SESSION.request("GET", f"{location}/{build_id}/{versions}")
+            resp = CLIENT_SESSION.getresponse()
+
         if resp.status != 200:
             log.warning(
                 "repo.steampowered.com returned the status: %s",
