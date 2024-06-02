@@ -189,21 +189,8 @@ def setup_umu(root: Path, local: Path) -> None:
 
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
-        return _install_umu(local, json)
 
     return _update_umu(local, json)
-
-
-def _install_umu(local: Path, json: dict[str, Any]) -> None:
-    """Prepare and download the runtime platform.
-
-    The launcher files will remain in the system path defined at build time,
-    except umu-launcher which is in PREFIX/share/steam/compatibilitytools.d.
-    """
-    log.debug("New install detected")
-    log.console("Setting up Unified Launcher for Windows Games on Linux...")
-    local.mkdir(parents=True, exist_ok=True)
-    _setup_runtime(json)
 
 
 def _update_umu(
