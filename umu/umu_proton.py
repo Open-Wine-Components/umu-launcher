@@ -74,7 +74,6 @@ def _fetch_releases() -> list[tuple[str, str]]:
 
     with urlopen(  # noqa: S310
         Request(f"{url}{repo}", headers=headers),  # noqa: S310
-        timeout=30,
         context=SSL_DEFAULT_CONTEXT,
     ) as resp:
         if resp.status != 200:
@@ -127,8 +126,6 @@ def _fetch_proton(
     ret: int = 0  # Exit code from zenity
     digest: str = ""  # Digest of the Proton archive
 
-    log.console(f"Downloading {hash}...")
-
     # Verify the scheme from Github for resources
     if not proton_url.startswith("https:") or not hash_url.startswith(
         "https:"
@@ -140,8 +137,9 @@ def _fetch_proton(
     # Digest file
     # Ruff currently cannot get this right
     # See https://github.com/astral-sh/ruff/issues/7918
+    log.console(f"Downloading {hash}...")
     with (
-        urlopen(hash_url, timeout=30, context=SSL_DEFAULT_CONTEXT) as resp,  # noqa: S310
+        urlopen(hash_url, context=SSL_DEFAULT_CONTEXT) as resp,  # noqa: S310
     ):
         if resp.status != 200:
             err: str = (
@@ -149,6 +147,7 @@ def _fetch_proton(
                 f"github.com returned the status: {resp.status}"
             )
             raise HTTPException(err)
+
         for line in resp.read().decode("utf-8").splitlines():
             if line.endswith(proton):
                 digest = line.split(" ")[0]
@@ -176,7 +175,7 @@ def _fetch_proton(
         log.console(f"Downloading {proton}...")
         with (
             urlopen(  # noqa: S310
-                proton_url, timeout=300, context=SSL_DEFAULT_CONTEXT
+                proton_url, context=SSL_DEFAULT_CONTEXT
             ) as resp,
         ):
             hash = sha512()
