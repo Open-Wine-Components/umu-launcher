@@ -179,20 +179,31 @@ def _fetch_proton(
                 proton_url, timeout=300, context=SSL_DEFAULT_CONTEXT
             ) as resp,
         ):
-            # Without Proton, the launcher will not work
-            data: bytes = b""
+            hash = sha512()
+
+            # Crash here because without Proton, the launcher will not work
             if resp.status != 200:
                 err: str = (
                     f"Unable to download {proton}\n"
                     f"github.com returned the status: {resp.status}"
                 )
                 raise HTTPException(err)
-            data = resp.read()
-            if sha512(data).hexdigest() != digest:
+
+            # Write the file as chunks while updating the hash incrementally
+            with tmp.joinpath(proton).open(mode="ab") as file:
+                chunk_size: int = 64 * 1024  # 64 KB
+                while True:
+                    chunk: bytes = resp.read(chunk_size)
+                    if not chunk:
+                        break
+                    file.write(chunk)
+                    hash.update(chunk)
+
+            if hash.hexdigest() != digest:
                 err: str = f"Digests mismatched for {proton}"
                 raise ValueError(err)
+
             log.console(f"{proton}: SHA512 is OK")
-            tmp.joinpath(proton).write_bytes(data)
 
     return env
 
