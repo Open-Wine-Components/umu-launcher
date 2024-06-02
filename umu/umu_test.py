@@ -5,6 +5,7 @@ import re
 import tarfile
 import unittest
 from argparse import Namespace
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from pwd import getpwuid
 from shutil import copy, copytree, rmtree
@@ -435,13 +436,14 @@ class TestGameLauncher(unittest.TestCase):
         # for latest Proton releases
         # In this case, assume the test variable will be downloaded
         files = [("", ""), (self.test_archive.name, "")]
+        thread_pool = ThreadPoolExecutor()
 
         with patch("umu_proton._fetch_proton") as mock_function:
             # Mock the interrupt
             # We want the dir we tried to extract to be cleaned
             mock_function.side_effect = KeyboardInterrupt
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files
+                self.env, self.test_compat, self.test_cache, files, thread_pool
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -461,6 +463,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_cache.joinpath(self.test_archive.name).exists(),
                 "Expected Proton dir in compat to be cleaned",
             )
+            thread_pool.shutdown()
 
     def test_latest_val_err(self):
         """Test _get_latest when something goes wrong when downloading Proton.
@@ -476,6 +479,7 @@ class TestGameLauncher(unittest.TestCase):
         # When empty, it means the callout failed for some reason (e.g. no
         # internet)
         files = [("", ""), (self.test_archive.name, "")]
+        thread_pool = ThreadPoolExecutor()
 
         self.assertTrue(
             self.test_archive.is_file(),
@@ -486,7 +490,7 @@ class TestGameLauncher(unittest.TestCase):
             # Mock the interrupt
             mock_function.side_effect = ValueError
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files
+                self.env, self.test_compat, self.test_cache, files, thread_pool
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -498,6 +502,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_archive.is_file(),
                 "Expected test file in cache to be deleted",
             )
+            thread_pool.shutdown()
 
     def test_latest_offline(self):
         """Test _get_latest when the user doesn't have internet."""
@@ -507,12 +512,13 @@ class TestGameLauncher(unittest.TestCase):
         # When empty, it means the callout failed for some reason (e.g. no
         # internet)
         files = []
+        thread_pool = ThreadPoolExecutor()
 
         os.environ["PROTONPATH"] = ""
 
         with patch("umu_proton._fetch_proton"):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files
+                self.env, self.test_compat, self.test_cache, files, thread_pool
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -520,6 +526,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertFalse(
                 result, "Expected None to be returned from _get_latest"
             )
+            thread_pool.shutdown()
 
     def test_link_umu(self):
         """Test __get_latest for recreating the UMU-Latest link.
@@ -536,6 +543,7 @@ class TestGameLauncher(unittest.TestCase):
         latest.mkdir()
         Path(f"{latest}.sha512sum").touch()
         files = [(f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", "")]
+        thread_pool = ThreadPoolExecutor()
 
         # Mock the latest Proton in /tmp
         test_archive = self.test_cache.joinpath(f"{latest}.tar.gz")
@@ -555,7 +563,7 @@ class TestGameLauncher(unittest.TestCase):
             patch("umu_proton._fetch_proton"),
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files
+                self.env, self.test_compat, self.test_cache, files, thread_pool
             )
             self.assertTrue(result is self.env, "Expected the same reference")
             # Verify the latest was set
@@ -577,6 +585,7 @@ class TestGameLauncher(unittest.TestCase):
 
         latest.rmdir()
         Path(f"{latest}.sha512sum").unlink()
+        thread_pool.shutdown()
 
     def test_latest_umu(self):
         """Test _get_latest when online and when an empty PROTONPATH is set.
@@ -589,6 +598,7 @@ class TestGameLauncher(unittest.TestCase):
         latest.mkdir()
         Path(f"{latest}.sha512sum").touch()
         files = [(f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", "")]
+        thread_pool = ThreadPoolExecutor()
 
         # Mock the latest Proton in /tmp
         test_archive = self.test_cache.joinpath(f"{latest}.tar.gz")
@@ -611,7 +621,7 @@ class TestGameLauncher(unittest.TestCase):
             patch("umu_proton._fetch_proton"),
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files
+                self.env, self.test_compat, self.test_cache, files, thread_pool
             )
             self.assertTrue(result is self.env, "Expected the same reference")
             # Verify the latest was set
@@ -655,6 +665,7 @@ class TestGameLauncher(unittest.TestCase):
 
         latest.rmdir()
         Path(f"{latest}.sha512sum").unlink()
+        thread_pool.shutdown()
 
     def test_steamcompat_nodir(self):
         """Test _get_from_steamcompat when Proton doesn't exist in compat dir.
@@ -1136,9 +1147,11 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock setting up the runtime
         with (
-            patch.object(umu_runtime, "_setup_runtime", return_value=None),
+            patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
-            umu_runtime._install_umu(self.test_local_share, json)
+            umu_runtime.setup_umu(
+                self.test_user_share, self.test_local_share, None
+            )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(

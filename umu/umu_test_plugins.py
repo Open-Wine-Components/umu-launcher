@@ -219,9 +219,11 @@ class TestGameLauncherPlugins(unittest.TestCase):
         # Mock setting up the runtime
         # Don't copy _v2-entry-point
         with (
-            patch.object(umu_runtime, "_setup_runtime", return_value=None),
+            patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
-            umu_runtime._install_umu(self.test_local_share, json)
+            umu_runtime.setup_umu(
+                self.test_user_share, self.test_local_share, None
+            )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(
@@ -292,9 +294,11 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Mock setting up the runtime
         with (
-            patch.object(umu_runtime, "_setup_runtime", return_value=None),
+            patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
-            umu_runtime._install_umu(self.test_local_share, json)
+            umu_runtime.setup_umu(
+                self.test_user_share, self.test_local_share, None
+            )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(
@@ -369,9 +373,11 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Mock setting up the runtime
         with (
-            patch.object(umu_runtime, "_setup_runtime", return_value=None),
+            patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
-            umu_runtime._install_umu(self.test_local_share, json)
+            umu_runtime.setup_umu(
+                self.test_user_share, self.test_local_share, None
+            )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
                 Path(
