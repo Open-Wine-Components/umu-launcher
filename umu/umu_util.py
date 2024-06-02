@@ -29,13 +29,14 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
         return -1
 
     # Communicate a process with zenity
-    with (
+    with (  # noqa: SIM117
         Popen(
             [cmd, *opts],
             stdout=PIPE,
             stderr=STDOUT,
         ) as proc,
-        Popen(
+    ):
+        with Popen(
             [
                 f"{bin}",
                 "--progress",
@@ -46,16 +47,15 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
                 "--no-cancel",
             ],
             stdin=PIPE,
-        ) as zenity_proc,
-    ):
-        try:
-            proc.wait(timeout=300)
-        except TimeoutExpired:
-            zenity_proc.terminate()
-            log.warning("%s timed out after 5 min.", cmd)
-            raise TimeoutError
-        zenity_proc.stdin.close()
-        ret = zenity_proc.wait()
+        ) as zenity_proc:
+            try:
+                proc.wait(timeout=300)
+            except TimeoutExpired:
+                zenity_proc.terminate()
+                log.warning("%s timed out after 5 min.", cmd)
+                raise TimeoutError
+            zenity_proc.stdin.close()
+            ret = zenity_proc.wait()
 
     if ret:
         log.warning("zenity exited with the status code: %s", ret)
