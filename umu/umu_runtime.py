@@ -1,25 +1,26 @@
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha256
-from http.client import HTTPException
+from http.client import HTTPException, HTTPResponse, HTTPSConnection
 from json import load
 from os import environ
 from pathlib import Path
 from shutil import move, rmtree
-from ssl import SSLContext, create_default_context
+from ssl import create_default_context
 from subprocess import run
 from sys import version
 from tarfile import TarInfo
 from tarfile import open as taropen
 from tempfile import mkdtemp
 from typing import Any
-from urllib.request import urlopen
 
 from umu_consts import CONFIG, UMU_LOCAL
 from umu_log import log
 from umu_util import run_zenity
 
-SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
+CLIENT_SESSION: HTTPSConnection = HTTPSConnection(
+    "repo.steampowered.com", context=create_default_context()
+)
 
 try:
     from tarfile import tar_filter
@@ -39,6 +40,7 @@ def _install_umu(
     base_url: str = f"https://repo.steampowered.com/{codename}/images/latest-container-runtime-public-beta"
     # Value that corresponds to the runtime directory version
     build_id: str = ""
+
     log.debug("Codename: %s", codename)
     log.debug("URL: %s", base_url)
 
@@ -67,62 +69,76 @@ def _install_umu(
 
     if not environ.get("UMU_ZENITY") or ret:
         digest: str = ""
+        endpoint: str = (
+            f"/{codename}/images/latest-container-runtime-public-beta"
+        )
+        resp: HTTPResponse = None
+        hash = sha256()
 
         # Get the version of the runtime
-        with urlopen(  # noqa: S310
-            f"{base_url}/BUILD_ID.txt", context=SSL_DEFAULT_CONTEXT
-        ) as resp:
-            if resp.status != 200:
-                err: str = (
-                    f"repo.steampowered.com returned the status: {resp.status}"
-                )
-                raise HTTPException(err)
-            for line in resp.read().decode("utf-8").splitlines():
-                build_id = line
-                break
+        CLIENT_SESSION.request("GET", f"{endpoint}/BUILD_ID.txt")
+        resp = CLIENT_SESSION.getresponse()
+
+        if resp.status != 200:
+            err: str = (
+                f"repo.steampowered.com returned the status: {resp.status}"
+            )
+            raise HTTPException(err)
+
+        for line in resp.read().decode("utf-8").splitlines():
+            build_id = line
+            break
 
         # Get the digest for the runtime archive
-        with (
-            urlopen(  # noqa: S310
-                f"{base_url}/SHA256SUMS", context=SSL_DEFAULT_CONTEXT
-            ) as resp,
-        ):
-            if resp.status != 200:
-                err: str = (
-                    f"repo.steampowered.com returned the status: {resp.status}"
-                )
-                raise HTTPException(err)
-            for line in resp.read().decode("utf-8").splitlines():
-                if line.endswith(archive):
-                    digest = line.split(" ")[0]
-                    break
+        CLIENT_SESSION.request("GET", f"{endpoint}/SHA256SUMS")
+        resp = CLIENT_SESSION.getresponse()
 
-        # Download the runtime and verify its digest
+        if resp.status != 200:
+            err: str = (
+                f"repo.steampowered.com returned the status: {resp.status}"
+            )
+            raise HTTPException(err)
+
+        for line in resp.read().decode("utf-8").splitlines():
+            if line.endswith(archive):
+                digest = line.split(" ")[0]
+                break
+
+        # Download the runtime
+        CLIENT_SESSION.request("GET", f"{endpoint}/{archive}")
+        resp = CLIENT_SESSION.getresponse()
+
+        if resp.status != 200:
+            err: str = (
+                f"repo.steampowered.com returned the status: {resp.status}"
+            )
+            raise HTTPException(err)
+
         log.console(f"Downloading latest {codename}, please wait...")
-        with (
-            urlopen(  # noqa: S310
-                f"{base_url}/{archive}", context=SSL_DEFAULT_CONTEXT
-            ) as resp,
-        ):
-            data: bytes = b""
-            if resp.status != 200:
-                err: str = (
-                    f"repo.steampowered.com returned the status: {resp.status}"
-                )
-                raise HTTPException(err)
-            log.debug("Writing: %s", tmp.joinpath(archive))
-            data = resp.read()
-            if sha256(data).hexdigest() != digest:
-                err: str = f"Digests mismatched for {archive}"
-                raise ValueError(err)
-            log.console(f"{codename} {build_id}: SHA256 is OK")
-            tmp.joinpath(archive).write_bytes(data)
+        with tmp.joinpath(archive).open(mode="ab") as file:
+            chunk_size: int = 64 * 1024  # 64 KB
+            while True:
+                chunk: bytes = resp.read(chunk_size)
+                if not chunk:
+                    break
+                file.write(chunk)
+                hash.update(chunk)
+
+        # Verify the runtime digest
+        if hash.hexdigest() != digest:
+            err: str = f"Digests mismatched for {archive}"
+            raise ValueError(err)
+
+        log.console(f"{codename} {build_id}: SHA256 is OK")
+        CLIENT_SESSION.close()
 
     # Open the tar file and move the files
     log.debug("Opening: %s", tmp.joinpath(archive))
     with (
         taropen(tmp.joinpath(archive), "r:xz") as tar,
     ):
+        futures: list[Future] = []
+
         if tar_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
@@ -145,20 +161,23 @@ def _install_umu(
         log.debug("Destination: %s", UMU_LOCAL)
 
         # Move each file to the destination directory, overwriting if it exists
-        futures: list[Future] = [
-            thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
-            for file in source_dir.glob("*")
-        ]
+        futures.extend(
+            [
+                thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
+                for file in source_dir.glob("*")
+            ]
+        )
+
+        # Remove the archive
+        futures.append(thread_pool.submit(tmp.joinpath(archive).unlink, True))
+
         for _ in futures:
             _.result()
 
         # Remove the extracted directory and all its contents
         log.debug("Removing: %s/SteamLinuxRuntime_sniper", tmp)
-        if tmp.joinpath("SteamLinuxRuntime_sniper").exists():
-            rmtree(tmp.joinpath("SteamLinuxRuntime_sniper").as_posix())
-
-        log.debug("Removing: %s", tmp.joinpath(archive))
-        tmp.joinpath(archive).unlink(missing_ok=True)
+        if source_dir.exists():
+            source_dir.rmdir()
 
         # Rename _v2-entry-point
         log.debug("Renaming: _v2-entry-point -> umu")
@@ -215,25 +234,25 @@ def _update_umu(
     codename: str = json["umu"]["versions"]["runtime_platform"]
     # NOTE: If we ever build our custom runtime, this url will need to change
     # as well as the hard coded file paths below
-    base_url: str = f"https://repo.steampowered.com/{codename}/images/latest-container-runtime-public-beta"
+    endpoint: str = f"/{codename}/images/latest-container-runtime-public-beta"
     runtime: Path = None
     build_id: str = ""
+    resp: HTTPResponse = None
     log.debug("Existing install detected")
 
     # The BUILD_ID.txt is used to identify the runtime directory.
     # Restore if it is missing and do not crash if it does not exist remotely
     if not local.joinpath("BUILD_ID.txt").is_file():
-        with urlopen(  # noqa: S310
-            f"{base_url}/BUILD_ID.txt", context=SSL_DEFAULT_CONTEXT
-        ) as resp:
-            if resp.status != 200:
-                log.warning(
-                    "repo.steampowered.com returned the status: %s",
-                    resp.status,
-                )
-            else:
-                build_id = resp.read().decode("utf-8").strip()
-                local.joinpath("BUILD_ID.txt").write_text(build_id)
+        CLIENT_SESSION.request("GET", f"{endpoint}/BUILD_ID.txt")
+        resp = CLIENT_SESSION.getresponse()
+        if resp.status != 200:
+            log.warning(
+                "repo.steampowered.com returned the status: %s",
+                resp.status,
+            )
+        else:
+            build_id = resp.read().decode("utf-8").strip()
+            local.joinpath("BUILD_ID.txt").write_text(build_id)
 
     # Find the runtime directory
     if local.joinpath("BUILD_ID.txt").is_file():
@@ -261,43 +280,44 @@ def _update_umu(
     # NOTE: Change 'SteamLinuxRuntime_sniper.VERSIONS.txt' when the version
     # changes (e.g., steamrt4 -> SteamLinuxRuntime_medic.VERSIONS.txt)
     if not local.joinpath("VERSIONS.txt").is_file():
-        url: str = (
-            f"https://repo.steampowered.com/{codename}/images/{build_id}"
-        )
+        endpoint_sniper: str = f"/{codename}/images/{build_id}"
+        CLIENT_SESSION.request("GET", endpoint_sniper)
+        resp = CLIENT_SESSION.getresponse()
         log.warning("VERSIONS.txt not found")
         log.console("Restoring VERSIONS.txt...")
-        with urlopen(  # noqa: S310
-            f"{url}/SteamLinuxRuntime_sniper.VERSIONS.txt",
-            context=SSL_DEFAULT_CONTEXT,
-        ) as resp:
-            if resp.status != 200:
-                log.warning(
-                    "repo.steampowered.com returned the status: %s",
-                    resp.status,
-                )
-            else:
-                local.joinpath("VERSIONS.txt").write_text(
-                    resp.read().decode("utf-8")
-                )
-
-    # Update the runtime if necessary by comparing VERSIONS.txt to the remote
-    with urlopen(  # noqa: S310
-        f"{base_url}/SteamLinuxRuntime_sniper.VERSIONS.txt",
-        context=SSL_DEFAULT_CONTEXT,
-    ) as resp:
         if resp.status != 200:
             log.warning(
-                "repo.steampowered.com returned the status: %s", resp.status
+                "repo.steampowered.com returned the status: %s",
+                resp.status,
             )
-            return
-        if (
-            sha256(resp.read()).digest()
-            != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
-        ):
-            log.console(f"Updating {codename} to latest...")
-            _install_umu(json, thread_pool)
         else:
-            log.console(f"{codename} is up to date")
+            local.joinpath("VERSIONS.txt").write_text(
+                resp.read().decode("utf-8")
+            )
+
+    # Update the runtime if necessary by comparing VERSIONS.txt to the remote
+    CLIENT_SESSION.request(
+        "GET", f"{endpoint}/SteamLinuxRuntime_sniper.VERSIONS.txt"
+    )
+    resp = CLIENT_SESSION.getresponse()
+
+    if resp.status != 200:
+        log.warning(
+            "repo.steampowered.com returned the status: %s", resp.status
+        )
+        CLIENT_SESSION.close()
+        return
+
+    if (
+        sha256(resp.read()).digest()
+        != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
+    ):
+        log.console(f"Updating {codename} to latest...")
+        _install_umu(json, thread_pool)
+        return
+    log.console(f"{codename} is up to date")
+
+    CLIENT_SESSION.close()
 
 
 def _get_json(path: Path, config: str) -> dict[str, Any]:
