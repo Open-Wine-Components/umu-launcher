@@ -55,6 +55,7 @@ def get_umu_proton(
     # No internet and compat tool is empty, just return and raise an
     # exception from the caller
     environ["PROTONPATH"] = ""
+
     return env
 
 
@@ -78,6 +79,7 @@ def _fetch_releases() -> list[tuple[str, str]]:
     ) as resp:
         if resp.status != 200:
             return files
+
         for release in loads(resp.read().decode("utf-8")):
             if not release.get("assets"):
                 continue
@@ -319,7 +321,6 @@ def _get_latest(
                 if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
             ]
             tar_path: Path = tmp.joinpath(tarball)
-
             # Ideally, an in-place differential update would be
             # performed instead for this job but this will do for now
             log.debug("Extracting %s -> %s", tar_path, steam_compat)
@@ -343,7 +344,6 @@ def _get_latest(
     except ValueError:
         log.exception("ValueError")
         tarball: str = files[1][0]
-
         # Digest mismatched
         # Since we do not want the user to use a suspect file, delete it
         tmp.joinpath(tarball).unlink(missing_ok=True)
@@ -351,7 +351,6 @@ def _get_latest(
     except KeyboardInterrupt:
         tarball: str = files[1][0]
         proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
-
         # Exit cleanly
         # Clean up extracted data and cache to prevent corruption/errors
         _cleanup(tarball, proton_dir, tmp, steam_compat)
