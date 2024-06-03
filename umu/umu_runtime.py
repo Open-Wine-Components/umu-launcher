@@ -264,6 +264,7 @@ def _update_umu(
         )
         for file in local.glob(f"*{build_id}"):
             runtime = file
+            log.debug("Runtime: %s", runtime.name)
             break
 
     if (
@@ -326,6 +327,8 @@ def _update_umu(
     ):
         log.console(f"Updating {codename} to latest...")
         _install_umu(json, thread_pool)
+        log.debug("Removing: %s", runtime)
+        rmtree(runtime.as_posix())
         return
     log.console(f"{codename} is up to date")
 
