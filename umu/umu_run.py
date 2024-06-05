@@ -385,7 +385,7 @@ def build_command(
     # Configure winetricks to not be prompted for any windows
     if env.get("EXE").endswith("winetricks") and opts:
         opts.append("-q")
-        # The position of the arguments matter for winetricks
+        # Swap the option and verb because the position of the arguments matter
         # Usage: winetricks [options] [command|verb|path-to-verb] ...
         opts[0], opts[1] = opts[1], opts[0]
 
@@ -578,6 +578,7 @@ def main() -> int:  # noqa: D103
         future.result()
     THREAD_POOL.shutdown()
 
+    # Exit if the winetricks verb is already installed to avoid reapplying it
     if env.get("EXE").endswith("winetricks") and is_installed_verb(
         opts[0], Path(env.get("WINEPREFIX"))
     ):
