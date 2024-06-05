@@ -411,6 +411,7 @@ def run_command(command: list[str]) -> int:
     proc: Popen = None
     ret: int = 0
     libc: str = get_libc()
+    cwd: str = ""
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -418,6 +419,12 @@ def run_command(command: list[str]) -> int:
 
     if not libc:
         log.warning("Will not set subprocess as subreaper")
+
+    # For winetricks, change directory to $PROTONPATH/protonfixes
+    if os.environ.get("EXE").endswith("winetricks"):
+        cwd = Path(os.environ.get("PROTONPATH"), "protonfixes").as_posix()
+    else:
+        cwd = Path.cwd().as_posix()
 
     # Create a subprocess but do not set it as subreaper
     # Unnecessary in a Flatpak and prctl() will fail if libc could not be found
@@ -441,6 +448,7 @@ def run_command(command: list[str]) -> int:
         command,
         start_new_session=True,
         preexec_fn=lambda: prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0),
+        cwd=cwd,
     )
     ret = proc.wait()
     log.debug("Child %s exited with wait status: %s", proc.pid, ret)
@@ -474,7 +482,7 @@ def main() -> int:  # noqa: D103
         "UMU_ZENITY": "",
     }
     command: list[str] = []
-    opts: list[str] = None
+    opts: list[str] = []
     root: Path = Path(__file__).resolve(strict=True).parent
     future: Future = None
     args: Namespace | tuple[str, list[str]] = parse_args()
