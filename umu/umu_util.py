@@ -1,7 +1,7 @@
 from ctypes.util import find_library
 from functools import lru_cache
 from pathlib import Path
-from re import match
+from re import compile, match, Pattern
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
@@ -85,10 +85,13 @@ def _parse_winetricks_verbs(verb: str, pfx: Path) -> bool:
 
 @lru_cache
 def is_winetricks_verb(
-    verb: str, pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$"
+    verbs: str, pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$"
 ) -> bool:
     """Check if a string is a winetricks verb."""
-    return match(pattern, verb) is not None
+    if verbs.find(" ") != -1:
+        regex: Pattern = compile(pattern)
+        return all(regex.match(verb) for verb in verbs)
+    return match(pattern, verbs) is not None
 
 
 def is_installed_verb(verb: str, pfx: Path) -> bool:
