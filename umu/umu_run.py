@@ -96,8 +96,6 @@ def set_log() -> None:
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
 
-    os.environ.pop("UMU_LOG")
-
 
 def setup_pfx(path: str) -> None:
     """Create a symlink to the WINE prefix and tracked_files file."""
@@ -272,6 +270,18 @@ def set_env(
 
     # Game drive
     enable_steam_game_drive(env)
+
+    # Winetricks
+    if env.get("EXE").endswith("winetricks"):
+        proton: Proton = Proton(os.environ["PROTONPATH"])
+        env["WINE"] = proton.wine_bin
+        env["WINELOADER"] = proton.wine_bin
+        env["WINESERVER"] = proton.wineserver_bin
+        env["WINETRICKS_LATEST_VERSION_CHECK"] = "disabled"
+        env["LD_PRELOAD"] = ""
+        env["WINETRICKS_SUPER_QUIET"] = (
+            "" if os.environ.get("UMU_LOG") == "debug" else "1"
+        )
 
     return env
 
