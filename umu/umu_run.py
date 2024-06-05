@@ -229,6 +229,8 @@ def set_env(
         )
         log.debug("EXE: %s -> %s", args[0], bin)
         args: tuple[str, list[str]] = (bin, args[1])
+        env["EXE"] = bin
+        env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
     elif isinstance(args, tuple):
         try:
             env["EXE"] = (
