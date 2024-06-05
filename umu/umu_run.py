@@ -26,9 +26,9 @@ from umu_consts import (
 )
 from umu_log import CustomFormatter, console_handler, log
 from umu_plugins import set_env_toml
-from umu_proton import get_umu_proton
+from umu_proton import Proton, get_umu_proton
 from umu_runtime import setup_umu
-from umu_util import get_libc
+from umu_util import get_libc, is_installed_verb, is_winetricks_verb
 
 THREAD_POOL: ThreadPoolExecutor = ThreadPoolExecutor()
 
@@ -49,6 +49,22 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
 
     if not sys.argv[1:]:
         parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    # Winetricks
+    # Exit if no winetricks verbs were passed
+    if sys.argv[1].endswith("winetricks") and not sys.argv[2:][0]:
+        err: str = "No winetricks verb specified"
+        log.error(err)
+        sys.exit(1)
+
+    # Exit if argument is not a verb
+    if sys.argv[1].endswith("winetricks") and not is_winetricks_verb(
+        sys.argv[2:][0]
+    ):
+        verb: str = sys.argv[2:][0]
+        err: str = f"Value is not a winetricks verb: {verb}"
+        log.error(err)
         sys.exit(1)
 
     if sys.argv[1:][0] in opt_args:
@@ -518,6 +534,16 @@ def main() -> int:  # noqa: D103
     if future:
         future.result()
     THREAD_POOL.shutdown()
+
+    if env.get("EXE").endswith("winetricks") and is_installed_verb(
+        opts[0], Path(env.get("WINEPREFIX"))
+    ):
+        pfx: str = os.environ["WINEPREFIX"]
+        err: str = (
+            f"winetricks verb '{opts[0]}' is already installed in '{pfx}'"
+        )
+        log.error(err)
+        sys.exit(1)
 
     # Run
     build_command(env, UMU_LOCAL, command, opts)
