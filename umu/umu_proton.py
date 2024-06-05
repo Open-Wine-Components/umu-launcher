@@ -38,8 +38,6 @@ class Proton:
         self.wine_bin = self.bin_dir + "wine"
         self.wine64_bin = self.bin_dir + "wine64"
         self.wineserver_bin = self.bin_dir + "wineserver"
-        self.protonfixes = self.base_dir + "protonfixes"
-        self.winetricks_bin = self.base_dir + "protonfixes/winetricks"
 
     def path(self, dir: str) -> str:  # noqa: D102
         return self.base_dir + dir
