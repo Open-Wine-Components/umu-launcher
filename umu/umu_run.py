@@ -386,13 +386,9 @@ def build_command(
 
     # Configure winetricks to not be prompted for any windows
     if env.get("EXE").endswith("winetricks") and opts:
-        opts.append("-q")
-        # Swap the option and the last verb because the position of arguments
-        # matter for winetricks.
-        # Usage: winetricks [options] [command|verb|path-to-verb] ...
-        # When swapping, assuming that order of verbs does not matter and will
-        # yield the same result
-        opts[0], opts[-1] = opts[-1], opts[0]
+        # The position of arguments matter for winetricks
+        # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
+        opts.insert(0, "-q")
 
     if opts:
         command.extend(
