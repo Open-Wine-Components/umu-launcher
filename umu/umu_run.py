@@ -217,6 +217,18 @@ def set_env(
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         env["PROTON_VERB"] = "waitforexitandrun"
+    elif isinstance(args, tuple) and args[0] == "winetricks":
+        # Make an absolute path to winetricks that is within our Proton, which
+        # includes the dependencies bundled within the protonfix directory.
+        # Fixes exit 3 status codes after applying verbs
+        bin: str = (
+            Path(env["PROTONPATH"], "protonfixes", "winetricks")
+            .expanduser()
+            .resolve(strict=True)
+            .as_posix()
+        )
+        log.debug("EXE: %s -> %s", args[0], bin)
+        args: tuple[str, list[str]] = (bin, args[1])
     elif isinstance(args, tuple):
         try:
             env["EXE"] = (
