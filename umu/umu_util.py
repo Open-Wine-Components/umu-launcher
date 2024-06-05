@@ -75,7 +75,7 @@ def _parse_winetricks_verbs(verb: str, pfx: Path) -> bool:
 
     with wt_log.open(mode="r", encoding="utf-8") as file:
         for line in file:
-            _ = line.strip()
+            _: str = line.strip()
             if is_winetricks_verb(_) and _.startswith(verb):
                 is_installed = True
                 break
