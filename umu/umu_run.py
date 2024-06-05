@@ -364,6 +364,13 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
+    # Configure winetricks to not be prompted for any windows
+    if env.get("EXE").endswith("winetricks") and opts:
+        opts.append("-q")
+        # The position of the arguments matter for winetricks
+        # Usage: winetricks [options] [command|verb|path-to-verb] ...
+        opts[0], opts[1] = opts[1], opts[0]
+
     if opts:
         command.extend(
             [
