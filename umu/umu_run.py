@@ -53,7 +53,7 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
 
     # Winetricks
     # Exit if no winetricks verbs were passed
-    if sys.argv[1].endswith("winetricks") and not sys.argv[2:][0]:
+    if sys.argv[1].endswith("winetricks") and not sys.argv[2:]:
         err: str = "No winetricks verb specified"
         log.error(err)
         sys.exit(1)
