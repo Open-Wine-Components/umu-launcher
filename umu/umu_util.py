@@ -1,7 +1,7 @@
 from ctypes.util import find_library
 from functools import lru_cache
 from pathlib import Path
-from re import compile, match, Pattern
+from re import Pattern, compile, match
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
