@@ -46,6 +46,12 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     parser.add_argument(
         "--config", help=("path to TOML file (requires Python 3.11+)")
     )
+    parser.add_argument(
+        "winetricks",
+        help=("run winetricks (requires UMU-Proton or GE-Proton)"),
+        nargs="?",
+        default=None,
+    )
 
     if not sys.argv[1:]:
         parser.print_help(sys.stderr)
