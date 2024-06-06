@@ -90,7 +90,7 @@ def is_winetricks_verb(
     """Check if a string is a winetricks verb."""
     if verbs.find(" ") != -1:
         regex: Pattern = compile(pattern)
-        return all(regex.match(verb) for verb in verbs)
+        return all([regex.match(verb) for verb in verbs.split()])
     return match(pattern, verbs) is not None
 
 
