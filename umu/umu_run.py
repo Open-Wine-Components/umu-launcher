@@ -69,7 +69,7 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         sys.argv[2:][0]
     ):
         verb: str = sys.argv[2:][0]
-        err: str = f"Value is not a winetricks verb: {verb}"
+        err: str = f"Value is not a winetricks verb: '{verb}'"
         log.error(err)
         sys.exit(1)
 
