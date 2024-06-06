@@ -65,9 +65,11 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
     return ret
 
 
-def _parse_winetricks_verbs(verb: str, pfx: Path) -> bool:
-    """Parse the winetricks.log file."""
-    wt_log: Path = pfx.joinpath("winetricks.log")
+def is_installed_verb(verb: str, pfx: Path) -> bool:
+    """Check if a winetricks verb is installed in the umu prefix.
+
+    Determines the installation of verbs by reading winetricks.log file.
+    """
     is_installed: bool = False
 
     if not wt_log.is_file():
@@ -92,8 +94,3 @@ def is_winetricks_verb(
         regex: Pattern = compile(pattern)
         return all([regex.match(verb) for verb in verbs.split()])
     return match(pattern, verbs) is not None
-
-
-def is_installed_verb(verb: str, pfx: Path) -> bool:
-    """Check if a winetricks verb is installed in the umu prefix."""
-    return _parse_winetricks_verbs(verb, pfx)
