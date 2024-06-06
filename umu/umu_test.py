@@ -15,6 +15,7 @@ from unittest.mock import patch
 import umu_proton
 import umu_run
 import umu_runtime
+import umu_util
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -43,6 +44,13 @@ class TestGameLauncher(unittest.TestCase):
             "UMU_ID": "",
             "STORE": "",
             "PROTON_VERB": "",
+            "WINE": "",
+            "WINELOADER": "",
+            "WINESERVER": "",
+            "WINETRICKS_LATEST_VERSION_CHECK": "",
+            "LD_PRELOAD": "",
+            "WINEDLLPATH": "",
+            "WINETRICKS_SUPER_QUIET": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -67,6 +75,8 @@ class TestGameLauncher(unittest.TestCase):
         self.test_user_share = Path("./tmp.BXk2NnvW2m")
         # ~/.local/share/Steam/compatibilitytools.d
         self.test_local_share = Path("./tmp.aDl73CbQCP")
+        # Wine prefix
+        self.test_winepfx = Path("./tmp.AlfLPDhDvA")
 
         # Dictionary that represents the umu_versionS.json
         self.root_config = {
@@ -81,6 +91,7 @@ class TestGameLauncher(unittest.TestCase):
         # umu_version.json
         self.test_config = json.dumps(self.root_config, indent=4)
 
+        self.test_winepfx.mkdir(exist_ok=True)
         self.test_user_share.mkdir(exist_ok=True)
         self.test_local_share.mkdir(exist_ok=True)
         self.test_cache.mkdir(exist_ok=True)
@@ -143,7 +154,7 @@ class TestGameLauncher(unittest.TestCase):
 
     def tearDown(self):
         """Unset environment variables and delete test files after tests."""
-        for key, val in self.env.items():
+        for key in self.env:
             if key in os.environ:
                 os.environ.pop(key)
 
@@ -165,6 +176,55 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
 
+        if self.test_winepfx.exists():
+            rmtree(self.test_winepfx.as_posix())
+
+    def test_is_installed_verb_noverb(self):
+        """Test is_installed_verb when passed an empty verb."""
+        verb = ""
+
+        with self.assertRaises(ValueError):
+            umu_util.is_installed_verb(verb, self.test_winepfx)
+
+    def test_ist_installed_verb_nopfx(self):
+        """Test is_installed_verb when passed a non-existent pfx."""
+        verb = "foo"
+        result = True
+
+        # Handle the None type
+        # In the real usage, this should not happen
+        with self.assertRaises(FileNotFoundError):
+            umu_util.is_installed_verb(verb, None)
+
+        # An exception should not be raised for a non-existent directory. When
+        # the prefix does not exist, umu will create the default prefix as
+        # ~/Games/umu/$GAMEID and will be created by Proton.
+        result = umu_util.is_installed_verb(verb, Path("./foo"))
+        self.assertFalse(result, "wine prefix exists")
+
+    def test_is_installed_verb_nofile(self):
+        """Test is_installed_verb when the log file is absent."""
+        verb = "foo"
+        result = True
+
+        result = umu_util.is_installed_verb(verb, self.test_winepfx)
+        self.assertFalse(result, "winetricks.log file was found")
+
+    def test_is_installed_verb(self):
+        """Test is_installed_verb.
+
+        Reads the winetricks.log file within the wine prefix to find the verb
+        that was passed from the command line.
+        """
+        verb = "foo"
+        wt_log = self.test_winepfx.joinpath("winetricks.log")
+        result = False
+
+        with wt_log.open(mode="w", encoding="utf-8") as file:
+            file.write(verb)
+
+        result = umu_util.is_installed_verb(verb, self.test_winepfx)
+        self.assertTrue(result, "winetricks verb was not installed")
     def test_check_runtime(self):
         """Test check_runtime when pv-verify does not exist.
 
