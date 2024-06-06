@@ -395,7 +395,7 @@ def build_command(
     if env.get("EXE").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
-        opts.insert(0, "-q")
+        opts = ["-q", *opts]
 
     if opts:
         command.extend(
