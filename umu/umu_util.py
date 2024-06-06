@@ -70,7 +70,18 @@ def is_installed_verb(verb: str, pfx: Path) -> bool:
 
     Determines the installation of verbs by reading winetricks.log file.
     """
+    wt_log: Path = None
     is_installed: bool = False
+
+    if not pfx:
+        err: str = f"Value is '{pfx}' for WINE prefix"
+        raise FileNotFoundError(err)
+
+    if not verb:
+        err: str = "winetricks was passed an empty verb"
+        raise ValueError(err)
+
+    wt_log = pfx.joinpath("winetricks.log")
 
     if not wt_log.is_file():
         return is_installed
