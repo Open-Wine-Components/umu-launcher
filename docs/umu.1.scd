@@ -118,6 +118,12 @@ $ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=GE-Proton9-1 umu-run ~/foo.exe
 $ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=GE-Proton umu-run ~/foo.exe
 ```
 
+*Example 11. Install winetricks verbs*
+
+```
+$ GAMEID=0 PROTONPATH=GE-Proton umu-run winetricks quartz wmp11 qasf
+```
+
 # SEE ALSO
 
 _umu_(5)
