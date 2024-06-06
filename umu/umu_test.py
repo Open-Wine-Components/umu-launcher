@@ -1761,6 +1761,152 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected STEAM_COMPAT_MOUNTS to be set",
             )
 
+    def test_set_env_winetricks(self):
+        """Test set_env when using winetricks."""
+        result = None
+        test_str = "foo"
+        verb = "foo"
+        test_exe = "winetricks"
+
+        # Mock a Proton directory that contains winetricks
+        test_dir = Path("./tmp.aCAs3Q7rvz")
+        test_dir.joinpath("protonfixes").mkdir(parents=True)
+        test_dir.joinpath("protonfixes", "winetricks").touch()
+
+        # Replicate the usage:
+        # GAMEID= umu_run winetricks ...
+        with patch("sys.argv", ["", "winetricks", verb]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = test_dir.as_posix()
+            os.environ["GAMEID"] = test_str
+            os.environ["STORE"] = test_str
+            os.environ["PROTON_VERB"] = self.test_verb
+            # Args
+            result = umu_run.parse_args()
+            # Check
+            umu_run.check_env(self.env)
+            # Prefix
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            self.assertNotEqual(
+                Path(test_exe),
+                Path(test_exe).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["WINEPREFIX"]),
+                Path(os.environ["WINEPREFIX"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["PROTONPATH"]),
+                Path(os.environ["PROTONPATH"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            result = umu_run.set_env(self.env, result[0:])
+            self.assertTrue(result is self.env, "Expected the same reference")
+
+            path_exe = (
+                test_dir.joinpath("protonfixes", "winetricks")
+                .expanduser()
+                .resolve()
+                .as_posix()
+            )
+            path_file = Path(self.test_file).expanduser().resolve().as_posix()
+
+            # After calling set_env all paths should be expanded POSIX form
+            self.assertEqual(
+                self.env["EXE"],
+                path_exe,
+                "Expected EXE to be normalized and expanded",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_INSTALL_PATH"],
+                Path(path_exe).parent.as_posix(),
+                "Expected STEAM_COMPAT_INSTALL_PATH to be set",
+            )
+            self.assertEqual(
+                self.env["STORE"], test_str, "Expected STORE to be set"
+            )
+            self.assertEqual(
+                self.env["PROTONPATH"],
+                Path(path_exe).parent.parent.as_posix(),
+                "Expected PROTONPATH to be normalized and expanded",
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"],
+                path_file,
+                "Expected WINEPREFIX to be normalized and expanded",
+            )
+            self.assertEqual(
+                self.env["GAMEID"], test_str, "Expected GAMEID to be set"
+            )
+            self.assertEqual(
+                self.env["PROTON_VERB"],
+                self.test_verb,
+                "Expected PROTON_VERB to be set",
+            )
+            # umu
+            self.assertEqual(
+                self.env["UMU_ID"],
+                self.env["GAMEID"],
+                "Expected UMU_ID to be GAMEID",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_APP_ID"],
+                "0",
+                "Expected STEAM_COMPAT_APP_ID to be 0",
+            )
+            self.assertEqual(
+                self.env["SteamAppId"],
+                self.env["STEAM_COMPAT_APP_ID"],
+                "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
+            )
+            self.assertEqual(
+                self.env["SteamGameId"],
+                self.env["SteamAppId"],
+                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
+            )
+
+            # PATHS
+            self.assertEqual(
+                self.env["STEAM_COMPAT_SHADER_PATH"],
+                self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache",
+                "Expected STEAM_COMPAT_SHADER_PATH to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                self.env["PROTONPATH"]
+                + ":"
+                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                "Expected STEAM_COMPAT_TOOL_PATHS to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_MOUNTS"],
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                "Expected STEAM_COMPAT_MOUNTS to be set",
+            )
+
+            # Winetricks
+            self.assertTrue(self.env["WINE"], "WINE is not set")
+            self.assertTrue(self.env["WINELOADER"], "WINELOADER is not set")
+            self.assertTrue(self.env["WINESERVER"], "WINESERVER is not set")
+            self.assertTrue(
+                self.env["WINETRICKS_LATEST_VERSION_CHECK"],
+                "WINETRICKS_LATEST_VERSION_CHECK is not set",
+            )
+            self.assertTrue(
+                self.env["LD_PRELOAD"] == "", "LD_PRELOAD is not set"
+            )
+            self.assertTrue(self.env["WINEDLLPATH"], "WINEDLLPATH is not set")
+            self.assertTrue(
+                self.env["WINETRICKS_SUPER_QUIET"],
+                "WINETRICKS_SUPER_QUIET is not set",
+            )
+
+        if test_dir.exists():
+            rmtree(test_dir.as_posix())
+
     def test_setup_pfx_mv(self):
         """Test setup_pfx when moving the WINEPREFIX after creating it.
 
@@ -2044,6 +2190,24 @@ class TestGameLauncher(unittest.TestCase):
             .is_symlink(),
             "Expected symlink of username -> steamuser",
         )
+
+    def test_parse_args_winetricks(self):
+        """Test parse_args when winetricks is the argument.
+
+        An SystemExit should be raised when no winetricks verb is passed or if
+        the value is not a winetricks verb.
+        """
+        with (
+            patch("sys.argv", ["", "winetricks"]),
+            self.assertRaises(SystemExit),
+        ):
+            umu_run.parse_args()
+
+        with (
+            patch("sys.argv", ["", "winetricks", "--help"]),
+            self.assertRaises(SystemExit),
+        ):
+            umu_run.parse_args()
 
     def test_parse_args(self):
         """Test parse_args with no options.
