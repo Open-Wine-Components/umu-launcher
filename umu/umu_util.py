@@ -88,7 +88,7 @@ def is_winetricks_verb(
     verbs: str, pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$"
 ) -> bool:
     """Check if a string is a winetricks verb."""
-    if verbs.find(" ") != -1:
+    if " " in verbs:
         regex: Pattern = compile(pattern)
         return all([regex.match(verb) for verb in verbs.split()])
     return match(pattern, verbs) is not None
