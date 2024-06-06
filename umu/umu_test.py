@@ -225,6 +225,36 @@ class TestGameLauncher(unittest.TestCase):
 
         result = umu_util.is_installed_verb(verb, self.test_winepfx)
         self.assertTrue(result, "winetricks verb was not installed")
+
+    def test_is_not_winetricks_verb(self):
+        """Test is_winetricks_verb when not passed a valid verb."""
+        verbs = ["--help", "; bash", "-q list-all"]
+        result = False
+        err = []
+
+        for verb in verbs:
+            if umu_util.is_winetricks_verb(verb):
+                result = True
+                err.append(f"'{verb}' is a winetricks verb")
+
+        self.assertFalse(result, err)
+
+    def test_is_winetricks_verb(self):
+        """Test is_winetricks_verb when passed a valid verb.
+
+        Expects winetricks verbs to follow ^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$.
+        """
+        verbs = ["foo", "foo bar baz", "foo=bar baz=qux"]
+        result = True
+        err = []
+
+        for verb in verbs:
+            if not umu_util.is_winetricks_verb(verb):
+                result = True
+                err.append(f"'{verb}' is not a winetricks verb")
+
+        self.assertTrue(result, err)
+
     def test_check_runtime(self):
         """Test check_runtime when pv-verify does not exist.
 
