@@ -452,7 +452,9 @@ def run_command(command: list[str]) -> int:
     # Create a subprocess but do not set it as subreaper
     # Unnecessary in a Flatpak and prctl() will fail if libc could not be found
     if FLATPAK_PATH or not libc:
-        return run(command, start_new_session=True, check=False).returncode
+        return run(
+            command, start_new_session=True, check=False, cwd=cwd
+        ).returncode
 
     prctl = CDLL(libc).prctl
     prctl.restype = c_int
