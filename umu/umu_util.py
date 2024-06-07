@@ -107,7 +107,23 @@ def is_winetricks_verb(
     verbs: str, pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$"
 ) -> bool:
     """Check if a string is a winetricks verb."""
+    is_verb = True
+
+    # When passed a sequence, check each verb and log the non-verbs
     if " " in verbs:
         regex: Pattern = compile(pattern)
-        return all([regex.match(verb) for verb in verbs.split()])
-    return match(pattern, verbs) is not None
+        is_verb = True
+        for verb in verbs.split():
+            if not regex.match(verb):
+                is_verb = False
+                err: str = f"Value is not a winetricks verb: '{verb}'"
+                log.error(err)
+                break
+        return is_verb
+
+    if match(pattern, verbs) is None:
+        is_verb = False
+        err: str = f"Value is not a winetricks verb: '{verbs}'"
+        log.error(err)
+
+    return is_verb
