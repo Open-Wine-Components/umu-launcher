@@ -181,14 +181,14 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_is_installed_verb_noverb(self):
         """Test is_installed_verb when passed an empty verb."""
-        verb = ""
+        verb = []
 
         with self.assertRaises(ValueError):
             umu_util.is_installed_verb(verb, self.test_winepfx)
 
     def test_ist_installed_verb_nopfx(self):
         """Test is_installed_verb when passed a non-existent pfx."""
-        verb = "foo"
+        verb = ["foo"]
         result = True
 
         # Handle the None type
@@ -204,7 +204,7 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_is_installed_verb_nofile(self):
         """Test is_installed_verb when the log file is absent."""
-        verb = "foo"
+        verb = ["foo"]
         result = True
 
         result = umu_util.is_installed_verb(verb, self.test_winepfx)
@@ -216,14 +216,12 @@ class TestGameLauncher(unittest.TestCase):
         Reads the winetricks.log file within the wine prefix to find the verb
         that was passed from the command line.
         """
-        verb = "foo"
+        verbs = ["foo", "bar"]
         wt_log = self.test_winepfx.joinpath("winetricks.log")
         result = False
 
-        with wt_log.open(mode="w", encoding="utf-8") as file:
-            file.write(verb)
-
-        result = umu_util.is_installed_verb(verb, self.test_winepfx)
+        wt_log.write_text("\n".join(verbs))
+        result = umu_util.is_installed_verb(verbs, self.test_winepfx)
         self.assertTrue(result, "winetricks verb was not installed")
 
     def test_is_not_winetricks_verb(self):
