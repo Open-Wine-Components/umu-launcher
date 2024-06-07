@@ -6,7 +6,22 @@ umu-run - Unified Launcher for Windows Games on Linux
 
 # SYNOPSIS
 
-*umu-run* [_OPTIONS_...] [_FILE_ [_ARG_...] | _FILE_]
+*umu-run* [_FILE_]
+
+*umu-run* [_FILE_ [_ARG_...]]
+
+*umu-run* [_winetricks_ [_ARG_...]]
+
+*umu-run* *--config* [_FILE_]
+
+*umu-run* *--help*
+
+# POSITIONAL ARGUMENTS
+
+*winetricks*
+	Run *winetricks*[1] verbs (Requires GE-Proton or UMU-Proton).
+
+	See *winetricks*(1) for more info or below for an example.
 
 # OPTIONS
 
@@ -21,14 +36,14 @@ umu-run - Unified Launcher for Windows Games on Linux
 # DESCRIPTION
 
 The Unified Launcher for Windows Games on Linux (umu) was created to make
-Valve's *Proton*[1] and the *protonfixes*[2] project accessible outside the Steam client,
-providing a standardized way for other clients (e.g., Lutris, Heroic Games
-Launcher, Bottles, or Rare) to run games via Proton and configure WINE
-prefixes.
+Valve's *Proton*[2] and the *protonfixes*[3] project accessible outside the
+Steam client, providing a standardized way for other clients (e.g., Lutris,
+Heroic Games Launcher, Bottles, or Rare) to run games via Proton and configure
+WINE prefixes.
 
 As a result, clients:
 - No longer require Steam or Steam binaries to be installed
-- Can contribute and benefit from protonfixes
+- Can contribute and automatically benefit from protonfixes
 - Can run games through Proton as it were a native Steam game
 - Can reference a unified online database of game fixes (protonfixes)
 
@@ -40,15 +55,14 @@ choice if supported.
 *Example 1. Run a game*
 
 ```
-$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=~/GE-Proton9-4 umu-run ~/foo.exe
+$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=~/GE-Proton9-4 umu-run foo.exe
 ```
 
-*Example 2. Run a game and apply a Protonfix*
+*Example 2. Run a game and apply a specific protonfix*
 
 ```
-# Applies a GOG Protonfix to the current WINE prefix
-# See https://github.com/Open-Wine-Components/umu-protonfixes
-$ WINEPREFIX=~/.wine GAMEID=umu-1228964594 PROTONPATH=~/GE-Proton9-4 STORE=gog umu-run ~/foo.exe
+# Applies the Star Citizen fix to the current WINE prefix
+$ WINEPREFIX=~/.wine GAMEID=umu-starcitizen PROTONPATH=~/GE-Proton9-4 umu-run foo.exe
 ```
 
 *Example 3. Run a game via a configuration file*
@@ -74,48 +88,40 @@ $ WINEPREFIX=~/foo GAMEID=0 PROTONPATH=~/GE-Proton9-4 umu-run ""
 *Example 5. Run a game and automatically set Proton*
 
 ```
-# Always checks for the latest release of UMU-Proton, and will download then
-# use it when available
-# NOTE: Previous stable versions of UMU-Proton will be auto removed in
-# compatibilitytools.d after the latest has been downloaded
+# Uses the latest UMU-Proton and automatically removes old UMU-Proton builds
 $ WINEPREFIX=~/.wine GAMEID=0 umu-run foo.exe
 ```
 
 *Example 6. Run a game, automatically set Proton, and create a WINE prefix*
 
 ```
-# This will create the prefix as ~/Games/umu/$GAMEID and will
-# set the latest UMU-Proton for the game
+# Creates the prefix as $HOME/Games/umu/$GAMEID and uses the latest UMU-Proton
 $ GAMEID=0 umu-run foo.exe
 ```
 
 *Example 7. Run a game and explicitly set a valid Proton verb*
 
 ```
-$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=~/GE-Proton9-4 PROTON_VERB=waitforexitandrun umu-run ~/foo.exe
+$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=~/GE-Proton9-4 PROTON_VERB=waitforexitandrun umu-run foo.exe
 ```
 
 *Example 8. Run a game and enable debug logs*
 
 ```
-# Shows environment variables and command at this level
-# Valid values for UMU_LOG include: 1, warn, debug
-$ UMU_LOG=1 WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=~/GE-Proton9-4 umu-run ~/foo.exe
+$ UMU_LOG=debug WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=~/GE-Proton9-4 umu-run foo.exe
 ```
 
 *Example 9. Run a game and set a Proton by its version name*
 
 ```
-# The launcher will check for GE-Proton9-1 at
-# ~/.local/share/Steam/compatibilitytools.d
-$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=GE-Proton9-1 umu-run ~/foo.exe
+# Checks for GE-Proton9-1 at $HOME/.local/share/Steam/compatibilitytools.d
+$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=GE-Proton9-1 umu-run foo.exe
 ```
 
 *Example 10. Run a game and automatically use the latest GE-Proton*
 
 ```
-# This will fetch for the latest GE-Proton build each run and set it
-$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=GE-Proton umu-run ~/foo.exe
+$ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=GE-Proton umu-run foo.exe
 ```
 
 *Example 11. Run winetricks verbs*
@@ -124,14 +130,50 @@ $ WINEPREFIX=~/.wine GAMEID=0 PROTONPATH=GE-Proton umu-run ~/foo.exe
 $ GAMEID=0 PROTONPATH=GE-Proton umu-run winetricks quartz wmp11 qasf
 ```
 
+*Example 12. Run a game, but do not apply protonfixes*
+
+```
+$ GAMEID=umu-1228964594 PROTONPATH=GE-Proton PROTONFIXES_DISABLE=1 umu-run foo.exe
+```
+
+# ENVIRONMENT VARIABLES
+
+_GAMEID_
+	Required. Can be an arbitrary value or a valid id in the *umu-database*[4].
+
+_PROTONPATH_
+	Optional. Path to a Proton directory, version name (e.g., GE-Proton9-5) or codename (e.g., GE-Proton).
+	
+	Otherwise, defaults to using UMU-Proton.
+
+_WINEPREFIX_
+	Optional. Path to a WINE prefix directory. Otherwise defaults to _$HOME/Games/umu/$GAMEID_.
+
+_UMU_LOG_
+	Optional. Enables debug logs for the launcher.
+	
+	Set _1_ to log environment variables, _warning_ for warning messages, or _debug_ to enable all logs.
+
+_STORE_
+	Optional. Can be an arbitrary value or a valid store id in the umu-database.
+
+_PROTON_VERB_
+	Optional. Must be a valid Proton verb. Otherwise, defaults to _waitforexitandrun_.
+
+_UMU_ZENITY_
+	Optional. Creates a *zenity*[5] popup window when downloading large files.
+
 # SEE ALSO
 
-_umu_(5)
+_umu_(5), _winetricks_(1), _zenity_(1)
 
 # NOTES
 
+. https://github.com/Winetricks/winetricks
 . https://github.com/ValveSoftware/Proton
 . https://github.com/Open-Wine-Components/umu-protonfixes
+. https://github.com/Open-Wine-Components/umu-database
+. https://gitlab.gnome.org/GNOME/zenity
 
 # AUTHORS
 
