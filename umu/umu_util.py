@@ -72,6 +72,7 @@ def is_installed_verb(verb: str, pfx: Path) -> bool:
     """
     wt_log: Path = None
     is_installed: bool = False
+    verbs: set[str] = {}
 
     if not pfx:
         err: str = f"Value is '{pfx}' for WINE prefix"
@@ -82,6 +83,7 @@ def is_installed_verb(verb: str, pfx: Path) -> bool:
         raise ValueError(err)
 
     wt_log = pfx.joinpath("winetricks.log")
+    verbs = {_ for _ in verb.split()}
 
     if not wt_log.is_file():
         return is_installed
@@ -89,8 +91,12 @@ def is_installed_verb(verb: str, pfx: Path) -> bool:
     with wt_log.open(mode="r", encoding="utf-8") as file:
         for line in file:
             _: str = line.strip()
-            if is_winetricks_verb(_) and _.startswith(verb):
+            if _ in verbs:
                 is_installed = True
+                err: str = (
+                    f"winetricks verb '{_}' is already installed in '{pfx}'"
+                )
+                log.error(err)
                 break
 
     return is_installed
