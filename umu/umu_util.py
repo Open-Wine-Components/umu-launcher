@@ -102,28 +102,21 @@ def is_installed_verb(verb: str, pfx: Path) -> bool:
     return is_installed
 
 
-@lru_cache
 def is_winetricks_verb(
-    verbs: str, pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$"
+    verbs: list[str], pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$"
 ) -> bool:
     """Check if a string is a winetricks verb."""
-    is_verb = True
+    regex: Pattern = None
+
+    if not verbs:
+        return False
 
     # When passed a sequence, check each verb and log the non-verbs
-    if " " in verbs:
-        regex: Pattern = compile(pattern)
-        is_verb = True
-        for verb in verbs.split():
-            if not regex.match(verb):
-                is_verb = False
-                err: str = f"Value is not a winetricks verb: '{verb}'"
-                log.error(err)
-                break
-        return is_verb
+    regex = compile(pattern)
+    for verb in verbs:
+        if not regex.match(verb):
+            err: str = f"Value is not a winetricks verb: '{verb}'"
+            log.error(err)
+            return False
 
-    if match(pattern, verbs) is None:
-        is_verb = False
-        err: str = f"Value is not a winetricks verb: '{verbs}'"
-        log.error(err)
-
-    return is_verb
+    return True
