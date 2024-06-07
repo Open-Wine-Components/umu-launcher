@@ -126,7 +126,7 @@ def _install_umu(
 
         # Verify the runtime digest
         if hash.hexdigest() != digest:
-            err: str = f"Digests mismatched for {archive}"
+            err: str = f"Digest mismatched: {archive}"
             raise ValueError(err)
 
         log.console(f"{codename} {build_id}: SHA256 is OK")
@@ -391,13 +391,13 @@ def check_runtime(src: Path, json: dict[str, Any], build_id: str) -> int:
     validate the integrity of the runtime's metadata after its moved to the
     home directory and used to run games.
     """
-    runtime_platform_value: str = json["umu"]["versions"]["runtime_platform"]
+    codename: str = json["umu"]["versions"]["runtime_platform"]
     pv_verify: Path = src.joinpath("pressure-vessel", "bin", "pv-verify")
     ret: int = 1
     runtime: Path = None
 
     if not build_id:
-        log.warning("%s: runtime validation failed", runtime_platform_value)
+        log.warning("%s validation failed", codename)
         return ret
 
     # Find the runtime directory by its build id
@@ -406,18 +406,16 @@ def check_runtime(src: Path, json: dict[str, Any], build_id: str) -> int:
         break
 
     if not runtime or not runtime.is_dir():
-        log.warning("%s: runtime validation failed", runtime_platform_value)
-        log.warning("Could not find runtime in: %s", src)
+        log.warning("%s validation failed", codename)
+        log.warning("Could not find runtime in '%s'", src)
         return ret
 
     if not pv_verify.is_file():
-        log.warning("%s: runtime validation failed", runtime_platform_value)
-        log.warning("File does not exist: %s", pv_verify)
+        log.warning("%s validation failed", codename)
+        log.warning("File does not exist: '%s'", pv_verify)
         return ret
 
-    log.console(
-        f"Verifying integrity of {runtime_platform_value} {build_id}..."
-    )
+    log.console(f"Verifying integrity of {codename} {build_id}...")
     ret = run(
         [
             pv_verify.as_posix(),
@@ -429,9 +427,9 @@ def check_runtime(src: Path, json: dict[str, Any], build_id: str) -> int:
     ).returncode
 
     if ret:
-        log.warning("%s: runtime validation failed", runtime_platform_value)
-        log.debug("pv-verify exited with the status code: %s", ret)
+        log.warning("%s validation failed", codename)
+        log.debug("%s exited with the status code: %s", pv_verify.name, ret)
         return ret
-    log.console(f"{runtime_platform_value} {build_id}: mtree is OK")
+    log.console(f"{codename} {build_id}: mtree is OK")
 
     return ret
