@@ -219,7 +219,7 @@ def _fetch_proton(
                     hash.update(chunk)
 
             if hash.hexdigest() != digest:
-                err: str = f"Digests mismatched for {proton}"
+                err: str = f"Digest mismatched: {proton}"
                 raise ValueError(err)
 
             log.console(f"{proton}: SHA512 is OK")
@@ -238,7 +238,7 @@ def _extract_dir(file: Path, steam_compat: Path) -> None:
             log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
 
-        log.console(f"Extracting {file} -> {steam_compat}...")
+        log.console(f"Extracting '{file}' -> '{steam_compat}'...")
         # TODO: Rather than extracting all of the contents, we should prefer
         # the difference (e.g., rsync)
         tar.extractall(path=steam_compat)  # noqa: S202
@@ -253,10 +253,10 @@ def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
     log.console("Keyboard Interrupt.\nCleaning...")
 
     if tmp.joinpath(tarball).is_file():
-        log.console(f"Purging {tarball} in {tmp}...")
+        log.console(f"Purging '{tarball}' in '{tmp}'...")
         tmp.joinpath(tarball).unlink()
     if steam_compat.joinpath(proton).is_dir():
-        log.console(f"Purging {proton} in {steam_compat}...")
+        log.console(f"Purging '{proton}' in '{steam_compat}'...")
         rmtree(steam_compat.joinpath(proton).as_posix())
 
 
@@ -283,7 +283,7 @@ def _get_from_steamcompat(
         return None
 
     latest = max(protons)
-    log.console(f"{latest.name} found in: {steam_compat}")
+    log.console(f"{latest.name} found in: '{steam_compat}'")
     log.console(f"Using {latest.name}")
     environ["PROTONPATH"] = latest.as_posix()
     env["PROTONPATH"] = environ["PROTONPATH"]
