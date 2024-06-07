@@ -65,7 +65,7 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
     return ret
 
 
-def is_installed_verb(verb: str, pfx: Path) -> bool:
+def is_installed_verb(verb: list[str], pfx: Path) -> bool:
     """Check if a winetricks verb is installed in the umu prefix.
 
     Determines the installation of verbs by reading winetricks.log file.
@@ -83,7 +83,7 @@ def is_installed_verb(verb: str, pfx: Path) -> bool:
         raise ValueError(err)
 
     wt_log = pfx.joinpath("winetricks.log")
-    verbs = {_ for _ in verb.split()}
+    verbs = {_ for _ in verb}
 
     if not wt_log.is_file():
         return is_installed
