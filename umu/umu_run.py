@@ -154,6 +154,7 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
     if not os.environ.get("GAMEID"):
         err: str = "Environment variable not set or is empty: GAMEID"
         raise ValueError(err)
+
     env["GAMEID"] = os.environ["GAMEID"]
 
     if os.environ.get("WINEPREFIX") == "":
@@ -586,8 +587,8 @@ def main() -> int:  # noqa: D103
     THREAD_POOL.shutdown()
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
-    if env.get("EXE").endswith("winetricks") and is_installed_verb(
-        opts, Path(env.get("WINEPREFIX"))
+    if env["EXE"].endswith("winetricks") and is_installed_verb(
+        opts, Path(env["WINEPREFIX"])
     ):
         sys.exit(1)
 
