@@ -66,7 +66,7 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
 
     # Exit if argument is not a verb
     if sys.argv[1].endswith("winetricks") and not is_winetricks_verb(
-        " ".join(sys.argv[2:])
+        sys.argv[2:]
     ):
         sys.exit(1)
 
@@ -585,7 +585,7 @@ def main() -> int:  # noqa: D103
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env.get("EXE").endswith("winetricks") and is_installed_verb(
-        " ".join(opts), Path(env.get("WINEPREFIX"))
+        opts, Path(env.get("WINEPREFIX"))
     ):
         sys.exit(1)
 
