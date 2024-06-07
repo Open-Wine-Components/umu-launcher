@@ -359,8 +359,8 @@ def _get_latest(
         log.debug("Removing: %s", tarball)
         tmp.joinpath(tarball).unlink(missing_ok=True)
         log.console(f"Using {version} ({proton})")
-    except ValueError:
-        log.exception("ValueError")
+    except ValueError as e:
+        log.exception(e)
         tarball: str = files[1][0]
         # Digest mismatched
         # Since we do not want the user to use a suspect file, delete it
@@ -373,8 +373,8 @@ def _get_latest(
         # Clean up extracted data and cache to prevent corruption/errors
         _cleanup(tarball, proton_dir, tmp, steam_compat)
         return None
-    except HTTPException:  # Download failed
-        log.exception("HTTPException")
+    except HTTPException as e:  # Download failed
+        log.exception(e)
         return None
 
     return env
