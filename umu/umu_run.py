@@ -26,9 +26,9 @@ from umu_consts import (
 )
 from umu_log import CustomFormatter, console_handler, log
 from umu_plugins import set_env_toml
-from umu_proton import get_umu_proton
+from umu_proton import Proton, get_umu_proton
 from umu_runtime import setup_umu
-from umu_util import get_libc
+from umu_util import get_libc, is_installed_verb, is_winetricks_verb
 
 THREAD_POOL: ThreadPoolExecutor = ThreadPoolExecutor()
 
@@ -46,9 +46,28 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     parser.add_argument(
         "--config", help=("path to TOML file (requires Python 3.11+)")
     )
+    parser.add_argument(
+        "winetricks",
+        help=("run winetricks (requires UMU-Proton or GE-Proton)"),
+        nargs="?",
+        default=None,
+    )
 
     if not sys.argv[1:]:
         parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    # Winetricks
+    # Exit if no winetricks verbs were passed
+    if sys.argv[1].endswith("winetricks") and not sys.argv[2:]:
+        err: str = "No winetricks verb specified"
+        log.error(err)
+        sys.exit(1)
+
+    # Exit if argument is not a verb
+    if sys.argv[1].endswith("winetricks") and not is_winetricks_verb(
+        sys.argv[2:]
+    ):
         sys.exit(1)
 
     if sys.argv[1:][0] in opt_args:
@@ -79,8 +98,6 @@ def set_log() -> None:
         console_handler.setFormatter(CustomFormatter(DEBUG_FORMAT))
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
-
-    os.environ.pop("UMU_LOG")
 
 
 def setup_pfx(path: str) -> None:
@@ -203,6 +220,21 @@ def set_env(
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         env["PROTON_VERB"] = "waitforexitandrun"
+    elif isinstance(args, tuple) and args[0] == "winetricks":
+        # Make an absolute path to winetricks that is within GE-Proton or
+        # UMU-Proton, which includes the dependencies bundled within the
+        # protonfixes directory. Fixes exit 3 status codes after applying
+        # winetricks verbs
+        bin: str = (
+            Path(env["PROTONPATH"], "protonfixes", "winetricks")
+            .expanduser()
+            .resolve(strict=True)
+            .as_posix()
+        )
+        log.debug("EXE: %s -> %s", args[0], bin)
+        args: tuple[str, list[str]] = (bin, args[1])
+        env["EXE"] = bin
+        env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
     elif isinstance(args, tuple):
         try:
             env["EXE"] = (
@@ -256,6 +288,24 @@ def set_env(
 
     # Game drive
     enable_steam_game_drive(env)
+
+    # Winetricks
+    if env.get("EXE").endswith("winetricks"):
+        proton: Proton = Proton(os.environ["PROTONPATH"])
+        env["WINE"] = proton.wine_bin
+        env["WINELOADER"] = proton.wine_bin
+        env["WINESERVER"] = proton.wineserver_bin
+        env["WINETRICKS_LATEST_VERSION_CHECK"] = "disabled"
+        env["LD_PRELOAD"] = ""
+        env["WINEDLLPATH"] = ":".join(
+            [
+                Path(proton.lib_dir, "wine").as_posix(),
+                Path(proton.lib64_dir, "wine").as_posix(),
+            ]
+        )
+        env["WINETRICKS_SUPER_QUIET"] = (
+            "" if os.environ.get("UMU_LOG") == "debug" else "1"
+        )
 
     return env
 
@@ -338,6 +388,12 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
+    # Configure winetricks to not be prompted for any windows
+    if env.get("EXE").endswith("winetricks") and opts:
+        # The position of arguments matter for winetricks
+        # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
+        opts = ["-q", *opts]
+
     if opts:
         command.extend(
             [
@@ -378,6 +434,7 @@ def run_command(command: list[str]) -> int:
     proc: Popen = None
     ret: int = 0
     libc: str = get_libc()
+    cwd: str = ""
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -385,6 +442,12 @@ def run_command(command: list[str]) -> int:
 
     if not libc:
         log.warning("Will not set subprocess as subreaper")
+
+    # For winetricks, change directory to $PROTONPATH/protonfixes
+    if os.environ.get("EXE").endswith("winetricks"):
+        cwd = Path(os.environ.get("PROTONPATH"), "protonfixes").as_posix()
+    else:
+        cwd = Path.cwd().as_posix()
 
     # Create a subprocess but do not set it as subreaper
     # Unnecessary in a Flatpak and prctl() will fail if libc could not be found
@@ -408,6 +471,7 @@ def run_command(command: list[str]) -> int:
         command,
         start_new_session=True,
         preexec_fn=lambda: prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0),
+        cwd=cwd,
     )
     ret = proc.wait()
     log.debug("Child %s exited with wait status: %s", proc.pid, ret)
@@ -441,7 +505,7 @@ def main() -> int:  # noqa: D103
         "UMU_ZENITY": "",
     }
     command: list[str] = []
-    opts: list[str] = None
+    opts: list[str] = []
     root: Path = Path(__file__).resolve(strict=True).parent
     future: Future = None
     args: Namespace | tuple[str, list[str]] = parse_args()
@@ -518,6 +582,12 @@ def main() -> int:  # noqa: D103
     if future:
         future.result()
     THREAD_POOL.shutdown()
+
+    # Exit if the winetricks verb is already installed to avoid reapplying it
+    if env.get("EXE").endswith("winetricks") and is_installed_verb(
+        opts, Path(env.get("WINEPREFIX"))
+    ):
+        sys.exit(1)
 
     # Run
     build_command(env, UMU_LOCAL, command, opts)

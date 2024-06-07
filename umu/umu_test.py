@@ -15,6 +15,7 @@ from unittest.mock import patch
 import umu_proton
 import umu_run
 import umu_runtime
+import umu_util
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -43,6 +44,13 @@ class TestGameLauncher(unittest.TestCase):
             "UMU_ID": "",
             "STORE": "",
             "PROTON_VERB": "",
+            "WINE": "",
+            "WINELOADER": "",
+            "WINESERVER": "",
+            "WINETRICKS_LATEST_VERSION_CHECK": "",
+            "LD_PRELOAD": "",
+            "WINEDLLPATH": "",
+            "WINETRICKS_SUPER_QUIET": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -67,6 +75,8 @@ class TestGameLauncher(unittest.TestCase):
         self.test_user_share = Path("./tmp.BXk2NnvW2m")
         # ~/.local/share/Steam/compatibilitytools.d
         self.test_local_share = Path("./tmp.aDl73CbQCP")
+        # Wine prefix
+        self.test_winepfx = Path("./tmp.AlfLPDhDvA")
 
         # Dictionary that represents the umu_versionS.json
         self.root_config = {
@@ -81,6 +91,7 @@ class TestGameLauncher(unittest.TestCase):
         # umu_version.json
         self.test_config = json.dumps(self.root_config, indent=4)
 
+        self.test_winepfx.mkdir(exist_ok=True)
         self.test_user_share.mkdir(exist_ok=True)
         self.test_local_share.mkdir(exist_ok=True)
         self.test_cache.mkdir(exist_ok=True)
@@ -143,7 +154,7 @@ class TestGameLauncher(unittest.TestCase):
 
     def tearDown(self):
         """Unset environment variables and delete test files after tests."""
-        for key, val in self.env.items():
+        for key in self.env:
             if key in os.environ:
                 os.environ.pop(key)
 
@@ -164,6 +175,80 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
+
+        if self.test_winepfx.exists():
+            rmtree(self.test_winepfx.as_posix())
+
+    def test_is_installed_verb_noverb(self):
+        """Test is_installed_verb when passed an empty verb."""
+        verb = []
+
+        with self.assertRaises(ValueError):
+            umu_util.is_installed_verb(verb, self.test_winepfx)
+
+    def test_ist_installed_verb_nopfx(self):
+        """Test is_installed_verb when passed a non-existent pfx."""
+        verb = ["foo"]
+        result = True
+
+        # Handle the None type
+        # In the real usage, this should not happen
+        with self.assertRaises(FileNotFoundError):
+            umu_util.is_installed_verb(verb, None)
+
+        # An exception should not be raised for a non-existent directory. When
+        # the prefix does not exist, umu will create the default prefix as
+        # ~/Games/umu/$GAMEID and will be created by Proton.
+        result = umu_util.is_installed_verb(verb, Path("./foo"))
+        self.assertFalse(result, "wine prefix exists")
+
+    def test_is_installed_verb_nofile(self):
+        """Test is_installed_verb when the log file is absent."""
+        verb = ["foo"]
+        result = True
+
+        result = umu_util.is_installed_verb(verb, self.test_winepfx)
+        self.assertFalse(result, "winetricks.log file was found")
+
+    def test_is_installed_verb(self):
+        """Test is_installed_verb.
+
+        Reads the winetricks.log file within the wine prefix to find the verb
+        that was passed from the command line.
+        """
+        verbs = ["foo", "bar"]
+        wt_log = self.test_winepfx.joinpath("winetricks.log")
+        result = False
+
+        wt_log.write_text("\n".join(verbs))
+        result = umu_util.is_installed_verb(verbs, self.test_winepfx)
+        self.assertTrue(result, "winetricks verb was not installed")
+
+    def test_is_not_winetricks_verb(self):
+        """Test is_winetricks_verb when not passed a valid verb."""
+        verbs = ["--help", ";bash", "list-all"]
+        result = False
+
+        result = umu_util.is_winetricks_verb(verbs)
+        self.assertFalse(result, f"{verbs} contains a winetricks verb")
+
+        # Handle None and empty cases
+        result = umu_util.is_winetricks_verb(None)
+        self.assertFalse(result, f"{verbs} contains a winetricks verb")
+
+        result = umu_util.is_winetricks_verb([])
+        self.assertFalse(result, f"{verbs} contains a winetricks verb")
+
+    def test_is_winetricks_verb(self):
+        """Test is_winetricks_verb when passed valid verbs.
+
+        Expects winetricks verbs to follow ^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$.
+        """
+        verbs = ["foo", "foo=bar", "baz=qux"]
+        result = True
+
+        result = umu_util.is_winetricks_verb(verbs)
+        self.assertTrue(result, f"'{verbs}' is not a winetricks verb")
 
     def test_check_runtime(self):
         """Test check_runtime when pv-verify does not exist.
@@ -1671,6 +1756,152 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected STEAM_COMPAT_MOUNTS to be set",
             )
 
+    def test_set_env_winetricks(self):
+        """Test set_env when using winetricks."""
+        result = None
+        test_str = "foo"
+        verb = "foo"
+        test_exe = "winetricks"
+
+        # Mock a Proton directory that contains winetricks
+        test_dir = Path("./tmp.aCAs3Q7rvz")
+        test_dir.joinpath("protonfixes").mkdir(parents=True)
+        test_dir.joinpath("protonfixes", "winetricks").touch()
+
+        # Replicate the usage:
+        # GAMEID= umu_run winetricks ...
+        with patch("sys.argv", ["", "winetricks", verb]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = test_dir.as_posix()
+            os.environ["GAMEID"] = test_str
+            os.environ["STORE"] = test_str
+            os.environ["PROTON_VERB"] = self.test_verb
+            # Args
+            result = umu_run.parse_args()
+            # Check
+            umu_run.check_env(self.env)
+            # Prefix
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            self.assertNotEqual(
+                Path(test_exe),
+                Path(test_exe).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["WINEPREFIX"]),
+                Path(os.environ["WINEPREFIX"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            self.assertNotEqual(
+                Path(os.environ["PROTONPATH"]),
+                Path(os.environ["PROTONPATH"]).resolve(),
+                "Expected path to exe to be non-normalized",
+            )
+            result = umu_run.set_env(self.env, result[0:])
+            self.assertTrue(result is self.env, "Expected the same reference")
+
+            path_exe = (
+                test_dir.joinpath("protonfixes", "winetricks")
+                .expanduser()
+                .resolve()
+                .as_posix()
+            )
+            path_file = Path(self.test_file).expanduser().resolve().as_posix()
+
+            # After calling set_env all paths should be expanded POSIX form
+            self.assertEqual(
+                self.env["EXE"],
+                path_exe,
+                "Expected EXE to be normalized and expanded",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_INSTALL_PATH"],
+                Path(path_exe).parent.as_posix(),
+                "Expected STEAM_COMPAT_INSTALL_PATH to be set",
+            )
+            self.assertEqual(
+                self.env["STORE"], test_str, "Expected STORE to be set"
+            )
+            self.assertEqual(
+                self.env["PROTONPATH"],
+                Path(path_exe).parent.parent.as_posix(),
+                "Expected PROTONPATH to be normalized and expanded",
+            )
+            self.assertEqual(
+                self.env["WINEPREFIX"],
+                path_file,
+                "Expected WINEPREFIX to be normalized and expanded",
+            )
+            self.assertEqual(
+                self.env["GAMEID"], test_str, "Expected GAMEID to be set"
+            )
+            self.assertEqual(
+                self.env["PROTON_VERB"],
+                self.test_verb,
+                "Expected PROTON_VERB to be set",
+            )
+            # umu
+            self.assertEqual(
+                self.env["UMU_ID"],
+                self.env["GAMEID"],
+                "Expected UMU_ID to be GAMEID",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_APP_ID"],
+                "0",
+                "Expected STEAM_COMPAT_APP_ID to be 0",
+            )
+            self.assertEqual(
+                self.env["SteamAppId"],
+                self.env["STEAM_COMPAT_APP_ID"],
+                "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
+            )
+            self.assertEqual(
+                self.env["SteamGameId"],
+                self.env["SteamAppId"],
+                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
+            )
+
+            # PATHS
+            self.assertEqual(
+                self.env["STEAM_COMPAT_SHADER_PATH"],
+                self.env["STEAM_COMPAT_DATA_PATH"] + "/shadercache",
+                "Expected STEAM_COMPAT_SHADER_PATH to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                self.env["PROTONPATH"]
+                + ":"
+                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                "Expected STEAM_COMPAT_TOOL_PATHS to be set",
+            )
+            self.assertEqual(
+                self.env["STEAM_COMPAT_MOUNTS"],
+                self.env["STEAM_COMPAT_TOOL_PATHS"],
+                "Expected STEAM_COMPAT_MOUNTS to be set",
+            )
+
+            # Winetricks
+            self.assertTrue(self.env["WINE"], "WINE is not set")
+            self.assertTrue(self.env["WINELOADER"], "WINELOADER is not set")
+            self.assertTrue(self.env["WINESERVER"], "WINESERVER is not set")
+            self.assertTrue(
+                self.env["WINETRICKS_LATEST_VERSION_CHECK"],
+                "WINETRICKS_LATEST_VERSION_CHECK is not set",
+            )
+            self.assertTrue(
+                self.env["LD_PRELOAD"] == "", "LD_PRELOAD is not set"
+            )
+            self.assertTrue(self.env["WINEDLLPATH"], "WINEDLLPATH is not set")
+            self.assertTrue(
+                self.env["WINETRICKS_SUPER_QUIET"],
+                "WINETRICKS_SUPER_QUIET is not set",
+            )
+
+        if test_dir.exists():
+            rmtree(test_dir.as_posix())
+
     def test_setup_pfx_mv(self):
         """Test setup_pfx when moving the WINEPREFIX after creating it.
 
@@ -1954,6 +2185,24 @@ class TestGameLauncher(unittest.TestCase):
             .is_symlink(),
             "Expected symlink of username -> steamuser",
         )
+
+    def test_parse_args_winetricks(self):
+        """Test parse_args when winetricks is the argument.
+
+        An SystemExit should be raised when no winetricks verb is passed or if
+        the value is not a winetricks verb.
+        """
+        with (
+            patch("sys.argv", ["", "winetricks"]),
+            self.assertRaises(SystemExit),
+        ):
+            umu_run.parse_args()
+
+        with (
+            patch("sys.argv", ["", "winetricks", "--help"]),
+            self.assertRaises(SystemExit),
+        ):
+            umu_run.parse_args()
 
     def test_parse_args(self):
         """Test parse_args with no options.

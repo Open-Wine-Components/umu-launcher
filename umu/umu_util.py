@@ -1,5 +1,7 @@
 from ctypes.util import find_library
 from functools import lru_cache
+from pathlib import Path
+from re import Pattern, compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
@@ -61,3 +63,60 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
         log.warning("zenity exited with the status code: %s", ret)
 
     return ret
+
+
+def is_installed_verb(verb: list[str], pfx: Path) -> bool:
+    """Check if a winetricks verb is installed in the umu prefix.
+
+    Determines the installation of verbs by reading winetricks.log file.
+    """
+    wt_log: Path = None
+    is_installed: bool = False
+    verbs: set[str] = {}
+
+    if not pfx:
+        err: str = f"Value is '{pfx}' for WINE prefix"
+        raise FileNotFoundError(err)
+
+    if not verb:
+        err: str = "winetricks was passed an empty verb"
+        raise ValueError(err)
+
+    wt_log = pfx.joinpath("winetricks.log")
+    verbs = {_ for _ in verb}
+
+    if not wt_log.is_file():
+        return is_installed
+
+    with wt_log.open(mode="r", encoding="utf-8") as file:
+        for line in file:
+            _: str = line.strip()
+            if _ in verbs:
+                is_installed = True
+                err: str = (
+                    f"winetricks verb '{_}' is already installed in '{pfx}'"
+                )
+                log.error(err)
+                break
+
+    return is_installed
+
+
+def is_winetricks_verb(
+    verbs: list[str], pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$"
+) -> bool:
+    """Check if a string is a winetricks verb."""
+    regex: Pattern = None
+
+    if not verbs:
+        return False
+
+    # When passed a sequence, check each verb and log the non-verbs
+    regex = compile(pattern)
+    for verb in verbs:
+        if not regex.match(verb):
+            err: str = f"Value is not a winetricks verb: '{verb}'"
+            log.error(err)
+            return False
+
+    return True
