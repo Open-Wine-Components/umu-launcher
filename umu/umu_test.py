@@ -228,32 +228,29 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_is_not_winetricks_verb(self):
         """Test is_winetricks_verb when not passed a valid verb."""
-        verbs = ["--help", "; bash", "-q list-all"]
+        verbs = ["--help", ";bash", "list-all"]
         result = False
-        err = []
 
-        for verb in verbs:
-            if umu_util.is_winetricks_verb(verb):
-                result = True
-                err.append(f"'{verb}' is a winetricks verb")
+        result = umu_util.is_winetricks_verb(verbs)
+        self.assertFalse(result, f"{verbs} contains a winetricks verb")
 
-        self.assertFalse(result, err)
+        # Handle None and empty cases
+        result = umu_util.is_winetricks_verb(None)
+        self.assertFalse(result, f"{verbs} contains a winetricks verb")
+
+        result = umu_util.is_winetricks_verb([])
+        self.assertFalse(result, f"{verbs} contains a winetricks verb")
 
     def test_is_winetricks_verb(self):
-        """Test is_winetricks_verb when passed a valid verb.
+        """Test is_winetricks_verb when passed valid verbs.
 
         Expects winetricks verbs to follow ^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$.
         """
-        verbs = ["foo", "foo bar baz", "foo=bar baz=qux"]
+        verbs = ["foo", "foo=bar", "baz=qux"]
         result = True
-        err = []
 
-        for verb in verbs:
-            if not umu_util.is_winetricks_verb(verb):
-                result = True
-                err.append(f"'{verb}' is not a winetricks verb")
-
-        self.assertTrue(result, err)
+        result = umu_util.is_winetricks_verb(verbs)
+        self.assertTrue(result, f"'{verbs}' is not a winetricks verb")
 
     def test_check_runtime(self):
         """Test check_runtime when pv-verify does not exist.
