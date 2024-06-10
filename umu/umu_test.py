@@ -84,7 +84,7 @@ class TestGameLauncher(unittest.TestCase):
                 "versions": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
-                    "runtime_platform": "steamrt3",
+                    "runtime_platform": "sniper",
                 }
             }
         }
@@ -260,58 +260,44 @@ class TestGameLauncher(unittest.TestCase):
         If the pv-verify binary does not exist, a warning should be logged and
         the function should return
         """
-        build = "0.20240125.75305"
         json_root = umu_runtime._get_json(
             self.test_user_share, "umu_version.json"
         )
         self.test_user_share.joinpath(
             "pressure-vessel", "bin", "pv-verify"
         ).unlink()
-        result = umu_runtime.check_runtime(
-            self.test_user_share, json_root, build
-        )
+        result = umu_runtime.check_runtime(self.test_user_share, json_root)
         self.assertEqual(result, 1, "Expected the exit code 1")
-
-    def test_check_runtime_fail(self):
-        """Test check_runtime when runtime validation fails.
-
-        When passed a Falsey value such as an empty string for the build id,
-        check_runtime will fail early and not search the UMU_LOCAL directory
-        """
-        json_root = umu_runtime._get_json(
-            self.test_user_share, "umu_version.json"
-        )
-        mock = CompletedProcess(["foo"], 1)
-        with patch.object(umu_runtime, "run", return_value=mock):
-            result = umu_runtime.check_runtime(
-                self.test_user_share, json_root, ""
-            )
-            self.assertEqual(result, 1, "Expected the exit code 1")
 
     def test_check_runtime_success(self):
         """Test check_runtime when runtime validation succeeds."""
-        build = "0.20240125.75305"
         json_root = umu_runtime._get_json(
             self.test_user_share, "umu_version.json"
         )
         mock = CompletedProcess(["foo"], 0)
         with patch.object(umu_runtime, "run", return_value=mock):
-            result = umu_runtime.check_runtime(
-                self.test_user_share, json_root, build
-            )
+            result = umu_runtime.check_runtime(self.test_user_share, json_root)
             self.assertEqual(result, 0, "Expected the exit code 0")
 
     def test_check_runtime_dir(self):
         """Test check_runtime when passed a BUILD_ID that does not exist."""
-        build = "foo"
+        runtime = Path(
+            self.test_user_share, "sniper_platform_0.20240125.75305"
+        )
         json_root = umu_runtime._get_json(
             self.test_user_share, "umu_version.json"
         )
+
+        # Mock the removal of the runtime directory
+        # In the real usage when updating the runtime, this should not happen
+        # since the runtime validation will occur directly after extracting
+        # the contents to $HOME/.local/share/umu
+        if runtime.is_dir():
+            rmtree(runtime.as_posix())
+
         mock = CompletedProcess(["foo"], 1)
         with patch.object(umu_runtime, "run", return_value=mock):
-            result = umu_runtime.check_runtime(
-                self.test_user_share, json_root, build
-            )
+            result = umu_runtime.check_runtime(self.test_user_share, json_root)
             self.assertEqual(result, 1, "Expected the exit code 1")
 
     def test_move(self):
@@ -436,7 +422,7 @@ class TestGameLauncher(unittest.TestCase):
                 "versions": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
-                    "runtime_platform": "steamrt3"
+                    "runtime_platform": "sniper"
                 }
             }
         }
@@ -447,7 +433,7 @@ class TestGameLauncher(unittest.TestCase):
                 "foo": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
-                    "runtime_platform": "steamrt3"
+                    "runtime_platform": "sniper"
                 }
             }
         }

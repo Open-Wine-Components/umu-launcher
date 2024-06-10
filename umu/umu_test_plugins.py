@@ -72,7 +72,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 "versions": {
                     "launcher": "0.1-RC3",
                     "runner": "0.1-RC3",
-                    "runtime_platform": "sniper_platform_0.20240125.75305",
+                    "runtime_platform": "sniper",
                 }
             }
         }
