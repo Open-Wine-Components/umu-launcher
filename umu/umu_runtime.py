@@ -158,11 +158,6 @@ def _install_umu(
         for _ in futures:
             _.result()
 
-        # Remove the extracted directory and all its contents
-        log.debug("Removing: %s/SteamLinuxRuntime_sniper", tmp)
-        if source_dir.exists():
-            source_dir.rmdir()
-
         # Rename _v2-entry-point
         log.debug("Renaming: _v2-entry-point -> umu")
         UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
