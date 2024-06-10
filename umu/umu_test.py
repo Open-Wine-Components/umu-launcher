@@ -471,6 +471,35 @@ class TestGameLauncher(unittest.TestCase):
         with self.assertRaisesRegex(FileNotFoundError, "configuration"):
             umu_runtime._get_json(self.test_user_share, "foo")
 
+    def test_get_json_steamrt(self):
+        """Test _get_json when passed a non-steamrt value.
+
+        This attempts to mitigate against directory removal attacks for user
+        installations in the home directory, since the launcher will remove the
+        old runtime on update. Currently expects runtime_platform value to be
+        'soldier', 'sniper', 'medic' and 'steamrt5'
+        """
+        config = {
+            "umu": {
+                "versions": {
+                    "launcher": "0.1-RC3",
+                    "runner": "0.1-RC3",
+                    "runtime_platform": "foo",
+                }
+            }
+        }
+        test_config = json.dumps(config, indent=4)
+
+        self.test_user_share.joinpath("umu_version.json").unlink(
+            missing_ok=True
+        )
+        self.test_user_share.joinpath("umu_version.json").write_text(
+            test_config, encoding="utf-8"
+        )
+
+        with self.assertRaises(ValueError):
+            umu_runtime._get_json(self.test_user_share, "umu_version.json")
+
     def test_get_json(self):
         """Test _get_json.
 
