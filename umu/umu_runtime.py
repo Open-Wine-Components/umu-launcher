@@ -19,7 +19,8 @@ from umu_log import log
 from umu_util import run_zenity
 
 CLIENT_SESSION: HTTPSConnection = HTTPSConnection(
-    "repo.steampowered.com", context=create_default_context()
+    "repo.steampowered.com",
+    context=create_default_context(),
 )
 
 try:
@@ -32,30 +33,27 @@ def _install_umu(
     json: dict[str, Any], thread_pool: ThreadPoolExecutor
 ) -> None:
     tmp: Path = Path(mkdtemp())
-    # Exit code from zenity
-    ret: int = 0
-    # Archive containing the runtime
-    archive: str = "SteamLinuxRuntime_sniper.tar.xz"
+    ret: int = 0  # Exit code from zenity
+    # Codename for the runtime (e.g., 'sniper')
     codename: str = json["umu"]["versions"]["runtime_platform"]
-    base_url: str = f"https://repo.steampowered.com/{codename}/images/latest-container-runtime-public-beta"
-    # Value that corresponds to the runtime directory version
-    build_id: str = ""
+    # Archive containing the runtime
+    archive: str = f"SteamLinuxRuntime_{codename}.tar.xz"
+    base_url: str = (
+        f"https://repo.steampowered.com/steamrt-images-{codename}"
+        "/snapshots/latest-container-runtime-public-beta"
+    )
 
     log.debug("Codename: %s", codename)
     log.debug("URL: %s", base_url)
 
-    # Download the runtime
-    # Optionally create a popup with zenity
+    # Download the runtime and optionally create a popup with zenity
     if environ.get("UMU_ZENITY") == "1":
         bin: str = "curl"
         opts: list[str] = [
             "-LJ",
             "--silent",
-            "--parallel",
             "-O",
             f"{base_url}/{archive}",
-            "-O",
-            f"{base_url}/BUILD_ID.txt",
             "--output-dir",
             tmp.as_posix(),
         ]
@@ -70,24 +68,11 @@ def _install_umu(
     if not environ.get("UMU_ZENITY") or ret:
         digest: str = ""
         endpoint: str = (
-            f"/{codename}/images/latest-container-runtime-public-beta"
+            f"/steamrt-images-{codename}"
+            "/snapshots/latest-container-runtime-public-beta"
         )
         resp: HTTPResponse = None
         hash = sha256()
-
-        # Get the version of the runtime
-        CLIENT_SESSION.request("GET", f"{endpoint}/BUILD_ID.txt")
-        resp = CLIENT_SESSION.getresponse()
-
-        if resp.status != 200:
-            err: str = (
-                f"repo.steampowered.com returned the status: {resp.status}"
-            )
-            raise HTTPException(err)
-
-        for line in resp.read().decode("utf-8").splitlines():
-            build_id = line
-            break
 
         # Get the digest for the runtime archive
         CLIENT_SESSION.request("GET", f"{endpoint}/SHA256SUMS")
@@ -97,6 +82,7 @@ def _install_umu(
             err: str = (
                 f"repo.steampowered.com returned the status: {resp.status}"
             )
+            CLIENT_SESSION.close()
             raise HTTPException(err)
 
         for line in resp.read().decode("utf-8").splitlines():
@@ -112,9 +98,10 @@ def _install_umu(
             err: str = (
                 f"repo.steampowered.com returned the status: {resp.status}"
             )
+            CLIENT_SESSION.close()
             raise HTTPException(err)
 
-        log.console(f"Downloading latest {codename}, please wait...")
+        log.console(f"Downloading latest steamrt {codename}, please wait...")
         with tmp.joinpath(archive).open(mode="ab") as file:
             chunk_size: int = 64 * 1024  # 64 KB
             while True:
@@ -127,9 +114,10 @@ def _install_umu(
         # Verify the runtime digest
         if hash.hexdigest() != digest:
             err: str = f"Digest mismatched: {archive}"
+            CLIENT_SESSION.close()
             raise ValueError(err)
 
-        log.console(f"{codename} {build_id}: SHA256 is OK")
+        log.console(f"{archive}: SHA256 is OK")
         CLIENT_SESSION.close()
 
     # Open the tar file and move the files
@@ -150,13 +138,12 @@ def _install_umu(
         # Ensure the target directory exists
         UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
+        # Extract the entirety of the archive w/ or w/o the data filter
         log.debug("Extracting archive files -> %s", tmp)
-        for member in tar.getmembers():
-            if member.name.startswith("SteamLinuxRuntime_sniper/"):
-                tar.extract(member, path=tmp)
+        tar.extractall(path=tmp)  # noqa: S202
 
         # Move the files to the correct location
-        source_dir: Path = tmp.joinpath("SteamLinuxRuntime_sniper")
+        source_dir: Path = tmp.joinpath(f"SteamLinuxRuntime_{codename}")
         log.debug("Source: %s", source_dir)
         log.debug("Destination: %s", UMU_LOCAL)
 
@@ -174,31 +161,12 @@ def _install_umu(
         for _ in futures:
             _.result()
 
-        # Remove the extracted directory and all its contents
-        log.debug("Removing: %s/SteamLinuxRuntime_sniper", tmp)
-        if source_dir.exists():
-            source_dir.rmdir()
-
         # Rename _v2-entry-point
         log.debug("Renaming: _v2-entry-point -> umu")
         UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
 
-        # Write BUILD_ID.txt
-        UMU_LOCAL.joinpath("BUILD_ID.txt").write_text(
-            build_id
-            or tmp.joinpath("BUILD_ID.txt").read_text(encoding="utf-8"),
-            encoding="utf-8",
-        )
-
         # Validate the runtime after moving the files
-        check_runtime(
-            UMU_LOCAL,
-            json,
-            build_id
-            or tmp.joinpath("BUILD_ID.txt")
-            .read_text(encoding="utf-8")
-            .strip(),
-        )
+        check_runtime(UMU_LOCAL, json)
 
 
 def setup_umu(
@@ -232,61 +200,66 @@ def _update_umu(
     the local VERSIONS.txt against the remote one.
     """
     codename: str = json["umu"]["versions"]["runtime_platform"]
-    # NOTE: If we ever build our custom runtime, this url will need to change
-    # as well as the hard coded file paths below
-    endpoint: str = f"/{codename}/images/latest-container-runtime-public-beta"
+    endpoint: str = (
+        f"/steamrt-images-{codename}"
+        "/snapshots/latest-container-runtime-public-beta"
+    )
     runtime: Path = None
-    build_id: str = ""
     resp: HTTPResponse = None
     log.debug("Existing install detected")
 
-    # The BUILD_ID.txt is used to identify the runtime directory.
-    # Restore if it is missing and do not crash if it does not exist remotely
-    if not local.joinpath("BUILD_ID.txt").is_file():
-        CLIENT_SESSION.request("GET", f"{endpoint}/BUILD_ID.txt")
-        resp = CLIENT_SESSION.getresponse()
-        if resp.status != 200:
-            log.warning(
-                "repo.steampowered.com returned the status: %s",
-                resp.status,
-            )
-        else:
-            build_id = resp.read().decode("utf-8").strip()
-            local.joinpath("BUILD_ID.txt").write_text(build_id)
-
-    # Find the runtime directory
-    if local.joinpath("BUILD_ID.txt").is_file():
-        build_id = (
-            build_id
-            or local.joinpath("BUILD_ID.txt")
-            .read_text(encoding="utf-8")
-            .strip()
+    # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
+    # Assume the directory begins with the alias
+    try:
+        runtime = max(
+            [file for file in local.glob(f"{codename}*") if file.is_dir()]
         )
-        for file in local.glob(f"*{build_id}"):
-            runtime = file
-            log.debug("Runtime: %s", runtime.name)
-            break
+    except ValueError:
+        log.warning("Runtime Platform not found")
+        log.console("Restoring Runtime Platform...")
+        _install_umu(json, thread_pool)
+        return
 
-    if (
-        not runtime
-        or not runtime.is_dir()
-        or not local.joinpath("pressure-vessel").is_dir()
-    ):
+    log.debug("Runtime: %s", runtime.name)
+    log.debug("Codename: %s", codename)
+
+    if not local.joinpath("pressure-vessel").is_dir():
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
         _install_umu(json, thread_pool)
         return
 
     # Restore VERSIONS.txt
-    # NOTE: Change 'SteamLinuxRuntime_sniper.VERSIONS.txt' when the version
-    # changes (e.g., steamrt4 -> SteamLinuxRuntime_medic.VERSIONS.txt)
+    # When the file is missing, the request for the image will need to be made
+    # to the endpoint of the specific snapshot
     if not local.joinpath("VERSIONS.txt").is_file():
-        versions: str = "SteamLinuxRuntime_sniper.VERSIONS.txt"
-        endpoint_sniper: str = f"/{codename}/images/{build_id}/{versions}"
-        CLIENT_SESSION.request("GET", endpoint_sniper)
+        release: Path = runtime.joinpath("files", "lib", "os-release")
+        versions: str = f"SteamLinuxRuntime_{codename}.VERSIONS.txt"
+        url: str = ""
+        build_id: str = ""
+
+        # Restore the runtime if os-release is missing, otherwise pressure
+        # vessel will crash when creating the variable directory
+        if not release.is_file():
+            log.warning("Runtime Platform corrupt")
+            log.console("Restoring Runtime Platform...")
+            _install_umu(json, thread_pool)
+            return
+
+        # Get the BUILD_ID value in os-release
+        with release.open(mode="r", encoding="utf-8") as file:
+            for line in file:
+                if line.startswith("BUILD_ID"):
+                    _: str = line.strip()
+                    # Get the value after '=' and strip the quotes
+                    build_id = _[_.find("=") + 1 :].strip('"')
+                    url = (
+                        f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
+                    )
+                    break
+
+        CLIENT_SESSION.request("GET", url)
         resp = CLIENT_SESSION.getresponse()
-        log.warning("VERSIONS.txt not found")
-        log.console("Restoring VERSIONS.txt...")
 
         # Handle the redirect
         if resp.status == 301:
@@ -295,7 +268,7 @@ def _update_umu(
             # The stdlib requires reading the entire response body before
             # making another request
             resp.read()
-            CLIENT_SESSION.request("GET", f"{location}/{build_id}/{versions}")
+            CLIENT_SESSION.request("GET", f"{location}/{versions}")
             resp = CLIENT_SESSION.getresponse()
 
         if resp.status != 200:
@@ -310,7 +283,7 @@ def _update_umu(
 
     # Update the runtime if necessary by comparing VERSIONS.txt to the remote
     CLIENT_SESSION.request(
-        "GET", f"{endpoint}/SteamLinuxRuntime_sniper.VERSIONS.txt"
+        "GET", f"{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt"
     )
     resp = CLIENT_SESSION.getresponse()
 
@@ -325,12 +298,12 @@ def _update_umu(
         sha256(resp.read()).digest()
         != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     ):
-        log.console(f"Updating {codename} to latest...")
+        log.console("Updating steamrt to latest...")
         _install_umu(json, thread_pool)
         log.debug("Removing: %s", runtime)
         rmtree(runtime.as_posix())
         return
-    log.console(f"{codename} is up to date")
+    log.console("steamrt is up to date")
 
     CLIENT_SESSION.close()
 
@@ -343,6 +316,14 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
     must exist.
     """
     json: dict[str, Any] = None
+    # Steam Runtime platform values
+    # See https://gitlab.steamos.cloud/steamrt/steamrt/-/wikis/home
+    steamrts: set[str] = {
+        "soldier",
+        "sniper",
+        "medic",
+        "steamrt5",
+    }
 
     # umu_version.json in the system path should always exist
     if not path.joinpath(config).is_file():
@@ -360,6 +341,12 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
         err: str = (
             f"Failed to load {config} or 'umu' or 'versions' not in: {config}"
         )
+        raise ValueError(err)
+
+    # The launcher will use the value runtime_platform to glob files. Attempt
+    # to guard against directory removal attacks for non-system wide installs
+    if json.get("umu").get("versions").get("runtime_platform") not in steamrts:
+        err: str = "Value for 'runtime_platform' is not a steamrt"
         raise ValueError(err)
 
     return json
@@ -384,7 +371,7 @@ def _move(file: Path, src: Path, dst: Path) -> None:
         move(src_file, dest_file)
 
 
-def check_runtime(src: Path, json: dict[str, Any], build_id: str) -> int:
+def check_runtime(src: Path, json: dict[str, Any]) -> int:
     """Validate the file hierarchy of the runtime platform.
 
     The mtree file included in the Steam runtime platform will be used to
@@ -396,26 +383,22 @@ def check_runtime(src: Path, json: dict[str, Any], build_id: str) -> int:
     ret: int = 1
     runtime: Path = None
 
-    if not build_id:
-        log.warning("%s validation failed", codename)
-        return ret
-
-    # Find the runtime directory by its build id
-    for file in src.glob(f"*{build_id}"):
-        runtime = file
-        break
-
-    if not runtime or not runtime.is_dir():
-        log.warning("%s validation failed", codename)
+    # Find the runtime directory
+    try:
+        runtime = max(
+            [file for file in src.glob(f"{codename}*") if file.is_dir()]
+        )
+    except ValueError:
+        log.warning("steamrt validation failed")
         log.warning("Could not find runtime in '%s'", src)
         return ret
 
     if not pv_verify.is_file():
-        log.warning("%s validation failed", codename)
+        log.warning("steamrt validation failed")
         log.warning("File does not exist: '%s'", pv_verify)
         return ret
 
-    log.console(f"Verifying integrity of {codename} {build_id}...")
+    log.console(f"Verifying integrity of {runtime.name}...")
     ret = run(
         [
             pv_verify.as_posix(),
@@ -427,9 +410,9 @@ def check_runtime(src: Path, json: dict[str, Any], build_id: str) -> int:
     ).returncode
 
     if ret:
-        log.warning("%s validation failed", codename)
+        log.warning("steamrt validation failed")
         log.debug("%s exited with the status code: %s", pv_verify.name, ret)
         return ret
-    log.console(f"{codename} {build_id}: mtree is OK")
+    log.console(f"{runtime.name}: mtree is OK")
 
     return ret
