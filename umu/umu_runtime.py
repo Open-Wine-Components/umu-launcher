@@ -82,6 +82,7 @@ def _install_umu(
             err: str = (
                 f"repo.steampowered.com returned the status: {resp.status}"
             )
+            CLIENT_SESSION.close()
             raise HTTPException(err)
 
         for line in resp.read().decode("utf-8").splitlines():
@@ -97,6 +98,7 @@ def _install_umu(
             err: str = (
                 f"repo.steampowered.com returned the status: {resp.status}"
             )
+            CLIENT_SESSION.close()
             raise HTTPException(err)
 
         log.console(
@@ -115,6 +117,7 @@ def _install_umu(
         # Verify the runtime digest
         if hash.hexdigest() != digest:
             err: str = f"Digest mismatched: {archive}"
+            CLIENT_SESSION.close()
             raise ValueError(err)
 
         log.console(f"steamrt {codename}: SHA256 is OK")
