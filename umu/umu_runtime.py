@@ -319,8 +319,6 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
     # Steam Runtime platform values
     # See https://gitlab.steamos.cloud/steamrt/steamrt/-/wikis/home
     steamrts: set[str] = {
-        "scout",
-        "heavy",
         "soldier",
         "sniper",
         "medic",
