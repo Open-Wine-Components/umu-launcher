@@ -38,7 +38,10 @@ def _install_umu(
     codename: str = json["umu"]["versions"]["runtime_platform"]
     # Archive containing the runtime
     archive: str = f"SteamLinuxRuntime_{codename}.tar.xz"
-    base_url: str = f"https://repo.steampowered.com/steamrt-images-{codename}/snapshots/latest-container-runtime-public-beta"
+    base_url: str = (
+        f"https://repo.steampowered.com/steamrt-images-{codename}"
+        "/snapshots/latest-container-runtime-public-beta"
+    )
 
     log.debug("Codename: %s", codename)
     log.debug("URL: %s", base_url)
