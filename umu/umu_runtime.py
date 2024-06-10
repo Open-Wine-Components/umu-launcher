@@ -101,10 +101,7 @@ def _install_umu(
             CLIENT_SESSION.close()
             raise HTTPException(err)
 
-        log.console(
-            f"Downloading latest steamrt {codename} (public beta),"
-            "please wait..."
-        )
+        log.console(f"Downloading latest steamrt {codename}, please wait...")
         with tmp.joinpath(archive).open(mode="ab") as file:
             chunk_size: int = 64 * 1024  # 64 KB
             while True:
@@ -120,7 +117,7 @@ def _install_umu(
             CLIENT_SESSION.close()
             raise ValueError(err)
 
-        log.console(f"steamrt {codename}: SHA256 is OK")
+        log.console(f"{archive}: SHA256 is OK")
         CLIENT_SESSION.close()
 
     # Open the tar file and move the files
@@ -222,6 +219,7 @@ def _update_umu(
         log.console("Restoring Runtime Platform...")
         _install_umu(json, thread_pool)
         return
+
     log.debug("Runtime: %s", runtime.name)
     log.debug("Codename: %s", codename)
 
@@ -262,7 +260,6 @@ def _update_umu(
 
         CLIENT_SESSION.request("GET", url)
         resp = CLIENT_SESSION.getresponse()
-        log.debug("Restoring VERSIONS.txt")
 
         # Handle the redirect
         if resp.status == 301:
@@ -301,7 +298,7 @@ def _update_umu(
         sha256(resp.read()).digest()
         != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     ):
-        log.console(f"Updating {codename} to latest...")
+        log.console("Updating steamrt to latest...")
         _install_umu(json, thread_pool)
         log.debug("Removing: %s", runtime)
         rmtree(runtime.as_posix())
@@ -394,16 +391,16 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
             [file for file in src.glob(f"{codename}*") if file.is_dir()]
         )
     except ValueError:
-        log.warning("%s validation failed", codename)
+        log.warning("steamrt validation failed")
         log.warning("Could not find runtime in '%s'", src)
         return ret
 
     if not pv_verify.is_file():
-        log.warning("%s validation failed", codename)
+        log.warning("steamrt validation failed")
         log.warning("File does not exist: '%s'", pv_verify)
         return ret
 
-    log.console(f"Verifying integrity of steamrt {codename}...")
+    log.console(f"Verifying integrity of {runtime.name}...")
     ret = run(
         [
             pv_verify.as_posix(),
@@ -415,9 +412,9 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     ).returncode
 
     if ret:
-        log.warning("%s validation failed", codename)
+        log.warning("steamrt validation failed")
         log.debug("%s exited with the status code: %s", pv_verify.name, ret)
         return ret
-    log.console(f"steamrt {codename}: mtree is OK")
+    log.console(f"{runtime.name}: mtree is OK")
 
     return ret
