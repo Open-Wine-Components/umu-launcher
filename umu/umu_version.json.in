@@ -3,7 +3,7 @@
     "versions": {
       "launcher": "##UMU_VERSION##",
       "runner": "##UMU_VERSION##",
-      "runtime_platform": "steamrt3"
+      "runtime_platform": "sniper"
     }
   }
 }
