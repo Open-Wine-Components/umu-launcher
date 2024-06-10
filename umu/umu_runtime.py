@@ -319,6 +319,16 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
     must exist.
     """
     json: dict[str, Any] = None
+    # Steam Runtime platform values
+    # See https://gitlab.steamos.cloud/steamrt/steamrt/-/wikis/home
+    steamrts: set[str] = {
+        "scout",
+        "heavy",
+        "soldier",
+        "sniper",
+        "medic",
+        "steamrt5",
+    }
 
     # umu_version.json in the system path should always exist
     if not path.joinpath(config).is_file():
@@ -336,6 +346,12 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
         err: str = (
             f"Failed to load {config} or 'umu' or 'versions' not in: {config}"
         )
+        raise ValueError(err)
+
+    # The launcher will use the value runtime_platform to glob files. Attempt
+    # to guard against directory removal attacks for non-system wide installs
+    if json.get("umu").get("versions").get("runtime_platform") not in steamrts:
+        err: str = "Value for 'runtime_platform' is not a steamrt"
         raise ValueError(err)
 
     return json
