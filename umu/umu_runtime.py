@@ -225,11 +225,7 @@ def _update_umu(
     log.debug("Runtime: %s", runtime.name)
     log.debug("Codename: %s", codename)
 
-    if (
-        not runtime
-        or not runtime.is_dir()
-        or not local.joinpath("pressure-vessel").is_dir()
-    ):
+    if not local.joinpath("pressure-vessel").is_dir():
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
         _install_umu(json, thread_pool)
