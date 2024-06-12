@@ -371,7 +371,7 @@ def build_command(
     env: dict[str, str],
     local: Path,
     command: list[str],
-    opts: list[str] = None,
+    opts: list[str] = [],
 ) -> list[str]:
     """Build the command to be executed."""
     verb: str = env["PROTON_VERB"]
@@ -395,20 +395,6 @@ def build_command(
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         opts = ["-q", *opts]
 
-    if opts:
-        command.extend(
-            [
-                local.joinpath("umu").as_posix(),
-                "--verb",
-                verb,
-                "--",
-                Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
-                verb,
-                env.get("EXE"),
-                *opts,
-            ],
-        )
-        return command
     command.extend(
         [
             local.joinpath("umu").as_posix(),
@@ -418,6 +404,7 @@ def build_command(
             Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
             verb,
             env.get("EXE"),
+            *opts,
         ],
     )
 
