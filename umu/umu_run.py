@@ -400,6 +400,8 @@ def build_command(
     """Build the command to be executed."""
     verb: str = env["PROTON_VERB"]
 
+    # Will run the game w/o Proton, effectively running the game as is. This
+    # option is intended for debugging purposes, and is otherwise useless
     if env.get("UMU_NO_RUNTIME") == "1":
         log.warning("Runtime Platform disabled")
         command.extend(
@@ -410,7 +412,7 @@ def build_command(
         )
         return command
 
-    # Log the warning when running games within SteamOS gamescope session
+    # Only log the warning when running games within SteamOS gamescope session
     if (
         env.get("UMU_NO_RUNTIME") == "pressure-vessel"
         and not is_steamdeck()
