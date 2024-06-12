@@ -355,13 +355,21 @@ class TestGameLauncher(unittest.TestCase):
     def test_is_winetricks_verb(self):
         """Test is_winetricks_verb when passed valid verbs.
 
-        Expects winetricks verbs to follow ^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$.
+        Expects winetricks verbs to follow ^[a-zA-Z_0-9]+(=[a-zA-Z0-9]*)?$.
         """
-        verbs = ["foo", "foo=bar", "baz=qux"]
+        verbs = []
         result = True
+        verbs_file = Path(__file__).parent.joinpath(
+            "../", "tests", "testdata", "winetricks_verbs.txt"
+        )
+
+        with verbs_file.open(mode="r", encoding="utf-8") as file:
+            verbs = [line.strip() for line in file]
 
         result = umu_util.is_winetricks_verb(verbs)
-        self.assertTrue(result, f"'{verbs}' is not a winetricks verb")
+        self.assertTrue(
+            result, f"Expected {verbs} to only contain winetricks verbs"
+        )
 
     def test_check_runtime(self):
         """Test check_runtime when pv-verify does not exist.
