@@ -103,7 +103,7 @@ def is_installed_verb(verb: list[str], pfx: Path) -> bool:
 
 
 def is_winetricks_verb(
-    verbs: list[str], pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]+)?$"
+    verbs: list[str], pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]*)?$"
 ) -> bool:
     """Check if a string is a winetricks verb."""
     regex: Pattern = None
