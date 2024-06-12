@@ -164,7 +164,7 @@ _UMU_ZENITY_
 	Optional. Creates a *zenity*[5] popup window when downloading large files.
 
 _UMU_NO_RUNTIME_
-	Optional and only applicable Flatpak applications. Disables the usage of the *Steam Linux Runtime*[6] (SLR).
+	Optional and only applicable to Flatpak applications. Disables the usage of the *Steam Linux Runtime*[6] (SLR).
 
 	Set to _1_ to disable the entirety of the SLR or _pressure-vessel_ to only disable Pressure Vessel and the container runtime.
 	
