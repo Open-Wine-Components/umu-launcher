@@ -51,7 +51,6 @@ class TestGameLauncher(unittest.TestCase):
             "LD_PRELOAD": "",
             "WINEDLLPATH": "",
             "WINETRICKS_SUPER_QUIET": "",
-            "UMU_NO_RUNTIME": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -1649,7 +1648,6 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = test_str
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
-            os.environ["UMU_NO_RUNTIME"] = "pressure-vessel"
             # Args
             result = umu_run.parse_args()
             self.assertIsInstance(result, tuple, "Expected a tuple")
@@ -1762,11 +1760,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_MOUNTS"],
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 "Expected STEAM_COMPAT_MOUNTS to be set",
-            )
-            self.assertEqual(
-                self.env["UMU_NO_RUNTIME"],
-                os.environ["UMU_NO_RUNTIME"],
-                "Expected UMU_NO_RUNTIME to be set",
             )
 
     def test_set_env_winetricks(self):
