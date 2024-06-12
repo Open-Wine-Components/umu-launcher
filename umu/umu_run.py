@@ -314,7 +314,8 @@ def set_env(
         )
 
     # Runtime
-    env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
+    if FLATPAK_PATH:
+        env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
 
     # Currently, running games when using the Steam Runtime in a Flatpak
     # environment will cause the game window to not display within the SteamOS
