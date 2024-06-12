@@ -410,8 +410,15 @@ def build_command(
         )
         return command
 
-    if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
+    # Log the warning when running games within SteamOS gamescope session
+    if (
+        env.get("UMU_NO_RUNTIME") == "pressure-vessel"
+        and not is_steamdeck()
+        and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope"
+    ):
         log.warning("Using Proton without Runtime Platform")
+
+    if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
         command.extend(
             [
                 Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
