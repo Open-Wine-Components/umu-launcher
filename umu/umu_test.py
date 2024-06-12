@@ -179,6 +179,12 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_winepfx.exists():
             rmtree(self.test_winepfx.as_posix())
 
+    def test_is_steamdeck(self):
+        """Test is_steamdeck."""
+        self.assertIsInstance(
+            umu_util.is_steamdeck(), bool, "Expected a boolean"
+        )
+
     def test_is_installed_verb_noverb(self):
         """Test is_installed_verb when passed an empty verb."""
         verb = []

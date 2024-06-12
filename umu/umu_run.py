@@ -28,7 +28,12 @@ from umu_log import CustomFormatter, console_handler, log
 from umu_plugins import set_env_toml
 from umu_proton import Proton, get_umu_proton
 from umu_runtime import setup_umu
-from umu_util import get_libc, is_installed_verb, is_winetricks_verb
+from umu_util import (
+    get_libc,
+    is_installed_verb,
+    is_steamdeck,
+    is_winetricks_verb,
+)
 
 THREAD_POOL: ThreadPoolExecutor = ThreadPoolExecutor()
 
@@ -308,6 +313,25 @@ def set_env(
             "" if os.environ.get("UMU_LOG") == "debug" else "1"
         )
 
+    # Runtime
+    if FLATPAK_PATH:
+        env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
+
+    # Currently, running games when using the Steam Runtime in a Flatpak
+    # environment will cause the game window to not display within the SteamOS
+    # gamescope session. Note, this is a workaround until the runtime is built
+    # or the issue is fixed upstream.
+    # See https://github.com/ValveSoftware/gamescope/issues/1341
+    if (
+        not os.environ.get("UMU_NO_RUNTIME")
+        and FLATPAK_PATH
+        and is_steamdeck()
+        and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+    ):
+        log.debug("SteamOS gamescope session detected")
+        log.debug("Disabling Pressure Vessel and container runtime")
+        env["UMU_NO_RUNTIME"] = "pressure-vessel"
+
     return env
 
 
@@ -371,10 +395,41 @@ def build_command(
     env: dict[str, str],
     local: Path,
     command: list[str],
-    opts: list[str] = None,
+    opts: list[str] = [],
 ) -> list[str]:
     """Build the command to be executed."""
     verb: str = env["PROTON_VERB"]
+
+    # Will run the game w/o Proton, effectively running the game as is. This
+    # option is intended for debugging purposes, and is otherwise useless
+    if env.get("UMU_NO_RUNTIME") == "1":
+        log.warning("Runtime Platform disabled")
+        command.extend(
+            [
+                env.get("EXE"),
+                *opts,
+            ],
+        )
+        return command
+
+    # Only log the warning when running games within SteamOS gamescope session
+    if (
+        env.get("UMU_NO_RUNTIME") == "pressure-vessel"
+        and not is_steamdeck()
+        and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope"
+    ):
+        log.warning("Using Proton without Runtime Platform")
+
+    if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
+        command.extend(
+            [
+                Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
+                verb,
+                env.get("EXE"),
+                *opts,
+            ],
+        )
+        return command
 
     # Raise an error if the _v2-entry-point cannot be found
     if not local.joinpath("umu").is_file():
@@ -395,20 +450,6 @@ def build_command(
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         opts = ["-q", *opts]
 
-    if opts:
-        command.extend(
-            [
-                local.joinpath("umu").as_posix(),
-                "--verb",
-                verb,
-                "--",
-                Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
-                verb,
-                env.get("EXE"),
-                *opts,
-            ],
-        )
-        return command
     command.extend(
         [
             local.joinpath("umu").as_posix(),
@@ -418,6 +459,7 @@ def build_command(
             Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
             verb,
             env.get("EXE"),
+            *opts,
         ],
     )
 
@@ -506,6 +548,7 @@ def main() -> int:  # noqa: D103
         "UMU_ID": "",
         "ULWGL_ID": "",
         "UMU_ZENITY": "",
+        "UMU_NO_RUNTIME": "",
     }
     command: list[str] = []
     opts: list[str] = []

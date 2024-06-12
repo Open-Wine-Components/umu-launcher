@@ -163,6 +163,13 @@ _PROTON_VERB_
 _UMU_ZENITY_
 	Optional. Creates a *zenity*[5] popup window when downloading large files.
 
+_UMU_NO_RUNTIME_
+	Optional and only applicable to Flatpak applications. Disables the usage of the *Steam Linux Runtime*[6] (SLR).
+
+	Set to _1_ to disable the entirety of the SLR or _pressure-vessel_ to only disable Pressure Vessel and the container runtime.
+	
+	Defaults to _pressure-vessel_.
+
 # SEE ALSO
 
 _umu_(5), _winetricks_(1), _zenity_(1)
@@ -174,6 +181,7 @@ _umu_(5), _winetricks_(1), _zenity_(1)
 . https://github.com/Open-Wine-Components/umu-protonfixes
 . https://github.com/Open-Wine-Components/umu-database
 . https://gitlab.gnome.org/GNOME/zenity
+. https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/container-runtime.md
 
 # AUTHORS
 
