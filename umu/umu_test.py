@@ -192,7 +192,7 @@ class TestGameLauncher(unittest.TestCase):
         with self.assertRaises(ValueError):
             umu_util.is_installed_verb(verb, self.test_winepfx)
 
-    def test_ist_installed_verb_nopfx(self):
+    def test_is_installed_verb_nopfx(self):
         """Test is_installed_verb when passed a non-existent pfx."""
         verb = ["foo"]
         result = True
