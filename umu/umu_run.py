@@ -308,6 +308,17 @@ def set_env(
             "" if os.environ.get("UMU_LOG") == "debug" else "1"
         )
 
+    # Runtime
+    # Currently, running games when using the Steam Runtime in a Flatpak
+    # environment will cause the game window to not display within the SteamOS
+    # gamescope session. Note, this is a workaround until the runtime is built
+    # or the issue is fixed upstream.
+    # See https://github.com/ValveSoftware/gamescope/issues/1341
+    if FLATPAK_PATH:
+        env["UMU_NO_RUNTIME"] = (
+            os.environ.get("UMU_NO_RUNTIME") or "pressure-vessel"
+        )
+
     return env
 
 
@@ -375,6 +386,28 @@ def build_command(
 ) -> list[str]:
     """Build the command to be executed."""
     verb: str = env["PROTON_VERB"]
+
+    if env.get("UMU_NO_RUNTIME") == "1":
+        log.warning("Runtime Platform disabled")
+        command.extend(
+            [
+                env.get("EXE"),
+                *opts,
+            ],
+        )
+        return command
+
+    if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
+        log.warning("Using Proton without Runtime Platform")
+        command.extend(
+            [
+                Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
+                verb,
+                env.get("EXE"),
+                *opts,
+            ],
+        )
+        return command
 
     # Raise an error if the _v2-entry-point cannot be found
     if not local.joinpath("umu").is_file():
@@ -493,6 +526,7 @@ def main() -> int:  # noqa: D103
         "UMU_ID": "",
         "ULWGL_ID": "",
         "UMU_ZENITY": "",
+        "UMU_NO_RUNTIME": "",
     }
     command: list[str] = []
     opts: list[str] = []
