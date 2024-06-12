@@ -1323,21 +1323,6 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
             result = umu_run.parse_args()
-            self.assertIsInstance(result, tuple, "Expected a tuple")
-            self.assertIsInstance(result[0], str, "Expected a string")
-            self.assertIsInstance(
-                result[1], list, "Expected a list as options"
-            )
-            self.assertEqual(
-                result[0],
-                "./tmp.WMYQiPb9A/foo",
-                "Expected EXE to be unexpanded",
-            )
-            self.assertEqual(
-                *result[1],
-                test_str,
-                "Expected the test string when passed as an option",
-            )
             # Check
             umu_run.check_env(self.env)
             # Prefix
@@ -1419,19 +1404,6 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
             result = umu_run.parse_args()
-            self.assertIsInstance(result, tuple, "Expected a tuple")
-            self.assertIsInstance(result[0], str, "Expected a string")
-            self.assertIsInstance(
-                result[1], list, "Expected a list as options"
-            )
-            self.assertEqual(
-                result[0],
-                "./tmp.WMYQiPb9A/foo",
-                "Expected EXE to be unexpanded",
-            )
-            self.assertFalse(
-                result[1], "Expected an empty list when passing no options"
-            )
             # Check
             umu_run.check_env(self.env)
             # Prefix
@@ -1538,20 +1510,6 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
             result = umu_run.parse_args()
-            self.assertIsInstance(result, tuple, "Expected a tuple")
-            self.assertIsInstance(
-                result[1], list, "Expected a list as options"
-            )
-            self.assertTrue(
-                result[0] == test_str,
-                "Expected EXE to be test string",
-            )
-            self.assertFalse(
-                Path(result[0]).is_file(), "Expected EXE to not exist"
-            )
-            self.assertFalse(
-                result[1], "Expected an empty list when passing no options"
-            )
             # Check
             umu_run.check_env(self.env)
             # Prefix
@@ -1665,19 +1623,6 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
             result = umu_run.parse_args()
-            self.assertIsInstance(result, tuple, "Expected a tuple")
-            self.assertIsInstance(result[0], str, "Expected a string")
-            self.assertIsInstance(
-                result[1], list, "Expected a list as options"
-            )
-            self.assertEqual(
-                result[0],
-                "./tmp.WMYQiPb9A/foo",
-                "Expected EXE to be unexpanded",
-            )
-            self.assertFalse(
-                result[1], "Expected an empty list when passing no options"
-            )
             # Check
             umu_run.check_env(self.env)
             # Prefix
@@ -2225,16 +2170,36 @@ class TestGameLauncher(unittest.TestCase):
         ):
             umu_run.parse_args()
 
-    def test_parse_args(self):
+    def test_parse_args_noopts(self):
         """Test parse_args with no options.
 
-        There's a requirement to create an empty prefix
-
-        A SystemExit should be raised in this case:
-        ./umu_run.py
+        A SystemExit should be raised in this usage: ./umu_run.py
         """
         with self.assertRaises(SystemExit):
             umu_run.parse_args()
+
+    def test_parse_args(self):
+        """Test parse_args."""
+        test_opt = "foo"
+
+        with patch("sys.argv", ["", self.test_exe, test_opt]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["STORE"] = self.test_file
+
+            # Args
+            result = umu_run.parse_args()
+            self.assertIsInstance(result, tuple, "Expected a tuple")
+            self.assertIsInstance(result[0], str, "Expected a string")
+            self.assertIsInstance(
+                result[1], list, "Expected a list as options"
+            )
+            self.assertEqual(
+                *result[1],
+                test_opt,
+                "Expected the test string when passed as an option",
+            )
 
     def test_parse_args_config(self):
         """Test parse_args --config."""
