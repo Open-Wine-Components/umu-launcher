@@ -179,6 +179,12 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_winepfx.exists():
             rmtree(self.test_winepfx.as_posix())
 
+    def test_get_libc(self):
+        """Test get_libc."""
+        self.assertIsInstance(
+            umu_util.get_libc(), str, "Value is not a string"
+        )
+
     def test_is_steamdeck(self):
         """Test is_steamdeck."""
         self.assertIsInstance(
