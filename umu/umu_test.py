@@ -10,7 +10,7 @@ from pathlib import Path
 from pwd import getpwuid
 from shutil import copy, copytree, rmtree
 from subprocess import CompletedProcess
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import umu_proton
 import umu_run
@@ -178,6 +178,107 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_winepfx.exists():
             rmtree(self.test_winepfx.as_posix())
+
+    def test_run_command(self):
+        """Test run_command."""
+        mock_exe = "foo"
+        mock_command = [
+            "/home/foo/.local/share/umu/umu",
+            "--verb",
+            "waitforexitandrun",
+            "--",
+            "/home/foo/.local/share/Steam/compatibilitytools.d/GE-Proton9-7/proton",
+            mock_exe,
+        ]
+        libc = umu_util.get_libc()
+
+        # Skip this test if libc is not found in system
+        if not libc:
+            return
+
+        os.environ["EXE"] = mock_exe
+        with (
+            patch.object(
+                umu_run,
+                "Popen",
+            ) as mock_popen,
+        ):
+            mock_proc = MagicMock()
+            mock_proc.wait.return_value = 0
+            mock_proc.pid = 1234
+            mock_popen.return_value = mock_proc
+            result = umu_run.run_command(mock_command)
+            mock_popen.assert_called_once()
+            self.assertEqual(
+                result,
+                0,
+                "Expected 0 status code when libc could not be found",
+            )
+
+    def test_run_command_flatpak(self):
+        """Test run_command when in a Flatpak environment.
+
+        In this case, we do not set the subprocess as the subreaper and a
+        warning message should be logged
+        """
+        mock_exe = "foo"
+        mock_command = [
+            "/home/foo/.local/share/umu/umu",
+            "--verb",
+            "waitforexitandrun",
+            "--",
+            "/home/foo/.local/share/Steam/compatibilitytools.d/GE-Proton9-7/proton",
+            mock_exe,
+        ]
+        mock_proc = CompletedProcess(mock_command, 0)
+
+        os.environ["EXE"] = mock_exe
+        os.environ["FLATPAK_ID"] = "foo"
+        with (
+            patch.object(umu_run, "run", return_value=mock_proc),
+            patch.object(umu_run, "get_libc", return_value=""),
+        ):
+            result = umu_run.run_command(mock_command)
+            self.assertEqual(
+                result,
+                0,
+                "Expected 0 status code when libc could not be found",
+            )
+
+    def test_run_command_nolibc(self):
+        """Test run_command when libc.so could not be found in system.
+
+        In this case, we do not set the subprocess as the subreaper and a
+        warning message should be logged
+        """
+        mock_exe = "foo"
+        mock_command = [
+            "/home/foo/.local/share/umu/umu",
+            "--verb",
+            "waitforexitandrun",
+            "--",
+            "/home/foo/.local/share/Steam/compatibilitytools.d/GE-Proton9-7/proton",
+            mock_exe,
+        ]
+        mock_proc = CompletedProcess(mock_command, 0)
+
+        os.environ["EXE"] = mock_exe
+        with (
+            patch.object(umu_run, "run", return_value=mock_proc),
+            patch.object(umu_run, "get_libc", return_value=""),
+        ):
+            result = umu_run.run_command(mock_command)
+            self.assertEqual(
+                result,
+                0,
+                "Expected 0 status code when libc could not be found",
+            )
+
+    def test_run_command_none(self):
+        """Test run_command when passed an empty list or None."""
+        with self.assertRaises(ValueError):
+            umu_run.run_command([])
+            umu_run.run_command(None)
 
     def test_get_libc(self):
         """Test get_libc."""
