@@ -49,7 +49,6 @@ class TestGameLauncher(unittest.TestCase):
             "WINESERVER": "",
             "WINETRICKS_LATEST_VERSION_CHECK": "",
             "LD_PRELOAD": "",
-            "WINEDLLPATH": "",
             "WINETRICKS_SUPER_QUIET": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
@@ -1974,7 +1973,6 @@ class TestGameLauncher(unittest.TestCase):
             self.assertTrue(
                 self.env["LD_PRELOAD"] == "", "LD_PRELOAD is not set"
             )
-            self.assertTrue(self.env["WINEDLLPATH"], "WINEDLLPATH is not set")
             self.assertTrue(
                 self.env["WINETRICKS_SUPER_QUIET"],
                 "WINETRICKS_SUPER_QUIET is not set",
