@@ -26,7 +26,7 @@ from umu_consts import (
 )
 from umu_log import CustomFormatter, console_handler, log
 from umu_plugins import set_env_toml
-from umu_proton import Proton, get_umu_proton
+from umu_proton import get_umu_proton
 from umu_runtime import setup_umu
 from umu_util import (
     get_libc,
@@ -297,10 +297,18 @@ def set_env(
 
     # Winetricks
     if env.get("EXE").endswith("winetricks"):
-        proton: Proton = Proton(os.environ["PROTONPATH"])
-        env["WINE"] = proton.wine_bin
-        env["WINELOADER"] = proton.wine_bin
-        env["WINESERVER"] = proton.wineserver_bin
+        # Proton directory with the last segment being subdirectory containing
+        # the Proton libraries and binaries. In upstream Proton 9 the subdir
+        # is 'files', while in other versions it may be 'dist'.
+        proton_dist: str = (
+            f"{env['PROTONPATH']}/files"
+            if Path(env["PROTONPATH"], "files").is_dir()
+            else f"{env['PROTONPATH']}/dist"
+        )
+
+        env["WINE"] = f"{proton_dist}/bin/wine"
+        env["WINELOADER"] = env["WINE"]
+        env["WINESERVER"] = f"{proton_dist}/bin/wineserver"
         env["WINETRICKS_LATEST_VERSION_CHECK"] = "disabled"
         env["LD_PRELOAD"] = ""
         env["WINETRICKS_SUPER_QUIET"] = (
