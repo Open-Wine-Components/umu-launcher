@@ -25,24 +25,6 @@ except ImportError:
     tar_filter: Callable[[str, str], TarInfo] = None
 
 
-class Proton:
-    """Model paths to relevant files and directories for Proton."""
-
-    def __init__(self, base_dir: str) -> None:  # noqa: D107
-        self.base_dir = base_dir + "/"
-        self.dist_dir = self.path("files/")
-        self.bin_dir = self.path("files/bin/")
-        self.lib_dir = self.path("files/lib/")
-        self.lib64_dir = self.path("files/lib64/")
-        self.version_file = self.path("version")
-        self.wine_bin = self.bin_dir + "wine"
-        self.wine64_bin = self.bin_dir + "wine64"
-        self.wineserver_bin = self.bin_dir + "wineserver"
-
-    def path(self, dir: str) -> str:  # noqa: D102
-        return self.base_dir + dir
-
-
 def get_umu_proton(
     env: dict[str, str], thread_pool: ThreadPoolExecutor
 ) -> dict[str, str]:
