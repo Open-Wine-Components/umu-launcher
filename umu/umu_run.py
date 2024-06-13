@@ -303,12 +303,6 @@ def set_env(
         env["WINESERVER"] = proton.wineserver_bin
         env["WINETRICKS_LATEST_VERSION_CHECK"] = "disabled"
         env["LD_PRELOAD"] = ""
-        env["WINEDLLPATH"] = ":".join(
-            [
-                Path(proton.lib_dir, "wine").as_posix(),
-                Path(proton.lib64_dir, "wine").as_posix(),
-            ]
-        )
         env["WINETRICKS_SUPER_QUIET"] = (
             "" if os.environ.get("UMU_LOG") == "debug" else "1"
         )
