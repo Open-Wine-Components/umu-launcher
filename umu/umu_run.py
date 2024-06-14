@@ -296,20 +296,6 @@ def set_env(
 
     # Winetricks
     if env.get("EXE", "").endswith("winetricks"):
-        # Proton directory with the last segment being subdirectory containing
-        # the Proton libraries and binaries. In upstream Proton 9 the subdir
-        # is 'files', while in other versions it may be 'dist'.
-        proton_dist: str = (
-            f"{env['PROTONPATH']}/files"
-            if Path(env["PROTONPATH"], "files").is_dir()
-            else f"{env['PROTONPATH']}/dist"
-        )
-
-        env["WINE"] = f"{proton_dist}/bin/wine"
-        env["WINELOADER"] = env["WINE"]
-        env["WINESERVER"] = f"{proton_dist}/bin/wineserver"
-        env["WINETRICKS_LATEST_VERSION_CHECK"] = "disabled"
-        env["LD_PRELOAD"] = ""
         env["WINETRICKS_SUPER_QUIET"] = (
             "" if os.environ.get("UMU_LOG") == "debug" else "1"
         )
