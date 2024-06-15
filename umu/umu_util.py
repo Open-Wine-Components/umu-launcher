@@ -83,7 +83,7 @@ def is_installed_verb(verb: list[str], pfx: Path) -> bool:
         raise ValueError(err)
 
     wt_log = pfx.joinpath("winetricks.log")
-    verbs = {_ for _ in verb}
+    verbs = set(verb)
 
     if not wt_log.is_file():
         return is_installed

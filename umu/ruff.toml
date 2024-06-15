@@ -86,7 +86,9 @@ select = [
     # Enforce the utf-8 encoding argument when opening files
     "PLW1514",
     # Sort imports
-    "I"
+    "I",
+    # Ensure we're smart when using list comprehensions
+    "C4"
 ]
 ignore = [
     # Format

@@ -212,7 +212,7 @@ def _update_umu(
     # Assume the directory begins with the alias
     try:
         runtime = max(
-            [file for file in local.glob(f"{codename}*") if file.is_dir()]
+            file for file in local.glob(f"{codename}*") if file.is_dir()
         )
     except ValueError:
         log.warning("Runtime Platform not found")
@@ -386,7 +386,7 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     # Find the runtime directory
     try:
         runtime = max(
-            [file for file in src.glob(f"{codename}*") if file.is_dir()]
+            file for file in src.glob(f"{codename}*") if file.is_dir()
         )
     except ValueError:
         log.warning("steamrt validation failed")
