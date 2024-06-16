@@ -391,7 +391,8 @@ def build_command(
     opts: list[str] = [],
 ) -> list[str]:
     """Build the command to be executed."""
-    verb: str = env["PROTON_VERB"]
+    proton: Path = Path(env.get("PROTONPATH"), "proton")
+    entry_point: Path = local.joinpath("umu")
 
     # Will run the game w/o Proton, effectively running the game as is. This
     # option is intended for debugging purposes, and is otherwise useless
@@ -399,11 +400,15 @@ def build_command(
         log.warning("Runtime Platform disabled")
         command.extend(
             [
-                env.get("EXE"),
+                env["EXE"],
                 *opts,
             ],
         )
         return command
+
+    if not proton.is_file():
+        err: str = "The following file was not found in PROTONPATH: proton"
+        raise FileNotFoundError(err)
 
     # Only log the warning when running games within SteamOS gamescope session
     if (
@@ -416,25 +421,19 @@ def build_command(
     if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
         command.extend(
             [
-                Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
-                verb,
-                env.get("EXE"),
+                proton.as_posix(),
+                env["PROTON_VERB"],
+                env["EXE"],
                 *opts,
             ],
         )
         return command
 
-    # Raise an error if the _v2-entry-point cannot be found
-    if not local.joinpath("umu").is_file():
+    if not entry_point.is_file():
         err: str = (
-            "Path to _v2-entry-point cannot be found in: "
-            f"{local}\n"
+            f"Path to _v2-entry-point cannot be found in '{local}'\n"
             "Please install a Steam Runtime platform"
         )
-        raise FileNotFoundError(err)
-
-    if not Path(env.get("PROTONPATH")).joinpath("proton").is_file():
-        err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
     # Configure winetricks to not be prompted for any windows
@@ -445,13 +444,13 @@ def build_command(
 
     command.extend(
         [
-            local.joinpath("umu").as_posix(),
+            entry_point.as_posix(),
             "--verb",
-            verb,
+            env["PROTON_VERB"],
             "--",
-            Path(env.get("PROTONPATH")).joinpath("proton").as_posix(),
-            verb,
-            env.get("EXE"),
+            proton.as_posix(),
+            env["PROTON_VERB"],
+            env["EXE"],
             *opts,
         ],
     )
