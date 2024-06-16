@@ -106,7 +106,7 @@ def set_log() -> None:
 
 
 def setup_pfx(path: str) -> None:
-    """Create a symlink to the WINE prefix and tracked_files file."""
+    """Prepare a Proton compatible WINE prefix."""
     pfx: Path = Path(path).joinpath("pfx").expanduser()
     steam: Path = (
         Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
@@ -125,28 +125,19 @@ def setup_pfx(path: str) -> None:
 
     # Create a symlink of the current user to the steamuser dir or vice versa
     # Default for a new prefix is: unixuser -> steamuser
-    if (
-        not wineuser.is_dir()
-        and not steam.is_dir()
-        and not (wineuser.is_symlink() or steam.is_symlink())
-    ):
+    if not wineuser.exists() and not steam.exists():
         # For new prefixes with our Proton: user -> steamuser
         steam.mkdir(parents=True)
-        wineuser.unlink(missing_ok=True)
         wineuser.symlink_to("steamuser")
-    elif wineuser.is_dir() and not steam.is_dir() and not steam.is_symlink():
+    elif wineuser.is_dir() and not steam.exists():
         # When there's a user dir: steamuser -> user
-        steam.unlink(missing_ok=True)
         steam.symlink_to(user)
-    elif (
-        not wineuser.exists() and not wineuser.is_symlink() and steam.is_dir()
-    ):
-        wineuser.unlink(missing_ok=True)
+    elif not wineuser.exists() and steam.is_dir():
         wineuser.symlink_to("steamuser")
     else:
         log.debug("Skipping link creation for prefix")
-        log.debug("User steamuser directory exists: %s", steam)
-        log.debug("User home directory exists: %s", wineuser)
+        log.debug("User steamuser is link: %s", steam.is_symlink())
+        log.debug("User home directory is link: %s", wineuser.is_symlink())
 
 
 def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
