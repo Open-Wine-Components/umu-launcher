@@ -1407,7 +1407,7 @@ class TestGameLauncher(unittest.TestCase):
         )
         proton, verb, exe, *_ = [*test_command]
         self.assertEqual(
-            proton, f"{self.env["PROTONPATH"]}/proton", "Expected PROTONPATH"
+            proton, f"{self.env['PROTONPATH']}/proton", "Expected PROTONPATH"
         )
         self.assertEqual(verb, "waitforexitandrun", "Expected PROTON_VERB")
         self.assertEqual(exe, self.env["EXE"], "Expected EXE")
