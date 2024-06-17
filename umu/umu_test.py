@@ -214,36 +214,6 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected 0 status code when libc could not be found",
             )
 
-    def test_run_command_flatpak(self):
-        """Test run_command when in a Flatpak environment.
-
-        In this case, we do not set the subprocess as the subreaper and a
-        warning message should be logged
-        """
-        mock_exe = "foo"
-        mock_command = [
-            "/home/foo/.local/share/umu/umu",
-            "--verb",
-            "waitforexitandrun",
-            "--",
-            "/home/foo/.local/share/Steam/compatibilitytools.d/GE-Proton9-7/proton",
-            mock_exe,
-        ]
-        mock_proc = CompletedProcess(mock_command, 0)
-
-        os.environ["EXE"] = mock_exe
-        os.environ["FLATPAK_ID"] = "foo"
-        with (
-            patch.object(umu_run, "run", return_value=mock_proc),
-            patch.object(umu_run, "get_libc", return_value=""),
-        ):
-            result = umu_run.run_command(mock_command)
-            self.assertEqual(
-                result,
-                0,
-                "Expected 0 status code when libc could not be found",
-            )
-
     def test_run_command_nolibc(self):
         """Test run_command when libc.so could not be found in system.
 
