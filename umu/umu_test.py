@@ -50,6 +50,7 @@ class TestGameLauncher(unittest.TestCase):
             "WINETRICKS_LATEST_VERSION_CHECK": "",
             "LD_PRELOAD": "",
             "WINETRICKS_SUPER_QUIET": "",
+            "UMU_NO_RUNTIME": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -1300,6 +1301,152 @@ class TestGameLauncher(unittest.TestCase):
         self.assertFalse(
             self.env["EXE"], "Expected EXE to be empty on empty string"
         )
+
+    def test_build_command_noruntime(self):
+        """Test build_command when disabling the Steam Runtime.
+
+        UMU_NO_RUNTIME=1 disables the Steam Runtime, which is no different than
+        running the executable directly.
+
+        Expects the list to contain one string element.
+        """
+        result_args = None
+        test_command = []
+
+        # Mock the proton file
+        Path(self.test_file, "proton").touch()
+
+        with patch("sys.argv", ["", self.test_exe]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["STORE"] = self.test_file
+            # Setting this mocks a Flatpak environment and UMU_NO_RUNTIME is
+            # only valid for Flatpak apps
+            os.environ["UMU_NO_RUNTIME"] = "1"
+            # Args
+            result_args = umu_run.parse_args()
+            # Config
+            umu_run.check_env(self.env)
+            # Prefix
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            umu_run.set_env(self.env, result_args)
+            # Mock setting UMU_NO_RUNTIME. This will not be set in the function
+            # because the FLATPAK_PATH constant will evaluate to None
+            self.env["UMU_NO_RUNTIME"] = os.environ["UMU_NO_RUNTIME"]
+            # Game drive
+            umu_run.enable_steam_game_drive(self.env)
+
+        os.environ |= self.env
+
+        # Build
+        test_command = umu_run.build_command(
+            self.env, self.test_local_share, test_command
+        )
+        self.assertIsInstance(
+            test_command, list, "Expected a List from build_command"
+        )
+        self.assertEqual(
+            len(test_command),
+            1,
+            "Expected 1 element in the list from build_command",
+        )
+        exe, *_ = [*test_command]
+        self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
+
+    def test_build_command_nopv(self):
+        """Test build_command when disabling Pressure Vessel.
+
+        UMU_NO_RUNTIME=pressure-vessel disables Pressure Vessel, allowing
+        the launcher to run Proton on the host -- Flatpak environment.
+
+        Expects the list to contain 3 string elements.
+        """
+        result_args = None
+        test_command = []
+
+        # Mock the proton file
+        Path(self.test_file, "proton").touch()
+
+        with patch("sys.argv", ["", self.test_exe]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["STORE"] = self.test_file
+            # Setting this mocks a Flatpak environment and UMU_NO_RUNTIME is
+            # only valid for Flatpak apps
+            os.environ["UMU_NO_RUNTIME"] = "pressure-vessel"
+            # Args
+            result_args = umu_run.parse_args()
+            # Config
+            umu_run.check_env(self.env)
+            # Prefix
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            umu_run.set_env(self.env, result_args)
+            # Mock setting UMU_NO_RUNTIME. This will not be set in the function
+            # because the FLATPAK_PATH constant will evaluate to None
+            self.env["UMU_NO_RUNTIME"] = os.environ["UMU_NO_RUNTIME"]
+            # Game drive
+            umu_run.enable_steam_game_drive(self.env)
+
+        os.environ |= self.env
+
+        # Build
+        test_command = umu_run.build_command(
+            self.env, self.test_local_share, test_command
+        )
+        self.assertIsInstance(
+            test_command, list, "Expected a List from build_command"
+        )
+        self.assertEqual(
+            len(test_command),
+            3,
+            "Expected 3 element in the list from build_command",
+        )
+        proton, verb, exe, *_ = [*test_command]
+        self.assertEqual(
+            proton, f"{self.env["PROTONPATH"]}/proton", "Expected PROTONPATH"
+        )
+        self.assertEqual(verb, "waitforexitandrun", "Expected PROTON_VERB")
+        self.assertEqual(exe, self.env["EXE"], "Expected EXE")
+
+    def test_build_command_noproton(self):
+        """Test build_command when $PROTONPATH/proton is not found.
+
+        Expects a FileNotFoundError to be raised.
+        """
+        result_args = None
+        test_command = []
+
+        with patch("sys.argv", ["", self.test_exe]):
+            os.environ["WINEPREFIX"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_file
+            os.environ["GAMEID"] = self.test_file
+            os.environ["STORE"] = self.test_file
+            os.environ["UMU_NO_RUNTIME"] = "pressure-vessel"
+            # Args
+            result_args = umu_run.parse_args()
+            # Config
+            umu_run.check_env(self.env)
+            # Prefix
+            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            # Env
+            umu_run.set_env(self.env, result_args)
+            # Mock setting UMU_NO_RUNTIME. This will not be set in the function
+            # because the FLATPAK_PATH constant will evaluate to None
+            self.env["UMU_NO_RUNTIME"] = os.environ["UMU_NO_RUNTIME"]
+            # Game drive
+            umu_run.enable_steam_game_drive(self.env)
+
+        os.environ |= self.env
+
+        # Since we didn't create the proton file, an exception should be raised
+        with self.assertRaises(FileNotFoundError):
+            test_command = umu_run.build_command(
+                self.env, self.test_local_share, test_command
+            )
 
     def test_build_command(self):
         """Test build command.
