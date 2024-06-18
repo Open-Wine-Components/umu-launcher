@@ -245,30 +245,30 @@ def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
 def _get_from_steamcompat(
     env: dict[str, str], steam_compat: Path
 ) -> dict[str, str] | None:
-    """Refer to compatibilitytools.d folder for any existing Protons.
+    """Refer to Steam's compatibilitytools.d folder for any existing Protons.
 
-    Executed when an error occurs when retrieving and setting the Proton.
+    When an error occurs in the process of using the latest Proton build either
+    from a digest mismatch, request failure or unreachable network, the latest
+    existing Proton build of that same version will be used
     """
     version: str = (
         "GE-Proton"
         if environ.get("PROTONPATH") == "GE-Proton"
         else "UMU-Proton"
     )
-    protons: list[Path] = [
-        proton
-        for proton in steam_compat.glob("*")
-        if proton.name.startswith(version)
-    ]
-    latest: Path = None
 
-    if not protons:
+    try:
+        latest: Path = max(
+            proton
+            for proton in steam_compat.glob("*")
+            if proton.name.startswith(version)
+        )
+        log.console(f"{latest.name} found in: '{steam_compat}'")
+        log.console(f"Using {latest.name}")
+        environ["PROTONPATH"] = latest.as_posix()
+        env["PROTONPATH"] = environ["PROTONPATH"]
+    except ValueError:
         return None
-
-    latest = max(protons)
-    log.console(f"{latest.name} found in: '{steam_compat}'")
-    log.console(f"Using {latest.name}")
-    environ["PROTONPATH"] = latest.as_posix()
-    env["PROTONPATH"] = environ["PROTONPATH"]
 
     return env
 
