@@ -290,70 +290,63 @@ def _get_latest(
     When the digests mismatched or when interrupted, an old build will in
     ~/.local/share/Steam/compatibilitytool.d will be used.
     """
+    # Name of the Proton archive (e.g., GE-Proton9-7.tar.gz)
+    tarball: str = ""
+    # Name of the Proton directory (e.g., GE-Proton9-7)
+    proton: str = ""
+    # Name of the Proton version, which is either UMU-Proton or GE-Proton
+    version: str = ""
+
     if not files:
         return None
 
+    tarball = files[1][0]
+    proton = tarball[: tarball.find(".tar.gz")]
+    version = (
+        "GE-Proton"
+        if environ.get("PROTONPATH") == "GE-Proton"
+        else "UMU-Proton"
+    )
+
+    # Return if the latest Proton is already installed
+    if steam_compat.joinpath(proton).is_dir():
+        log.console(f"{version} is up to date")
+        steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
+        steam_compat.joinpath("UMU-Latest").symlink_to(proton)
+        environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
+        env["PROTONPATH"] = environ["PROTONPATH"]
+        return env
+
+    # Use the latest UMU/GE-Proton
     try:
-        tarball: str = files[1][0]
-        proton: str = tarball[: tarball.find(".tar.gz")]
-        version: str = (
-            "GE-Proton"
-            if environ.get("PROTONPATH") == "GE-Proton"
-            else "UMU-Proton"
-        )
-
-        if steam_compat.joinpath(proton).is_dir():
-            log.console(f"{version} is up to date")
-            steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
-            steam_compat.joinpath("UMU-Latest").symlink_to(proton)
-            environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
-            env["PROTONPATH"] = environ["PROTONPATH"]
-            return env
-
         _fetch_proton(env, tmp, files)
-
-        # Set latest UMU/GE-Proton
         if version == "UMU-Proton":
-            log.debug("Updating UMU-Proton")
-            protons: list[Path] = [  # Previous stable builds
+            protons: list[Path] = [
                 file
                 for file in steam_compat.glob("*")
                 if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
             ]
-            tar_path: Path = tmp.joinpath(tarball)
-            # Ideally, an in-place differential update would be
-            # performed instead for this job but this will do for now
-            log.debug("Extracting %s -> %s", tar_path, steam_compat)
-            for _ in [
-                thread_pool.submit(_extract_dir, tar_path, steam_compat),
-                thread_pool.submit(
-                    _update_proton, proton, steam_compat, protons, thread_pool
-                ),
-            ]:
-                _.result()
-        else:
-            # For GE-Proton, keep the previous build. Since it's a rebase
-            # of bleeding edge, regressions are more likely to occur
+            log.debug("Updating UMU-Proton")
+            future: Future = thread_pool.submit(
+                _update_proton, proton, steam_compat, protons, thread_pool
+            )
             _extract_dir(tmp.joinpath(tarball), steam_compat)
-
+            future.result()
+        else:
+            _extract_dir(tmp.joinpath(tarball), steam_compat)
         environ["PROTONPATH"] = steam_compat.joinpath(proton).as_posix()
         env["PROTONPATH"] = environ["PROTONPATH"]
         log.debug("Removing: %s", tarball)
-        tmp.joinpath(tarball).unlink(missing_ok=True)
+        thread_pool.submit(tmp.joinpath(tarball).unlink, True)
         log.console(f"Using {version} ({proton})")
-    except ValueError as e:
+    except ValueError as e:  # Digest mismatched
         log.exception(e)
-        tarball: str = files[1][0]
-        # Digest mismatched
         # Since we do not want the user to use a suspect file, delete it
         tmp.joinpath(tarball).unlink(missing_ok=True)
         return None
-    except KeyboardInterrupt:
-        tarball: str = files[1][0]
-        proton_dir: str = tarball[: tarball.find(".tar.gz")]  # Proton dir
-        # Exit cleanly
-        # Clean up extracted data and cache to prevent corruption/errors
-        _cleanup(tarball, proton_dir, tmp, steam_compat)
+    except KeyboardInterrupt:  # ctrl+c or signal sent from parent proc
+        # Clean up extracted data in compatibilitytools.d and temporary dir
+        _cleanup(tarball, proton, tmp, steam_compat)
         return None
     except HTTPException as e:  # Download failed
         log.exception(e)
@@ -392,5 +385,6 @@ def _update_proton(
             log.debug("Previous stable build found")
             log.debug("Removing: %s", proton)
             futures.append(thread_pool.submit(rmtree, proton.as_posix()))
+
     for _ in futures:
         _.result()
