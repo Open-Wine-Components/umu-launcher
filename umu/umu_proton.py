@@ -44,12 +44,12 @@ def get_umu_proton(
         log.debug("Network is unreachable")
 
     # Download the latest Proton
-    if _get_latest(env, STEAM_COMPAT, tmp, files, thread_pool) is not None:
+    if _get_latest(env, STEAM_COMPAT, tmp, files, thread_pool) is env:
         return env
 
     # When offline or an error occurs, use the first Proton in
     # compatibilitytools.d
-    if _get_from_steamcompat(env, STEAM_COMPAT) is not None:
+    if _get_from_steamcompat(env, STEAM_COMPAT) is env:
         return env
 
     # No internet and compat tool is empty, just return and raise an
