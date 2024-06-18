@@ -211,7 +211,7 @@ def _fetch_proton(
 
 def _extract_dir(file: Path, steam_compat: Path) -> None:
     """Extract from a path to another location."""
-    with tar_open(file.as_posix(), "r:gz") as tar:
+    with tar_open(file, "r:gz") as tar:
         if tar_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
