@@ -203,11 +203,17 @@ def set_env(
     env: dict[str, str], args: Namespace | tuple[str, list[str]]
 ) -> dict[str, str]:
     """Set various environment variables for the Steam Runtime."""
+    pfx: Path = Path(env["WINEPREFIX"]).expanduser().resolve(strict=True)
     protonpath: Path = (
         Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
     )
     # Command execution usage
     is_cmd: bool = isinstance(args, tuple)
+    # Command execution usage, but client wants to create a prefix. When an
+    # empty string is the executable, Proton will create the prefix but will
+    # fail to find the command
+    is_createpfx: bool = is_cmd and isinstance(args[0], str) and not args[0]
+    # Command execution usage, but client wants to run winetricks verbs
     is_winetricks: bool = is_cmd and args[0] == "winetricks"
 
     # PROTON_VERB
@@ -218,12 +224,10 @@ def set_env(
         env["PROTON_VERB"] = "waitforexitandrun"
 
     # EXE
-    # Empty string for EXE will be used to create a prefix
-    if isinstance(args, tuple) and isinstance(args[0], str) and not args[0]:
+    if is_createpfx:
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         env["PROTON_VERB"] = "waitforexitandrun"
-    elif isinstance(args, tuple):
     elif is_winetricks:
         # Make an absolute path to winetricks within GE-Proton or UMU-Proton.
         # The launcher will change to the winetricks parent directory before
@@ -234,16 +238,19 @@ def set_env(
         env["EXE"] = f"{winetricks}"
         args = (env["EXE"], args[1])
         env["STEAM_COMPAT_INSTALL_PATH"] = f"{winetricks.parent}"
+    elif is_cmd:
         try:
+            # Ensure executable path is absolute, otherwise Proton will fail
+            # when creating the subprocess.
+            # e.g., Games/umu/umu-0 -> $HOME/Games/umu/umu-0
             env["EXE"] = f"{Path(args[0]).expanduser().resolve(strict=True)}"
             env["STEAM_COMPAT_INSTALL_PATH"] = f"{Path(env['EXE']).parent}"
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
-            env["EXE"] = f"{Path(args[0])}"
+            env["EXE"] = f"{args[0]}"
             env["STEAM_COMPAT_INSTALL_PATH"] = ""
             log.warning("Executable not found: %s", env["EXE"])
-    else:
-        # Config branch
+    else:  # Configuration file usage
         env["EXE"] = f"{Path(env['EXE']).expanduser()}"
         env["STEAM_COMPAT_INSTALL_PATH"] = f"{Path(env['EXE']).parent}"
 
@@ -262,12 +269,8 @@ def set_env(
     env["SteamGameId"] = env["SteamAppId"]
 
     # PATHS
-    env["WINEPREFIX"] = (
-        f"{Path(env['WINEPREFIX']).expanduser().resolve(strict=True)}"
-    )
-    env["PROTONPATH"] = (
-        f"{Path(env['PROTONPATH']).expanduser().resolve(strict=True)}"
-    )
+    env["WINEPREFIX"] = f"{pfx}"
+    env["PROTONPATH"] = f"{protonpath}"
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = (
         f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
