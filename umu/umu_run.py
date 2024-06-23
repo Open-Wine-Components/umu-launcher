@@ -157,14 +157,13 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
         err: str = "Environment variable is empty: WINEPREFIX"
         raise ValueError(err)
     if "WINEPREFIX" not in os.environ:
-        id: str = env["GAMEID"]
-        pfx: Path = Path.home().joinpath("Games", "umu", f"{id}")
+        pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
         pfx.mkdir(parents=True, exist_ok=True)
-        os.environ["WINEPREFIX"] = pfx.as_posix()
+        os.environ["WINEPREFIX"] = f"{pfx}"
     if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
         pfx: Path = Path(os.environ["WINEPREFIX"])
         pfx.mkdir(parents=True, exist_ok=True)
-        os.environ["WINEPREFIX"] = pfx.as_posix()
+        os.environ["WINEPREFIX"] = f"{pfx}"
     env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
     # Proton Version
@@ -173,9 +172,9 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
         and Path(STEAM_COMPAT, os.environ.get("PROTONPATH")).is_dir()
     ):
         log.debug("Proton version selected")
-        os.environ["PROTONPATH"] = STEAM_COMPAT.joinpath(
-            os.environ["PROTONPATH"]
-        ).as_posix()
+        os.environ["PROTONPATH"] = (
+            f"{STEAM_COMPAT.joinpath(os.environ['PROTONPATH'])}"
+        )
 
     # GE-Proton
     if os.environ.get("PROTONPATH") == "GE-Proton":
@@ -222,33 +221,24 @@ def set_env(
         # UMU-Proton, which includes the dependencies bundled within the
         # protonfixes directory. Fixes exit 3 status codes after applying
         # winetricks verbs
-        bin: str = (
-            Path(env["PROTONPATH"], "protonfixes", "winetricks")
-            .expanduser()
-            .resolve(strict=True)
-            .as_posix()
-        )
+        bin: str = f"{Path(env['PROTONPATH'], 'protonfixes', 'winetricks').expanduser().resolve(strict=True)}"
         log.debug("EXE: %s -> %s", args[0], bin)
         args: tuple[str, list[str]] = (bin, args[1])
         env["EXE"] = bin
-        env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
+        env["STEAM_COMPAT_INSTALL_PATH"] = f"{Path(env['EXE']).parent}"
     elif isinstance(args, tuple):
         try:
-            env["EXE"] = (
-                Path(args[0]).expanduser().resolve(strict=True).as_posix()
-            )
-            env["STEAM_COMPAT_INSTALL_PATH"] = Path(
-                env["EXE"]
-            ).parent.as_posix()
+            env["EXE"] = f"{Path(args[0]).expanduser().resolve(strict=True)}"
+            env["STEAM_COMPAT_INSTALL_PATH"] = f"{Path(env['EXE']).parent}"
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
-            env["EXE"] = Path(args[0]).as_posix()
+            env["EXE"] = f"{Path(args[0])}"
             env["STEAM_COMPAT_INSTALL_PATH"] = ""
             log.warning("Executable not found: %s", env["EXE"])
     else:
         # Config branch
-        env["EXE"] = Path(env["EXE"]).expanduser().as_posix()
-        env["STEAM_COMPAT_INSTALL_PATH"] = Path(env["EXE"]).parent.as_posix()
+        env["EXE"] = f"{Path(env['EXE']).expanduser()}"
+        env["STEAM_COMPAT_INSTALL_PATH"] = f"{Path(env['EXE']).parent}"
 
     env["STORE"] = os.environ.get("STORE") or ""
 
@@ -266,18 +256,16 @@ def set_env(
 
     # PATHS
     env["WINEPREFIX"] = (
-        Path(env["WINEPREFIX"]).expanduser().resolve(strict=True).as_posix()
+        f"{Path(env['WINEPREFIX']).expanduser().resolve(strict=True)}"
     )
     env["PROTONPATH"] = (
-        Path(env["PROTONPATH"]).expanduser().resolve(strict=True).as_posix()
+        f"{Path(env['PROTONPATH']).expanduser().resolve(strict=True)}"
     )
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = (
-        env["STEAM_COMPAT_DATA_PATH"] + "/shadercache"
+        f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
     )
-    env["STEAM_COMPAT_TOOL_PATHS"] = (
-        env["PROTONPATH"] + ":" + UMU_LOCAL.as_posix()
-    )
+    env["STEAM_COMPAT_TOOL_PATHS"] = f"{env['PROTONPATH']}:{UMU_LOCAL}"
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Zenity
@@ -350,12 +338,10 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
         if path.is_mount() and path != root:
             if os.environ.get("STEAM_COMPAT_LIBRARY_PATHS"):
                 env["STEAM_COMPAT_LIBRARY_PATHS"] = (
-                    os.environ["STEAM_COMPAT_LIBRARY_PATHS"]
-                    + ":"
-                    + path.as_posix()
+                    f"{os.environ['STEAM_COMPAT_LIBRARY_PATHS']}:{path}"
                 )
             else:
-                env["STEAM_COMPAT_LIBRARY_PATHS"] = path.as_posix()
+                env["STEAM_COMPAT_LIBRARY_PATHS"] = f"{path}"
             break
 
     if os.environ.get("LD_LIBRARY_PATH"):
@@ -421,7 +407,7 @@ def build_command(
     if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
         command.extend(
             [
-                proton.as_posix(),
+                f"{proton}",
                 env["PROTON_VERB"],
                 env["EXE"],
                 *opts,
@@ -444,11 +430,11 @@ def build_command(
 
     command.extend(
         [
-            entry_point.as_posix(),
+            f"{entry_point}",
             "--verb",
             env["PROTON_VERB"],
             "--",
-            proton.as_posix(),
+            f"{proton}",
             env["PROTON_VERB"],
             env["EXE"],
             *opts,
@@ -480,9 +466,9 @@ def run_command(command: list[str]) -> int:
 
     # For winetricks, change directory to $PROTONPATH/protonfixes
     if os.environ.get("EXE").endswith("winetricks"):
-        cwd = Path(os.environ.get("PROTONPATH"), "protonfixes").as_posix()
+        cwd = f"{os.environ['PROTONPATH']}/protonfixes"
     else:
-        cwd = Path.cwd().as_posix()
+        cwd = f"{Path.cwd()}"
 
     # Create a subprocess but do not set it as subreaper
     # Unnecessary in a Flatpak and prctl() will fail if libc could not be found

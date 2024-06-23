@@ -27,9 +27,7 @@ def set_env_toml(
         raise ModuleNotFoundError(err)
 
     toml: dict[str, Any] = None
-    path_config: str = (
-        Path(getattr(args, "config", None)).expanduser().as_posix()
-    )
+    path_config: str = f"{Path(getattr(args, 'config', None)).expanduser()}"
     opts: list[str] = []
 
     if not Path(path_config).is_file():
@@ -98,7 +96,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
             key == "prefix"
             and not Path(toml[table][key]).expanduser().is_dir()
         ):
-            dir: str = Path(toml[table][key]).expanduser().as_posix()
+            dir: str = f"{Path(toml[table][key]).expanduser()}"
             err: str = (
                 f"Value for key '{key}' in TOML is not a directory: {dir}"
             )
