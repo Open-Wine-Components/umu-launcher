@@ -159,11 +159,11 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
     if "WINEPREFIX" not in os.environ:
         pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
         pfx.mkdir(parents=True, exist_ok=True)
-        os.environ["WINEPREFIX"] = f"{pfx}"
+        os.environ["WINEPREFIX"] = str(pfx)
     if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
         pfx: Path = Path(os.environ["WINEPREFIX"])
         pfx.mkdir(parents=True, exist_ok=True)
-        os.environ["WINEPREFIX"] = f"{pfx}"
+        os.environ["WINEPREFIX"] = str(pfx)
     env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
     # Proton Version
@@ -172,8 +172,8 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
         and Path(STEAM_COMPAT, os.environ.get("PROTONPATH")).is_dir()
     ):
         log.debug("Proton version selected")
-        os.environ["PROTONPATH"] = (
-            f"{STEAM_COMPAT.joinpath(os.environ['PROTONPATH'])}"
+        os.environ["PROTONPATH"] = str(
+            STEAM_COMPAT.joinpath(os.environ["PROTONPATH"])
         )
 
     # GE-Proton
@@ -235,26 +235,26 @@ def set_env(
         exe: Path = Path(protonpath, "protonfixes", "winetricks").resolve(
             strict=True
         )
-        env["EXE"] = f"{exe}"
+        env["EXE"] = str(exe)
         args = (env["EXE"], args[1])
-        env["STEAM_COMPAT_INSTALL_PATH"] = f"{exe.parent}"
+        env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
     elif is_cmd:
         try:
             # Ensure executable path is absolute, otherwise Proton will fail
             # when creating the subprocess.
             # e.g., Games/umu/umu-0 -> $HOME/Games/umu/umu-0
             exe: Path = Path(args[0]).expanduser().resolve(strict=True)
-            env["EXE"] = f"{exe}"
-            env["STEAM_COMPAT_INSTALL_PATH"] = f"{exe.parent}"
+            env["EXE"] = str(exe)
+            env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
-            env["EXE"] = f"{args[0]}"
+            env["EXE"] = args[0]
             env["STEAM_COMPAT_INSTALL_PATH"] = ""
             log.warning("Executable not found: %s", env["EXE"])
     else:  # Configuration file usage
         exe: Path = Path(env["EXE"]).expanduser()
-        env["EXE"] = f"{exe}"
-        env["STEAM_COMPAT_INSTALL_PATH"] = f"{exe.parent}"
+        env["EXE"] = str(exe)
+        env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
 
     env["STORE"] = os.environ.get("STORE") or ""
 
@@ -271,8 +271,8 @@ def set_env(
     env["SteamGameId"] = env["SteamAppId"]
 
     # PATHS
-    env["WINEPREFIX"] = f"{pfx}"
-    env["PROTONPATH"] = f"{protonpath}"
+    env["WINEPREFIX"] = str(pfx)
+    env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = (
         f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
@@ -353,7 +353,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
                     f"{os.environ['STEAM_COMPAT_LIBRARY_PATHS']}:{path}"
                 )
             else:
-                env["STEAM_COMPAT_LIBRARY_PATHS"] = f"{path}"
+                env["STEAM_COMPAT_LIBRARY_PATHS"] = str(path)
             break
 
     if os.environ.get("LD_LIBRARY_PATH"):
@@ -419,7 +419,7 @@ def build_command(
     if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
         command.extend(
             [
-                f"{proton}",
+                str(proton),
                 env["PROTON_VERB"],
                 env["EXE"],
                 *opts,
@@ -442,11 +442,11 @@ def build_command(
 
     command.extend(
         [
-            f"{entry_point}",
+            str(entry_point),
             "--verb",
             env["PROTON_VERB"],
             "--",
-            f"{proton}",
+            str(proton),
             env["PROTON_VERB"],
             env["EXE"],
             *opts,
@@ -480,7 +480,7 @@ def run_command(command: list[str]) -> int:
     if os.environ.get("EXE").endswith("winetricks"):
         cwd = f"{os.environ['PROTONPATH']}/protonfixes"
     else:
-        cwd = f"{Path.cwd()}"
+        cwd = str(Path.cwd())
 
     # Create a subprocess but do not set it as subreaper
     # Unnecessary in a Flatpak and prctl() will fail if libc could not be found

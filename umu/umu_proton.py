@@ -163,7 +163,7 @@ def _fetch_proton(
             "--silent",
             proton_url,
             "--output-dir",
-            f"{tmp}",
+            str(tmp),
         ]
         msg: str = f"Downloading {proton_dir}..."
         ret = run_zenity(bin, opts, msg)
@@ -237,7 +237,7 @@ def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
         tmp.joinpath(tarball).unlink()
     if steam_compat.joinpath(proton).is_dir():
         log.console(f"Purging '{proton}' in '{steam_compat}'...")
-        rmtree(f"{steam_compat.joinpath(proton)}")
+        rmtree(str(steam_compat.joinpath(proton)))
 
 
 def _get_from_steamcompat(
@@ -263,7 +263,7 @@ def _get_from_steamcompat(
         )
         log.console(f"{latest.name} found in: '{steam_compat}'")
         log.console(f"Using {latest.name}")
-        environ["PROTONPATH"] = f"{latest}"
+        environ["PROTONPATH"] = str(latest)
         env["PROTONPATH"] = environ["PROTONPATH"]
     except ValueError:
         return None
@@ -311,7 +311,7 @@ def _get_latest(
         log.console(f"{version} is up to date")
         steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
         steam_compat.joinpath("UMU-Latest").symlink_to(proton)
-        environ["PROTONPATH"] = f"{steam_compat.joinpath(proton)}"
+        environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
         env["PROTONPATH"] = environ["PROTONPATH"]
         return env
 
@@ -332,7 +332,7 @@ def _get_latest(
             future.result()
         else:
             _extract_dir(tmp.joinpath(tarball), steam_compat)
-        environ["PROTONPATH"] = f"{steam_compat.joinpath(proton)}"
+        environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
         env["PROTONPATH"] = environ["PROTONPATH"]
         log.debug("Removing: %s", tarball)
         thread_pool.submit(tmp.joinpath(tarball).unlink, True)
@@ -382,7 +382,7 @@ def _update_proton(
         if proton.is_dir():
             log.debug("Previous stable build found")
             log.debug("Removing: %s", proton)
-            futures.append(thread_pool.submit(rmtree, f"{proton}"))
+            futures.append(thread_pool.submit(rmtree, str(proton)))
 
     for _ in futures:
         _.result()

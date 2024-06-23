@@ -55,7 +55,7 @@ def _install_umu(
             "-O",
             f"{base_url}/{archive}",
             "--output-dir",
-            f"{tmp}",
+            str(tmp),
         ]
         msg: str = "Downloading umu runtime, please wait..."
         ret = run_zenity(bin, opts, msg)
@@ -300,7 +300,7 @@ def _update_umu(
         log.console("Updating steamrt to latest...")
         _install_umu(json, thread_pool)
         log.debug("Removing: %s", runtime)
-        rmtree(f"{runtime}")
+        rmtree(str(runtime))
         return
     log.console("steamrt is up to date")
 
@@ -363,7 +363,7 @@ def _move(file: Path, src: Path, dst: Path) -> None:
 
     if dest_file.is_dir():
         log.debug("Removing directory: %s", dest_file)
-        rmtree(f"{dest_file}")
+        rmtree(str(dest_file))
 
     if src.is_file() or src.is_dir():
         log.debug("Moving: %s -> %s", src_file, dest_file)
@@ -400,10 +400,10 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     log.console(f"Verifying integrity of {runtime.name}...")
     ret = run(
         [
-            f"{pv_verify}",
+            str(pv_verify),
             "--quiet",
             "--minimized-runtime",
-            f"{runtime.joinpath('files')}",
+            str(runtime.joinpath("files")),
         ],
         check=False,
     ).returncode
