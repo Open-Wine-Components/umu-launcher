@@ -243,16 +243,18 @@ def set_env(
             # Ensure executable path is absolute, otherwise Proton will fail
             # when creating the subprocess.
             # e.g., Games/umu/umu-0 -> $HOME/Games/umu/umu-0
-            env["EXE"] = f"{Path(args[0]).expanduser().resolve(strict=True)}"
-            env["STEAM_COMPAT_INSTALL_PATH"] = f"{Path(env['EXE']).parent}"
+            exe: Path = Path(args[0]).expanduser().resolve(strict=True)
+            env["EXE"] = f"{exe}"
+            env["STEAM_COMPAT_INSTALL_PATH"] = f"{exe.parent}"
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
             env["EXE"] = f"{args[0]}"
             env["STEAM_COMPAT_INSTALL_PATH"] = ""
             log.warning("Executable not found: %s", env["EXE"])
     else:  # Configuration file usage
-        env["EXE"] = f"{Path(env['EXE']).expanduser()}"
-        env["STEAM_COMPAT_INSTALL_PATH"] = f"{Path(env['EXE']).parent}"
+        exe: Path = Path(env["EXE"]).expanduser()
+        env["EXE"] = f"{exe}"
+        env["STEAM_COMPAT_INSTALL_PATH"] = f"{exe.parent}"
 
     env["STORE"] = os.environ.get("STORE") or ""
 
