@@ -190,15 +190,13 @@ def _fetch_proton(
                 )
                 raise HTTPException(err)
 
-            # Write the file as chunks while updating the hash incrementally
-            with tmp.joinpath(proton).open(mode="ab") as file:
+            with tmp.joinpath(proton).open(mode="ab+", buffering=0) as file:
                 chunk_size: int = 64 * 1024  # 64 KB
-                while True:
-                    chunk: bytes = resp.read(chunk_size)
-                    if not chunk:
-                        break
-                    file.write(chunk)
-                    hash.update(chunk)
+                buffer: bytearray = bytearray(chunk_size)
+                view: memoryview = memoryview(buffer)
+                while size := resp.readinto(buffer):
+                    file.write(view[:size])
+                    hash.update(view[:size])
 
             if hash.hexdigest() != digest:
                 err: str = f"Digest mismatched: {proton}"

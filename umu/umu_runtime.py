@@ -102,14 +102,13 @@ def _install_umu(
             raise HTTPException(err)
 
         log.console(f"Downloading latest steamrt {codename}, please wait...")
-        with tmp.joinpath(archive).open(mode="ab") as file:
+        with tmp.joinpath(archive).open(mode="ab+", buffering=0) as file:
             chunk_size: int = 64 * 1024  # 64 KB
-            while True:
-                chunk: bytes = resp.read(chunk_size)
-                if not chunk:
-                    break
-                file.write(chunk)
-                hash.update(chunk)
+            buffer: bytearray = bytearray(chunk_size)
+            view: memoryview = memoryview(buffer)
+            while size := resp.readinto(buffer):
+                file.write(view[:size])
+                hash.update(view[:size])
 
         # Verify the runtime digest
         if hash.hexdigest() != digest:
