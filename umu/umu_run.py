@@ -203,6 +203,13 @@ def set_env(
     env: dict[str, str], args: Namespace | tuple[str, list[str]]
 ) -> dict[str, str]:
     """Set various environment variables for the Steam Runtime."""
+    protonpath: Path = (
+        Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
+    )
+    # Command execution usage
+    is_cmd: bool = isinstance(args, tuple)
+    is_winetricks: bool = is_cmd and args[0] == "winetricks"
+
     # PROTON_VERB
     # For invalid Proton verbs, just assign the waitforexitandrun
     if os.environ.get("PROTON_VERB") in PROTON_VERBS:
@@ -216,17 +223,17 @@ def set_env(
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
         env["PROTON_VERB"] = "waitforexitandrun"
-    elif isinstance(args, tuple) and args[0] == "winetricks":
-        # Make an absolute path to winetricks that is within GE-Proton or
-        # UMU-Proton, which includes the dependencies bundled within the
-        # protonfixes directory. Fixes exit 3 status codes after applying
-        # winetricks verbs
-        bin: str = f"{Path(env['PROTONPATH'], 'protonfixes', 'winetricks').expanduser().resolve(strict=True)}"
-        log.debug("EXE: %s -> %s", args[0], bin)
-        args: tuple[str, list[str]] = (bin, args[1])
-        env["EXE"] = bin
-        env["STEAM_COMPAT_INSTALL_PATH"] = f"{Path(env['EXE']).parent}"
     elif isinstance(args, tuple):
+    elif is_winetricks:
+        # Make an absolute path to winetricks within GE-Proton or UMU-Proton.
+        # The launcher will change to the winetricks parent directory before
+        # creating the subprocess
+        winetricks: Path = Path(
+            protonpath, "protonfixes", "winetricks"
+        ).resolve(strict=True)
+        env["EXE"] = f"{winetricks}"
+        args = (env["EXE"], args[1])
+        env["STEAM_COMPAT_INSTALL_PATH"] = f"{winetricks.parent}"
         try:
             env["EXE"] = f"{Path(args[0]).expanduser().resolve(strict=True)}"
             env["STEAM_COMPAT_INSTALL_PATH"] = f"{Path(env['EXE']).parent}"
