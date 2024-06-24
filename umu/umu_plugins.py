@@ -2,8 +2,6 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Any
 
-from umu_log import log
-
 
 def set_env_toml(
     env: dict[str, str], args: Namespace
