@@ -7,16 +7,20 @@ from umu_log import log
 
 def set_env_toml(
     env: dict[str, str], args: Namespace
-) -> tuple[dict[str, str], list[str]]:
-    """Read a TOML file then sets the environment variables for the Steam RT.
+) -> tuple[dict[str, str], list[str, tuple[str, Path]]]:
+    """Read key/values in a TOML file and map them to umu env. variables.
 
-    In the TOML file, certain keys map to Steam runtime unvironment variables.
-    For example:
+    In the TOML file, certain keys map to environment variables:
 
-    proton -> $PROTONPATH
-    prefix -> $WINEPREFIX
+    proton  -> $PROTONPATH
+    prefix  -> $WINEPREFIX
     game_id -> $GAMEID
-    exe -> $EXE
+    exe     -> $EXE
+
+    -which will be used as a base to create other required env variables for
+    the Steam Runtime (e.g., STEAM_COMPAT_INSTALL_PATH). To note, some features
+    are lost in this usage, such as running winetricks verbs and automatic
+    updates to Proton.
     """
     try:
         import tomllib
@@ -24,37 +28,34 @@ def set_env_toml(
         err: str = "tomllib requires Python 3.11"
         raise ModuleNotFoundError(err)
 
+    # User configuration containing required key/value pairs
     toml: dict[str, Any] = None
-    path_config: str = str(Path(getattr(args, "config", None)).expanduser())
+    # Name of the configuration file
+    config: Path = Path(getattr(args, "config", None)).expanduser()
+    # Executable options, if any
     opts: list[str] = []
 
-    if not Path(path_config).is_file():
-        msg: str = "Path to configuration is not a file: " + getattr(
-            args, "config", None
-        )
-        raise FileNotFoundError(msg)
+    if not config.is_file():
+        err: str = f"Path to configuration is not a file: '{config}'"
+        raise FileNotFoundError(err)
 
-    with Path(path_config).open(mode="rb") as file:
+    with config.open(mode="rb") as file:
         toml = tomllib.load(file)
 
     _check_env_toml(toml)
 
-    for key, val in toml["umu"].items():
-        if key == "prefix":
-            env["WINEPREFIX"] = val
-        elif key == "game_id":
-            env["GAMEID"] = val
-        elif key == "proton":
-            env["PROTONPATH"] = val
-        elif key == "store":
-            env["STORE"] = val
-        elif key == "exe":
-            env["EXE"] = val
-        elif key == "launch_args" and isinstance(val, list):
-            opts = val
-        elif key == "launch_args" and isinstance(val, str):
-            opts = val.split(" ")
+    # Required environment variables
+    env["WINEPREFIX"] = toml.get("umu").get("prefix")
+    env["PROTONPATH"] = toml.get("umu").get("proton")
+    env["EXE"] = toml.get("umu").get("exe")
+    # Optional
+    env["GAMEID"] = toml.get("umu").get("game_id", "")
+    env["STORE"] = toml.get("umu").get("store", "")
 
+    if isinstance(toml.get("umu").get("launch_args"), list):
+        opts = toml["umu"]["launch_args"]
+    elif isinstance(toml.get("umu").get("launch_args"), str):
+        opts = toml["umu"]["launch_args"].split(" ")
     return env, opts
 
 
