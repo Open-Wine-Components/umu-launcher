@@ -1,7 +1,5 @@
 from argparse import Namespace
 from pathlib import Path
-from shutil import which
-from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 from typing import Any
 
 from umu_log import log
@@ -112,46 +110,3 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(err)
 
     return toml
-
-
-def enable_zenity(command: str, opts: list[str], msg: str) -> int:
-    """Execute the command and pipe the output to Zenity.
-
-    Intended to be used for long running tasks (e.g. large file downloads).
-    """
-    bin: str = which("zenity")
-    cmd: str = which(command)
-
-    if not bin:
-        err: str = "zenity was not found in system"
-        raise FileNotFoundError(err)
-
-    if not cmd:
-        err: str = f"{command} was not found in system"
-        raise FileNotFoundError(err)
-
-    with (
-        Popen([cmd, *opts], stdout=PIPE, stderr=STDOUT) as proc,
-        Popen(
-            [
-                f"{bin}",
-                "--progress",
-                "--auto-close",
-                f"--text={msg}",
-                "--percentage=0",
-                "--pulsate",
-                "--no-cancel",
-            ],
-            stdin=PIPE,
-        ) as zenity_proc,
-    ):
-        try:
-            proc.wait(timeout=300)
-        except TimeoutExpired:
-            zenity_proc.terminate()
-            log.warning("%s timed out after 5 min.", cmd)
-            raise TimeoutError
-
-        zenity_proc.stdin.close()
-
-        return zenity_proc.wait()
