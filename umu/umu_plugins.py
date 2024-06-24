@@ -54,6 +54,7 @@ def set_env_toml(
         opts = toml["umu"]["launch_args"]
     elif isinstance(toml.get("umu").get("launch_args"), str):
         opts = toml["umu"]["launch_args"].split(" ")
+
     return env, opts
 
 
@@ -76,7 +77,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
 
         if key not in toml[table]:
             err: str = (
-                f"The following key in table '[{table}]' is required: {key}"
+                f"The following key in table '[{table}]' is required: '{key}'"
             )
             raise ValueError(err)
 
@@ -87,8 +88,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
         # Users should use `launch_args` for game options
         if key == "exe" and not path.is_file():
             err: str = (
-                f"Value for key '{key}' "
-                f"in TOML is not a file: {toml[table][key]}"
+                f"Value for key '{key}' is not a file: '{toml[table][key]}'"
             )
             raise FileNotFoundError(err)
 
@@ -97,7 +97,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
         ):
             err: str = (
                 f"Value for key '{key}' "
-                f"in TOML is not a directory: {toml[table][key]}"
+                f"is not a directory: '{toml[table][key]}'"
             )
             raise NotADirectoryError(err)
 
@@ -105,7 +105,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
     for key, val in toml.get(table).items():
         if not val and isinstance(val, str):
             err: str = (
-                f"Value is empty for '{key}' in TOML.\n"
+                f"Value is empty for '{key}'.\n"
                 f"Please specify a value or remove the entry: '{key}={val}'"
             )
             raise ValueError(err)
