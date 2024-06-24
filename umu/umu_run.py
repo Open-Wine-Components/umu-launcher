@@ -209,10 +209,12 @@ def set_env(
     )
     # Command execution usage
     is_cmd: bool = isinstance(args, tuple)
+
     # Command execution usage, but client wants to create a prefix. When an
-    # empty string is the executable, Proton will create the prefix but will
-    # fail to find the command
+    # empty string is the executable, Proton is expected to create the prefix
+    # but will fail because the executable is not found
     is_createpfx: bool = is_cmd and isinstance(args[0], str) and not args[0]
+
     # Command execution usage, but client wants to run winetricks verbs
     is_winetricks: bool = is_cmd and args[0] == "winetricks"
 
