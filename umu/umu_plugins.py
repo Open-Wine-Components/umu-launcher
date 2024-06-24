@@ -60,11 +60,13 @@ def set_env_toml(
 
 
 def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
-    """Check for required or empty key/value pairs when reading a TOML config.
+    """Check for required or empty key/value pairs in user configuration file.
 
     Casing matters in the config and we do not check if the game id is set.
     """
+    # Required table in configuration file
     table: str = "umu"
+    # Required keys with their values expected to be file paths
     required_keys: list[str] = ["proton", "prefix", "exe"]
 
     if table not in toml:
@@ -72,41 +74,41 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(err)
 
     for key in required_keys:
+        path: Path = None
+
         if key not in toml[table]:
             err: str = (
-                f"The following key in table '{table}' is required: {key}"
+                f"The following key in table '[{table}]' is required: {key}"
             )
             raise ValueError(err)
 
-        # Raise an error for executables that do not exist
-        # One case this can happen is when game options are appended at the
-        # end of the exe
-        # Users should use launch_args game options
-        if key == "exe" and not Path(toml[table][key]).expanduser().is_file():
-            val: str = toml[table][key]
-            err: str = f"Value for key '{key}' in TOML is not a file: {val}"
+        path = Path(toml[table][key]).expanduser()
+
+        # Raise an error for executables that do not exist. One case this can
+        # can happen is when game options are appended at the end of the exe.
+        # Users should use `launch_args` for game options
+        if key == "exe" and not path.is_file():
+            err: str = (
+                f"Value for key '{key}' "
+                f"in TOML is not a file: {toml[table][key]}"
+            )
             raise FileNotFoundError(err)
 
-        # The proton and wine prefix need to be folders
-        if (
-            key == "proton"
-            and not Path(toml[table][key]).expanduser().is_dir()
-        ) or (
-            key == "prefix"
-            and not Path(toml[table][key]).expanduser().is_dir()
+        if (key == "proton" and not path.is_dir()) or (
+            key == "prefix" and not path.is_dir()
         ):
-            dir: str = str(Path(toml[table][key]).expanduser())
             err: str = (
-                f"Value for key '{key}' in TOML is not a directory: {dir}"
+                f"Value for key '{key}' "
+                f"in TOML is not a directory: {toml[table][key]}"
             )
             raise NotADirectoryError(err)
 
-    # Check for empty keys
-    for key, val in toml[table].items():
+    # Raise an error for empty values
+    for key, val in toml.get(table).items():
         if not val and isinstance(val, str):
             err: str = (
                 f"Value is empty for '{key}' in TOML.\n"
-                f"Please specify a value or remove the entry:\n{key} = {val}"
+                f"Please specify a value or remove the entry: '{key}={val}'"
             )
             raise ValueError(err)
 
