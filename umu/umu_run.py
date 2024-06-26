@@ -35,8 +35,9 @@ from umu_util import (
     is_winetricks_verb,
 )
 
-THREAD_POOL: ThreadPoolExecutor = ThreadPoolExecutor()
 AnyPath = os.PathLike | str
+
+thread_pool: ThreadPoolExecutor = ThreadPoolExecutor()
 
 
 def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
@@ -180,11 +181,11 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
     # GE-Proton
     if os.environ.get("PROTONPATH") == "GE-Proton":
         log.debug("GE-Proton selected")
-        get_umu_proton(env, THREAD_POOL)
+        get_umu_proton(env, thread_pool)
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
-        get_umu_proton(env, THREAD_POOL)
+        get_umu_proton(env, thread_pool)
 
     env["PROTONPATH"] = os.environ["PROTONPATH"]
 
@@ -575,7 +576,7 @@ def main() -> int:  # noqa: D103
         with socket(AF_INET, SOCK_DGRAM) as sock:
             sock.settimeout(5)
             sock.connect(("1.1.1.1", 53))
-        future = THREAD_POOL.submit(setup_umu, root, UMU_LOCAL, THREAD_POOL)
+        future = thread_pool.submit(setup_umu, root, UMU_LOCAL, thread_pool)
     except TimeoutError:  # Request to a server timed out
         if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
             err: str = (
@@ -620,7 +621,7 @@ def main() -> int:  # noqa: D103
 
     if future:
         future.result()
-    THREAD_POOL.shutdown()
+    thread_pool.shutdown()
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(
