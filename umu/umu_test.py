@@ -1406,8 +1406,13 @@ class TestGameLauncher(unittest.TestCase):
             "Expected 3 element in the list from build_command",
         )
         proton, verb, exe, *_ = [*test_command]
+        self.assertIsInstance(
+            proton, os.PathLike, "Expected proton to be PathLike"
+        )
         self.assertEqual(
-            proton, f"{self.env['PROTONPATH']}/proton", "Expected PROTONPATH"
+            proton,
+            Path(self.env["PROTONPATH"], "proton"),
+            "Expected PROTONPATH",
         )
         self.assertEqual(verb, "waitforexitandrun", "Expected PROTON_VERB")
         self.assertEqual(exe, self.env["EXE"], "Expected EXE")
@@ -1525,12 +1530,18 @@ class TestGameLauncher(unittest.TestCase):
         entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
+        self.assertIsInstance(
+            entry_point, os.PathLike, "Expected entry point to be PathLike"
+        )
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")
         self.assertEqual(opt2, "--", "Expected --")
+        self.assertIsInstance(
+            proton, os.PathLike, "Expected proton to be PathLike"
+        )
         self.assertEqual(
             proton,
-            Path(self.env.get("PROTONPATH") + "/proton").as_posix(),
+            Path(self.env["PROTONPATH"], "proton"),
             "Expected the proton file",
         )
         self.assertEqual(verb2, self.test_verb, "Expected a verb")
