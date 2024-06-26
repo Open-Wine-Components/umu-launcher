@@ -36,6 +36,7 @@ from umu_util import (
 )
 
 THREAD_POOL: ThreadPoolExecutor = ThreadPoolExecutor()
+AnyPath = os.PathLike | str
 
 
 def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
@@ -387,7 +388,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 def build_command(
     env: dict[str, str],
     local: Path,
-    command: list[str],
+    command: list[AnyPath],
     opts: list[str] = [],
 ) -> list[str]:
     """Build the command to be executed."""
@@ -421,7 +422,7 @@ def build_command(
     if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
         command.extend(
             [
-                str(proton),
+                proton,
                 env["PROTON_VERB"],
                 env["EXE"],
                 *opts,
@@ -444,11 +445,11 @@ def build_command(
 
     command.extend(
         [
-            str(entry_point),
+            entry_point,
             "--verb",
             env["PROTON_VERB"],
             "--",
-            str(proton),
+            proton,
             env["PROTON_VERB"],
             env["EXE"],
             *opts,
@@ -458,7 +459,7 @@ def build_command(
     return command
 
 
-def run_command(command: list[str]) -> int:
+def run_command(command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     # Configure a process via libc prctl()
     # See prctl(2) for more details
@@ -469,7 +470,7 @@ def run_command(command: list[str]) -> int:
     proc: Popen = None
     ret: int = 0
     libc: str = get_libc()
-    cwd: str = ""
+    cwd: AnyPath = ""
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -482,7 +483,7 @@ def run_command(command: list[str]) -> int:
     if os.environ.get("EXE").endswith("winetricks"):
         cwd = f"{os.environ['PROTONPATH']}/protonfixes"
     else:
-        cwd = str(Path.cwd())
+        cwd = Path.cwd()
 
     # Create a subprocess but do not set it as subreaper
     # Unnecessary in a Flatpak and prctl() will fail if libc could not be found
@@ -542,7 +543,7 @@ def main() -> int:  # noqa: D103
         "UMU_ZENITY": "",
         "UMU_NO_RUNTIME": "",
     }
-    command: list[str] = []
+    command: list[AnyPath] = []
     opts: list[str] = []
     root: Path = Path(__file__).resolve(strict=True).parent
     future: Future = None
