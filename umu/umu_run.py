@@ -35,7 +35,9 @@ from umu_util import (
     is_winetricks_verb,
 )
 
-THREAD_POOL: ThreadPoolExecutor = ThreadPoolExecutor()
+AnyPath = os.PathLike | str
+
+thread_pool: ThreadPoolExecutor = ThreadPoolExecutor()
 
 
 def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
@@ -179,11 +181,11 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
     # GE-Proton
     if os.environ.get("PROTONPATH") == "GE-Proton":
         log.debug("GE-Proton selected")
-        get_umu_proton(env, THREAD_POOL)
+        get_umu_proton(env, thread_pool)
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
-        get_umu_proton(env, THREAD_POOL)
+        get_umu_proton(env, thread_pool)
 
     env["PROTONPATH"] = os.environ["PROTONPATH"]
 
@@ -387,7 +389,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 def build_command(
     env: dict[str, str],
     local: Path,
-    command: list[str],
+    command: list[AnyPath],
     opts: list[str] = [],
 ) -> list[str]:
     """Build the command to be executed."""
@@ -421,7 +423,7 @@ def build_command(
     if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
         command.extend(
             [
-                str(proton),
+                proton,
                 env["PROTON_VERB"],
                 env["EXE"],
                 *opts,
@@ -444,11 +446,11 @@ def build_command(
 
     command.extend(
         [
-            str(entry_point),
+            entry_point,
             "--verb",
             env["PROTON_VERB"],
             "--",
-            str(proton),
+            proton,
             env["PROTON_VERB"],
             env["EXE"],
             *opts,
@@ -458,7 +460,7 @@ def build_command(
     return command
 
 
-def run_command(command: list[str]) -> int:
+def run_command(command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     # Configure a process via libc prctl()
     # See prctl(2) for more details
@@ -469,7 +471,7 @@ def run_command(command: list[str]) -> int:
     proc: Popen = None
     ret: int = 0
     libc: str = get_libc()
-    cwd: str = ""
+    cwd: AnyPath = ""
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -482,7 +484,7 @@ def run_command(command: list[str]) -> int:
     if os.environ.get("EXE").endswith("winetricks"):
         cwd = f"{os.environ['PROTONPATH']}/protonfixes"
     else:
-        cwd = str(Path.cwd())
+        cwd = Path.cwd()
 
     # Create a subprocess but do not set it as subreaper
     # Unnecessary in a Flatpak and prctl() will fail if libc could not be found
@@ -542,7 +544,7 @@ def main() -> int:  # noqa: D103
         "UMU_ZENITY": "",
         "UMU_NO_RUNTIME": "",
     }
-    command: list[str] = []
+    command: list[AnyPath] = []
     opts: list[str] = []
     root: Path = Path(__file__).resolve(strict=True).parent
     future: Future = None
@@ -574,7 +576,7 @@ def main() -> int:  # noqa: D103
         with socket(AF_INET, SOCK_DGRAM) as sock:
             sock.settimeout(5)
             sock.connect(("1.1.1.1", 53))
-        future = THREAD_POOL.submit(setup_umu, root, UMU_LOCAL, THREAD_POOL)
+        future = thread_pool.submit(setup_umu, root, UMU_LOCAL, thread_pool)
     except TimeoutError:  # Request to a server timed out
         if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
             err: str = (
@@ -619,7 +621,7 @@ def main() -> int:  # noqa: D103
 
     if future:
         future.result()
-    THREAD_POOL.shutdown()
+    thread_pool.shutdown()
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(

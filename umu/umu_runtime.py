@@ -400,10 +400,10 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     log.console(f"Verifying integrity of {runtime.name}...")
     ret = run(
         [
-            str(pv_verify),
+            pv_verify,
             "--quiet",
             "--minimized-runtime",
-            str(runtime.joinpath("files")),
+            runtime.joinpath("files"),
         ],
         check=False,
     ).returncode
