@@ -31,7 +31,7 @@ jobs:
     - name: Lint umu_*.py files with Ruff
       run: |
         pip install ruff
-        ruff --output-format github ./umu/umu_*.py
+        ruff check --output-format github ./umu/umu_*.py
     - name: Test with unittest
       run: python3 ./umu/umu_test.py
     - name: Test with unittest for plugins
