@@ -28,10 +28,16 @@ except ImportError:
 def get_umu_proton(
     env: dict[str, str], thread_pool: ThreadPoolExecutor
 ) -> dict[str, str]:
-    """Attempt to find existing Proton from the system.
+    """Attempt to use the latest Proton when configured.
 
-    Downloads the latest if not first found in:
-    ~/.local/share/Steam/compatibilitytools.d
+    When $PROTONPATH is not set or $PROTONPATH is 'GE-Proton', the launcher
+    will make a request to Github for the latest UMU-Proton or GE-Proton build
+    and attempt to use it if not already installed in '$HOME/.local/share/Steam
+    /compatibilitytools.d'.
+
+    Protons installed in system paths will not be searched. When the user's
+    network is unreachable, the launcher will fallback to using the latest
+    version of UMU-Proton or GE-Proton installed.
     """
     files: list[tuple[str, str]] = []
     tmp: Path = Path(mkdtemp())
@@ -121,10 +127,10 @@ def _fetch_releases() -> list[tuple[str, str]]:
 def _fetch_proton(
     env: dict[str, str], tmp: Path, files: list[tuple[str, str]]
 ) -> dict[str, str]:
-    """Download the latest umu-proton and set it as PROTONPATH."""
     hash, hash_url = files[0]
     proton, proton_url = files[1]
     proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
+    """Download the latest UMU-Proton or GE-Proton."""
     ret: int = 0  # Exit code from zenity
     digest: str = ""  # Digest of the Proton archive
 
@@ -286,7 +292,7 @@ def _get_latest(
     regressions are likely to occur in bleeding-edge based builds.
 
     When the digests mismatched or when interrupted, an old build will in
-    ~/.local/share/Steam/compatibilitytool.d will be used.
+    $HOME/.local/share/Steam/compatibilitytool.d will be used.
     """
     # Name of the Proton archive (e.g., GE-Proton9-7.tar.gz)
     tarball: str = ""
