@@ -49,17 +49,12 @@ def get_umu_proton(
     except URLError:
         log.debug("Network is unreachable")
 
-    # Download the latest Proton
     if _get_latest(env, STEAM_COMPAT, tmp, files, thread_pool) is env:
         return env
 
-    # When offline or an error occurs, use the first Proton in
-    # compatibilitytools.d
     if _get_from_steamcompat(env, STEAM_COMPAT) is env:
         return env
 
-    # No internet and compat tool is empty, just return and raise an
-    # exception from the caller
     environ["PROTONPATH"] = ""
 
     return env
@@ -143,7 +138,7 @@ def _fetch_proton(
         raise ValueError(err)
 
     # Digest file
-    # Ruff currently cannot get this right
+    # Since the URLs are not hardcoded links, Ruff will flag the urlopen call
     # See https://github.com/astral-sh/ruff/issues/7918
     log.console(f"Downloading {hash}...")
     with (
