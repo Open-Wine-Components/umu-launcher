@@ -39,17 +39,21 @@ def get_umu_proton(
     network is unreachable, the launcher will fallback to using the latest
     version of UMU-Proton or GE-Proton installed.
     """
-    files: list[tuple[str, str]] = []
+    # Subset of Github release assets from the Github API (ver. 2022-11-28)
+    # First element is the digest asset, second is the Proton asset. Each asset
+    # will contain the asset's name and the URL that hosts it.
+    assets: list[tuple[str, str]] = []
     tmp: Path = Path(mkdtemp())
+
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
     try:
         log.debug("Sending request to api.github.com")
-        files = _fetch_releases()
+        assets = _fetch_releases()
     except URLError:
         log.debug("Network is unreachable")
 
-    if _get_latest(env, STEAM_COMPAT, tmp, files, thread_pool) is env:
+    if _get_latest(env, STEAM_COMPAT, tmp, assets, thread_pool) is env:
         return env
 
     if _get_from_steamcompat(env, STEAM_COMPAT) is env:
@@ -129,21 +133,18 @@ def _fetch_releases() -> list[tuple[str, str]]:
 
 
 def _fetch_proton(
-    env: dict[str, str], tmp: Path, files: list[tuple[str, str]]
+    env: dict[str, str], tmp: Path, assets: list[tuple[str, str]]
 ) -> dict[str, str]:
-    hash, hash_url = files[0]
-    proton, proton_url = files[1]
-    proton_dir: str = proton[: proton.find(".tar.gz")]  # Proton dir
     """Download the latest UMU-Proton or GE-Proton."""
+    hash, hash_url = assets[0]
+    tarball, tar_url = assets[1]
+    proton: str = tarball.removesuffix(".tar.gz")
     ret: int = 0  # Exit code from zenity
     digest: str = ""  # Digest of the Proton archive
 
     # Verify the scheme from Github for resources
-    if not proton_url.startswith("https:") or not hash_url.startswith(
-        "https:"
-    ):
-        urls = [proton_url, hash_url]
-        err: str = f"Scheme in URLs is not 'https:': {urls}"
+    if not tar_url.startswith("https:") or not hash_url.startswith("https:"):
+        err: str = f"Scheme in URLs is not 'https:': {(tar_url, hash_url)}"
         raise ValueError(err)
 
     # Digest file
@@ -161,7 +162,7 @@ def _fetch_proton(
             raise HTTPException(err)
 
         for line in resp.read().decode("utf-8").splitlines():
-            if line.endswith(proton):
+            if line.endswith(tarball):
                 digest = line.split(" ")[0]
 
     # Proton
@@ -171,23 +172,23 @@ def _fetch_proton(
         opts: list[str] = [
             "-LJO",
             "--silent",
-            proton_url,
+            tar_url,
             "--output-dir",
             str(tmp),
         ]
-        msg: str = f"Downloading {proton_dir}..."
+        msg: str = f"Downloading {proton}..."
         ret = run_zenity(bin, opts, msg)
 
     if ret:
-        tmp.joinpath(proton).unlink(missing_ok=True)
+        tmp.joinpath(tarball).unlink(missing_ok=True)
         log.warning("zenity exited with the status code: %s", ret)
         log.console("Retrying from Python...")
 
     if not environ.get("UMU_ZENITY") or ret:
-        log.console(f"Downloading {proton}...")
+        log.console(f"Downloading {tarball}...")
         with (
             urlopen(  # noqa: S310
-                proton_url, context=SSL_DEFAULT_CONTEXT
+                tar_url, context=SSL_DEFAULT_CONTEXT
             ) as resp,
         ):
             hash = sha512()
@@ -195,12 +196,12 @@ def _fetch_proton(
             # Crash here because without Proton, the launcher will not work
             if resp.status != 200:
                 err: str = (
-                    f"Unable to download {proton}\n"
+                    f"Unable to download {tarball}\n"
                     f"github.com returned the status: {resp.status}"
                 )
                 raise HTTPException(err)
 
-            with tmp.joinpath(proton).open(mode="ab+", buffering=0) as file:
+            with tmp.joinpath(tarball).open(mode="ab+", buffering=0) as file:
                 chunk_size: int = 64 * 1024  # 64 KB
                 buffer: bytearray = bytearray(chunk_size)
                 view: memoryview = memoryview(buffer)
@@ -209,10 +210,10 @@ def _fetch_proton(
                     hash.update(view[:size])
 
             if hash.hexdigest() != digest:
-                err: str = f"Digest mismatched: {proton}"
+                err: str = f"Digest mismatched: {tarball}"
                 raise ValueError(err)
 
-            log.console(f"{proton}: SHA512 is OK")
+            log.console(f"{tarball}: SHA512 is OK")
 
     return env
 
@@ -285,7 +286,7 @@ def _get_latest(
     env: dict[str, str],
     steam_compat: Path,
     tmp: Path,
-    files: list[tuple[str, str]],
+    assets: list[tuple[str, str]],
     thread_pool: ThreadPoolExecutor,
 ) -> dict[str, str] | None:
     """Download the latest Proton for new installs.
@@ -305,11 +306,11 @@ def _get_latest(
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
     version: str = ""
 
-    if not files:
+    if not assets:
         return None
 
-    tarball = files[1][0]
-    proton = tarball[: tarball.find(".tar.gz")]
+    tarball = assets[1][0]
+    proton = tarball.removesuffix(".tar.gz")
     version = (
         "GE-Proton"
         if environ.get("PROTONPATH") == "GE-Proton"
@@ -327,7 +328,7 @@ def _get_latest(
 
     # Use the latest UMU/GE-Proton
     try:
-        _fetch_proton(env, tmp, files)
+        _fetch_proton(env, tmp, assets)
         if version == "UMU-Proton":
             protons: list[Path] = [
                 file
