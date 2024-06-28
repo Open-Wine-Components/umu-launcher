@@ -62,7 +62,8 @@ def get_umu_proton(
 
 def _fetch_releases() -> list[tuple[str, str]]:
     """Fetch the latest releases from the Github API."""
-    files: list[tuple[str, str]] = []
+    assets: list[tuple[str, str]] = []
+    asset_count: int = 0
     url: str = "https://api.github.com"
     repo: str = "/repos/Open-Wine-Components/umu-proton/releases"
     headers: dict[str, str] = {
@@ -79,7 +80,7 @@ def _fetch_releases() -> list[tuple[str, str]]:
         context=SSL_DEFAULT_CONTEXT,
     ) as resp:
         if resp.status != 200:
-            return files
+            return assets
 
         for release in loads(resp.read().decode("utf-8")):
             if not release.get("assets"):
@@ -99,24 +100,32 @@ def _fetch_releases() -> list[tuple[str, str]]:
                     and asset.get("browser_download_url")
                 ):
                     if asset["name"].endswith("sum"):
-                        files.append(
-                            (asset["name"], asset["browser_download_url"])
+                        assets.append(
+                            (
+                                asset["name"],
+                                asset["browser_download_url"],
+                            )
                         )
+                        asset_count += 1
                     else:
-                        files.append(
-                            (asset["name"], asset["browser_download_url"])
+                        assets.append(
+                            (
+                                asset["name"],
+                                asset["browser_download_url"],
+                            )
                         )
-                if len(files) == 2:
+                        asset_count += 1
+                if asset_count == 2:
                     break
             break
 
-    if len(files) != 2:
+    if asset_count != 2:
         err: str = (
-            "Failed to get complete information for Proton at api.github.com"
+            "Failed to acquire all assets from api.github.com: " f"{assets}"
         )
         raise RuntimeError(err)
 
-    return files
+    return assets
 
 
 def _fetch_proton(
