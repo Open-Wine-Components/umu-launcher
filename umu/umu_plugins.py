@@ -5,7 +5,7 @@ from typing import Any
 
 def set_env_toml(
     env: dict[str, str], args: Namespace
-) -> tuple[dict[str, str], list[str, tuple[str, Path]]]:
+) -> tuple[dict[str, str], list[str]]:
     """Read key/values in a TOML file and map them to umu env. variables.
 
     In the TOML file, certain keys map to environment variables:
