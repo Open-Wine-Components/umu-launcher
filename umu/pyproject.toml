@@ -2,7 +2,6 @@
 python_version = "3.10"
 warn_return_any = true
 ignore_missing_imports = true
-# strict = true
 
 disable_error_code = [
     # Allow redefinitions since we redefine an error variable before raising exceptions
