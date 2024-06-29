@@ -1,13 +1,13 @@
+import os
+import sys
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha256
 from http.client import HTTPException, HTTPResponse, HTTPSConnection
 from json import load
-from os import environ
 from pathlib import Path
 from shutil import move, rmtree
 from ssl import create_default_context
 from subprocess import run
-from sys import version
 from tarfile import open as taropen
 from tempfile import mkdtemp
 from typing import Any
@@ -16,7 +16,7 @@ from umu_consts import CONFIG, UMU_LOCAL
 from umu_log import log
 from umu_util import run_zenity
 
-CLIENT_SESSION: HTTPSConnection = HTTPSConnection(
+client_session: HTTPSConnection = HTTPSConnection(
     "repo.steampowered.com",
     context=create_default_context(),
 )
@@ -48,7 +48,7 @@ def _install_umu(
     log.debug("URL: %s", base_url)
 
     # Download the runtime and optionally create a popup with zenity
-    if environ.get("UMU_ZENITY") == "1":
+    if os.environ.get("UMU_ZENITY") == "1":
         bin: str = "curl"
         opts: list[str] = [
             "-LJ",
@@ -66,7 +66,7 @@ def _install_umu(
         tmp.joinpath(archive).unlink(missing_ok=True)
         log.console("Retrying from Python...")
 
-    if not environ.get("UMU_ZENITY") or ret:
+    if not os.environ.get("UMU_ZENITY") or ret:
         digest: str = ""
         endpoint: str = (
             f"/steamrt-images-{codename}"
@@ -75,14 +75,14 @@ def _install_umu(
         hash = sha256()
 
         # Get the digest for the runtime archive
-        CLIENT_SESSION.request("GET", f"{endpoint}/SHA256SUMS")
-        resp = CLIENT_SESSION.getresponse()
+        client_session.request("GET", f"{endpoint}/SHA256SUMS")
+        resp = client_session.getresponse()
 
         if resp.status != 200:
             err: str = (
                 f"repo.steampowered.com returned the status: {resp.status}"
             )
-            CLIENT_SESSION.close()
+            client_session.close()
             raise HTTPException(err)
 
         for line in resp.read().decode("utf-8").splitlines():
@@ -91,14 +91,14 @@ def _install_umu(
                 break
 
         # Download the runtime
-        CLIENT_SESSION.request("GET", f"{endpoint}/{archive}")
-        resp = CLIENT_SESSION.getresponse()
+        client_session.request("GET", f"{endpoint}/{archive}")
+        resp = client_session.getresponse()
 
         if resp.status != 200:
             err: str = (
                 f"repo.steampowered.com returned the status: {resp.status}"
             )
-            CLIENT_SESSION.close()
+            client_session.close()
             raise HTTPException(err)
 
         log.console(f"Downloading latest steamrt {codename}, please wait...")
@@ -113,11 +113,11 @@ def _install_umu(
         # Verify the runtime digest
         if hash.hexdigest() != digest:
             err: str = f"Digest mismatched: {archive}"
-            CLIENT_SESSION.close()
+            client_session.close()
             raise ValueError(err)
 
         log.console(f"{archive}: SHA256 is OK")
-        CLIENT_SESSION.close()
+        client_session.close()
 
     # Open the tar file and move the files
     log.debug("Opening: %s", tmp.joinpath(archive))
@@ -130,7 +130,7 @@ def _install_umu(
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
         else:
-            log.warning("Python: %s", version)
+            log.warning("Python: %s", sys.version)
             log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
 
@@ -257,8 +257,8 @@ def _update_umu(
                     )
                     break
 
-        CLIENT_SESSION.request("GET", url)
-        resp = CLIENT_SESSION.getresponse()
+        client_session.request("GET", url)
+        resp = client_session.getresponse()
 
         # Handle the redirect
         if resp.status == 301:
@@ -267,8 +267,8 @@ def _update_umu(
             # The stdlib requires reading the entire response body before
             # making another request
             resp.read()
-            CLIENT_SESSION.request("GET", f"{location}/{versions}")
-            resp = CLIENT_SESSION.getresponse()
+            client_session.request("GET", f"{location}/{versions}")
+            resp = client_session.getresponse()
 
         if resp.status != 200:
             log.warning(
@@ -281,16 +281,16 @@ def _update_umu(
             )
 
     # Update the runtime if necessary by comparing VERSIONS.txt to the remote
-    CLIENT_SESSION.request(
+    client_session.request(
         "GET", f"{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt"
     )
-    resp = CLIENT_SESSION.getresponse()
+    resp = client_session.getresponse()
 
     if resp.status != 200:
         log.warning(
             "repo.steampowered.com returned the status: %s", resp.status
         )
-        CLIENT_SESSION.close()
+        client_session.close()
         return
 
     if (
@@ -304,7 +304,7 @@ def _update_umu(
         return
     log.console("steamrt is up to date")
 
-    CLIENT_SESSION.close()
+    client_session.close()
 
 
 def _get_json(path: Path, config: str) -> dict[str, Any]:
