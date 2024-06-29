@@ -10,7 +10,6 @@ from logging import (
     getLogger,
 )
 from sys import stderr
-from typing import TextIO
 
 from umu_consts import SIMPLE_FORMAT, Color
 
@@ -47,6 +46,6 @@ class CustomFormatter(Formatter):  # noqa: D101
 
 log: CustomLogger = CustomLogger(getLogger(__name__))
 
-console_handler: StreamHandler[TextIO] = StreamHandler(stream=stderr)
+console_handler: StreamHandler = StreamHandler(stream=stderr)
 console_handler.setFormatter(CustomFormatter())
 log.addHandler(console_handler)
