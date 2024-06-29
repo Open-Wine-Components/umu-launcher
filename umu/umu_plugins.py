@@ -27,32 +27,40 @@ def set_env_toml(
         raise ModuleNotFoundError(err)
 
     # User configuration containing required key/value pairs
-    toml: dict[str, Any] = None
+    toml: dict[str, Any]
+    # Configuration file path
+    config_path: Path
     # Name of the configuration file
-    config: Path = Path(getattr(args, "config", None)).expanduser()
+    config: str = getattr(args, "config", "")
     # Executable options, if any
     opts: list[str] = []
 
-    if not config.is_file():
+    if not config:
+        err: str = f"Property 'config' does not exist in type '{type(args)}'"
+        raise AttributeError(err)
+
+    config_path = Path(config).expanduser()
+
+    if not config_path.is_file():
         err: str = f"Path to configuration is not a file: '{config}'"
         raise FileNotFoundError(err)
 
-    with config.open(mode="rb") as file:
+    with config_path.open(mode="rb") as file:
         toml = tomllib.load(file)
 
     _check_env_toml(toml)
 
     # Required environment variables
-    env["WINEPREFIX"] = toml.get("umu").get("prefix")
-    env["PROTONPATH"] = toml.get("umu").get("proton")
-    env["EXE"] = toml.get("umu").get("exe")
+    env["WINEPREFIX"] = toml["umu"]["prefix"]
+    env["PROTONPATH"] = toml["umu"]["proton"]
+    env["EXE"] = toml["umu"]["exe"]
     # Optional
-    env["GAMEID"] = toml.get("umu").get("game_id", "")
-    env["STORE"] = toml.get("umu").get("store", "")
+    env["GAMEID"] = toml["umu"].get("game_id", "")
+    env["STORE"] = toml["umu"].get("store", "")
 
-    if isinstance(toml.get("umu").get("launch_args"), list):
+    if isinstance(toml["umu"].get("launch_args"), list):
         opts = toml["umu"]["launch_args"]
-    elif isinstance(toml.get("umu").get("launch_args"), str):
+    elif isinstance(toml["umu"].get("launch_args"), str):
         opts = toml["umu"]["launch_args"].split(" ")
 
     return env, opts
@@ -73,7 +81,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(err)
 
     for key in required_keys:
-        path: Path = None
+        path: Path
 
         if key not in toml[table]:
             err: str = (
@@ -102,7 +110,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
             raise NotADirectoryError(err)
 
     # Raise an error for empty values
-    for key, val in toml.get(table).items():
+    for key, val in toml[table].items():
         if not val and isinstance(val, str):
             err: str = (
                 f"Value is empty for '{key}'.\n"
