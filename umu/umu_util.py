@@ -19,8 +19,8 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
 
     Intended to be used for long running operations (e.g. large file downloads)
     """
-    bin: str = which("zenity")
-    cmd: str = which(command)
+    bin: str = which("zenity") or ""
+    cmd: str = which(command) or ""
     ret: int = 0  # Exit code returned from zenity
 
     if not bin:
@@ -56,7 +56,10 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
                 zenity_proc.terminate()
                 log.warning("%s timed out after 5 min.", cmd)
                 raise TimeoutError
-            zenity_proc.stdin.close()
+
+            if zenity_proc.stdin:
+                zenity_proc.stdin.close()
+
             ret = zenity_proc.wait()
 
     if ret:
@@ -70,9 +73,9 @@ def is_installed_verb(verb: list[str], pfx: Path) -> bool:
 
     Determines the installation of verbs by reading winetricks.log file.
     """
-    wt_log: Path = None
+    wt_log: Path
+    verbs: set[str]
     is_installed: bool = False
-    verbs: set[str] = {}
 
     if not pfx:
         err: str = f"Value is '{pfx}' for WINE prefix"
@@ -106,7 +109,7 @@ def is_winetricks_verb(
     verbs: list[str], pattern: str = r"^[a-zA-Z_0-9]+(=[a-zA-Z0-9]*)?$"
 ) -> bool:
     """Check if a string is a winetricks verb."""
-    regex: Pattern = None
+    regex: Pattern
 
     if not verbs:
         return False
