@@ -26,6 +26,7 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
     if not bin:
         log.warning("zenity was not found in system")
         return -1
+
     if not cmd:
         log.warning("%s was not found in system", command)
         return -1
