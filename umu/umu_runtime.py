@@ -187,7 +187,6 @@ def setup_umu(
         return
 
     _update_umu(local, json, thread_pool)
-    return
 
 
 def _update_umu(
