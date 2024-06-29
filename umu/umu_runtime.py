@@ -9,7 +9,6 @@ from shutil import move, rmtree
 from ssl import create_default_context
 from subprocess import run
 from sys import version
-from tarfile import TarInfo
 from tarfile import open as taropen
 from tempfile import mkdtemp
 from typing import Any
@@ -25,8 +24,10 @@ CLIENT_SESSION: HTTPSConnection = HTTPSConnection(
 
 try:
     from tarfile import tar_filter
+
+    has_data_filter: bool = True
 except ImportError:
-    tar_filter: Callable[[str, str], TarInfo] = None
+    has_data_filter: bool = False
 
 
 def _install_umu(
@@ -42,6 +43,7 @@ def _install_umu(
         f"https://repo.steampowered.com/steamrt-images-{codename}"
         "/snapshots/latest-container-runtime-public-beta"
     )
+    resp: HTTPResponse
 
     log.debug("Codename: %s", codename)
     log.debug("URL: %s", base_url)
@@ -71,7 +73,6 @@ def _install_umu(
             f"/steamrt-images-{codename}"
             "/snapshots/latest-container-runtime-public-beta"
         )
-        resp: HTTPResponse = None
         hash = sha256()
 
         # Get the digest for the runtime archive
@@ -126,7 +127,7 @@ def _install_umu(
     ):
         futures: list[Future] = []
 
-        if tar_filter:
+        if has_data_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
         else:
@@ -198,13 +199,13 @@ def _update_umu(
     The runtime platform will be updated to the latest public beta by comparing
     the local VERSIONS.txt against the remote one.
     """
+    runtime: Path
+    resp: HTTPResponse
     codename: str = json["umu"]["versions"]["runtime_platform"]
     endpoint: str = (
         f"/steamrt-images-{codename}"
         "/snapshots/latest-container-runtime-public-beta"
     )
-    runtime: Path = None
-    resp: HTTPResponse = None
     log.debug("Existing install detected")
 
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
@@ -262,7 +263,7 @@ def _update_umu(
 
         # Handle the redirect
         if resp.status == 301:
-            location: str = resp.getheader("Location")
+            location: str = resp.getheader("Location", "")
             log.debug("Location: %s", resp.getheader("Location"))
             # The stdlib requires reading the entire response body before
             # making another request
@@ -314,7 +315,7 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
     the tools currently used by launcher. The key/value pairs umu and versions
     must exist.
     """
-    json: dict[str, Any] = None
+    json: dict[str, Any]
     # Steam Runtime platform values
     # See https://gitlab.steamos.cloud/steamrt/steamrt/-/wikis/home
     steamrts: set[str] = {
@@ -336,7 +337,7 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
         json = load(file)
 
     # Raise an error if "umu" and "versions" doesn't exist
-    if not json or not json.get("umu") or not json.get("umu").get("versions"):
+    if not json or "umu" not in json or "versions" not in json["umu"]:
         err: str = (
             f"Failed to load {config} or 'umu' or 'versions' not in: {config}"
         )
@@ -344,7 +345,7 @@ def _get_json(path: Path, config: str) -> dict[str, Any]:
 
     # The launcher will use the value runtime_platform to glob files. Attempt
     # to guard against directory removal attacks for non-system wide installs
-    if json.get("umu").get("versions").get("runtime_platform") not in steamrts:
+    if json["umu"]["versions"]["runtime_platform"] not in steamrts:
         err: str = "Value for 'runtime_platform' is not a steamrt"
         raise ValueError(err)
 
@@ -377,10 +378,10 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     validate the integrity of the runtime's metadata after its moved to the
     home directory and used to run games.
     """
+    runtime: Path
     codename: str = json["umu"]["versions"]["runtime_platform"]
     pv_verify: Path = src.joinpath("pressure-vessel", "bin", "pv-verify")
     ret: int = 1
-    runtime: Path = None
 
     # Find the runtime directory
     try:
