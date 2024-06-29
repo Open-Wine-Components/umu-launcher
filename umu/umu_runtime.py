@@ -32,6 +32,7 @@ except ImportError:
 def _install_umu(
     json: dict[str, Any], thread_pool: ThreadPoolExecutor
 ) -> None:
+    resp: HTTPResponse
     tmp: Path = Path(mkdtemp())
     ret: int = 0  # Exit code from zenity
     # Codename for the runtime (e.g., 'sniper')
@@ -42,7 +43,6 @@ def _install_umu(
         f"https://repo.steampowered.com/steamrt-images-{codename}"
         "/snapshots/latest-container-runtime-public-beta"
     )
-    resp: HTTPResponse
 
     log.debug("Codename: %s", codename)
     log.debug("URL: %s", base_url)
