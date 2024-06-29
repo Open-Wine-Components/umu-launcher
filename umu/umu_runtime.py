@@ -231,10 +231,9 @@ def _update_umu(
     # When the file is missing, the request for the image will need to be made
     # to the endpoint of the specific snapshot
     if not local.joinpath("VERSIONS.txt").is_file():
+        url: str
         release: Path = runtime.joinpath("files", "lib", "os-release")
         versions: str = f"SteamLinuxRuntime_{codename}.VERSIONS.txt"
-        url: str = ""
-        build_id: str = ""
 
         # Restore the runtime if os-release is missing, otherwise pressure
         # vessel will crash when creating the variable directory
@@ -248,9 +247,10 @@ def _update_umu(
         with release.open(mode="r", encoding="utf-8") as file:
             for line in file:
                 if line.startswith("BUILD_ID"):
-                    _: str = line.strip()
-                    # Get the value after '=' and strip the quotes
-                    build_id = _[_.find("=") + 1 :].strip('"')
+                    # Get the value after 'BUILD_ID=' and strip the quotes
+                    build_id: str = (
+                        line.removeprefix("BUILD_ID=").strip('"').rstrip()
+                    )
                     url = (
                         f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
                     )
