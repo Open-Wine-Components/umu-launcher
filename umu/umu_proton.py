@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha512
 from http.client import HTTPException
@@ -8,10 +7,10 @@ from pathlib import Path
 from shutil import rmtree
 from ssl import SSLContext, create_default_context
 from sys import version
-from tarfile import TarInfo
 from tarfile import open as tar_open
 from tempfile import mkdtemp
-from urllib.request import Request, URLError, urlopen
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 
 from umu_consts import STEAM_COMPAT
 from umu_log import log
@@ -21,8 +20,10 @@ SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
 
 try:
     from tarfile import tar_filter
+
+    has_data_filter: bool = True
 except ImportError:
-    tar_filter: Callable[[str, str], TarInfo] = None
+    has_data_filter: bool = False
 
 
 def get_umu_proton(
@@ -191,7 +192,7 @@ def _fetch_proton(
                 tar_url, context=SSL_DEFAULT_CONTEXT
             ) as resp,
         ):
-            hash = sha512()
+            hashsum = sha512()
 
             # Crash here because without Proton, the launcher will not work
             if resp.status != 200:
@@ -207,9 +208,9 @@ def _fetch_proton(
                 view: memoryview = memoryview(buffer)
                 while size := resp.readinto(buffer):
                     file.write(view[:size])
-                    hash.update(view[:size])
+                    hashsum.update(view[:size])
 
-            if hash.hexdigest() != digest:
+            if hashsum.hexdigest() != digest:
                 err: str = f"Digest mismatched: {tarball}"
                 raise ValueError(err)
 
@@ -221,7 +222,7 @@ def _fetch_proton(
 def _extract_dir(file: Path, steam_compat: Path) -> None:
     """Extract from a path to another location."""
     with tar_open(file, "r:gz") as tar:
-        if tar_filter:
+        if has_data_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
         else:
@@ -389,11 +390,11 @@ def _update_proton(
     if not protons:
         return
 
-    for proton in protons:
-        if proton.is_dir():
+    for stable in protons:
+        if stable.is_dir():
             log.debug("Previous stable build found")
-            log.debug("Removing: %s", proton)
-            futures.append(thread_pool.submit(rmtree, str(proton)))
+            log.debug("Removing: %s", stable)
+            futures.append(thread_pool.submit(rmtree, str(stable)))
 
     for _ in futures:
         _.result()
