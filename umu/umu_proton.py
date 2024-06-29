@@ -301,11 +301,11 @@ def _get_latest(
     $HOME/.local/share/Steam/compatibilitytool.d will be used.
     """
     # Name of the Proton archive (e.g., GE-Proton9-7.tar.gz)
-    tarball: str = ""
+    tarball: str
     # Name of the Proton directory (e.g., GE-Proton9-7)
-    proton: str = ""
+    proton: str
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
-    version: str = ""
+    version: str
 
     if not assets:
         return None
