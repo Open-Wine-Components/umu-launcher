@@ -35,8 +35,6 @@ PROTON_VERBS = {
     "getnativepath",
 }
 
-XDG_DATA_HOME = environ.get("XDG_DATA_HOME")
-
 FLATPAK_ID = environ.get("FLATPAK_ID") or ""
 
 FLATPAK_PATH: Path | None = (
