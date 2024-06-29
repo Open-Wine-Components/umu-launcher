@@ -38,7 +38,7 @@ PROTON_VERBS = {
 FLATPAK_ID = environ.get("FLATPAK_ID") or ""
 
 FLATPAK_PATH: Path | None = (
-    Path(XDG_DATA_HOME, "umu") if FLATPAK_ID and XDG_DATA_HOME else None
+    Path(environ["XDG_DATA_HOME"], "umu") if FLATPAK_ID else None
 )
 
 UMU_LOCAL: Path = FLATPAK_PATH or Path.home().joinpath(
