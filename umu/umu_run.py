@@ -158,14 +158,17 @@ def check_env(env: dict[str, str]) -> dict[str, str] | dict[str, Any]:
     if os.environ.get("WINEPREFIX") == "":
         err: str = "Environment variable is empty: WINEPREFIX"
         raise ValueError(err)
+
     if "WINEPREFIX" not in os.environ:
         pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = str(pfx)
+
     if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
         pfx: Path = Path(os.environ["WINEPREFIX"])
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = str(pfx)
+
     env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
     # Proton Version
@@ -209,6 +212,7 @@ def set_env(
     protonpath: Path = (
         Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
     )
+
     # Command execution usage
     is_cmd: bool = isinstance(args, tuple)
 
@@ -381,6 +385,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     for rtpath in steamrt_paths:
         if not Path(rtpath).is_symlink() and Path(rtpath, libc).is_file():
             paths.add(rtpath)
+
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
 
     return env
