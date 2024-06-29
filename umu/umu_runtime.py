@@ -249,7 +249,7 @@ def _update_umu(
                 if line.startswith("BUILD_ID"):
                     # Get the value after 'BUILD_ID=' and strip the quotes
                     build_id: str = (
-                        line.removeprefix("BUILD_ID=").strip('"').rstrip()
+                        line.removeprefix("BUILD_ID=").rstrip().strip('"')
                     )
                     url = (
                         f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
