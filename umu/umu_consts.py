@@ -1,5 +1,5 @@
+import os
 from enum import Enum
-from os import environ
 from pathlib import Path
 
 
@@ -35,10 +35,10 @@ PROTON_VERBS = {
     "getnativepath",
 }
 
-FLATPAK_ID = environ.get("FLATPAK_ID") or ""
+FLATPAK_ID = os.environ.get("FLATPAK_ID") or ""
 
-FLATPAK_PATH: Path = (
-    Path(environ.get("XDG_DATA_HOME"), "umu") if FLATPAK_ID else None
+FLATPAK_PATH: Path | None = (
+    Path(os.environ["XDG_DATA_HOME"], "umu") if FLATPAK_ID else None
 )
 
 UMU_LOCAL: Path = FLATPAK_PATH or Path.home().joinpath(

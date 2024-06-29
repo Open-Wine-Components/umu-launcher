@@ -2,8 +2,8 @@
 
 import os
 import sys
+from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
-from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
@@ -142,7 +142,7 @@ def setup_pfx(path: str) -> None:
         log.debug("User home directory is link: %s", wineuser.is_symlink())
 
 
-def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
+def check_env(env: dict[str, str]) -> dict[str, str] | dict[str, Any]:
     """Before executing a game, check for environment variables and set them.
 
     GAMEID is strictly required and the client is responsible for setting this.
@@ -158,20 +158,23 @@ def check_env(env: set[str, str]) -> dict[str, str] | dict[str, Any]:
     if os.environ.get("WINEPREFIX") == "":
         err: str = "Environment variable is empty: WINEPREFIX"
         raise ValueError(err)
+
     if "WINEPREFIX" not in os.environ:
         pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = str(pfx)
+
     if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
         pfx: Path = Path(os.environ["WINEPREFIX"])
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = str(pfx)
+
     env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
     # Proton Version
     if (
         os.environ.get("PROTONPATH")
-        and Path(STEAM_COMPAT, os.environ.get("PROTONPATH")).is_dir()
+        and Path(STEAM_COMPAT, os.environ["PROTONPATH"]).is_dir()
     ):
         log.debug("Proton version selected")
         os.environ["PROTONPATH"] = str(
@@ -209,16 +212,17 @@ def set_env(
     protonpath: Path = (
         Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
     )
+
     # Command execution usage
     is_cmd: bool = isinstance(args, tuple)
 
     # Command execution usage, but client wants to create a prefix. When an
     # empty string is the executable, Proton is expected to create the prefix
     # but will fail because the executable is not found
-    is_createpfx: bool = is_cmd and isinstance(args[0], str) and not args[0]
+    is_createpfx: bool = is_cmd and not args[0]  # type: ignore
 
     # Command execution usage, but client wants to run winetricks verbs
-    is_winetricks: bool = is_cmd and args[0] == "winetricks"
+    is_winetricks: bool = is_cmd and args[0] == "winetricks"  # type: ignore
 
     # PROTON_VERB
     # For invalid Proton verbs, just assign the waitforexitandrun
@@ -240,19 +244,19 @@ def set_env(
             strict=True
         )
         env["EXE"] = str(exe)
-        args = (env["EXE"], args[1])
+        args = (env["EXE"], args[1])  # type: ignore
         env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
     elif is_cmd:
         try:
             # Ensure executable path is absolute, otherwise Proton will fail
             # when creating the subprocess.
             # e.g., Games/umu/umu-0 -> $HOME/Games/umu/umu-0
-            exe: Path = Path(args[0]).expanduser().resolve(strict=True)
+            exe: Path = Path(args[0]).expanduser().resolve(strict=True)  # type: ignore
             env["EXE"] = str(exe)
             env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
-            env["EXE"] = args[0]
+            env["EXE"] = args[0]  # type: ignore
             env["STEAM_COMPAT_INSTALL_PATH"] = ""
             log.warning("Executable not found: %s", env["EXE"])
     else:  # Configuration file usage
@@ -291,7 +295,7 @@ def set_env(
     enable_steam_game_drive(env)
 
     # Winetricks
-    if env.get("EXE").endswith("winetricks"):
+    if env.get("EXE", "").endswith("winetricks"):
         # Proton directory with the last segment being subdirectory containing
         # the Proton libraries and binaries. In upstream Proton 9 the subdir
         # is 'files', while in other versions it may be 'dist'.
@@ -314,7 +318,7 @@ def set_env(
     if FLATPAK_PATH:
         env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
 
-    # Currently, running games when using the Steam Runtime in a Flatpak
+    # FIXME: Currently, running games when using the Steam Runtime in a Flatpak
     # environment will cause the game window to not display within the SteamOS
     # gamescope session. Note, this is a workaround until the runtime is built
     # or the issue is fixed upstream.
@@ -378,9 +382,10 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 
     # Set the shared library paths of the system after finding libc.so
     # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#filesystem-layout
-    for path in steamrt_paths:
-        if not Path(path).is_symlink() and Path(path, libc).is_file():
-            paths.add(path)
+    for rtpath in steamrt_paths:
+        if not Path(rtpath).is_symlink() and Path(rtpath, libc).is_file():
+            paths.add(rtpath)
+
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
 
     return env
@@ -391,9 +396,9 @@ def build_command(
     local: Path,
     command: list[AnyPath],
     opts: list[str] = [],
-) -> list[str]:
+) -> list[AnyPath]:
     """Build the command to be executed."""
-    proton: Path = Path(env.get("PROTONPATH"), "proton")
+    proton: Path = Path(env["PROTONPATH"], "proton")
     entry_point: Path = local.joinpath("umu")
 
     # Will run the game w/o Proton, effectively running the game as is. This
@@ -439,7 +444,7 @@ def build_command(
         raise FileNotFoundError(err)
 
     # Configure winetricks to not be prompted for any windows
-    if env.get("EXE").endswith("winetricks") and opts:
+    if env.get("EXE", "").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         opts = ["-q", *opts]
@@ -464,14 +469,11 @@ def run_command(command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     # Configure a process via libc prctl()
     # See prctl(2) for more details
-    prctl: Callable[
-        [c_int, c_ulong, c_ulong, c_ulong, c_ulong],
-        c_int,
-    ] = None
-    proc: Popen = None
+    prctl: CFuncPtr
+    cwd: AnyPath
+    proc: Popen
     ret: int = 0
     libc: str = get_libc()
-    cwd: AnyPath = ""
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -481,7 +483,7 @@ def run_command(command: list[AnyPath]) -> int:
         log.warning("Will not set subprocess as subreaper")
 
     # For winetricks, change directory to $PROTONPATH/protonfixes
-    if os.environ.get("EXE").endswith("winetricks"):
+    if os.environ.get("EXE", "").endswith("winetricks"):
         cwd = f"{os.environ['PROTONPATH']}/protonfixes"
     else:
         cwd = Path.cwd()
@@ -519,6 +521,7 @@ def run_command(command: list[AnyPath]) -> int:
 
 
 def main() -> int:  # noqa: D103
+    future: Future | None = None
     env: dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
@@ -547,7 +550,6 @@ def main() -> int:  # noqa: D103
     command: list[AnyPath] = []
     opts: list[str] = []
     root: Path = Path(__file__).resolve(strict=True).parent
-    future: Future = None
     args: Namespace | tuple[str, list[str]] = parse_args()
 
     if os.geteuid() == 0:
@@ -601,7 +603,7 @@ def main() -> int:  # noqa: D103
         log.debug("Network is unreachable")
 
     # Check environment
-    if isinstance(args, Namespace) and getattr(args, "config", None):
+    if isinstance(args, Namespace):
         env, opts = set_env_toml(env, args)
     else:
         opts = args[1]  # Reference the executable options

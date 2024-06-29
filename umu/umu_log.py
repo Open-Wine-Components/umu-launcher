@@ -1,3 +1,4 @@
+import sys
 from logging import (
     DEBUG,
     ERROR,
@@ -9,7 +10,6 @@ from logging import (
     StreamHandler,
     getLogger,
 )
-from sys import stderr
 
 from umu_consts import SIMPLE_FORMAT, Color
 
@@ -24,7 +24,7 @@ class CustomLogger(Logger):  # noqa: D101
         Intended to be used to notify umu setup progress state for command
         line usage
         """
-        print(f"{Color.BOLD.value}{msg}{Color.RESET.value}", file=stderr)
+        print(f"{Color.BOLD.value}{msg}{Color.RESET.value}", file=sys.stderr)
 
 
 class CustomFormatter(Formatter):  # noqa: D101
@@ -46,6 +46,6 @@ class CustomFormatter(Formatter):  # noqa: D101
 
 log: CustomLogger = CustomLogger(getLogger(__name__))
 
-console_handler: StreamHandler = StreamHandler(stream=stderr)
+console_handler: StreamHandler = StreamHandler(stream=sys.stderr)
 console_handler.setFormatter(CustomFormatter())
 log.addHandler(console_handler)

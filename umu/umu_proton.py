@@ -1,28 +1,29 @@
-from collections.abc import Callable
+import os
+import sys
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha512
 from http.client import HTTPException
 from json import loads
-from os import environ
 from pathlib import Path
 from shutil import rmtree
 from ssl import SSLContext, create_default_context
-from sys import version
-from tarfile import TarInfo
 from tarfile import open as tar_open
 from tempfile import mkdtemp
-from urllib.request import Request, URLError, urlopen
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 
 from umu_consts import STEAM_COMPAT
 from umu_log import log
 from umu_util import run_zenity
 
-SSL_DEFAULT_CONTEXT: SSLContext = create_default_context()
+ssl_default_context: SSLContext = create_default_context()
 
 try:
     from tarfile import tar_filter
+
+    has_data_filter: bool = True
 except ImportError:
-    tar_filter: Callable[[str, str], TarInfo] = None
+    has_data_filter: bool = False
 
 
 def get_umu_proton(
@@ -59,7 +60,7 @@ def get_umu_proton(
     if _get_from_steamcompat(env, STEAM_COMPAT) is env:
         return env
 
-    environ["PROTONPATH"] = ""
+    os.environ["PROTONPATH"] = ""
 
     return env
 
@@ -76,12 +77,12 @@ def _fetch_releases() -> list[tuple[str, str]]:
         "User-Agent": "",
     }
 
-    if environ.get("PROTONPATH") == "GE-Proton":
+    if os.environ.get("PROTONPATH") == "GE-Proton":
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases"
 
     with urlopen(  # noqa: S310
         Request(f"{url}{repo}", headers=headers),  # noqa: S310
-        context=SSL_DEFAULT_CONTEXT,
+        context=ssl_default_context,
     ) as resp:
         if resp.status != 200:
             return assets
@@ -152,7 +153,7 @@ def _fetch_proton(
     # See https://github.com/astral-sh/ruff/issues/7918
     log.console(f"Downloading {hash}...")
     with (
-        urlopen(hash_url, context=SSL_DEFAULT_CONTEXT) as resp,  # noqa: S310
+        urlopen(hash_url, context=ssl_default_context) as resp,  # noqa: S310
     ):
         if resp.status != 200:
             err: str = (
@@ -167,7 +168,7 @@ def _fetch_proton(
 
     # Proton
     # Create a popup with zenity when the env var is set
-    if environ.get("UMU_ZENITY") == "1":
+    if os.environ.get("UMU_ZENITY") == "1":
         bin: str = "curl"
         opts: list[str] = [
             "-LJO",
@@ -184,14 +185,14 @@ def _fetch_proton(
         log.warning("zenity exited with the status code: %s", ret)
         log.console("Retrying from Python...")
 
-    if not environ.get("UMU_ZENITY") or ret:
+    if not os.environ.get("UMU_ZENITY") or ret:
         log.console(f"Downloading {tarball}...")
         with (
             urlopen(  # noqa: S310
-                tar_url, context=SSL_DEFAULT_CONTEXT
+                tar_url, context=ssl_default_context
             ) as resp,
         ):
-            hash = sha512()
+            hashsum = sha512()
 
             # Crash here because without Proton, the launcher will not work
             if resp.status != 200:
@@ -207,9 +208,9 @@ def _fetch_proton(
                 view: memoryview = memoryview(buffer)
                 while size := resp.readinto(buffer):
                     file.write(view[:size])
-                    hash.update(view[:size])
+                    hashsum.update(view[:size])
 
-            if hash.hexdigest() != digest:
+            if hashsum.hexdigest() != digest:
                 err: str = f"Digest mismatched: {tarball}"
                 raise ValueError(err)
 
@@ -221,11 +222,11 @@ def _fetch_proton(
 def _extract_dir(file: Path, steam_compat: Path) -> None:
     """Extract from a path to another location."""
     with tar_open(file, "r:gz") as tar:
-        if tar_filter:
+        if has_data_filter:
             log.debug("Using filter for archive")
             tar.extraction_filter = tar_filter
         else:
-            log.warning("Python: %s", version)
+            log.warning("Python: %s", sys.version)
             log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
 
@@ -262,7 +263,7 @@ def _get_from_steamcompat(
     """
     version: str = (
         "GE-Proton"
-        if environ.get("PROTONPATH") == "GE-Proton"
+        if os.environ.get("PROTONPATH") == "GE-Proton"
         else "UMU-Proton"
     )
 
@@ -274,8 +275,8 @@ def _get_from_steamcompat(
         )
         log.console(f"{latest.name} found in: '{steam_compat}'")
         log.console(f"Using {latest.name}")
-        environ["PROTONPATH"] = str(latest)
-        env["PROTONPATH"] = environ["PROTONPATH"]
+        os.environ["PROTONPATH"] = str(latest)
+        env["PROTONPATH"] = os.environ["PROTONPATH"]
     except ValueError:
         return None
 
@@ -300,11 +301,11 @@ def _get_latest(
     $HOME/.local/share/Steam/compatibilitytool.d will be used.
     """
     # Name of the Proton archive (e.g., GE-Proton9-7.tar.gz)
-    tarball: str = ""
+    tarball: str
     # Name of the Proton directory (e.g., GE-Proton9-7)
-    proton: str = ""
+    proton: str
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
-    version: str = ""
+    version: str
 
     if not assets:
         return None
@@ -313,7 +314,7 @@ def _get_latest(
     proton = tarball.removesuffix(".tar.gz")
     version = (
         "GE-Proton"
-        if environ.get("PROTONPATH") == "GE-Proton"
+        if os.environ.get("PROTONPATH") == "GE-Proton"
         else "UMU-Proton"
     )
 
@@ -322,8 +323,8 @@ def _get_latest(
         log.console(f"{version} is up to date")
         steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
         steam_compat.joinpath("UMU-Latest").symlink_to(proton)
-        environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
-        env["PROTONPATH"] = environ["PROTONPATH"]
+        os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
+        env["PROTONPATH"] = os.environ["PROTONPATH"]
         return env
 
     # Use the latest UMU/GE-Proton
@@ -343,8 +344,8 @@ def _get_latest(
             future.result()
         else:
             _extract_dir(tmp.joinpath(tarball), steam_compat)
-        environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
-        env["PROTONPATH"] = environ["PROTONPATH"]
+        os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
+        env["PROTONPATH"] = os.environ["PROTONPATH"]
         log.debug("Removing: %s", tarball)
         thread_pool.submit(tmp.joinpath(tarball).unlink, True)
         log.console(f"Using {version} ({proton})")
@@ -389,11 +390,11 @@ def _update_proton(
     if not protons:
         return
 
-    for proton in protons:
-        if proton.is_dir():
+    for stable in protons:
+        if stable.is_dir():
             log.debug("Previous stable build found")
-            log.debug("Removing: %s", proton)
-            futures.append(thread_pool.submit(rmtree, str(proton)))
+            log.debug("Removing: %s", stable)
+            futures.append(thread_pool.submit(rmtree, str(stable)))
 
     for _ in futures:
         _.result()
