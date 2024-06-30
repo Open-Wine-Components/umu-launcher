@@ -626,7 +626,7 @@ class TestGameLauncher(unittest.TestCase):
         # In the real usage, should be populated after successful callout
         # for latest Proton releases
         # In this case, assume the test variable will be downloaded
-        files = [("", ""), (self.test_archive.name, "")]
+        files = (("", ""), (self.test_archive.name, ""))
         thread_pool = ThreadPoolExecutor()
 
         with patch("umu_proton._fetch_proton") as mock_function:
@@ -669,7 +669,7 @@ class TestGameLauncher(unittest.TestCase):
         # latest Proton releases
         # When empty, it means the callout failed for some reason (e.g. no
         # internet)
-        files = [("", ""), (self.test_archive.name, "")]
+        files = (("", ""), (self.test_archive.name, ""))
         thread_pool = ThreadPoolExecutor()
 
         self.assertTrue(
@@ -702,7 +702,7 @@ class TestGameLauncher(unittest.TestCase):
         # latest Proton releases
         # When empty, it means the callout failed for some reason (e.g. no
         # internet)
-        files = []
+        files = ()
         thread_pool = ThreadPoolExecutor()
 
         os.environ["PROTONPATH"] = ""
@@ -733,7 +733,7 @@ class TestGameLauncher(unittest.TestCase):
         latest = Path("UMU-Proton-9.0-beta15")
         latest.mkdir()
         Path(f"{latest}.sha512sum").touch()
-        files = [(f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", "")]
+        files = ((f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", ""))
         thread_pool = ThreadPoolExecutor()
 
         # Mock the latest Proton in /tmp
@@ -788,7 +788,7 @@ class TestGameLauncher(unittest.TestCase):
         latest = Path("UMU-Proton-9.0-beta16")
         latest.mkdir()
         Path(f"{latest}.sha512sum").touch()
-        files = [(f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", "")]
+        files = ((f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", ""))
         thread_pool = ThreadPoolExecutor()
 
         # Mock the latest Proton in /tmp
