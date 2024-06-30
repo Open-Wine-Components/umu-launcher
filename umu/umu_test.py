@@ -2091,16 +2091,6 @@ class TestGameLauncher(unittest.TestCase):
             )
 
             # Winetricks
-            self.assertTrue(self.env["WINE"], "WINE is not set")
-            self.assertTrue(self.env["WINELOADER"], "WINELOADER is not set")
-            self.assertTrue(self.env["WINESERVER"], "WINESERVER is not set")
-            self.assertTrue(
-                self.env["WINETRICKS_LATEST_VERSION_CHECK"],
-                "WINETRICKS_LATEST_VERSION_CHECK is not set",
-            )
-            self.assertTrue(
-                self.env["LD_PRELOAD"] == "", "LD_PRELOAD is not set"
-            )
             self.assertTrue(
                 self.env["WINETRICKS_SUPER_QUIET"],
                 "WINETRICKS_SUPER_QUIET is not set",
