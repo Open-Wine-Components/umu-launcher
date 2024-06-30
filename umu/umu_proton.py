@@ -9,6 +9,7 @@ from shutil import rmtree
 from ssl import SSLContext, create_default_context
 from tarfile import open as tar_open
 from tempfile import mkdtemp
+from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
@@ -43,7 +44,7 @@ def get_umu_proton(
     # Subset of Github release assets from the Github API (ver. 2022-11-28)
     # First element is the digest asset, second is the Proton asset. Each asset
     # will contain the asset's name and the URL that hosts it.
-    assets: list[tuple[str, str]] = []
+    assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()] = ()
     tmp: Path = Path(mkdtemp())
 
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
@@ -65,12 +66,13 @@ def get_umu_proton(
     return env
 
 
-def _fetch_releases() -> list[tuple[str, str]]:
+def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
     """Fetch the latest releases from the Github API."""
-    assets: list[tuple[str, str]] = []
+    digest_asset: tuple[str, str]
+    proton_asset: tuple[str, str]
     asset_count: int = 0
     url: str = "https://api.github.com"
-    repo: str = "/repos/Open-Wine-Components/umu-proton/releases"
+    repo: str = "/repos/Open-Wine-Components/umu-proton/releases/latest"
     headers: dict[str, str] = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
@@ -78,63 +80,49 @@ def _fetch_releases() -> list[tuple[str, str]]:
     }
 
     if os.environ.get("PROTONPATH") == "GE-Proton":
-        repo = "/repos/GloriousEggroll/proton-ge-custom/releases"
+        repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
 
     with urlopen(  # noqa: S310
         Request(f"{url}{repo}", headers=headers),  # noqa: S310
         context=ssl_default_context,
     ) as resp:
-        if resp.status != 200:
-            return assets
+        releases: list[dict[str, Any]]
 
-        for release in loads(resp.read().decode("utf-8")):
-            if not release.get("assets"):
-                continue
-            for asset in release.get("assets"):
-                if (
-                    asset.get("name")
-                    and (
-                        asset.get("name").endswith("sum")
-                        or (
-                            asset.get("name").endswith("tar.gz")
-                            and asset.get("name").startswith(
-                                ("UMU-Proton", "GE-Proton")
-                            )
-                        )
-                    )
-                    and asset.get("browser_download_url")
-                ):
-                    if asset["name"].endswith("sum"):
-                        assets.append(
-                            (
-                                asset["name"],
-                                asset["browser_download_url"],
-                            )
-                        )
-                        asset_count += 1
-                    else:
-                        assets.append(
-                            (
-                                asset["name"],
-                                asset["browser_download_url"],
-                            )
-                        )
-                        asset_count += 1
-                if asset_count == 2:
-                    break
-            break
+        if resp.status != 200:
+            return ()
+
+        releases = loads(resp.read().decode("utf-8")).get("assets", [])
+
+        for release in releases:
+            if release["name"].endswith("sum"):
+                digest_asset = (
+                    release["name"],
+                    release["browser_download_url"],
+                )
+                asset_count += 1
+            elif release["name"].endswith("tar.gz") and release[
+                "name"
+            ].startswith(("UMU-Proton", "GE-Proton")):
+                proton_asset = (
+                    release["name"],
+                    release["browser_download_url"],
+                )
+                asset_count += 1
+
+            if asset_count == 2:
+                break
 
     if asset_count != 2:
-        err: str = (
-            "Failed to acquire all assets from api.github.com: " f"{assets}"
-        )
+        err: str = "Failed to acquire all assets from api.github.com"
         raise RuntimeError(err)
 
-    return assets
+    return digest_asset, proton_asset
 
 
 def _fetch_proton(
-    env: dict[str, str], tmp: Path, assets: list[tuple[str, str]]
+    env: dict[str, str],
+    tmp: Path,
+    assets: tuple[tuple[str, str], tuple[str, str]],
 ) -> dict[str, str]:
     """Download the latest UMU-Proton or GE-Proton."""
     hash, hash_url = assets[0]
@@ -287,7 +275,7 @@ def _get_latest(
     env: dict[str, str],
     steam_compat: Path,
     tmp: Path,
-    assets: list[tuple[str, str]],
+    assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()],
     thread_pool: ThreadPoolExecutor,
 ) -> dict[str, str] | None:
     """Download the latest Proton for new installs.
