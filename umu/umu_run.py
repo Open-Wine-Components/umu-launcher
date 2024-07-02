@@ -2,6 +2,8 @@
 
 import os
 import sys
+import random
+from Xlib import X, display, Xatom
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -441,11 +443,47 @@ def build_command(
 
     return command
 
+def set_steam_game_property(window_id: int, is_main_window: bool = True) -> None:
+    """Set the STEAM_GAME property on the specified window."""
+    d = display.Display()
+    window = d.create_resource_object('window', window_id)
 
-def run_command(command: list[AnyPath]) -> int:
+    # Define the STEAM_GAME property
+    atom = d.intern_atom('STEAM_GAME')
+
+    # Set the property
+    value = 769 if is_main_window else random.randint(770, 1000)
+    window.change_property(atom, Xatom.CARDINAL, 32, [value], X.PropModeReplace)
+    d.sync()
+
+def get_window_id(process: subprocess.Popen) -> int:
+    """Get the window ID of the launched application."""
+    # This is a placeholder implementation. You need to replace this with
+    # actual logic to obtain the window ID of the launched application.
+    # For example, you can use `wmctrl` or `xwininfo` to find the window ID.
+    return 0x123456  # Replace with actual logic
+
+def check_for_main_window() -> bool:
+    """Check if the main window (STEAM_GAME=769) already exists."""
+    d = display.Display()
+    root = d.screen().root
+    atoms = d.intern_atom_names(['_NET_CLIENT_LIST', '_NET_ACTIVE_WINDOW'])
+    for atom_name in atoms:
+        atom = d.intern_atom(atom_name)
+        reply = d.get_full_property(atom, X.AnyPropertyType)
+        if reply:
+            for item in reply.value:
+                window = d.create_resource_object('window', item)
+                try:
+                    steam_game_value = window.get_wm_protocols(X.Protocol.STEAM_GAME)
+                    if steam_game_value and steam_game_value[0] == 769:
+                        return True
+                except Exception:
+                    pass
+    return False
+
+def run_command(command: list[AnyPath], is_main_window: bool = True) -> int:
     """Run the executable using Proton within the Steam Runtime."""
-    # Configure a process via libc prctl()
-    # See prctl(2) for more details
     prctl: CFuncPtr
     cwd: AnyPath
     proc: Popen
@@ -465,37 +503,40 @@ def run_command(command: list[AnyPath]) -> int:
     else:
         cwd = Path.cwd()
 
+    # Check if the main window already exists
+    if check_for_main_window():
+        is_main_window = False
+
     # Create a subprocess but do not set it as subreaper
-    # Unnecessary in a Flatpak and prctl() will fail if libc could not be found
     if FLATPAK_PATH or not libc:
-        return run(
-            command, start_new_session=True, check=False, cwd=cwd
-        ).returncode
+        proc = Popen(command, start_new_session=True, cwd=cwd)
+    else:
+        prctl = CDLL(libc).prctl
+        prctl.restype = c_int
+        prctl.argtypes = [
+            c_int,
+            c_ulong,
+            c_ulong,
+            c_ulong,
+            c_ulong,
+        ]
+        proc = Popen(
+            command,
+            start_new_session=True,
+            preexec_fn=lambda: prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0),
+            cwd=cwd,
+        )
 
-    prctl = CDLL(libc).prctl
-    prctl.restype = c_int
-    prctl.argtypes = [
-        c_int,
-        c_ulong,
-        c_ulong,
-        c_ulong,
-        c_ulong,
-    ]
+    # Get the window ID of the launched application
+    window_id = get_window_id(proc)
 
-    # Create a subprocess and set it as subreaper
-    # When the launcher dies, the subprocess and its descendents will continue
-    # to run in the background
-    proc = Popen(
-        command,
-        start_new_session=True,
-        preexec_fn=lambda: prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0),
-        cwd=cwd,
-    )
+    # Set the STEAM_GAME property
+    set_steam_game_property(window_id, is_main_window)
+
     ret = proc.wait()
     log.debug("Child %s exited with wait status: %s", proc.pid, ret)
 
     return ret
-
 
 def main() -> int:  # noqa: D103
     future: Future | None = None
