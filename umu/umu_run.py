@@ -31,7 +31,6 @@ from umu_runtime import setup_umu
 from umu_util import (
     get_libc,
     is_installed_verb,
-    is_steamdeck,
     is_winetricks_verb,
 )
 
@@ -312,7 +311,6 @@ def set_env(
     if (
         not os.environ.get("UMU_NO_RUNTIME")
         and FLATPAK_PATH
-        and is_steamdeck()
         and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
     ):
         log.debug("SteamOS gamescope session detected")
@@ -327,6 +325,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     paths: set[str] = set()
     root: Path = Path("/")
     libc: str = get_libc()
+
     # All library paths that are currently supported by the container framework
     # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#filesystem-layout
     # Non-FHS filesystems should run in a FHS chroot to comply
@@ -367,7 +366,6 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
         return env
 
     # Set the shared library paths of the system after finding libc.so
-    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#filesystem-layout
     for rtpath in steamrt_paths:
         if not Path(rtpath).is_symlink() and Path(rtpath, libc).is_file():
             paths.add(rtpath)
@@ -403,15 +401,8 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
-    # Only log the warning when running games within SteamOS gamescope session
-    if (
-        env.get("UMU_NO_RUNTIME") == "pressure-vessel"
-        and not is_steamdeck()
-        and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope"
-    ):
-        log.warning("Using Proton without Runtime Platform")
-
     if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
+        log.warning("Using Proton without Runtime Platform")
         command.extend(
             [
                 proton,
