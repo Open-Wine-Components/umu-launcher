@@ -155,7 +155,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Open-Wine-Components/umu-launcher.git
-        branch: main
+        branch: flatpak_work
 
   - name: platform-bootstrap
     buildsystem: simple
@@ -186,3 +186,8 @@ modules:
           /app/lib32
           /app/lib/i386-linux-gnu
           /lib64
+  # --- python-xlib ---
+  - name: python-xlib
+    buildsystem: simple
+    build-commands:
+      - pip3 install --no-index --find-links="file://${PWD}" --prefix=/app python-xlib
