@@ -4,6 +4,8 @@ import os
 import sys
 import random
 from Xlib import X, display, Xatom
+from Xlib.protocol import request
+from Xlib.error import BadWindow
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -446,22 +448,39 @@ def build_command(
 def set_steam_game_property(window_id: int, is_main_window: bool = True) -> None:
     """Set the STEAM_GAME property on the specified window."""
     d = display.Display()
-    window = d.create_resource_object('window', window_id)
+    try:
+        window = d.create_resource_object('window', window_id)
 
-    # Define the STEAM_GAME property
-    atom = d.intern_atom('STEAM_GAME')
+        # Define the STEAM_GAME property
+        atom = d.intern_atom('STEAM_GAME')
 
-    # Set the property
-    value = 769 if is_main_window else random.randint(770, 1000)
-    window.change_property(atom, Xatom.CARDINAL, 32, [value], X.PropModeReplace)
-    d.sync()
+        # Set the property
+        value = 769 if is_main_window else random.randint(770, 1000)
+        window.change_property(atom, Xatom.CARDINAL, 32, [value], X.PropModeReplace)
+        d.sync()
+    except BadWindow:
+        log.error("BadWindow error: The window ID %s is invalid or the window has been closed.", window_id)
+    except Exception as e:
+        log.error("Failed to set STEAM_GAME property: %s", e)
 
-def get_window_id(process: subprocess.Popen) -> int:
-    """Get the window ID of the launched application."""
-    # This is a placeholder implementation. You need to replace this with
-    # actual logic to obtain the window ID of the launched application.
-    # For example, you can use `wmctrl` or `xwininfo` to find the window ID.
-    return 0x123456  # Replace with actual logic
+def get_window_id_by_name(name: str) -> int:
+    """Get the window ID of the window with the specified name."""
+    d = display.Display()
+    root = d.screen().root
+    net_client_list = d.intern_atom('_NET_CLIENT_LIST')
+    client_list = root.get_full_property(net_client_list, Xatom.WINDOW)
+
+    if client_list:
+        for window_id in client_list.value:
+            window = d.create_resource_object('window', window_id)
+            try:
+                window_name = window.get_full_property(d.intern_atom('_NET_WM_NAME'), Xatom.STRING)
+                if window_name and name in window_name.value.decode('utf-8'):
+                    return window_id
+            except Exception:
+                pass
+    return 0  # Return 0 if window ID is not found
+
 
 def check_for_main_window() -> bool:
     """Check if the main window (STEAM_GAME=769) already exists."""
@@ -482,7 +501,7 @@ def check_for_main_window() -> bool:
                     pass
     return False
 
-def run_command(command: list[AnyPath], is_main_window: bool = True) -> int:
+def run_command(command: list[AnyPath], window_name: str, is_main_window: bool = True) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     prctl: CFuncPtr
     cwd: AnyPath
@@ -528,10 +547,13 @@ def run_command(command: list[AnyPath], is_main_window: bool = True) -> int:
         )
 
     # Get the window ID of the launched application
-    window_id = get_window_id(proc)
+    window_id = get_window_id_by_name(window_name)
 
     # Set the STEAM_GAME property
-    set_steam_game_property(window_id, is_main_window)
+    if window_id:
+        set_steam_game_property(window_id, is_main_window)
+    else:
+        log.error("Failed to obtain window ID for the launched application.")
 
     ret = proc.wait()
     log.debug("Child %s exited with wait status: %s", proc.pid, ret)
