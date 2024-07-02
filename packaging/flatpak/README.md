@@ -1,25 +1,16 @@
 # Install dependencies:
 ```
-flatpak --user install org.freedesktop.Sdk/x86_64/23.08
-flatpak --user install org.freedesktop.Sdk.Compat.i386/x86_64/23.08
-flatpak --user install org.freedesktop.Sdk.Extension.toolchain-i386/x86_64/23.08
+Fedora:
+sudo dnf install flatpak-builder
+
+Ubuntu:
+sudo apt install flatpak-builder
 ```
 
-# Build:
+# Build + install (for testing):
 ```
-flatpak-builder umu-launcher org.openwinecomponents.umu.umu-launcher.yml
-flatpak-builder --repo=umu-repo --force-clean umu-launcher org.openwinecomponents.umu.umu-launcher.yml
-```
-
-# Install:
-```
-flatpak --user remote-add --no-gpg-verify umu-repo umu-repo
-flatpak --user install umu-repo org.openwinecomponents.umu.umu-launcher
-```
-
-# Build + install without repo (for testing):
-```
-flatpak-builder umu-launcher org.openwinecomponents.umu.umu-launcher.yml --install --user --force-clean
+wget https://raw.githubusercontent.com/Open-Wine-Components/umu-launcher/main/packaging/flatpak/org.openwinecomponents.umu.umu-launcher.yml
+flatpak-builder --force-clean --user --install-deps-from=flathub --repo=umu-repo --install umu-launcher org.openwinecomponents.umu.umu-launcher.yml
 ```
 
 # Remove
