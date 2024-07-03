@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
-import psutil
 import os
 import sys
 import random
 import time
-from Xlib import X, display, Xatom
-from Xlib.protocol import request
-from Xlib.error import BadWindow
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -17,7 +13,7 @@ from pathlib import Path
 from pwd import getpwuid
 from re import match
 from socket import AF_INET, SOCK_DGRAM, socket
-from subprocess import Popen, run
+from subprocess import Popen, run, PIPE
 from typing import Any
 
 from umu_consts import (
@@ -446,90 +442,101 @@ def build_command(
 
     return command
 
-def list_all_displays():
-    """List all available displays."""
-    displays = []
-    for i in range(10):  # Check the first 10 display numbers
-        display_name = f":{i}"
-        try:
-            d = display.Display(display_name)
-            displays.append(display_name)
-            d.close()
-        except Exception as e:
-            pass  # Ignore errors for non-existent displays
-    return displays
+def get_xwininfo_output() -> str:
+    # Wait for the window to be created
+    max_wait_time = 30  # Maximum wait time in seconds
+    wait_interval = 1   # Interval between checks in seconds
+    elapsed_time = 0
 
-def set_steam_game_property(window_id: int, display_name: str) -> None:
-    """Set the STEAM_GAME property on the specified window to 898 (uwu on telephone)."""
-    d = display.Display(display_name)
-    try:
-        window = d.create_resource_object('window', window_id)
+    # Get gamescope baselayer sequence after the window is created
+    while elapsed_time < max_wait_time:
+        result = run(
+            ["/app/bin/xwininfo", "-d", ":1", "-root", "-tree"],
+            stdout=PIPE,
+            stderr=PIPE,
+            text=True
+        )
 
-        # Define the STEAM_GAME property
-        atom = d.intern_atom('STEAM_GAME')
+        # Check for errors
+        if result.returncode != 0:
+            print(f"Error executing xwininfo command: {result.stderr}")
+            return None
 
-        # Set the property to 0
-        window.change_property(atom, Xatom.CARDINAL, 32, [898], X.PropModeReplace)
-        d.sync()
-        log.info("window id: " + window_id)
-    except BadWindow:
-        log.error("BadWindow error: The window ID %s is invalid or the window has been closed.", window_id)
-    except Exception as e:
-        log.error("Failed to set STEAM_GAME property: %s", e)
+        # Filter and process the output
+        for line in result.stdout.splitlines():
+            if line.strip().startswith("0x"):
+                if "steam_app" in line:
+                    parts = line.split()
+                    if len(parts) > 0:
+                        return parts[0]  # Return the first valid window ID
 
-def find_correct_pid(executable_name: str) -> int:
-    """Find the correct PID of the actual running process globally."""
-    for proc in psutil.process_iter(['pid','exe']):
-        try:
-            if executable_name in str(proc):
-                #log.error("proc info: %s %s", str(proc.info['pid']), str(proc.info['exe']))
-                return proc.info['pid']
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
-    return 0  # Return 0 if the correct PID is not found
+        time.sleep(wait_interval)
+        elapsed_time += wait_interval
 
-def get_client_list(d):
-    """Get the list of client windows."""
-    log.error("XAUTH: %s", os.environ.get("XAUTHORITY"))
-    root = d.screen().root
-    net_client_list = d.intern_atom('_NET_CLIENT_LIST')
-    client_list = root.get_full_property(net_client_list, X.AnyPropertyType).value
-    if client_list:
-        log.error(str(client_list))
-        return client_list.value
-    return []
-
-def get_window_id_by_pid(pid: int) -> int:
-    """Get the window ID of the window with the specified PID across all displays."""
-    displays = list_all_displays()
-    for display_name in displays:
-        try:
-            d = display.Display(display_name)
-            client_list = get_client_list(d)
-            net_wm_pid = d.intern_atom('_NET_WM_PID')
-            
-            if client_list:
-                for window_id in client_list:
-                    window = d.create_resource_object('window', window_id)
-                    try:
-                        pid_value = window.get_full_property(net_wm_pid, X.AnyPropertyType)
-                        if pid_value and pid_value.value[0] == pid:
-                            return window_id
-                    except Exception:
-                        pass
-        except Exception as e:
-            print(f"Failed to access display {display_name}: {e}")
-    return 0  # Return 0 if window ID is not found
-
-def convert_path(array):
-    """Extract and convert the path from the array."""
-    for item in array:
-        if isinstance(item, str) and 'drive_c' in item:
-            start_index = item.find('drive_c')
-            end_index = item.rfind('/') + 1  # Find the last occurrence of '/' and include it
-            unix_path = item[end_index:]  # Extract from 'drive_c' to the end
-            return unix_path
+    # Return None if no valid window ID is found within the maximum wait time
     return None
+
+def set_steam_game_property(window_id: str) -> None:
+    try:
+        # Execute the second command with the output from the first command
+        log.info(" WINDOW ID: %s",window_id)
+        result = run(
+            ["/app/bin/xprop", "-d", ":1", "-id", window_id, "-f", "STEAM_GAME", "32c", "-set", "STEAM_GAME", "868"],
+            stdout=PIPE,
+            stderr=PIPE,
+            text=True
+        )
+
+        # Check for errors
+        if result.returncode != 0:
+            log.error(f"Error executing xprop command: {result.stderr}")
+        else:
+            log.info(f"Successfully set STEAM_GAME property for window ID {window_id}")
+    except Exception as e:
+        log.error(f"Exception occurred: {e}")
+
+def get_gamescope_baselayer_order() -> str:
+    try:
+        # Execute the command and capture the output
+        result = run(
+            ["/app/bin/xprop", "-d", ":0", "-root"],
+            stdout=PIPE,
+            stderr=PIPE,
+            text=True
+        )
+
+        # Check for errors
+        if result.returncode != 0:
+            log.error(f"Error executing command: {result.stderr}")
+            return None
+
+        # Filter and process the output
+        for line in result.stdout.splitlines():
+            if "GAMESCOPECTRL_BASELAYER_APPID" in line:
+                # Extract the value after '=' and strip any whitespace
+                value = line.split('=')[1].strip()
+                return value
+    except Exception as e:
+        log.error(f"Exception occurred: {e}")
+        return None
+
+def rearrange_gamescope_baselayer_order(sequence: str) -> str:
+    # Split the sequence into individual numbers
+    numbers = sequence.split(', ')
+
+    # Ensure there are exactly 4 numbers
+    if len(numbers) != 4:
+        log.error("Unexpected number of elements in sequence")
+        return None
+
+    # Rearrange the sequence
+    rearranged = [numbers[0], numbers[3], numbers[1], numbers[2]]
+
+    # Replace the second number with "868" (UMU)
+    rearranged[1] = "868"
+
+    # Join the rearranged sequence into a string
+    return ', '.join(rearranged)
 
 def run_command(command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
@@ -572,35 +579,22 @@ def run_command(command: list[AnyPath]) -> int:
             cwd=cwd,
         )
 
-    # Wait for the window to be created
-    max_wait_time = 30  # Maximum wait time in seconds
-    wait_interval = 1   # Interval between checks in seconds
-    elapsed_time = 0
-    correct_pid = 0
-    executable_name = convert_path(command)
-    log.error("EXE: %s", executable_name)
-    while elapsed_time < max_wait_time:
-        correct_pid = find_correct_pid(executable_name)
-        if correct_pid:
-            break
-        time.sleep(wait_interval)
-        elapsed_time += wait_interval
+    # Assign our window a STEAM_GAME id (868 -- UMU)
+    game_window_id = get_xwininfo_output()
+    if game_window_id:
+        set_steam_game_property(game_window_id)
 
-    # Get the window ID of the launched application
-    window_id = 0
-    if correct_pid:
-        while elapsed_time < max_wait_time:
-            window_id = get_window_id_by_pid(correct_pid)
-            if window_id:
-                break
-            time.sleep(wait_interval)
-            elapsed_time += wait_interval
-
-    # Set the STEAM_GAME property
-    if window_id:
-        set_steam_game_property(window_id, ":1")
-    else:
-        log.error("Failed to obtain window ID for the launched application. PID: %s", correct_pid)
+    # Rearrange our gamescope window order
+    gamescope_baselayer_sequence = get_gamescope_baselayer_order()
+    if gamescope_baselayer_sequence:
+        # Rearrange the sequence
+        rearranged_sequence = rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
+        #formatted_sequence = f'"{rearranged_sequence}"'
+        log.info(" GAMESCOPE_FOCUS_SET: %s", rearranged_sequence)
+        if rearranged_sequence:
+            Popen(
+            ["/app/bin/xprop", "-d", ":1", "-root", "-f", "GAMESCOPECTRL_BASELAYER_APPID", "32co", "-set", "GAMESCOPECTRL_BASELAYER_APPID", rearranged_sequence],
+        )
 
     ret = proc.wait()
     log.debug("Child %s exited with wait status: %s", correct_pid, ret)

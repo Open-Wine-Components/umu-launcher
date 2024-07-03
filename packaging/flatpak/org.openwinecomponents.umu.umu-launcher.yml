@@ -304,7 +304,7 @@ modules:
   - name: xprop
     buildsystem: simple
     build-commands:
-      - ./configure --prefix=/usr/bin/
+      - ./configure --prefix="${FLATPAK_DEST}"
       - make
       - make install
     sources:
@@ -315,7 +315,7 @@ modules:
   - name: xwininfo
     buildsystem: simple
     build-commands:
-      - ./configure --prefix=/usr/bin/
+      - ./configure --prefix="${FLATPAK_DEST}"
       - make
       - make install
     sources:
