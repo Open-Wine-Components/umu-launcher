@@ -605,7 +605,7 @@ def run_command(command: list[AnyPath]) -> int:
             set_steam_game_property(game_window_ids,steam_assigned_layer_id)
 
     ret = proc.wait()
-    log.debug("Child %s exited with wait status: %s", ret)
+    log.debug("Child %s exited with wait status: %s", proc.pid, ret)
 
     return ret
 
