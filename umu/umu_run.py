@@ -614,12 +614,14 @@ def run_command(command: list[AnyPath]) -> int:
 
     # Rearrange our gamescope window order
     gamescope_baselayer_sequence = get_gamescope_baselayer_order()
+
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
         rearranged_sequence, steam_assigned_layer_id = (
             rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
         )
-        log.info(" GAMESCOPE_LAYER_SEQUENCE_SET: %s", rearranged_sequence)
+        log.info("GAMESCOPE_LAYER_SEQUENCE_SET: %s", rearranged_sequence)
+
         if rearranged_sequence:
             run(
                 [
@@ -636,6 +638,7 @@ def run_command(command: list[AnyPath]) -> int:
                 ],
                 check=False,
             )
+
         # Assign our window a STEAM_GAME id
         game_window_ids = get_xwininfo_output()
         if game_window_ids:
