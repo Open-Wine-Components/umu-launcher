@@ -182,7 +182,9 @@ def setup_umu(
         log.console(
             "Setting up Unified Launcher for Windows Games on Linux..."
         )
-        local.mkdir(parents=True, exist_ok=True)
+        local.joinpath("python", "site-packages").mkdir(
+            parents=True, exist_ok=True
+        )
         _install_umu(json, thread_pool)
         return
 

@@ -26,6 +26,9 @@ from umu_consts import (
     STEAM_COMPAT,
     UMU_LOCAL,
 )
+
+sys.path.append(str(UMU_LOCAL.joinpath("python", "site-packages")))
+
 from umu_log import CustomFormatter, console_handler, log
 from umu_plugins import set_env_toml
 from umu_proton import get_umu_proton
