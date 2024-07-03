@@ -468,20 +468,18 @@ def get_xwininfo_output() -> list[str]:
 
         # Filter and process the output
         for line in result.stdout.splitlines():
-            if line.strip().startswith("0x"):
-                # Wait until steamcompmgr is not the first in the list
-                if "steamcompmgr" not in line:
-                    break
+            # Wait until steamcompmgr is not the first in the list
+            if line.strip().startswith("0x") and "steamcompmgr" not in line:
+                break
         time.sleep(wait_interval)
         elapsed_time += wait_interval
 
     # Finally, add all items to the list (including steamcompmgr)
     for line in result.stdout.splitlines():
-        if "steam_app" in line:
-            if line.strip().startswith("0x"):
-                parts = line.split()
-                if len(parts) > 0:
-                    window_ids.append(parts[0])
+        if line.strip().startswith("0x") and "steam_app" in line:
+            parts = line.split()
+            if len(parts) > 0:
+                window_ids.append(parts[0])
 
     if window_ids:
         return window_ids
