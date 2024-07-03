@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-
+import psutil
 import os
 import sys
 import random
+import time
 from Xlib import X, display, Xatom
 from Xlib.protocol import request
 from Xlib.error import BadWindow
@@ -304,22 +305,22 @@ def set_env(
         )
 
     # Runtime
-    if FLATPAK_PATH:
-        env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
+    #if FLATPAK_PATH:
+    #    env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
 
     # FIXME: Currently, running games when using the Steam Runtime in a Flatpak
     # environment will cause the game window to not display within the SteamOS
     # gamescope session. Note, this is a workaround until the runtime is built
     # or the issue is fixed upstream.
     # See https://github.com/ValveSoftware/gamescope/issues/1341
-    if (
-        not os.environ.get("UMU_NO_RUNTIME")
-        and FLATPAK_PATH
-        and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
-    ):
-        log.debug("SteamOS gamescope session detected")
-        log.debug("Disabling Pressure Vessel and container runtime")
-        env["UMU_NO_RUNTIME"] = "pressure-vessel"
+    #if (
+    #    not os.environ.get("UMU_NO_RUNTIME")
+    #    and FLATPAK_PATH
+    #    and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+    #):
+    #    log.debug("SteamOS gamescope session detected")
+    #    log.debug("Disabling Pressure Vessel and container runtime")
+    #    env["UMU_NO_RUNTIME"] = "pressure-vessel"
 
     return env
 
@@ -445,63 +446,56 @@ def build_command(
 
     return command
 
-def set_steam_game_property(window_id: int, is_main_window: bool = True) -> None:
-    """Set the STEAM_GAME property on the specified window."""
-    d = display.Display()
+def set_steam_game_property(window_id: int, display_name: str) -> None:
+    """Set the STEAM_GAME property on the specified window to 898 (uwu on telephone)."""
+    d = display.Display(display_name)
     try:
         window = d.create_resource_object('window', window_id)
 
         # Define the STEAM_GAME property
         atom = d.intern_atom('STEAM_GAME')
 
-        # Set the property
-        value = 769 if is_main_window else random.randint(770, 1000)
-        window.change_property(atom, Xatom.CARDINAL, 32, [value], X.PropModeReplace)
+        # Set the property to 0
+        window.change_property(atom, Xatom.CARDINAL, 32, [898], X.PropModeReplace)
         d.sync()
+        log.info("window id: " + window_id)
     except BadWindow:
         log.error("BadWindow error: The window ID %s is invalid or the window has been closed.", window_id)
     except Exception as e:
         log.error("Failed to set STEAM_GAME property: %s", e)
 
-def get_window_id_by_name(name: str) -> int:
-    """Get the window ID of the window with the specified name."""
-    d = display.Display()
+def find_correct_pid(initial_pid: int, executable_name: str) -> int:
+    """Find the correct PID of the actual running process."""
+    try:
+        parent = psutil.Process(initial_pid)
+        for child in parent.children(recursive=True):
+            if executable_name in child.exe():
+                return child.pid
+    except psutil.NoSuchProcess:
+        pass
+    return 0  # Return 0 if the correct PID is not found
+
+def get_window_id_by_pid(pid: int, display_name: str) -> int:
+    """Get the window ID of the window with the specified PID on the specified display."""
+    d = display.Display(display_name)
     root = d.screen().root
     net_client_list = d.intern_atom('_NET_CLIENT_LIST')
+    net_wm_pid = d.intern_atom('_NET_WM_PID')
     client_list = root.get_full_property(net_client_list, Xatom.WINDOW)
 
     if client_list:
         for window_id in client_list.value:
             window = d.create_resource_object('window', window_id)
             try:
-                window_name = window.get_full_property(d.intern_atom('_NET_WM_NAME'), Xatom.STRING)
-                if window_name and name in window_name.value.decode('utf-8'):
+                pid_value = window.get_full_property(net_wm_pid, Xatom.CARDINAL)
+                if pid_value and pid_value.value[0] == pid:
                     return window_id
             except Exception:
+                log.error("Failed to get window_id for PID: %s", pid)
                 pass
     return 0  # Return 0 if window ID is not found
 
-
-def check_for_main_window() -> bool:
-    """Check if the main window (STEAM_GAME=769) already exists."""
-    d = display.Display()
-    root = d.screen().root
-    atoms = d.intern_atom_names(['_NET_CLIENT_LIST', '_NET_ACTIVE_WINDOW'])
-    for atom_name in atoms:
-        atom = d.intern_atom(atom_name)
-        reply = d.get_full_property(atom, X.AnyPropertyType)
-        if reply:
-            for item in reply.value:
-                window = d.create_resource_object('window', item)
-                try:
-                    steam_game_value = window.get_wm_protocols(X.Protocol.STEAM_GAME)
-                    if steam_game_value and steam_game_value[0] == 769:
-                        return True
-                except Exception:
-                    pass
-    return False
-
-def run_command(command: list[AnyPath], window_name: str, is_main_window: bool = True) -> int:
+def run_command(command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     prctl: CFuncPtr
     cwd: AnyPath
@@ -521,10 +515,6 @@ def run_command(command: list[AnyPath], window_name: str, is_main_window: bool =
         cwd = f"{os.environ['PROTONPATH']}/protonfixes"
     else:
         cwd = Path.cwd()
-
-    # Check if the main window already exists
-    if check_for_main_window():
-        is_main_window = False
 
     # Create a subprocess but do not set it as subreaper
     if FLATPAK_PATH or not libc:
@@ -546,17 +536,37 @@ def run_command(command: list[AnyPath], window_name: str, is_main_window: bool =
             cwd=cwd,
         )
 
+    # Wait for the window to be created
+    max_wait_time = 30  # Maximum wait time in seconds
+    wait_interval = 1   # Interval between checks in seconds
+    elapsed_time = 0
+
+    correct_pid = 0
+    while elapsed_time < max_wait_time:
+        correct_pid = find_correct_pid(proc.pid, executable_name)
+        if correct_pid:
+            break
+        time.sleep(wait_interval)
+        elapsed_time += wait_interval
+
     # Get the window ID of the launched application
-    window_id = get_window_id_by_name(window_name)
+    window_id = 0
+    if correct_pid:
+        while elapsed_time < max_wait_time:
+            window_id = get_window_id_by_pid(correct_pid, display_name)
+            if window_id:
+                break
+            time.sleep(wait_interval)
+            elapsed_time += wait_interval
 
     # Set the STEAM_GAME property
     if window_id:
-        set_steam_game_property(window_id, is_main_window)
+        set_steam_game_property(window_id, display_name)
     else:
-        log.error("Failed to obtain window ID for the launched application.")
+        log.error("Failed to obtain window ID for the launched application. PID: %s", correct_pid)
 
     ret = proc.wait()
-    log.debug("Child %s exited with wait status: %s", proc.pid, ret)
+    log.debug("Child %s exited with wait status: %s", correct_pid, ret)
 
     return ret
 
@@ -671,12 +681,12 @@ def main() -> int:  # noqa: D103
     ):
         sys.exit(1)
 
-    # Run
+    # Build the command
     build_command(env, UMU_LOCAL, command, opts)
     log.debug("%s", command)
 
-    return run_command(command)
-
+    # Run the command
+    return run_command(command)  # Pass the command and display name
 
 if __name__ == "__main__":
     try:
