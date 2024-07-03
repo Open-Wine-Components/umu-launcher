@@ -442,11 +442,12 @@ def build_command(
 
     return command
 
-def get_xwininfo_output() -> str:
+def get_xwininfo_output() -> list[str]:
     # Wait for the window to be created
     max_wait_time = 30  # Maximum wait time in seconds
     wait_interval = 1   # Interval between checks in seconds
     elapsed_time = 0
+    window_ids: list[str] = []
 
     # Get gamescope baselayer sequence after the window is created
     while elapsed_time < max_wait_time:
@@ -459,39 +460,47 @@ def get_xwininfo_output() -> str:
 
         # Check for errors
         if result.returncode != 0:
-            print(f"Error executing xwininfo command: {result.stderr}")
+            log.error(f"Error executing xwininfo command: {result.stderr}")
             return None
 
         # Filter and process the output
         for line in result.stdout.splitlines():
             if line.strip().startswith("0x"):
-                if "steam_app" in line:
-                    parts = line.split()
-                    if len(parts) > 0:
-                        return parts[0]  # Return the first valid window ID
-
+                # Wait until steamcompmgr is not the first in the list
+                if "steamcompmgr" not in line:
+                    break;
         time.sleep(wait_interval)
         elapsed_time += wait_interval
+
+    # Finally, add all items to the list (including steamcompmgr)
+    for line in result.stdout.splitlines():
+        if line.strip().startswith("0x"):
+            parts = line.split()
+            if len(parts) > 0:
+                window_ids.append(parts[0])
+
+    if window_ids:
+        return window_ids
 
     # Return None if no valid window ID is found within the maximum wait time
     return None
 
-def set_steam_game_property(window_id: str) -> None:
+def set_steam_game_property(window_ids: list[str]) -> None:
     try:
-        # Execute the second command with the output from the first command
-        log.info(" WINDOW ID: %s",window_id)
-        result = run(
-            ["/app/bin/xprop", "-d", ":1", "-id", window_id, "-f", "STEAM_GAME", "32c", "-set", "STEAM_GAME", "868"],
-            stdout=PIPE,
-            stderr=PIPE,
-            text=True
-        )
+        for window_id in window_ids:
+            # Execute the second command with the output from the first command
+            result = run(
+                ["/app/bin/xprop", "-d", ":1", "-id", window_id, "-f", "STEAM_GAME", "32c", "-set", "STEAM_GAME", "868"],
+                stdout=PIPE,
+                stderr=PIPE,
+                text=True
+            )
 
-        # Check for errors
-        if result.returncode != 0:
-            log.error(f"Error executing xprop command: {result.stderr}")
-        else:
-            log.info(f"Successfully set STEAM_GAME property for window ID {window_id}")
+            # Check for errors
+            if result.returncode != 0:
+                log.error(f"Error executing xprop command: {result.stderr}")
+            else:
+                log.debug(f"Successfully set STEAM_GAME property for window ID {window_id}")
     except Exception as e:
         log.error(f"Exception occurred: {e}")
 
@@ -589,15 +598,14 @@ def run_command(command: list[AnyPath]) -> int:
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
         rearranged_sequence = rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
-        #formatted_sequence = f'"{rearranged_sequence}"'
-        log.info(" GAMESCOPE_FOCUS_SET: %s", rearranged_sequence)
+        log.info(" GAMESCOPE_LAYER_SEQUENCE_SET: %s", rearranged_sequence)
         if rearranged_sequence:
-            Popen(
+            run(
             ["/app/bin/xprop", "-d", ":1", "-root", "-f", "GAMESCOPECTRL_BASELAYER_APPID", "32co", "-set", "GAMESCOPECTRL_BASELAYER_APPID", rearranged_sequence],
         )
 
     ret = proc.wait()
-    log.debug("Child %s exited with wait status: %s", correct_pid, ret)
+    log.debug("Child %s exited with wait status: %s", ret)
 
     return ret
 
