@@ -461,7 +461,9 @@ def get_xwininfo_output() -> list[str]:
 
         # Check for errors
         if result.returncode != 0:
-            log.error(f"Error executing xwininfo command: {result.stderr}")
+            log.error(
+                "Error executing xwininfo command: %s", f"{result.stderr}"
+            )
             return None
 
         # Filter and process the output
@@ -515,13 +517,16 @@ def set_steam_game_property(
 
             # Check for errors
             if result.returncode != 0:
-                log.error(f"Error executing xprop command: {result.stderr}")
+                log.error(
+                    "Error executing xprop command: %s", f"{result.stderr}"
+                )
             else:
                 log.debug(
-                    f"Successfully set STEAM_GAME property for window ID {window_id}"
+                    "Successfully set STEAM_GAME property for window ID: %s",
+                    window_id,
                 )
     except Exception as e:
-        log.error(f"Exception occurred: {e}")
+        log.exception(e)
 
 
 def get_gamescope_baselayer_order() -> str:
@@ -536,7 +541,7 @@ def get_gamescope_baselayer_order() -> str:
 
         # Check for errors
         if result.returncode != 0:
-            log.error(f"Error executing command: {result.stderr}")
+            log.error("Error executing command: %s", f"{result.stderr}")
             return None
 
         # Filter and process the output
@@ -546,7 +551,7 @@ def get_gamescope_baselayer_order() -> str:
                 value = line.split("=")[1].strip()
                 return value
     except Exception as e:
-        log.error(f"Exception occurred: {e}")
+        log.exception(e)
         return None
 
 
@@ -556,8 +561,8 @@ def rearrange_gamescope_baselayer_order(sequence: str) -> tuple[str, str]:
 
     # Ensure there are exactly 4 numbers
     if len(numbers) != 4:
-        log.error("Unexpected number of elements in sequence")
-        raise ValueError("Unexpected number of elements in sequence")
+        err = "Unexpected number of elements in sequence"
+        raise ValueError(err)
 
     # Rearrange the sequence
     rearranged = [numbers[0], numbers[3], numbers[1], numbers[2]]
