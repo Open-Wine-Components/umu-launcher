@@ -489,7 +489,7 @@ def set_steam_game_property(window_ids: list[str]) -> None:
     try:
         for window_id in window_ids:
             # Execute the second command with the output from the first command
-            result = run(
+            result = Popen(
                 ["/app/bin/xprop", "-d", ":1", "-id", window_id, "-f", "STEAM_GAME", "32c", "-set", "STEAM_GAME", "868"],
                 stdout=PIPE,
                 stderr=PIPE,
@@ -601,7 +601,7 @@ def run_command(command: list[AnyPath]) -> int:
         log.info(" GAMESCOPE_LAYER_SEQUENCE_SET: %s", rearranged_sequence)
         if rearranged_sequence:
             run(
-            ["/app/bin/xprop", "-d", ":1", "-root", "-f", "GAMESCOPECTRL_BASELAYER_APPID", "32co", "-set", "GAMESCOPECTRL_BASELAYER_APPID", rearranged_sequence],
+            ["/app/bin/xprop", "-d", ":0", "-root", "-f", "GAMESCOPECTRL_BASELAYER_APPID", "32co", "-set", "GAMESCOPECTRL_BASELAYER_APPID", rearranged_sequence],
         )
 
     ret = proc.wait()
