@@ -446,6 +446,19 @@ def build_command(
 
     return command
 
+def list_all_displays():
+    """List all available displays."""
+    displays = []
+    for i in range(10):  # Check the first 10 display numbers
+        display_name = f":{i}"
+        try:
+            d = display.Display(display_name)
+            displays.append(display_name)
+            d.close()
+        except Exception as e:
+            pass  # Ignore errors for non-existent displays
+    return displays
+
 def set_steam_game_property(window_id: int, display_name: str) -> None:
     """Set the STEAM_GAME property on the specified window to 898 (uwu on telephone)."""
     d = display.Display(display_name)
@@ -464,36 +477,59 @@ def set_steam_game_property(window_id: int, display_name: str) -> None:
     except Exception as e:
         log.error("Failed to set STEAM_GAME property: %s", e)
 
-def find_correct_pid(initial_pid: int, executable_name: str) -> int:
-    """Find the correct PID of the actual running process."""
-    try:
-        parent = psutil.Process(initial_pid)
-        for child in parent.children(recursive=True):
-            if executable_name in child.exe():
-                return child.pid
-    except psutil.NoSuchProcess:
-        pass
+def find_correct_pid(executable_name: str) -> int:
+    """Find the correct PID of the actual running process globally."""
+    for proc in psutil.process_iter(['pid','exe']):
+        try:
+            if executable_name in str(proc):
+                #log.error("proc info: %s %s", str(proc.info['pid']), str(proc.info['exe']))
+                return proc.info['pid']
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
     return 0  # Return 0 if the correct PID is not found
 
-def get_window_id_by_pid(pid: int, display_name: str) -> int:
-    """Get the window ID of the window with the specified PID on the specified display."""
-    d = display.Display(display_name)
+def get_client_list(d):
+    """Get the list of client windows."""
+    log.error("XAUTH: %s", os.environ.get("XAUTHORITY"))
     root = d.screen().root
     net_client_list = d.intern_atom('_NET_CLIENT_LIST')
-    net_wm_pid = d.intern_atom('_NET_WM_PID')
-    client_list = root.get_full_property(net_client_list, Xatom.WINDOW)
-
+    client_list = root.get_full_property(net_client_list, X.AnyPropertyType).value
     if client_list:
-        for window_id in client_list.value:
-            window = d.create_resource_object('window', window_id)
-            try:
-                pid_value = window.get_full_property(net_wm_pid, Xatom.CARDINAL)
-                if pid_value and pid_value.value[0] == pid:
-                    return window_id
-            except Exception:
-                log.error("Failed to get window_id for PID: %s", pid)
-                pass
+        log.error(str(client_list))
+        return client_list.value
+    return []
+
+def get_window_id_by_pid(pid: int) -> int:
+    """Get the window ID of the window with the specified PID across all displays."""
+    displays = list_all_displays()
+    for display_name in displays:
+        try:
+            d = display.Display(display_name)
+            client_list = get_client_list(d)
+            net_wm_pid = d.intern_atom('_NET_WM_PID')
+            
+            if client_list:
+                for window_id in client_list:
+                    window = d.create_resource_object('window', window_id)
+                    try:
+                        pid_value = window.get_full_property(net_wm_pid, X.AnyPropertyType)
+                        if pid_value and pid_value.value[0] == pid:
+                            return window_id
+                    except Exception:
+                        pass
+        except Exception as e:
+            print(f"Failed to access display {display_name}: {e}")
     return 0  # Return 0 if window ID is not found
+
+def convert_path(array):
+    """Extract and convert the path from the array."""
+    for item in array:
+        if isinstance(item, str) and 'drive_c' in item:
+            start_index = item.find('drive_c')
+            end_index = item.rfind('/') + 1  # Find the last occurrence of '/' and include it
+            unix_path = item[end_index:]  # Extract from 'drive_c' to the end
+            return unix_path
+    return None
 
 def run_command(command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
@@ -540,10 +576,11 @@ def run_command(command: list[AnyPath]) -> int:
     max_wait_time = 30  # Maximum wait time in seconds
     wait_interval = 1   # Interval between checks in seconds
     elapsed_time = 0
-
     correct_pid = 0
+    executable_name = convert_path(command)
+    log.error("EXE: %s", executable_name)
     while elapsed_time < max_wait_time:
-        correct_pid = find_correct_pid(proc.pid, executable_name)
+        correct_pid = find_correct_pid(executable_name)
         if correct_pid:
             break
         time.sleep(wait_interval)
@@ -553,7 +590,7 @@ def run_command(command: list[AnyPath]) -> int:
     window_id = 0
     if correct_pid:
         while elapsed_time < max_wait_time:
-            window_id = get_window_id_by_pid(correct_pid, display_name)
+            window_id = get_window_id_by_pid(correct_pid)
             if window_id:
                 break
             time.sleep(wait_interval)
@@ -561,7 +598,7 @@ def run_command(command: list[AnyPath]) -> int:
 
     # Set the STEAM_GAME property
     if window_id:
-        set_steam_game_property(window_id, display_name)
+        set_steam_game_property(window_id, ":1")
     else:
         log.error("Failed to obtain window ID for the launched application. PID: %s", correct_pid)
 
@@ -586,6 +623,7 @@ def main() -> int:  # noqa: D103
         "STEAM_COMPAT_DATA_PATH": "",
         "STEAM_COMPAT_SHADER_PATH": "",
         "FONTCONFIG_PATH": "",
+        "XAUTHORITY": os.path.expanduser('~/.Xauthority'),
         "EXE": "",
         "SteamAppId": "",
         "SteamGameId": "",
@@ -686,7 +724,7 @@ def main() -> int:  # noqa: D103
     log.debug("%s", command)
 
     # Run the command
-    return run_command(command)  # Pass the command and display name
+    return run_command(command)
 
 if __name__ == "__main__":
     try:
