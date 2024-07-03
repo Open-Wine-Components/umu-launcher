@@ -663,7 +663,7 @@ def main() -> int:  # noqa: D103
         "STEAM_COMPAT_DATA_PATH": "",
         "STEAM_COMPAT_SHADER_PATH": "",
         "FONTCONFIG_PATH": "",
-        "XAUTHORITY": os.path.expanduser("~/.Xauthority"),
+        "XAUTHORITY": str(Path("~/.Xauthority").expanduser()),
         "EXE": "",
         "SteamAppId": "",
         "SteamGameId": "",
