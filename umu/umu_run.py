@@ -546,8 +546,7 @@ def get_gamescope_baselayer_order() -> str:
         for line in result.stdout.splitlines():
             if "GAMESCOPECTRL_BASELAYER_APPID" in line:
                 # Extract the value after '=' and strip any whitespace
-                value = line.split("=")[1].strip()
-                return value
+                return line.split("=")[1].strip()
     except Exception as e:
         log.exception(e)
         return None
