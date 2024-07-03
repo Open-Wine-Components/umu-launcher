@@ -442,7 +442,7 @@ def build_command(
     return command
 
 
-def get_xwininfo_output() -> list[str]:  # noqa: D103
+def get_xwininfo_output() -> list[str] | None:  # noqa: D103
     # Wait for the window to be created
     max_wait_time = 30  # Maximum wait time in seconds
     wait_interval = 1  # Interval between checks in seconds
@@ -526,7 +526,7 @@ def set_steam_game_property(  # noqa: D103
         log.exception(e)
 
 
-def get_gamescope_baselayer_order() -> str:  # noqa: D103
+def get_gamescope_baselayer_order() -> str | None:  # noqa: D103
     try:
         # Execute the command and capture the output
         result = run(
@@ -548,7 +548,8 @@ def get_gamescope_baselayer_order() -> str:  # noqa: D103
                 return line.split("=")[1].strip()
     except Exception as e:
         log.exception(e)
-        return None
+
+    return None
 
 
 def rearrange_gamescope_baselayer_order(sequence: str) -> tuple[str, str]:  # noqa: D103
