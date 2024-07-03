@@ -12,7 +12,7 @@ from pathlib import Path
 from pwd import getpwuid
 from re import match
 from socket import AF_INET, SOCK_DGRAM, socket
-from subprocess import Popen, run, PIPE
+from subprocess import PIPE, Popen, run
 from typing import Any
 
 from umu_consts import (
