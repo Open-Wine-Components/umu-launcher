@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import sys
-import random
 import time
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
