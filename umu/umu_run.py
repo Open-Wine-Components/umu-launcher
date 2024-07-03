@@ -443,7 +443,7 @@ def build_command(
     return command
 
 
-def get_xwininfo_output() -> list[str]:
+def get_xwininfo_output() -> list[str]:  # noqa: D103
     # Wait for the window to be created
     max_wait_time = 30  # Maximum wait time in seconds
     wait_interval = 1  # Interval between checks in seconds
@@ -488,7 +488,7 @@ def get_xwininfo_output() -> list[str]:
     return None
 
 
-def set_steam_game_property(
+def set_steam_game_property(  # noqa: D103
     window_ids: list[str], steam_assigned_layer_id: str
 ) -> None:
     try:
@@ -527,7 +527,7 @@ def set_steam_game_property(
         log.exception(e)
 
 
-def get_gamescope_baselayer_order() -> str:
+def get_gamescope_baselayer_order() -> str:  # noqa: D103
     try:
         # Execute the command and capture the output
         result = run(
@@ -552,7 +552,7 @@ def get_gamescope_baselayer_order() -> str:
         return None
 
 
-def rearrange_gamescope_baselayer_order(sequence: str) -> tuple[str, str]:
+def rearrange_gamescope_baselayer_order(sequence: str) -> tuple[str, str]:  # noqa: D103
     # Split the sequence into individual numbers
     numbers = sequence.split(", ")
 
