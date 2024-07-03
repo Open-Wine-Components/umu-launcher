@@ -454,9 +454,9 @@ def get_xwininfo_output() -> list[str]:
     while elapsed_time < max_wait_time:
         result = run(
             ["/app/bin/xwininfo", "-d", ":1", "-root", "-tree"],
-            stdout=PIPE,
-            stderr=PIPE,
             text=True,
+            capture_output=True,
+            check=False,
         )
 
         # Check for errors
@@ -532,9 +532,9 @@ def get_gamescope_baselayer_order() -> str:
         # Execute the command and capture the output
         result = run(
             ["/app/bin/xprop", "-d", ":0", "-root"],
-            stdout=PIPE,
-            stderr=PIPE,
             text=True,
+            capture_output=True,
+            check=False,
         )
 
         # Check for errors
@@ -635,6 +635,7 @@ def run_command(command: list[AnyPath]) -> int:
                     "GAMESCOPECTRL_BASELAYER_APPID",
                     rearranged_sequence,
                 ],
+                check=False,
             )
         # Assign our window a STEAM_GAME id
         game_window_ids = get_xwininfo_output()
