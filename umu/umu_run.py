@@ -29,7 +29,7 @@ from umu_plugins import set_env_toml
 from umu_proton import get_umu_proton
 from umu_runtime import setup_umu
 from umu_util import (
-    find_subdir,
+    find_steam_wdir,
     get_libc,
     is_installed_verb,
     is_winetricks_verb,
@@ -252,8 +252,10 @@ def set_env(
             # when creating the subprocess.
             # e.g., Games/umu/umu-0 -> $HOME/Games/umu/umu-0
             exe: Path = Path(args[0]).expanduser().resolve(strict=True)  # type: ignore
+            steam_wkdir: str = find_steam_wdir(exe)
             env["EXE"] = str(exe)
-            env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
+            # Use the working directory of the Steam game, depend on the client
+            env["STEAM_COMPAT_INSTALL_PATH"] = steam_wkdir or str(Path.cwd())
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
             env["EXE"] = args[0]  # type: ignore
@@ -261,8 +263,9 @@ def set_env(
             log.warning("Executable not found: %s", env["EXE"])
     else:  # Configuration file usage
         exe: Path = Path(env["EXE"]).expanduser()
+        steam_wkdir: str = find_steam_wdir(exe)
         env["EXE"] = str(exe)
-        env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
+        env["STEAM_COMPAT_INSTALL_PATH"] = steam_wkdir or str(Path.cwd())
 
     env["STORE"] = os.environ.get("STORE") or ""
 
@@ -463,14 +466,10 @@ def run_command(command: list[AnyPath]) -> int:
     # For winetricks, change directory to $PROTONPATH/protonfixes
     if os.environ.get("EXE", "").endswith("winetricks"):
         cwd = f"{os.environ['PROTONPATH']}/protonfixes"
-    elif os.environ.get("STORE") == "gog" and (
-        subdir := find_subdir(os.environ)
-    ):
-        cwd = f"{os.environ['STEAM_COMPAT_INSTALL_PATH']}/{subdir}"
     else:
         # TODO: Create an environment variable to allow clients to not allow
         # UMU to change directories so that the user's setting is respected.
-        cwd = Path.cwd()
+        cwd = os.environ["STEAM_COMPAT_INSTALL_PATH"]
 
     log.debug("CWD: '%s'", cwd)
 
