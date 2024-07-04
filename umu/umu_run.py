@@ -446,7 +446,7 @@ def build_command(
     return command
 
 
-def run_command(command: list[AnyPath]) -> int:
+def run_command(env: dict[str, str], command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     # Configure a process via libc prctl()
     # See prctl(2) for more details
@@ -465,11 +465,11 @@ def run_command(command: list[AnyPath]) -> int:
 
     # For winetricks, change directory to $PROTONPATH/protonfixes
     if os.environ.get("EXE", "").endswith("winetricks"):
-        cwd = f"{os.environ['PROTONPATH']}/protonfixes"
+        cwd = f"{env['PROTONPATH']}/protonfixes"
     else:
         # TODO: Create an environment variable to allow clients to not allow
         # UMU to change directories so that the user's setting is respected.
-        cwd = os.environ["STEAM_COMPAT_INSTALL_PATH"]
+        cwd = env["STEAM_COMPAT_INSTALL_PATH"]
 
     log.debug("CWD: '%s'", cwd)
 
@@ -620,7 +620,7 @@ def main() -> int:  # noqa: D103
     build_command(env, UMU_LOCAL, command, opts)
     log.debug("%s", command)
 
-    return run_command(command)
+    return run_command(env, command)
 
 
 if __name__ == "__main__":
