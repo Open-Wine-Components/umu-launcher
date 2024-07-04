@@ -152,9 +152,15 @@ def find_steam_wdir(path: Path) -> str:
     subdir: Path
     common_parts: tuple[str, ...]
     path_parts: tuple[str, ...] = path.parts
+    is_steam: bool = False
 
     # Executable is not a Steam game
-    if not path.match("steamapps/common"):
+    for parent in path.parents:
+        if parent.name == "common" and parent.parent.name == "steamapps":
+            is_steam = True
+            break
+
+    if not is_steam:
         log.debug("Executable '%s' is not a Steam game", path)
         return ""
 
