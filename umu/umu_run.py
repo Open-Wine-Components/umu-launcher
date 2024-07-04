@@ -254,7 +254,7 @@ def set_env(
             exe: Path = Path(args[0]).expanduser().resolve(strict=True)  # type: ignore
             steam_wkdir: str = find_steam_wdir(exe)
             env["EXE"] = str(exe)
-            # Use the working directory of the Steam game, depend on the client
+            # Use the working directory of the Steam game or depend on client
             env["STEAM_COMPAT_INSTALL_PATH"] = steam_wkdir or str(Path.cwd())
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
@@ -467,8 +467,6 @@ def run_command(env: dict[str, str], command: list[AnyPath]) -> int:
     if os.environ.get("EXE", "").endswith("winetricks"):
         cwd = f"{env['PROTONPATH']}/protonfixes"
     else:
-        # TODO: Create an environment variable to allow clients to not allow
-        # UMU to change directories so that the user's setting is respected.
         cwd = env["STEAM_COMPAT_INSTALL_PATH"]
 
     log.debug("CWD: '%s'", cwd)
