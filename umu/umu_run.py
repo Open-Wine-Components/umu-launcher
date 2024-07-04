@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import threading
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -474,17 +475,22 @@ def get_xwininfo_output() -> list[str] | None:  # noqa: D103
         # Filter and process the output
         for line in result.stdout.splitlines():
             # Wait until steamcompmgr is not the first in the list
-            if line.strip().startswith("0x") and "steamcompmgr" not in line:
-                break
+            if line.strip().startswith("0x") and "steam_app" in line:
+                parts = line.split()
+                if len(parts) > 0:
+                    # 90% of the time the first in the list that is not steamcompmgr is our window
+                    window_ids.append(parts[0])
+                    break;
         time.sleep(wait_interval)
         elapsed_time += wait_interval
 
-    # Finally, add all items to the list (including steamcompmgr)
-    for line in result.stdout.splitlines():
-        if line.strip().startswith("0x") and "steam_app" in line:
-            parts = line.split()
-            if len(parts) > 0:
-                window_ids.append(parts[0])
+    # Disabled for now, only use if we want all window ids
+    #for line in result.stdout.splitlines():
+    #    if "steam_app" in line:
+    #        if line.strip().startswith("0x"):
+    #            parts = line.split()
+    #            if len(parts) > 0:
+    #                window_ids.append(parts[0])
 
     if window_ids:
         return window_ids
@@ -505,6 +511,7 @@ def set_steam_game_property(  # noqa: D103
     try:
         for window_id in window_ids:
             # Execute the second command with the output from the first command
+            log.debug("window_id: %s steam_layer: %s", window_id, steam_assigned_layer_id)
             result = Popen(
                 [
                     xprop,
@@ -524,10 +531,12 @@ def set_steam_game_property(  # noqa: D103
                 text=True,
             )
 
+            stdout, stderr = result.communicate()
+
             # Check for errors
             if result.returncode != 0:
                 log.error(
-                    "Error executing xprop command: %s", f"{result.stderr}"
+                    "Error executing xprop command: %s", f"{stderr}"
                 )
             else:
                 log.debug(
@@ -588,6 +597,28 @@ def rearrange_gamescope_baselayer_order(sequence: str) -> tuple[str, str]:  # no
     # Return the rearranged sequence and the second element
     return rearranged_sequence, rearranged[1]
 
+def window_setup(gamescope_baselayer_sequence: str) -> None:
+    if gamescope_baselayer_sequence:
+        # Rearrange the sequence
+        rearranged_sequence, steam_assigned_layer_id = rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
+        # Assign our window a STEAM_GAME id
+        game_window_ids = get_xwininfo_output()
+        if game_window_ids:
+            set_steam_game_property(game_window_ids,steam_assigned_layer_id)
+
+        log.info(" GAMESCOPE_LAYER_SEQUENCE_SET: %s", rearranged_sequence)
+        if rearranged_sequence:
+            run(
+            ["/app/bin/xprop", "-d", ":0", "-root", "-f", "GAMESCOPECTRL_BASELAYER_APPID", "32co", "-set", "GAMESCOPECTRL_BASELAYER_APPID", rearranged_sequence],
+        )
+
+
+def monitor_layers(gamescope_baselayer_sequence: str) -> None:
+    while True:
+        current_sequence = get_gamescope_baselayer_order()
+        if current_sequence == gamescope_baselayer_sequence:
+            window_setup(gamescope_baselayer_sequence)
+        time.sleep(5)  # Check every 5 seconds
 
 def run_command(command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
@@ -630,37 +661,11 @@ def run_command(command: list[AnyPath]) -> int:
             cwd=cwd,
         )
 
-    # Rearrange our gamescope window order
     gamescope_baselayer_sequence = get_gamescope_baselayer_order()
-
-    if gamescope_baselayer_sequence:
-        # Rearrange the sequence
-        rearranged_sequence, steam_assigned_layer_id = (
-            rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
-        )
-        log.info("GAMESCOPE_LAYER_SEQUENCE_SET: %s", rearranged_sequence)
-
-        if rearranged_sequence:
-            run(
-                [
-                    "/app/bin/xprop",
-                    "-d",
-                    ":0",
-                    "-root",
-                    "-f",
-                    "GAMESCOPECTRL_BASELAYER_APPID",
-                    "32co",
-                    "-set",
-                    "GAMESCOPECTRL_BASELAYER_APPID",
-                    rearranged_sequence,
-                ],
-                check=False,
-            )
-
-        # Assign our window a STEAM_GAME id
-        game_window_ids = get_xwininfo_output()
-        if game_window_ids:
-            set_steam_game_property(game_window_ids, steam_assigned_layer_id)
+    window_setup(gamescope_baselayer_sequence)
+    monitor_thread = threading.Thread(target=monitor_layers, args=(gamescope_baselayer_sequence,))
+    monitor_thread.daemon = True
+    monitor_thread.start()
 
     ret = proc.wait()
     log.debug("Child %s exited with wait status: %s", proc.pid, ret)
@@ -684,7 +689,6 @@ def main() -> int:  # noqa: D103
         "STEAM_COMPAT_DATA_PATH": "",
         "STEAM_COMPAT_SHADER_PATH": "",
         "FONTCONFIG_PATH": "",
-        "XAUTHORITY": str(Path("~/.Xauthority").expanduser()),
         "EXE": "",
         "SteamAppId": "",
         "SteamGameId": "",
