@@ -230,19 +230,15 @@ class TestGameLauncher(unittest.TestCase):
             "/home/foo/.local/share/Steam/compatibilitytools.d/GE-Proton9-7/proton",
             mock_exe,
         ]
-        mock_proc = CompletedProcess(mock_command, 0)
+        mock = MagicMock()
 
         os.environ["EXE"] = mock_exe
         with (
-            patch.object(umu_run, "run", return_value=mock_proc),
+            patch.object(umu_run, "Popen", return_value=mock) as proc,
             patch.object(umu_run, "get_libc", return_value=""),
         ):
-            result = umu_run.run_command(mock_command)
-            self.assertEqual(
-                result,
-                0,
-                "Expected 0 status code when libc could not be found",
-            )
+            umu_run.run_command(mock_command)
+            proc.assert_called_once()
 
     def test_run_command_none(self):
         """Test run_command when passed an empty list or None."""
