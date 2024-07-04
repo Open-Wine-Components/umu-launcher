@@ -1,9 +1,12 @@
+import os
 from ctypes.util import find_library
 from functools import lru_cache
+from json import load
 from pathlib import Path
 from re import Pattern, compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+from typing import Any
 
 from umu_log import log
 
@@ -145,3 +148,75 @@ def is_steamdeck() -> bool:
                     break
 
     return is_sd
+
+
+def _parse_gogcfg(env: os._Environ[str]) -> Path | None:
+    json: dict[str, Any]
+    gog_info: Path
+    subdir: Path | None = None
+    install_dir: Path = Path(env["STEAM_COMPAT_INSTALL_PATH"])
+
+    if not install_dir.is_dir():
+        return None
+
+    try:
+        # Assume that there's only 1 *.info file in the game dir
+        gog_info = max(
+            file
+            for file in install_dir.glob("*.info")
+            if file.name.startswith("goggame")
+        )
+    except ValueError:
+        log.debug("No *.info files were found in '%s'", install_dir)
+        return None
+
+    with gog_info.open(mode="r", encoding="utf-8") as file:
+        json = load(file)
+
+    if not json:
+        log.debug("File '%s' is empty", gog_info)
+        log.debug("Will not change to a subdirectory")
+        return None
+
+    if "playTasks" not in json:
+        log.debug("File '%s' does not have a 'playTasks' property", gog_info)
+        log.debug("Will not change to a subdirectory")
+        return None
+
+    # Get the first result and assume it's the correct one
+    for item in json["playTasks"]:
+        if (path := item.get("path")) and len(
+            subpaths := Path(path).parts
+        ) > 1:
+            subdir = Path(*subpaths[:-1])
+            log.debug(
+                "Found subdirectory '%s'",
+                subdir,
+            )
+            break
+
+    return subdir
+
+
+def find_subdir(env: os._Environ[str]) -> Path | None:
+    """Find the correct directory to run the executable by parsing a file.
+
+    Some games require to be executed in a specific way, by either requiring
+    the path to be relative or to be in a subdirectory within the game
+    directory. Otherwise, the game may fail to run. The correct subdirectory
+    is usually defined within a configuration file by the developer (e.g.,
+    installscript.vdf or *.info files).
+    """
+    subdir: Path | None
+    store: str = env["STORE"]
+
+    # TODO: Parse Steam's .vdf files.
+    match store:
+        # For GOG, metadata is in *.info files
+        case "gog":
+            log.debug("GOG store detected")
+            subdir = _parse_gogcfg(env)
+        case _:
+            subdir = None
+
+    return subdir

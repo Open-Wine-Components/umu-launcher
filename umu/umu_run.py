@@ -29,6 +29,7 @@ from umu_plugins import set_env_toml
 from umu_proton import get_umu_proton
 from umu_runtime import setup_umu
 from umu_util import (
+    find_subdir,
     get_libc,
     is_installed_verb,
     is_winetricks_verb,
@@ -462,8 +463,16 @@ def run_command(command: list[AnyPath]) -> int:
     # For winetricks, change directory to $PROTONPATH/protonfixes
     if os.environ.get("EXE", "").endswith("winetricks"):
         cwd = f"{os.environ['PROTONPATH']}/protonfixes"
+    elif os.environ.get("STORE") == "gog" and (
+        subdir := find_subdir(os.environ)
+    ):
+        cwd = f"{os.environ['STEAM_COMPAT_INSTALL_PATH']}/{subdir}"
     else:
+        # TODO: Create an environment variable to allow clients to not allow
+        # UMU to change directories so that the user's setting is respected.
         cwd = Path.cwd()
+
+    log.debug("CWD: '%s'", cwd)
 
     # Create a subprocess but do not set it as subreaper
     # Unnecessary in a Flatpak and prctl() will fail if libc could not be found
