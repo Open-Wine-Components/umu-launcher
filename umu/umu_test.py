@@ -207,7 +207,7 @@ class TestGameLauncher(unittest.TestCase):
             mock_proc.wait.return_value = 0
             mock_proc.pid = 1234
             mock_popen.return_value = mock_proc
-            result = umu_run.run_command(mock_command)
+            result = umu_run.run_command(self.env, mock_command)
             mock_popen.assert_called_once()
             self.assertEqual(
                 result,
@@ -237,7 +237,7 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_run, "run", return_value=mock_proc),
             patch.object(umu_run, "get_libc", return_value=""),
         ):
-            result = umu_run.run_command(mock_command)
+            result = umu_run.run_command(self.env, mock_command)
             self.assertEqual(
                 result,
                 0,
@@ -247,8 +247,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_run_command_none(self):
         """Test run_command when passed an empty list or None."""
         with self.assertRaises(ValueError):
-            umu_run.run_command([])
-            umu_run.run_command(None)
+            umu_run.run_command(self.env, [])
+            umu_run.run_command(self.env, None)
 
     def test_get_libc(self):
         """Test get_libc."""
@@ -1973,7 +1973,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock a Proton directory that contains winetricks
         test_dir = Path("./tmp.aCAs3Q7rvz")
-        test_dir.joinpath("protonfixes").mkdir(parents=True)
+        test_dir.joinpath("protonfixes").mkdir(parents=True, exist_ok=True)
         test_dir.joinpath("protonfixes", "winetricks").touch()
 
         # Replicate the usage:
@@ -2025,7 +2025,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_INSTALL_PATH"],
-                str(Path.cwd()),
+                str(test_dir.joinpath("protonfixes").resolve()),
                 "Expected STEAM_COMPAT_INSTALL_PATH to be set",
             )
             self.assertEqual(
