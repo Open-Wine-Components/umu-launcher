@@ -1665,7 +1665,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_INSTALL_PATH"],
-                Path(path_exe).parent.as_posix(),
+                str(Path.cwd()),
                 "Expected STEAM_COMPAT_INSTALL_PATH to be set",
             )
             self.assertEqual(
@@ -1899,7 +1899,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_INSTALL_PATH"],
-                Path(path_exe).parent.as_posix(),
+                str(Path.cwd()),
                 "Expected STEAM_COMPAT_INSTALL_PATH to be set",
             )
             self.assertEqual(
@@ -2025,7 +2025,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_INSTALL_PATH"],
-                Path(path_exe).parent.as_posix(),
+                str(Path.cwd()),
                 "Expected STEAM_COMPAT_INSTALL_PATH to be set",
             )
             self.assertEqual(
