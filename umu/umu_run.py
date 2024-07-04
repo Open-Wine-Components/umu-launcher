@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import os
+import os  # noqa
 import sys
 import time
 import threading
-from Xlib import X, display, Xatom
+from Xlib import X, display, Xatom  # noqa
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -14,7 +14,7 @@ from pathlib import Path
 from pwd import getpwuid
 from re import match
 from socket import AF_INET, SOCK_DGRAM, socket
-from subprocess import PIPE, Popen, run
+from subprocess import PIPE, Popen, run  # noqa
 from typing import Any
 
 from umu_consts import (
@@ -34,7 +34,7 @@ from umu_util import (
     get_libc,
     is_installed_verb,
     is_winetricks_verb,
-    whereis,
+    whereis,  # noqa
 )
 
 AnyPath = os.PathLike | str
@@ -303,22 +303,7 @@ def set_env(
         )
 
     # Runtime
-    # if FLATPAK_PATH:
-    #    env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
-
-    # FIXME: Currently, running games when using the Steam Runtime in a Flatpak
-    # environment will cause the game window to not display within the SteamOS
-    # gamescope session. Note, this is a workaround until the runtime is built
-    # or the issue is fixed upstream.
-    # See https://github.com/ValveSoftware/gamescope/issues/1341
-    # if (
-    #    not os.environ.get("UMU_NO_RUNTIME")
-    #    and FLATPAK_PATH
-    #    and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
-    # ):
-    #    log.debug("SteamOS gamescope session detected")
-    #    log.debug("Disabling Pressure Vessel and container runtime")
-    #    env["UMU_NO_RUNTIME"] = "pressure-vessel"
+    env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
 
     return env
 
@@ -460,12 +445,12 @@ def get_window_client_ids() -> list[str]:
             children = root.query_tree().children
             if children and len(children) > 1:
                 for child in children:
-                    log.debug(f"Window ID: {child.id}")
-                    log.debug(f"Window Name: {child.get_wm_name()}")
-                    log.debug(f"Window Class: {child.get_wm_class()}")
-                    log.debug(f"Window Geometry: {child.get_geometry()}")
-                    log.debug(f"Window Attributes: {child.get_attributes()}")
-                    #if "steam_app" in str(child.get_wm_class()):
+                    log.debug(f"Window ID: {child.id}")  # noqa
+                    log.debug(f"Window Name: {child.get_wm_name()}")  # noqa
+                    log.debug(f"Window Class: {child.get_wm_class()}")  # noqa
+                    log.debug(f"Window Geometry: {child.get_geometry()}")  # noqa
+                    log.debug(f"Window Attributes: {child.get_attributes()}")  # noqa
+                    # if "steam_app" in str(child.get_wm_class()):
                     window_ids.append(child.id)
                 return window_ids
             time.sleep(wait_interval)
@@ -478,48 +463,71 @@ def get_window_client_ids() -> list[str]:
 def set_steam_game_property(  # noqa: D103
     window_ids: list[str], steam_assigned_layer_id: int
 ) -> None:
+    d = display.Display(":1")
     try:
-        d = display.Display(":1")
-        root = d.screen().root
+        root = d.screen().root  # noqa
 
         for window_id in window_ids:
-            log.debug("window_id: %s steam_layer: %s", window_id, steam_assigned_layer_id)
+            log.debug(
+                "window_id: %s steam_layer: %s",
+                window_id,
+                steam_assigned_layer_id,
+            )
             try:
-                window = d.create_resource_object('window', int(window_id))
-                window.get_full_property(d.intern_atom('STEAM_GAME'), Xatom.CARDINAL)
-                window.change_property(d.intern_atom('STEAM_GAME'), Xatom.CARDINAL, 32, [int(steam_assigned_layer_id)])
-                log.debug("Successfully set STEAM_GAME property for window ID: %s", window_id)
-            except Exception as e:
-                log.error("Error setting STEAM_GAME property for window ID %s: %s", window_id, e)
+                window = d.create_resource_object("window", int(window_id))
+                window.get_full_property(
+                    d.intern_atom("STEAM_GAME"), Xatom.CARDINAL
+                )
+                window.change_property(
+                    d.intern_atom("STEAM_GAME"),
+                    Xatom.CARDINAL,
+                    32,
+                    [int(steam_assigned_layer_id)],
+                )
+                log.debug(
+                    "Successfully set STEAM_GAME property for window ID: %s",
+                    window_id,
+                )
+            except Exception as e:  # noqa
+                log.error(
+                    "Error setting STEAM_GAME property for window ID %s: %s",
+                    window_id,
+                    e,
+                )
     except Exception as e:
         log.exception(e)
     finally:
         d.close()
 
+
 def get_gamescope_baselayer_order() -> list[int] | None:  # noqa: D103
+    d = display.Display(":0")
     try:
-        d = display.Display(":0")
         root = d.screen().root
 
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.intern_atom('GAMESCOPECTRL_BASELAYER_APPID')
+        atom = d.intern_atom("GAMESCOPECTRL_BASELAYER_APPID")
 
         # Get the property value
         prop = root.get_full_property(atom, Xatom.CARDINAL)
-        
+
         if prop:
             # Extract and return the value
-            return prop.value
-        else:
-            log.debug("GAMESCOPECTRL_BASELAYER_APPID property not found")
-            return None
+            return prop.value  # type: ignore
+        log.debug("GAMESCOPECTRL_BASELAYER_APPID property not found")
     except Exception as e:
-        log.exception("Error getting GAMESCOPECTRL_BASELAYER_APPID property: %s", e)
-        return None
+        log.exception(
+            "Error getting GAMESCOPECTRL_BASELAYER_APPID property: %s", e
+        )
     finally:
         d.close()
 
-def rearrange_gamescope_baselayer_order(sequence: list[int]) -> tuple[list[int], int]:  # noqa: D103
+    return None
+
+
+def rearrange_gamescope_baselayer_order(  # noqa
+    sequence: list[int],
+) -> tuple[list[int], int]:
     # Ensure there are exactly 4 numbers
     if len(sequence) != 4:
         err = "Unexpected number of elements in sequence"
@@ -531,34 +539,46 @@ def rearrange_gamescope_baselayer_order(sequence: list[int]) -> tuple[list[int],
     # Return the rearranged sequence and the second element
     return rearranged, rearranged[1]
 
-def set_gamescope_baselayer_order(rearranged: list[int]) -> None:
+
+def set_gamescope_baselayer_order(rearranged: list[int]) -> None:  # noqa
     try:
         d = display.Display(":0")
         root = d.screen().root
 
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.intern_atom('GAMESCOPECTRL_BASELAYER_APPID')
+        atom = d.intern_atom("GAMESCOPECTRL_BASELAYER_APPID")
 
         # Set the property value
         root.change_property(atom, Xatom.CARDINAL, 32, rearranged)
-        log.debug("Successfully set GAMESCOPECTRL_BASELAYER_APPID property: %s", ", ".join(map(str, rearranged)))
+        log.debug(
+            "Successfully set GAMESCOPECTRL_BASELAYER_APPID property: %s",
+            ", ".join(map(str, rearranged)),
+        )
     except Exception as e:
-        log.exception("Error setting GAMESCOPECTRL_BASELAYER_APPID property: %s", e)
+        log.exception(
+            "Error setting GAMESCOPECTRL_BASELAYER_APPID property: %s", e
+        )
     finally:
         d.close()
 
-def window_setup(gamescope_baselayer_sequence: list[int]) -> None:
+
+def window_setup(gamescope_baselayer_sequence: list[int]) -> None:  # noqa
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
-        rearranged_sequence, steam_assigned_layer_id = rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
+        rearranged_sequence, steam_assigned_layer_id = (
+            rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
+        )
         # Assign our window a STEAM_GAME id
         game_window_ids = get_window_client_ids()
         if game_window_ids:
-            set_steam_game_property(game_window_ids,steam_assigned_layer_id)
+            set_steam_game_property(game_window_ids, steam_assigned_layer_id)
 
         set_gamescope_baselayer_order(rearranged_sequence)
 
-def monitor_layers(gamescope_baselayer_sequence: list[int], window_client_list: list[str]) -> None:
+
+def monitor_layers(  # noqa
+    gamescope_baselayer_sequence: list[int], window_client_list: list[str]
+) -> None:
     while True:
         # Check if the window sequence has changed:
         current_window_list = get_window_client_ids()
@@ -571,6 +591,7 @@ def monitor_layers(gamescope_baselayer_sequence: list[int], window_client_list: 
             window_setup(gamescope_baselayer_sequence)
 
         time.sleep(5)  # Check every 5 seconds
+
 
 def run_command(command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
@@ -615,10 +636,15 @@ def run_command(command: list[AnyPath]) -> int:
     gamescope_baselayer_sequence = get_gamescope_baselayer_order()
 
     # Dont do window fuckery if we're not inside gamescope
-    if gamescope_baselayer_sequence and not os.environ.get("EXE", "").endswith("winetricks"):
+    if gamescope_baselayer_sequence and not os.environ.get("EXE", "").endswith(
+        "winetricks"
+    ):
         window_client_list = get_window_client_ids
         window_setup(gamescope_baselayer_sequence)
-        monitor_thread = threading.Thread(target=monitor_layers, args=(gamescope_baselayer_sequence,window_client_list))
+        monitor_thread = threading.Thread(
+            target=monitor_layers,
+            args=(gamescope_baselayer_sequence, window_client_list),
+        )
         monitor_thread.daemon = True
         monitor_thread.start()
 
