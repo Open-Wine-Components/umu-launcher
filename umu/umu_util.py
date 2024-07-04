@@ -168,7 +168,7 @@ def find_steam_wdir(path: Path) -> str:
     common_parts = (_parts := path.parts)[: _parts.index("common") + 1]
 
     # Check if the exe is in the top level of the base dir and use it
-    if (len(path_parts) - len(common_parts)) == 2:
+    if path_parts[:-2] == common_parts:
         log.debug("Executable '%s' is not within a subdirectory", path)
         log.debug("Using '%s' as working directory", path.parent)
         return str(path.parent)
