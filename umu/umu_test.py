@@ -202,6 +202,9 @@ class TestGameLauncher(unittest.TestCase):
                 umu_run,
                 "Popen",
             ) as mock_popen,
+            patch.object(
+                umu_run, "get_gamescope_baselayer_order", return_value=None
+            ),
         ):
             mock_proc = MagicMock()
             mock_proc.wait.return_value = 0
@@ -236,13 +239,22 @@ class TestGameLauncher(unittest.TestCase):
         with (
             patch.object(umu_run, "Popen", return_value=mock) as proc,
             patch.object(umu_run, "get_libc", return_value=""),
+            patch.object(
+                umu_run, "get_gamescope_baselayer_order", return_value=None
+            ),
         ):
+            # TODO: Mock the call
             umu_run.run_command(mock_command)
             proc.assert_called_once()
 
     def test_run_command_none(self):
         """Test run_command when passed an empty list or None."""
-        with self.assertRaises(ValueError):
+        with (
+            self.assertRaises(ValueError),
+            patch.object(
+                umu_run, "get_gamescope_baselayer_order", return_value=None
+            ),
+        ):
             umu_run.run_command([])
             umu_run.run_command(None)
 
