@@ -615,7 +615,7 @@ def run_command(command: list[AnyPath]) -> int:
     gamescope_baselayer_sequence = get_gamescope_baselayer_order()
 
     # Dont do window fuckery if we're not inside gamescope
-    if gamescope_baselayer_sequence:
+    if gamescope_baselayer_sequence and not os.environ.get("EXE", "").endswith("winetricks"):
         window_client_list = get_window_client_ids
         window_setup(gamescope_baselayer_sequence)
         monitor_thread = threading.Thread(target=monitor_layers, args=(gamescope_baselayer_sequence,window_client_list))
