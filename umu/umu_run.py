@@ -32,6 +32,7 @@ from umu_util import (
     get_libc,
     is_installed_verb,
     is_winetricks_verb,
+    whereis,
 )
 
 AnyPath = os.PathLike | str
@@ -448,11 +449,16 @@ def get_xwininfo_output() -> list[str] | None:  # noqa: D103
     wait_interval = 1  # Interval between checks in seconds
     elapsed_time = 0
     window_ids: list[str] = []
+    xwininfo = whereis("xwininfo")
+
+    if not xwininfo:
+        log.debug("xwininfo not found in PATH")
+        return None
 
     # Get gamescope baselayer sequence after the window is created
     while elapsed_time < max_wait_time:
         result = run(
-            ["/app/bin/xwininfo", "-d", ":1", "-root", "-tree"],
+            [xwininfo, "-d", ":1", "-root", "-tree"],
             text=True,
             capture_output=True,
             check=False,
@@ -490,12 +496,18 @@ def get_xwininfo_output() -> list[str] | None:  # noqa: D103
 def set_steam_game_property(  # noqa: D103
     window_ids: list[str], steam_assigned_layer_id: str
 ) -> None:
+    xprop = whereis("xprop")
+
+    if not xprop:
+        log.debug("xprop not found in PATH")
+        return
+
     try:
         for window_id in window_ids:
             # Execute the second command with the output from the first command
             result = Popen(
                 [
-                    "/app/bin/xprop",
+                    xprop,
                     "-d",
                     ":1",
                     "-id",
@@ -527,10 +539,16 @@ def set_steam_game_property(  # noqa: D103
 
 
 def get_gamescope_baselayer_order() -> str | None:  # noqa: D103
+    xprop = whereis("xprop")
+
+    if not xprop:
+        log.debug("xprop not found in PATH")
+        return None
+
     try:
         # Execute the command and capture the output
         result = run(
-            ["/app/bin/xprop", "-d", ":0", "-root"],
+            [xprop, "-d", ":0", "-root"],
             text=True,
             capture_output=True,
             check=False,

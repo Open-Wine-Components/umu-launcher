@@ -145,3 +145,9 @@ def is_steamdeck() -> bool:
                     break
 
     return is_sd
+
+
+@lru_cache
+def whereis(bin: str) -> str:
+    """Return the absolute path of an executable."""
+    return which(bin) or ""
