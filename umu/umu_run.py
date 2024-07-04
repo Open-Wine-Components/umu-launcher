@@ -463,8 +463,8 @@ def get_window_client_ids() -> list[str]:
 def set_steam_game_property(  # noqa: D103
     window_ids: list[str], steam_assigned_layer_id: int
 ) -> None:
+    d = display.Display(":1")
     try:
-        d = display.Display(":1")
         root = d.screen().root  # noqa
 
         for window_id in window_ids:
@@ -501,8 +501,8 @@ def set_steam_game_property(  # noqa: D103
 
 
 def get_gamescope_baselayer_order() -> list[int] | None:  # noqa: D103
+    d = display.Display(":0")
     try:
-        d = display.Display(":0")
         root = d.screen().root
 
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
