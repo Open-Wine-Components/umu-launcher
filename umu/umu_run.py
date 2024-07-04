@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import os
+import os  # noqa
 import sys
 import time
 import threading
-from Xlib import X, display, Xatom
+from Xlib import X, display, Xatom  # noqa
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -14,7 +14,7 @@ from pathlib import Path
 from pwd import getpwuid
 from re import match
 from socket import AF_INET, SOCK_DGRAM, socket
-from subprocess import PIPE, Popen, run
+from subprocess import PIPE, Popen, run  # noqa
 from typing import Any
 
 from umu_consts import (
@@ -34,7 +34,7 @@ from umu_util import (
     get_libc,
     is_installed_verb,
     is_winetricks_verb,
-    whereis,
+    whereis,  # noqa
 )
 
 AnyPath = os.PathLike | str
@@ -445,11 +445,11 @@ def get_window_client_ids() -> list[str]:
             children = root.query_tree().children
             if children and len(children) > 1:
                 for child in children:
-                    log.debug(f"Window ID: {child.id}")
-                    log.debug(f"Window Name: {child.get_wm_name()}")
-                    log.debug(f"Window Class: {child.get_wm_class()}")
-                    log.debug(f"Window Geometry: {child.get_geometry()}")
-                    log.debug(f"Window Attributes: {child.get_attributes()}")
+                    log.debug(f"Window ID: {child.id}")  # noqa
+                    log.debug(f"Window Name: {child.get_wm_name()}")  # noqa
+                    log.debug(f"Window Class: {child.get_wm_class()}")  # noqa
+                    log.debug(f"Window Geometry: {child.get_geometry()}")  # noqa
+                    log.debug(f"Window Attributes: {child.get_attributes()}")  # noqa
                     # if "steam_app" in str(child.get_wm_class()):
                     window_ids.append(child.id)
                 return window_ids
@@ -465,7 +465,7 @@ def set_steam_game_property(  # noqa: D103
 ) -> None:
     try:
         d = display.Display(":1")
-        root = d.screen().root
+        root = d.screen().root  # noqa
 
         for window_id in window_ids:
             log.debug(
@@ -488,7 +488,7 @@ def set_steam_game_property(  # noqa: D103
                     "Successfully set STEAM_GAME property for window ID: %s",
                     window_id,
                 )
-            except Exception as e:
+            except Exception as e:  # noqa
                 log.error(
                     "Error setting STEAM_GAME property for window ID %s: %s",
                     window_id,
@@ -513,22 +513,23 @@ def get_gamescope_baselayer_order() -> list[int] | None:  # noqa: D103
 
         if prop:
             # Extract and return the value
-            return prop.value
-        else:
+            return prop.value  # type: ignore
+        else:  # noqa
             log.debug("GAMESCOPECTRL_BASELAYER_APPID property not found")
             return None
     except Exception as e:
         log.exception(
             "Error getting GAMESCOPECTRL_BASELAYER_APPID property: %s", e
         )
-        return None
     finally:
         d.close()
 
+    return None
 
-def rearrange_gamescope_baselayer_order(
+
+def rearrange_gamescope_baselayer_order(  # noqa
     sequence: list[int],
-) -> tuple[list[int], int]:  # noqa: D103
+) -> tuple[list[int], int]:
     # Ensure there are exactly 4 numbers
     if len(sequence) != 4:
         err = "Unexpected number of elements in sequence"
@@ -541,7 +542,7 @@ def rearrange_gamescope_baselayer_order(
     return rearranged, rearranged[1]
 
 
-def set_gamescope_baselayer_order(rearranged: list[int]) -> None:
+def set_gamescope_baselayer_order(rearranged: list[int]) -> None:  # noqa
     try:
         d = display.Display(":0")
         root = d.screen().root
@@ -563,7 +564,7 @@ def set_gamescope_baselayer_order(rearranged: list[int]) -> None:
         d.close()
 
 
-def window_setup(gamescope_baselayer_sequence: list[int]) -> None:
+def window_setup(gamescope_baselayer_sequence: list[int]) -> None:  # noqa
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
         rearranged_sequence, steam_assigned_layer_id = (
@@ -577,7 +578,7 @@ def window_setup(gamescope_baselayer_sequence: list[int]) -> None:
         set_gamescope_baselayer_order(rearranged_sequence)
 
 
-def monitor_layers(
+def monitor_layers(  # noqa
     gamescope_baselayer_sequence: list[int], window_client_list: list[str]
 ) -> None:
     while True:
