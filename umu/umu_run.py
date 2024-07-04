@@ -514,9 +514,7 @@ def get_gamescope_baselayer_order() -> list[int] | None:  # noqa: D103
         if prop:
             # Extract and return the value
             return prop.value  # type: ignore
-        else:  # noqa
-            log.debug("GAMESCOPECTRL_BASELAYER_APPID property not found")
-            return None
+        log.debug("GAMESCOPECTRL_BASELAYER_APPID property not found")
     except Exception as e:
         log.exception(
             "Error getting GAMESCOPECTRL_BASELAYER_APPID property: %s", e
