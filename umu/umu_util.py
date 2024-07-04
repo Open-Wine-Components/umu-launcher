@@ -1,12 +1,9 @@
-import os
 from ctypes.util import find_library
 from functools import lru_cache
-from json import load
 from pathlib import Path
 from re import Pattern, compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
-from typing import Any
 
 from umu_log import log
 
@@ -149,3 +146,32 @@ def is_steamdeck() -> bool:
 
     return is_sd
 
+
+def find_steam_wdir(path: Path) -> str:
+    """Find the correct working directory for a Steam game."""
+    subdir: Path
+    common_parts: tuple[str, ...]
+    path_parts: tuple[str, ...] = path.parts
+
+    # Executable is not a Steam game
+    if not path.match("steamapps/common"):
+        log.debug("Executable '%s' is not a Steam game", path)
+        return ""
+
+    log.debug("Executable is a Steam game")
+    common_parts = (_parts := path.parts)[: _parts.index("common") + 1]
+
+    # Check if the exe is in the top level of the base dir and use it
+    if (len(path_parts) - len(common_parts)) == 2:
+        log.debug("Executable '%s' is not within a subdirectory", path)
+        log.debug("Using '%s' as working directory", path.parent)
+        return str(path.parent)
+
+    # The exe must be in a subdir at this point so use that as the working dir
+    # NOTE: Assumes any executable within a subdir of its base dir must be run
+    # within its subdir
+    subdir = Path(*path_parts[:-1])
+    log.debug("Executable '%s' is within a subdirectory", path)
+    log.debug("Using '%s' as working directory", subdir)
+
+    return str(subdir)
