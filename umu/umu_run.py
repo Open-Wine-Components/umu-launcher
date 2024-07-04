@@ -465,8 +465,8 @@ def get_window_client_ids() -> list[str]:
                     log.debug(f"Window Class: {child.get_wm_class()}")
                     log.debug(f"Window Geometry: {child.get_geometry()}")
                     log.debug(f"Window Attributes: {child.get_attributes()}")
-                    if "steam_app" in str(child.get_wm_class()):
-                        window_ids.append(child.id)
+                    #if "steam_app" in str(child.get_wm_class()):
+                    window_ids.append(child.id)
                 return window_ids
             time.sleep(wait_interval)
             elapsed_time += wait_interval
@@ -487,7 +487,7 @@ def set_steam_game_property(  # noqa: D103
             try:
                 window = d.create_resource_object('window', int(window_id))
                 window.get_full_property(d.intern_atom('STEAM_GAME'), Xatom.CARDINAL)
-                window.change_property(d.intern_atom('STEAM_GAME'), Xatom.CARDINAL, 32, [steam_assigned_layer_id])
+                window.change_property(d.intern_atom('STEAM_GAME'), Xatom.CARDINAL, 32, [int(steam_assigned_layer_id)])
                 log.debug("Successfully set STEAM_GAME property for window ID: %s", window_id)
             except Exception as e:
                 log.error("Error setting STEAM_GAME property for window ID %s: %s", window_id, e)
@@ -496,7 +496,7 @@ def set_steam_game_property(  # noqa: D103
     finally:
         d.close()
 
-def get_gamescope_baselayer_order() -> list[str] | None:  # noqa: D103
+def get_gamescope_baselayer_order() -> list[int] | None:  # noqa: D103
     try:
         d = display.Display(":0")
         root = d.screen().root
@@ -509,7 +509,6 @@ def get_gamescope_baselayer_order() -> list[str] | None:  # noqa: D103
         
         if prop:
             # Extract and return the value
-            log.error("GAMESCOPECTRL_BASELAYER_APPID value: %s", str(prop))
             return prop.value
         else:
             log.debug("GAMESCOPECTRL_BASELAYER_APPID property not found")
@@ -542,13 +541,13 @@ def set_gamescope_baselayer_order(rearranged: list[int]) -> None:
 
         # Set the property value
         root.change_property(atom, Xatom.CARDINAL, 32, rearranged)
-        log.debug("Successfully set GAMESCOPECTRL_BASELAYER_APPID property")
+        log.debug("Successfully set GAMESCOPECTRL_BASELAYER_APPID property: %s", ", ".join(map(str, rearranged)))
     except Exception as e:
         log.exception("Error setting GAMESCOPECTRL_BASELAYER_APPID property: %s", e)
     finally:
         d.close()
 
-def window_setup(gamescope_baselayer_sequence: str) -> None:
+def window_setup(gamescope_baselayer_sequence: list[int]) -> None:
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
         rearranged_sequence, steam_assigned_layer_id = rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
@@ -559,11 +558,18 @@ def window_setup(gamescope_baselayer_sequence: str) -> None:
 
         set_gamescope_baselayer_order(rearranged_sequence)
 
-def monitor_layers(gamescope_baselayer_sequence: str) -> None:
+def monitor_layers(gamescope_baselayer_sequence: list[int], window_client_list: list[str]) -> None:
     while True:
+        # Check if the window sequence has changed:
+        current_window_list = get_window_client_ids()
+        if current_window_list != window_client_list:
+            window_setup(gamescope_baselayer_sequence)
+
+        # Check if the layer sequence has changed
         current_sequence = get_gamescope_baselayer_order()
         if current_sequence == gamescope_baselayer_sequence:
             window_setup(gamescope_baselayer_sequence)
+
         time.sleep(5)  # Check every 5 seconds
 
 def run_command(command: list[AnyPath]) -> int:
@@ -607,8 +613,9 @@ def run_command(command: list[AnyPath]) -> int:
             cwd=cwd,
         )
     gamescope_baselayer_sequence = get_gamescope_baselayer_order()
+    window_client_list = get_window_client_ids
     window_setup(gamescope_baselayer_sequence)
-    monitor_thread = threading.Thread(target=monitor_layers, args=(gamescope_baselayer_sequence,))
+    monitor_thread = threading.Thread(target=monitor_layers, args=(gamescope_baselayer_sequence,window_client_list))
     monitor_thread.daemon = True
     monitor_thread.start()
 
