@@ -124,7 +124,7 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
 $(OBJDIR)/.build-python-xlib: | $(OBJDIR)
 	$(info :: Building python-xlib )
-	git submodule update --recursive
+	git submodule update --init --filter=tree:0 --recursive
 	cd subprojects/python-xlib && python setup.py build
 
 .PHONY: python-xlib
