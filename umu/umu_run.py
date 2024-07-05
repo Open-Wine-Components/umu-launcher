@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-import os  # noqa
+import os
 import sys
-import time
 import threading
-from Xlib import display, Xatom
+import time
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -16,6 +15,8 @@ from re import match
 from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
 from typing import Any
+
+from Xlib import Xatom, display
 
 from umu_consts import (
     DEBUG_FORMAT,
