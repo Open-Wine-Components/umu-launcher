@@ -311,14 +311,11 @@ def set_env(
     # gamescope session. Note, this is a workaround until the runtime is built
     # or the issue is fixed upstream.
     # See https://github.com/ValveSoftware/gamescope/issues/1341
-    # if (
-    #    not os.environ.get("UMU_NO_RUNTIME")
-    #    and FLATPAK_PATH
-    #    and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
-    # ):
-    #    log.debug("SteamOS gamescope session detected")
-    #    log.debug("Disabling Pressure Vessel and container runtime")
-    #    env["UMU_NO_RUNTIME"] = "pressure-vessel"
+    if (
+       os.environ.get("UMU_NO_RUNTIME")
+    ):
+       log.debug("Disabling Pressure Vessel and container runtime")
+       env["UMU_NO_RUNTIME"] = "pressure-vessel"
 
     return env
 
