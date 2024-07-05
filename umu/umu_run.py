@@ -464,7 +464,8 @@ def set_steam_game_property(  # noqa: D103
 ) -> None:
     d = display.Display(":1")
     try:
-        root = d.screen().root  # noqa
+        root = d.screen().root
+        log.debug("Root: %s", root)
 
         for window_id in window_ids:
             log.debug(
