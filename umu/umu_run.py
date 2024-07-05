@@ -255,7 +255,9 @@ def set_env(
             # e.g., Games/umu/umu-0 -> $HOME/Games/umu/umu-0
             exe: Path = Path(args[0]).expanduser().resolve(strict=True)  # type: ignore
             env["EXE"] = str(exe)
-            env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
+            env["STEAM_COMPAT_INSTALL_PATH"] = os.environ.get(
+                "STEAM_COMPAT_INSTALL_PATH"
+            ) or str(exe.parent)
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
             env["EXE"] = args[0]  # type: ignore
