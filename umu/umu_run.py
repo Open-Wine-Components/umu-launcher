@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-import os  # noqa
+import os
 import sys
-import time
 import threading
-from Xlib import X, display, Xatom  # noqa
+import time
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -14,8 +13,10 @@ from pathlib import Path
 from pwd import getpwuid
 from re import match
 from socket import AF_INET, SOCK_DGRAM, socket
-from subprocess import PIPE, Popen, run  # noqa
+from subprocess import Popen
 from typing import Any
+
+from Xlib import Xatom, display
 
 from umu_consts import (
     DEBUG_FORMAT,
@@ -34,7 +35,6 @@ from umu_util import (
     get_libc,
     is_installed_verb,
     is_winetricks_verb,
-    whereis,  # noqa
 )
 
 AnyPath = os.PathLike | str
@@ -445,11 +445,11 @@ def get_window_client_ids() -> list[str]:
             children = root.query_tree().children
             if children and len(children) > 1:
                 for child in children:
-                    log.debug(f"Window ID: {child.id}")  # noqa
-                    log.debug(f"Window Name: {child.get_wm_name()}")  # noqa
-                    log.debug(f"Window Class: {child.get_wm_class()}")  # noqa
-                    log.debug(f"Window Geometry: {child.get_geometry()}")  # noqa
-                    log.debug(f"Window Attributes: {child.get_attributes()}")  # noqa
+                    log.debug("Window ID: %s", child.id)
+                    log.debug("Window Name: %s", child.get_wm_name())
+                    log.debug("Window Class: %s", child.get_wm_class())
+                    log.debug("Window Geometry: %s", child.get_geometry())
+                    log.debug("Window Attributes: %s", child.get_attributes())
                     # if "steam_app" in str(child.get_wm_class()):
                     window_ids.append(child.id)
                 return window_ids
@@ -465,14 +465,12 @@ def set_steam_game_property(  # noqa: D103
 ) -> None:
     d = display.Display(":1")
     try:
-        root = d.screen().root  # noqa
+        root = d.screen().root
+        log.debug("Root: %s", root)
 
         for window_id in window_ids:
-            log.debug(
-                "window_id: %s steam_layer: %s",
-                window_id,
-                steam_assigned_layer_id,
-            )
+            log.debug("window_id: %s", window_id)
+            log.debug("steam_layer: %s", steam_assigned_layer_id)
             try:
                 window = d.create_resource_object("window", int(window_id))
                 window.get_full_property(
@@ -488,12 +486,12 @@ def set_steam_game_property(  # noqa: D103
                     "Successfully set STEAM_GAME property for window ID: %s",
                     window_id,
                 )
-            except Exception as e:  # noqa
+            except Exception as e:
                 log.error(
-                    "Error setting STEAM_GAME property for window ID %s: %s",
+                    "Error setting STEAM_GAME property for window ID: %s",
                     window_id,
-                    e,
                 )
+                log.exception(e)
     except Exception as e:
         log.exception(e)
     finally:
