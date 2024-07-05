@@ -444,11 +444,11 @@ def get_window_client_ids() -> list[str]:
             children = root.query_tree().children
             if children and len(children) > 1:
                 for child in children:
-                    log.debug(f"Window ID: {child.id}")  # noqa
-                    log.debug(f"Window Name: {child.get_wm_name()}")  # noqa
-                    log.debug(f"Window Class: {child.get_wm_class()}")  # noqa
-                    log.debug(f"Window Geometry: {child.get_geometry()}")  # noqa
-                    log.debug(f"Window Attributes: {child.get_attributes()}")  # noqa
+                    log.debug("Window ID: %s", child.id)
+                    log.debug("Window Name: %s", child.get_wm_name())
+                    log.debug("Window Class: %s", child.get_wm_class())
+                    log.debug("Window Geometry: %s", child.get_geometry())
+                    log.debug("Window Attributes: %s", child.get_attributes())
                     # if "steam_app" in str(child.get_wm_class()):
                     window_ids.append(child.id)
                 return window_ids
