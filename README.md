@@ -77,7 +77,7 @@ Borderlands 3 from EGS store.
 
 
 ## Building
-Building umu-launcher currently requires `bash`, `make`, and `scdoc`
+Building umu-launcher currently requires `bash`, `make`, `scdoc` and the setuptools package to, optionally, build `python-xlib`.
 
 To build umu-launcher, after downloading and extracting the source code from this repository, change into the newly extracted directory
 ```shell
