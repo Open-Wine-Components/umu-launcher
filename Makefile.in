@@ -26,7 +26,7 @@ endif
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
-install: umu-install umu-launcher-install user-install python-xlib-install
+install: umu-install umu-launcher-install user-install
 else
 install: umu-install umu-launcher-install
 endif
