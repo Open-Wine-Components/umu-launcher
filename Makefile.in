@@ -5,11 +5,12 @@ INSTALLDIR ?= umu
 
 OBJDIR := builddir
 
-PREFIX  ?= /usr
-BINDIR  := $(PREFIX)/bin
-LIBDIR  := $(PREFIX)/lib
-DATADIR := $(PREFIX)/share
-MANDIR  := $(DATADIR)/man
+PREFIX      ?= /usr
+BINDIR      := $(PREFIX)/bin
+LIBDIR      := $(PREFIX)/lib
+DATADIR     := $(PREFIX)/share
+MANDIR      := $(DATADIR)/man
+VENDOREDIR  := $(PREFIX)/lib/umu/python/site-packages
 
 DESTDIR ?=
 USERINSTALL ?= xfalse
@@ -25,7 +26,7 @@ endif
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
-install: umu-install umu-launcher-install user-install
+install: umu-install umu-launcher-install user-install python-xlib-install
 else
 install: umu-install umu-launcher-install
 endif
@@ -119,6 +120,20 @@ umu-launcher-dist-install:
 	install -Dm 644 umu/umu-launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
 
 umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
+
+
+$(OBJDIR)/.build-python-xlib: | $(OBJDIR)
+	$(info :: Building python-xlib )
+	git submodule update --recursive
+	cd subprojects/python-xlib && python setup.py build
+
+.PHONY: python-xlib
+python-xlib: $(OBJDIR)/.build-python-xlib
+
+python-xlib-install:
+	$(info :: Installing python-xlib )
+	install -d $(DESTDIR)$(VENDOREDIR)
+	cp      -r subprojects/python-xlib/build/lib/Xlib $(DESTDIR)$(VENDOREDIR)
 
 
 $(OBJDIR):
