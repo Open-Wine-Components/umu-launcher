@@ -17,8 +17,6 @@ lint:
     - library:
         - lib/i386-linux-gnu/**
         - usr/lib/i386-linux-gnu/**
-        - lib/x86_64-linux-gnu/**
-        - usr/lib/x86_64-linux-gnu/**
         - lib32/**
         - usr/lib32/**
 
@@ -154,10 +152,17 @@ parts:
       - locales-all
       - usbutils # Allows finding controllers etc
       - psmisc
+      - python3-gi
+      - gir1.2-gtk-3.0
+    stage:
+      - bin/*
+      - usr/lib/python3/dist-packages/*
+      - usr/share/umu
+      - usr/bin
     override-build: |
       set -e
       git submodule update --init --recursive
-      ./configure.sh --prefix=$SNAPCRAFT_PART_INSTALL
+      ./configure.sh --prefix=$SNAPCRAFT_PART_INSTALL/usr
       make install
     prime:
       - -usr/share/doc
@@ -175,21 +180,27 @@ parts:
       - -usr/lib/*/libvulkan*
       - -usr/lib/*/libVk*
       - -usr/lib/*/libLLVM*
+      - usr/share/umu
+      - usr/bin
     build-snaps: [core22]
+    # For some braindead stupid reason sed doesn't work here so we have to overwrite the file instead.
     override-prime: |
       set -eux
       craftctl default
-      cp -a /snap/core22/current/usr/lib/i386-linux-gnu/* usr/lib/i386-linux-gnu/
-      chmod +x $SNAPCRAFT_PART_INSTALL/share/umu/umu_run.py
-  python-xlib:
-    plugin: python
-    source: https://files.pythonhosted.org/packages/source/p/python-xlib/python-xlib-0.33.tar.gz
-    source-checksum: sha256/55af7906a2c75ce6cb280a584776080602444f75815a7aff4d287bb2d7018b32
-    build-packages:
-      - python3-pip
-    override-build: |
-      pip3 install ninja flit-core six
-      pip3 install --no-index --find-links=$SNAPCRAFT_PART_SRC --prefix=$SNAPCRAFT_PART_INSTALL .
+      ls -la usr/lib/
+      cp -a /snap/core22/current/usr/lib/i386-linux-gnu usr/lib/
+      chmod +x usr/share/umu/umu_run.py
+      echo '#!/usr/bin/env sh' > usr/bin/umu-run
+      echo '$SNAP/usr/share/umu/umu_run.py "$@"' >> usr/bin/umu-run
+
+  py-deps:
+    after: [umu-run]
+    plugin: nil
+    stage-packages:
+      - python3-xlib
+    prime:
+      - usr/lib/python3
+
   alsa-mixin:
     plugin: dump
     source: https://github.com/diddlesnaps/snapcraft-alsa.git
@@ -227,7 +238,7 @@ parts:
 
 apps:
   umu-run:
-    command: bin/umu-run
+    command: /usr/bin/umu-run
     plugs:
       - shmem
       - desktop
@@ -255,5 +266,11 @@ apps:
       - upower-observe
       - uinput
     environment:
+      HOME: $SNAP_USER_COMMON
+      #LIBGL_DEBUG: verbose
+      TMPDIR: $XDG_RUNTIME_DIR
+      ALWAYS_USE_PULSEAUDIO: 1
+      DISABLE_WAYLAND: 1
+      PKG_CONFIG_PATH: $SNAP/usr/lib/i386-linux-gnu/pkgconfig:$SNAP/usr/lib/x86_64-linux-gnu/pkgconfig:$SNAP/usr/lib/pkgconfig
       PYTHONPATH: $SNAP/usr/lib/python3/dist-packages
       GI_TYPELIB_PATH: $SNAP/usr/lib/x86_64-linux-gnu/girepository-1.0
