@@ -468,11 +468,8 @@ def set_steam_game_property(  # noqa: D103
         log.debug("Root: %s", root)
 
         for window_id in window_ids:
-            log.debug(
-                "window_id: %s steam_layer: %s",
-                window_id,
-                steam_assigned_layer_id,
-            )
+            log.debug("window_id: %s", window_id)
+            log.debug("steam_layer: %s", steam_assigned_layer_id)
             try:
                 window = d.create_resource_object("window", int(window_id))
                 window.get_full_property(
@@ -488,12 +485,12 @@ def set_steam_game_property(  # noqa: D103
                     "Successfully set STEAM_GAME property for window ID: %s",
                     window_id,
                 )
-            except Exception as e:  # noqa
+            except Exception as e:
                 log.error(
-                    "Error setting STEAM_GAME property for window ID %s: %s",
+                    "Error setting STEAM_GAME property for window ID: %s",
                     window_id,
-                    e,
                 )
+                log.exception(e)
     except Exception as e:
         log.exception(e)
     finally:
