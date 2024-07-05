@@ -3,7 +3,7 @@ import os  # noqa
 import sys
 import time
 import threading
-from Xlib import X, display, Xatom  # noqa
+from Xlib import display, Xatom
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -14,7 +14,7 @@ from pathlib import Path
 from pwd import getpwuid
 from re import match
 from socket import AF_INET, SOCK_DGRAM, socket
-from subprocess import PIPE, Popen, run  # noqa
+from subprocess import Popen
 from typing import Any
 
 from umu_consts import (
@@ -34,7 +34,6 @@ from umu_util import (
     get_libc,
     is_installed_verb,
     is_winetricks_verb,
-    whereis,  # noqa
 )
 
 AnyPath = os.PathLike | str
