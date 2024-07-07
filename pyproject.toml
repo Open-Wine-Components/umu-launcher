@@ -1,4 +1,84 @@
-# Exclude a variety of commonly ignored directories.
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "umu-launcher"
+dynamic = ["version"]
+description = "Unified Linux Wine Game Launcher."
+authors = [
+  { name = "GloriousEggroll", email = "gloriouseggroll@gmail.com" },
+  { name = "Mathieu Comandon", email = "strycore@gmail.com" },
+  { name = "Paweł Lidwin", email = "lidwinpawel@gmail.com" },
+  { name = "mirkobrombin", email = "send@mirko.pm" },
+  { name = "Flavio F Lima", email = "flavioislima@users.noreply.github.com" },
+]
+maintainers = [
+  { name = "GloriousEggroll", email = "gloriouseggroll@gmail.com" },
+  { name = "R1kaB3rN", email = "100738684+R1kaB3rN@users.noreply.github.com" },
+]
+requires-python = ">=3.10"
+license = {file = "README.md"}
+keywords = [
+  "umu", 
+  "umu-launcher",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+urls = { repository = "https://github.com/Open-Wine-Components/umu-launcher" }
+dependencies = ["python-xlib>=0.33"]
+
+[project.scripts]
+umu-run = "umu.__main__:main"
+
+[tool.hatch.version]
+path = "umu/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+  "/.git",
+  "/umu/__pycache__",
+  "/.mypy_cache",
+  "/.ruff_cache",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["umu"]
+exclude = [
+  "/umu/umu-launcher",
+  "/umu/__pycache__",
+  "/umu/ruff.toml",
+  "/umu/umu_version.json.in",
+  "/umu/umu-run.in",
+  "/umu/umu_test.py",
+  "/umu/umu_test_plugins.py",
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+ignore_missing_imports = true
+disable_error_code = [
+  # Allow redefinitions since we redefine an error variable before raising exceptions
+  "no-redef"
+]
+exclude = [
+  '^umu_test\.py$',
+  '^umu_test_plugins\.py$',
+]
+
+[tool.ruff]
 exclude = [
     ".bzr",
     ".direnv",
@@ -27,16 +107,13 @@ exclude = [
     "site-packages",
     "venv",
     "builddir",
+    "subprojects",
 ]
-
 # Same as Black.
 line-length = 79
 indent-width = 4
-
 target-version = "py310"
-
-[lint]
-select = [
+lint.select = [
     # Ruff defaults
     "E4", 
     "E7", 
@@ -90,7 +167,7 @@ select = [
     # Ensure we're smart when using list comprehensions
     "C4"
 ]
-ignore = [
+lint.ignore = [
     # Format
     "D100", 
     "D203",
@@ -109,40 +186,32 @@ ignore = [
     "ISC001",
     "S404"
 ]
-
 # Allow fix for all enabled rules (when `--fix`) is provided.
-fixable = ["ALL"]
-unfixable = []
-
+lint.fixable = ["ALL"]
+lint.unfixable = []
 # Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+lint.logger-objects = ["umu.umu_log.log"]
 
-logger-objects = ["umu_log.log"]
-
-[lint.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "umu_test.py" = ["ANN"]
 "umu_test_plugins.py" = ["ANN"]
 
-[format]
+[tool.ruff.format]
 # Like Black, use double quotes for strings.
 quote-style = "double"
-
 # Like Black, indent with spaces, rather than tabs.
 indent-style = "space"
-
 # Like Black, respect magic trailing commas.
 skip-magic-trailing-comma = false
-
 # Like Black, automatically detect the appropriate line ending.
 line-ending = "auto"
-
 # Enable auto-formatting of code examples in docstrings. Markdown,
 # reStructuredText code/literal blocks and doctests are all supported.
 #
 # This is currently disabled by default, but it is planned for this
 # to be opt-out in the future.
 docstring-code-format = false
-
 # Set the line length limit used when formatting code snippets in
 # docstrings.
 #
