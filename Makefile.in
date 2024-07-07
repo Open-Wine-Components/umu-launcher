@@ -16,6 +16,9 @@ DESTDIR ?=
 USERINSTALL ?= xfalse
 FLATPAK ?= xfalse
 
+# Define the interpreters to use to prevent shebang complaints
+PYTHON_INTERPRETER = /usr/bin/python3
+SHELL_INTERPRETER = /usr/bin/sh
 
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)
@@ -26,10 +29,21 @@ endif
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
-install: umu-install umu-launcher-install user-install
+install: umu-install umu-launcher-install user-install fix_shebangs
 else
-install: umu-install umu-launcher-install
+install: umu-install umu-launcher-install fix_shebangs
 endif
+
+fix_shebangs:
+	$(info :: Fixing shebangs in $(DESTDIR)... )
+	find $(DESTDIR) -type f -name "*.py" -exec sed -i '1s|^#!/usr/bin/python\b|#!$(PYTHON_INTERPRETER)|' {} \;
+	find $(DESTDIR) -type f -name "*.py" -exec sed -i '1s|^#!/usr/bin/env python\b|#!/usr/bin/env $(PYTHON_INTERPRETER)|' {} \;
+	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/python\b|#!$(PYTHON_INTERPRETER)|' {} \;
+	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/env python\b|#!/usr/bin/env $(PYTHON_INTERPRETER)|' {} \;
+	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/python\b|#!$(PYTHON_INTERPRETER)|' {} \;
+	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/env python\b|#!/usr/bin/env $(PYTHON_INTERPRETER)|' {} \;
+	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
+	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
 
 # Special case, do this inside the source directory for release distribution
 umu/umu_version.json: umu/umu_version.json.in
