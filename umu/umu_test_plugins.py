@@ -11,9 +11,7 @@ from unittest.mock import patch
 
 from tomllib import TOMLDecodeError
 
-import umu_plugins
-import umu_run
-import umu_runtime
+from umu import umu_plugins, umu_run, umu_runtime
 
 
 class TestGameLauncherPlugins(unittest.TestCase):

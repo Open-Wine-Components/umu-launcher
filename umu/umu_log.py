@@ -11,7 +11,7 @@ from logging import (
     getLogger,
 )
 
-from umu_consts import SIMPLE_FORMAT, Color
+from umu.umu_consts import SIMPLE_FORMAT, Color
 
 
 class CustomLogger(Logger):  # noqa: D101

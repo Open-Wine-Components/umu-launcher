@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import re
+import sys
 import tarfile
 import unittest
 from argparse import Namespace
@@ -12,10 +13,9 @@ from shutil import copy, copytree, rmtree
 from subprocess import CompletedProcess
 from unittest.mock import MagicMock, patch
 
-import umu_proton
-import umu_run
-import umu_runtime
-import umu_util
+sys.path.append(str(Path(__file__).parent.parent))
+
+from umu import umu_proton, umu_run, umu_runtime, umu_util
 
 
 class TestGameLauncher(unittest.TestCase):

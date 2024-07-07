@@ -5,7 +5,7 @@ from re import Pattern, compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
-from umu_log import log
+from umu.umu_log import log
 
 
 @lru_cache
