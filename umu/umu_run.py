@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 import sys
 import threading
@@ -16,9 +17,19 @@ from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
 from typing import Any
 
+# Add client's runtime path to PYTHONPATH to find dependencies
+if (this_path := Path(__file__)).is_relative_to(
+    Path.home()
+) and "runtime" in this_path.parent.parent.name:
+    sys.path.append(str(this_path.parent.parent))
+elif this_path.is_relative_to(Path.home()) and os.environ.get(
+    "UMU_CLIENT_RTPATH"
+):
+    sys.path.append(os.environ["UMU_CLIENT_RTPATH"])
+
 from Xlib import Xatom, display
 
-from umu_consts import (
+from umu.umu_consts import (
     DEBUG_FORMAT,
     FLATPAK_ID,
     FLATPAK_PATH,
@@ -27,15 +38,11 @@ from umu_consts import (
     STEAM_COMPAT,
     UMU_LOCAL,
 )
-from umu_log import CustomFormatter, console_handler, log
-from umu_plugins import set_env_toml
-from umu_proton import get_umu_proton
-from umu_runtime import setup_umu
-from umu_util import (
-    get_libc,
-    is_installed_verb,
-    is_winetricks_verb,
-)
+from umu.umu_log import CustomFormatter, console_handler, log
+from umu.umu_plugins import set_env_toml
+from umu.umu_proton import get_umu_proton
+from umu.umu_runtime import setup_umu
+from umu.umu_util import get_libc, is_installed_verb, is_winetricks_verb
 
 AnyPath = os.PathLike | str
 

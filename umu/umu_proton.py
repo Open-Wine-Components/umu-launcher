@@ -13,9 +13,9 @@ from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-from umu_consts import STEAM_COMPAT
-from umu_log import log
-from umu_util import run_zenity
+from umu.umu_consts import STEAM_COMPAT
+from umu.umu_log import log
+from umu.umu_util import run_zenity
 
 ssl_default_context: SSLContext = create_default_context()
 

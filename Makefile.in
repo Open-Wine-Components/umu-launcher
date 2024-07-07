@@ -5,11 +5,12 @@ INSTALLDIR ?= umu
 
 OBJDIR := builddir
 
-PREFIX  ?= /usr
-BINDIR  := $(PREFIX)/bin
-LIBDIR  := $(PREFIX)/lib
-DATADIR := $(PREFIX)/share
-MANDIR  := $(DATADIR)/man
+PREFIX      ?= /usr
+BINDIR      := $(PREFIX)/bin
+LIBDIR      := $(PREFIX)/lib
+DATADIR     := $(PREFIX)/share
+MANDIR      := $(DATADIR)/man
+PYTHONDIR   := $(shell python -c "import site; print(site.getsitepackages()[0])")
 
 DESTDIR ?=
 USERINSTALL ?= xfalse
@@ -42,21 +43,8 @@ version: umu/umu_version.json
 
 version-install: version
 	$(info :: Installing umu_version.json )
-	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_version.json -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-
-
-$(OBJDIR)/.build-umu: | $(OBJDIR)
-	$(info :: Building umu )
-	sed 's|##INSTALL_PATH##|$(DATADIR)/$(INSTALLDIR)|g' umu/umu-run.in > $(OBJDIR)/umu-run
-	touch $(@)
-
-.PHONY: umu
-umu: $(OBJDIR)/.build-umu
-
-umu-bin-install: umu
-	install -d $(DESTDIR)$(BINDIR)
-	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(BINDIR)/umu-run
+	install -d $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
+	install -Dm 644 umu/umu_version.json -t $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
 
 
 $(OBJDIR)/.build-umu-docs: | $(OBJDIR)
@@ -76,27 +64,29 @@ umu-docs-install: umu-docs
 	install -m644 $(OBJDIR)/umu.5 $(DESTDIR)$(MANDIR)/man5/umu.5
 
 
-umu-dist-install:
+$(OBJDIR)/.build-umu-dist: | $(OBJDIR)
+	$(info :: Building umu )
+	python -m build --wheel --skip-dependency-check --no-isolation --outdir=$(OBJDIR)
+	touch $(@)
+
+.PHONY: umu-dist
+umu-dist: $(OBJDIR)/.build-umu-dist
+
+umu-dist-install: umu-dist
 	$(info :: Installing umu )
-	install -d $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_consts.py    -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_proton.py    -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_log.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_plugins.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 755 umu/umu_run.py       -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_util.py      -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_runtime.py   -t $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
+	install -d $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
+	python  -m installer --destdir=$(DESTDIR) $(OBJDIR)/*.whl
 
 ifeq ($(FLATPAK), xtrue)
-umu-install: version-install umu-dist-install umu-bin-install
+umu-install: version-install umu-dist-install
 else
-umu-install: version-install umu-dist-install umu-docs-install umu-bin-install
+umu-install: version-install umu-dist-install umu-docs-install
 endif
 
 ifeq ($(FLATPAK), xtrue)
 UMU_LAUNCHER_COMMAND = org.openwinecomponents.umu.umu-launcher
 else
-UMU_LAUNCHER_COMMAND = $(DATADIR)/$(INSTALLDIR)/umu_run.py
+UMU_LAUNCHER_COMMAND = $(PYTHONDIR)/umu/umu_run.py
 endif
 
 # umu-launcher is separate to allow control over installing the bin target
@@ -120,6 +110,19 @@ umu-launcher-dist-install:
 
 umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
+
+$(OBJDIR)/.build-python-xlib: | $(OBJDIR)
+	$(info :: Building python-xlib )
+	cd subprojects/python-xlib && \
+	python setup.py build
+
+.PHONY: python-xlib
+python-xlib: $(OBJDIR)/.build-python-xlib
+
+python-xlib-install:
+	$(info :: Installing python-xlib )
+	install -d $(DESTDIR)$(PYTHONDIR)
+	cp      -r subprojects/python-xlib/build/lib/Xlib $(DESTDIR)$(PYTHONDIR)
 
 $(OBJDIR):
 	@mkdir -p $(@)

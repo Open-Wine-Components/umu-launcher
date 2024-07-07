@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import re
+import sys
 import tarfile
 import unittest
 from argparse import Namespace
@@ -11,9 +12,9 @@ from unittest.mock import patch
 
 from tomllib import TOMLDecodeError
 
-import umu_plugins
-import umu_run
-import umu_runtime
+sys.path.append(str(Path(__file__).parent.parent))
+
+from umu import umu_plugins, umu_run, umu_runtime
 
 
 class TestGameLauncherPlugins(unittest.TestCase):
