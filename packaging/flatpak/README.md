@@ -9,14 +9,12 @@ sudo apt install flatpak-builder
 
 # Build + install (for testing):
 ```
-wget https://raw.githubusercontent.com/Open-Wine-Components/umu-launcher/main/packaging/flatpak/org.openwinecomponents.umu.umu-launcher.yml
 flatpak-builder --force-clean --user --install-deps-from=flathub --repo=umu-repo --install umu-launcher org.openwinecomponents.umu.umu-launcher.yml
 ```
 
 # Remove
 ```
 flatpak --user remove umu-launcher
-flatpak --user remote-delete umu-repo
 ```
 
 # Usage examples:
