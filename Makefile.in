@@ -10,7 +10,7 @@ BINDIR      := $(PREFIX)/bin
 LIBDIR      := $(PREFIX)/lib
 DATADIR     := $(PREFIX)/share
 MANDIR      := $(DATADIR)/man
-PYTHONDIR   := $(shell python -c "import site; print(site.getsitepackages()[0])")
+PYTHONDIR   := $(shell $(PYTHON_INTERPRETER) -c "import site; print(site.getsitepackages()[0])")
 
 DESTDIR ?=
 USERINSTALL ?= xfalse
@@ -80,7 +80,7 @@ umu-docs-install: umu-docs
 
 $(OBJDIR)/.build-umu-dist: | $(OBJDIR)
 	$(info :: Building umu )
-	python -m build --wheel --skip-dependency-check --no-isolation --outdir=$(OBJDIR)
+	$(PYTHON_INTERPRETER) -m build --wheel --skip-dependency-check --no-isolation --outdir=$(OBJDIR)
 	touch $(@)
 
 .PHONY: umu-dist
@@ -89,7 +89,7 @@ umu-dist: $(OBJDIR)/.build-umu-dist
 umu-dist-install: umu-dist
 	$(info :: Installing umu )
 	install -d $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
-	python  -m installer --destdir=$(DESTDIR) $(OBJDIR)/*.whl
+	$(PYTHON_INTERPRETER)  -m installer --destdir=$(DESTDIR) $(OBJDIR)/*.whl
 
 ifeq ($(FLATPAK), xtrue)
 umu-install: version-install umu-dist-install
@@ -128,7 +128,7 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 $(OBJDIR)/.build-python-xlib: | $(OBJDIR)
 	$(info :: Building python-xlib )
 	cd subprojects/python-xlib && \
-	python setup.py build
+	$(PYTHON_INTERPRETER) setup.py build
 
 .PHONY: python-xlib
 python-xlib: $(OBJDIR)/.build-python-xlib
