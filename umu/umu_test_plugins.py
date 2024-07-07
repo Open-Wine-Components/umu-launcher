@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import re
+import sys
 import tarfile
 import unittest
 from argparse import Namespace
@@ -10,6 +11,8 @@ from shutil import copy, copytree, rmtree
 from unittest.mock import patch
 
 from tomllib import TOMLDecodeError
+
+sys.path.append(str(Path(__file__).parent.parent))
 
 from umu import umu_plugins, umu_run, umu_runtime
 
