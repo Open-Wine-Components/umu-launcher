@@ -74,8 +74,9 @@ disable_error_code = [
   "no-redef"
 ]
 exclude = [
-  '^umu_test\.py$',
-  '^umu_test_plugins\.py$',
+  'umu/umu_test.py',
+  'umu/umu_test_plugins.py',
+  'subprojects',
 ]
 
 [tool.ruff]
