@@ -637,7 +637,7 @@ class TestGameLauncher(unittest.TestCase):
         files = (("", ""), (self.test_archive.name, ""))
         thread_pool = ThreadPoolExecutor()
 
-        with patch("umu_proton._fetch_proton") as mock_function:
+        with patch("umu.umu_proton._fetch_proton") as mock_function:
             # Mock the interrupt
             # We want the dir we tried to extract to be cleaned
             mock_function.side_effect = KeyboardInterrupt
@@ -685,7 +685,7 @@ class TestGameLauncher(unittest.TestCase):
             "Expected test file in cache to exist",
         )
 
-        with patch("umu_proton._fetch_proton") as mock_function:
+        with patch("umu.umu_proton._fetch_proton") as mock_function:
             # Mock the interrupt
             mock_function.side_effect = ValueError
             result = umu_proton._get_latest(
@@ -715,7 +715,7 @@ class TestGameLauncher(unittest.TestCase):
 
         os.environ["PROTONPATH"] = ""
 
-        with patch("umu_proton._fetch_proton"):
+        with patch("umu.umu_proton._fetch_proton"):
             result = umu_proton._get_latest(
                 self.env, self.test_compat, self.test_cache, files, thread_pool
             )
@@ -759,7 +759,7 @@ class TestGameLauncher(unittest.TestCase):
             "Expected UMU-Latest link to not exist",
         )
         with (
-            patch("umu_proton._fetch_proton"),
+            patch("umu.umu_proton._fetch_proton"),
         ):
             result = umu_proton._get_latest(
                 self.env, self.test_compat, self.test_cache, files, thread_pool
@@ -817,7 +817,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["PROTONPATH"] = ""
 
         with (
-            patch("umu_proton._fetch_proton"),
+            patch("umu.umu_proton._fetch_proton"),
         ):
             result = umu_proton._get_latest(
                 self.env, self.test_compat, self.test_cache, files, thread_pool
