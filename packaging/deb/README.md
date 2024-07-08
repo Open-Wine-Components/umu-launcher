@@ -11,7 +11,7 @@ sudo apt install -y dh-make dpkg-dev
 
 # Setup dh_make quilt files
 ```
-LOGNAME=root dh_make --createorig -y -l -p umu-launcher_{PUT UMU VERSION HERE}
+LOGNAME=root dh_make --createorig -y -l -p umu-launcher_{PUT UMU VERSION HERE} || true
 ```
 
 # Install apt build dependencies:
