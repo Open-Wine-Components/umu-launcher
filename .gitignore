@@ -5,4 +5,4 @@ __pycache__
 umu_version.json
 umu_version.json.in.tmp
 Makefile
-debian
+/debian
