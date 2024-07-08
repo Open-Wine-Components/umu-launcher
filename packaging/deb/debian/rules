@@ -20,3 +20,6 @@ export DH_VERBOSE = 1
 
 override_dh_auto_configure:
 	./configure.sh --prefix=/usr
+
+override_dh_auto_install:
+    make DESTDIR=debian/tmp PYTHONDIR=/usr/lib/python3/dist-packages install
