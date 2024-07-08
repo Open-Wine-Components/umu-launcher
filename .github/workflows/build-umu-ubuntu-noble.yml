@@ -20,6 +20,9 @@ jobs:
     - name: Copy debian packaging folder to the repository root
       run: cp -rvf ./packaging/deb/debian ./
 
+    - name: Update APT Cache
+      run: apt update -y
+
     - name: Install build dependencies
       run: apt install -y dh-make dpkg-dev
 
