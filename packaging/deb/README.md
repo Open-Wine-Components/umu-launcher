@@ -1,26 +1,37 @@
-# Install dependencies:
+# Copy debian packaging folder to the repository root:
 ```
-sudo dnf install -y mock fedpkg
-sudo usermod -aG mock username
-su username
+cp -rvf ./packaging/deb/debian ./
+```
+
+
+# Install build dependencies:
+```
+sudo apt install -y dh-make dpkg-dev
+```
+
+# Set dh_make quilt files
+```
+LOGNAME=root dh_make --createorig -y -l -p umu-launcher_{PUT UMU VERSION HERE}
+```
+
+# Install apt build dependencies:
+```
+sudo apt build-dep -y ./ 
 ```
 
 # Build:
 ```
-fedpkg --release f39 srpm
-mock -r /etc/mock/fedora-39-x86_64.cfg --rebuild --enable-network *.src.rpm
-mv /var/lib/mock/fedora-39-x86_64/result .
+dpkg-buildpackage --no-sign
 ```
 
 # Install:
 ```
-cd result
-sudo dnf install -y  umu-launcher*.rpm
+sudo apt install -y ../umu-launcher*.deb ../python3-umu-launcher*.deb
 ```
 
 # Remove
 ```
-sudo dnf remove -y umu-launcher
+sudo apt remove -y umu-launcher python3-umu-launcher
 ```
 
 # Usage examples:
