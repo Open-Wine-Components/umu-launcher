@@ -175,15 +175,6 @@ modules:
           /app/lib/i386-linux-gnu
           /lib64
 
-          - name: python-distro  # also needed by Lutris, do not add a cleanup property here!
-            buildsystem: simple
-            build-commands:
-              - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-            sources:
-              - type: archive
-                url: https://files.pythonhosted.org/packages/b5/7e/ddfbd640ac9a82e60718558a3de7d5988a7d4648385cf00318f60a8b073a/distro-1.7.0.tar.gz
-                sha256: 151aeccf60c216402932b52e40ee477a939f8d58898927378a02abbe852c1c39
-
   # These are needed for window management inside gamescope
   - name: python-flit-core  # needed by idna
     buildsystem: simple
