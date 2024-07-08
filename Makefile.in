@@ -18,7 +18,7 @@ FLATPAK ?= xfalse
 
 # Define the interpreters to use to prevent shebang complaints
 PYTHON_INTERPRETER = /usr/bin/python3
-SHELL_INTERPRETER = /usr/bin/sh
+SHELL_INTERPRETER = /usr/bin/bash
 
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)
