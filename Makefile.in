@@ -42,8 +42,6 @@ fix_shebangs:
 	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/env python\b|#!/usr/bin/env $(PYTHON_INTERPRETER)|' {} \;
 	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/python\b|#!$(PYTHON_INTERPRETER)|' {} \;
 	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/env python\b|#!/usr/bin/env $(PYTHON_INTERPRETER)|' {} \;
-	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
-	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
 
 # Special case, do this inside the source directory for release distribution
 umu/umu_version.json: umu/umu_version.json.in
