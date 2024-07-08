@@ -9,7 +9,7 @@ cp -rvf ./packaging/deb/debian ./
 sudo apt install -y dh-make dpkg-dev
 ```
 
-# Set dh_make quilt files
+# Setup dh_make quilt files
 ```
 LOGNAME=root dh_make --createorig -y -l -p umu-launcher_{PUT UMU VERSION HERE}
 ```
