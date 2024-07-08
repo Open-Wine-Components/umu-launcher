@@ -28,7 +28,6 @@ Description: A tool for launching non-steam games with proton.
 
 Package: python3-umu-launcher
 Architecture: all
-Multi-Arch: same
 Depends:
  ${shlibs:Depends},
  ${misc:Depends},

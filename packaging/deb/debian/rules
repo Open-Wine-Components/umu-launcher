@@ -6,6 +6,13 @@ export DH_VERBOSE = 1
 
 nproc = $(shell nproc)
 
+### PYTHON TOPLEVEL WORKAROUND (REMOVE ONCE the umu install process properly respects PYTHONPATH)
+toplevel_sitepackage = $(shell python3 -c "import site; print(site.getsitepackages()[0])")
+###
+
+PYTHONDIR = /usr/lib/python3/dist-packages
+
+
 # See FEATURE AREAS in dpkg-buildflags(1).
 #export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
@@ -22,5 +29,16 @@ nproc = $(shell nproc)
 override_dh_auto_configure:
 	./configure.sh --prefix=/usr
 	
+override_dh_auto_build:
+	true
+
 override_dh_auto_install:
-	make -j$(nproc) DESTDIR=debian/tmp PYTHONDIR=/usr/lib/python3/dist-packages install
+	make -j$(nproc) DESTDIR=debian/tmp PYTHONDIR=$(PYTHONDIR) install
+### PYTHON TOPLEVEL WORKAROUND (REMOVE ONCE the umu install process properly respects PYTHONPATH)
+ ifneq ($(toplevel_sitepackage), $(PYTHONDIR))
+	cp -rvf debian/tmp/$(toplevel_sitepackage)/* debian/tmp/$(PYTHONDIR)/
+	rm -rvf debian/tmp/$(toplevel_sitepackage)/*
+	cp -rvf debian/tmp/$(toplevel_sitepackage)/../../../* debian/tmp/usr/
+	rm -rvf debian/tmp/$(toplevel_sitepackage)/../../../*
+ endif
+###
