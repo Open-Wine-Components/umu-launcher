@@ -12,7 +12,7 @@ snapcraft
 
 4. Install:
 
-snap install --dangerous umu-launcher*.snap
+snap install --dangerous --devmode umu-launcher*.snap
 
 5. Test:
 
