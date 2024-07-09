@@ -9,7 +9,7 @@ START=$(date +%s.%N)
 if ! snapctl is-connected "gaming-mesa"; then
   echo "ERROR: not connected to the gaming-mesa content interface."
   echo "To connect:"
-  echo "sudo snap connect steam:gaming-mesa gaming-graphics-core22"
+  echo "sudo snap connect umu-launcher:gaming-mesa gaming-graphics-core22"
   exit 1
 fi
 
