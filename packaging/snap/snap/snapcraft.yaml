@@ -118,6 +118,56 @@ environment:
   LIBGL_DRIVERS_PATH: $SNAP/graphics/usr/lib/i386-linux-gnu/dri:$SNAP/graphics/usr/lib/x86_64-linux-gnu/dri:${LIBGL_DRIVERS_PATH:+:$LIBGL_DRIVERS_PATH}
 
 parts:
+  launcher:
+    plugin: nil
+    source: ./src
+    override-build: |
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      cp * $CRAFT_PART_INSTALL/bin/
+    stage-packages:
+      - python3-gi
+      - gir1.2-gtk-3.0
+    stage:
+      - bin/*
+      - usr/lib/python3/dist-packages/*
+      - usr/share/mime/*
+      - usr/share/icons/*
+      - usr/lib/**/gtk-3.0*
+      - etc/gtk-3.0*
+      - usr/share/*/gir1.2-gtk-3.0*
+      - usr/**/libfontconfig*
+      - usr/**/cairo-1*
+      - usr/**/libatspi*
+      - usr/**/libavahi-client*
+      - usr/**/libavahi-common*
+      - usr/**/libcairo-gobject*
+      - usr/**/libcairo*
+      - usr/**/libcolord*
+      - usr/**/libcups*
+      - usr/**/libdatrie*
+      - usr/**/libdconf*
+      - usr/**/libdeflate*
+      - usr/**/libepoxy*
+      - usr/**/libfribidi*
+      - usr/**/*girepository*
+      - usr/**/libgraphite2*
+      - usr/**/libgtk-3*
+      - usr/**/libharfbuzz*
+      - usr/**/libjbig*
+      - usr/**/libjpeg*
+      - usr/**/liblcms2*
+      - usr/**/libpango-1*
+      - usr/**/libpangocairo-1*
+      - usr/**/libpangoft2-1*
+      - usr/**/libpangoxft-1*
+      - usr/**/libpixman-1*
+      - usr/**/libthai*
+      - usr/**/libtiff*
+      - usr/**/libwayland-cursor*
+      - usr/**/libwebp*
+      - usr/**/libxcb-render*
+      - usr/**/libxkbcommon*
+
   umu-run:
     plugin: dump
     source: https://github.com/Open-Wine-Components/umu-launcher.git
@@ -237,6 +287,7 @@ parts:
 
 apps:
   umu-run:
+    command-chain: [snap/command-chain/alsa-launch, bin/desktop-launch]
     command: /usr/bin/umu-run
     plugs:
       - shmem
@@ -273,3 +324,31 @@ apps:
       PKG_CONFIG_PATH: $SNAP/usr/lib/i386-linux-gnu/pkgconfig:$SNAP/usr/lib/x86_64-linux-gnu/pkgconfig:$SNAP/usr/lib/pkgconfig
       PYTHONPATH: $SNAP/usr/lib/python3/dist-packages
       GI_TYPELIB_PATH: $SNAP/usr/lib/x86_64-linux-gnu/girepository-1.0
+  vulkaninfo:
+    command-chain: [bin/desktop-launch]
+    command: bin/vulkaninfo
+    plugs:
+      - opengl
+      - x11
+      - desktop
+  vkcube:
+    command-chain: [bin/desktop-launch]
+    command: bin/vkcube
+    plugs:
+      - opengl
+      - x11
+      - desktop
+  glxinfo:
+    command-chain: [bin/desktop-launch]
+    command: bin/glxinfo
+    plugs:
+      - opengl
+      - x11
+      - desktop
+  glxgears:
+    command-chain: [bin/desktop-launch]
+    command: bin/glxgears
+    plugs:
+      - opengl
+      - x11
+      - desktop
