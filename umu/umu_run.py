@@ -523,9 +523,8 @@ def get_gamescope_baselayer_order() -> list[int] | None:  # noqa: D103
             return prop.value  # type: ignore
         log.debug("GAMESCOPECTRL_BASELAYER_APPID property not found")
     except Exception as e:
-        log.exception(
-            "Error getting GAMESCOPECTRL_BASELAYER_APPID property: %s", e
-        )
+        log.error("Error getting GAMESCOPECTRL_BASELAYER_APPID property")
+        log.exception(e)
     finally:
         d.close()
 
@@ -562,9 +561,8 @@ def set_gamescope_baselayer_order(rearranged: list[int]) -> None:  # noqa
             ", ".join(map(str, rearranged)),
         )
     except Exception as e:
-        log.exception(
-            "Error setting GAMESCOPECTRL_BASELAYER_APPID property: %s", e
-        )
+        log.error("Error setting GAMESCOPECTRL_BASELAYER_APPID property")
+        log.exception(e)
     finally:
         d.close()
 
