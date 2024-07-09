@@ -1,0 +1,45 @@
+name: UMU Deb Build - Noble (Ubuntu 24.04 LTS)
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:noble
+      volumes:
+        - /proc:/proc
+      options: --privileged -it
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Copy debian packaging folder to the repository root
+      run: cp -rvf ./packaging/deb/debian ./
+
+    - name: Update APT Cache
+      run: apt update -y
+
+    - name: Install build dependencies
+      run: apt install -y dh-make dpkg-dev
+
+    - name: Setup dh_make quilt files
+      run: LOGNAME=root dh_make --createorig -y -l -p umu-launcher_1.0 || true
+
+    - name: Install apt build dependencies
+      run: apt build-dep -y ./ 
+
+    - name: Build
+      run: dpkg-buildpackage --no-sign 
+
+    - name: Move DEB files to upload artifcat path
+      run: mkdir -p results && cp -rvf ../*.deb results/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: Binary DEB files
+        path: results/
