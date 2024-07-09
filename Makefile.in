@@ -1,5 +1,9 @@
 PROJECT := umu-launcher
 
+# Define the interpreters to use to prevent shebang complaints
+PYTHON_INTERPRETER = /usr/bin/python3
+SHELL_INTERPRETER = /usr/bin/sh
+
 # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
 INSTALLDIR ?= umu
 
@@ -15,16 +19,6 @@ PYTHONDIR   := $(shell $(PYTHON_INTERPRETER) -c "import site; print(site.getsite
 DESTDIR ?=
 USERINSTALL ?= xfalse
 FLATPAK ?= xfalse
-DEBIAN ?= xfalse
-
-# Define the interpreters to use to prevent shebang complaints
-ifeq ($(DEBIAN), xtrue)
-PYTHON_INTERPRETER = /usr/bin/python3
-SHELL_INTERPRETER = /usr/bin/bash
-else
-PYTHON_INTERPRETER = /usr/bin/python3
-SHELL_INTERPRETER = /usr/bin/sh
-endif
 
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)

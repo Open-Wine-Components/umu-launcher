@@ -1,0 +1,275 @@
+name: umu-launcher
+version: '1.0'  # You can set this to the appropriate version
+summary: UMU Launcher
+description: |
+  UMU Launcher is a tool for managing and launching applications.
+
+base: core22  # or core18, core22 depending on your needs
+confinement: devmode  # You can change this to 'classic' if needed
+architectures:
+  - build-on: amd64
+grade: stable
+
+lint:
+  # Snapcraft's `ldd` lint can't handle 32-bit things,
+  # So just make it quiet and also make builds a surprising amount faster
+  ignore:
+    - library:
+        - lib/i386-linux-gnu/**
+        - usr/lib/i386-linux-gnu/**
+        - lib32/**
+        - usr/lib32/**
+
+package-repositories:
+  - type: apt
+    url: http://repo.steampowered.com/steam/
+    suites: [stable]
+    components: [steam]
+    architectures: [amd64, i386]
+    key-id: BA1816EF8E75005FCF5E27A1F24AEA9FB05498B7
+
+layout:
+  /usr/share/drirc.d:
+    bind: $SNAP/graphics/usr/share/drirc.d
+  /usr/share/glvnd/egl_vendor.d:
+    bind: $SNAP/graphics/usr/share/glvnd/egl_vendor.d
+  /usr/lib/x86_64-linux-gnu/alsa-lib:
+    bind: $SNAP/usr/lib/x86_64-linux-gnu/alsa-lib
+  /usr/share/alsa:
+    bind: $SNAP/usr/share/alsa
+  /usr/share/X11/xkb:
+    bind: $SNAP/usr/share/X11/xkb
+  /usr/lib/x86_64-linux-gnu/libvulkan_intel.so:
+    symlink: $SNAP/graphics/usr/lib/x86_64-linux-gnu/libvulkan_intel.so
+  /usr/lib/i386-linux-gnu/libvulkan_intel.so:
+    symlink: $SNAP/graphics/usr/lib/i386-linux-gnu/libvulkan_intel.so
+  /usr/lib/x86_64-linux-gnu/libvulkan_lvp.so:
+    symlink: $SNAP/graphics/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so
+  /usr/lib/i386-linux-gnu/libvulkan_lvp.so:
+    symlink: $SNAP/graphics/usr/lib/i386-linux-gnu/libvulkan_lvp.so
+  /usr/lib/x86_64-linux-gnu/libvulkan_radeon.so:
+    symlink: $SNAP/graphics/usr/lib/x86_64-linux-gnu/libvulkan_radeon.so
+  /usr/lib/i386-linux-gnu/libvulkan_radeon.so:
+    symlink: $SNAP/graphics/usr/lib/i386-linux-gnu/libvulkan_radeon.so
+  /usr/lib/x86_64-linux-gnu/libxcb-dri3.so.0.0.0:
+    symlink: $SNAP/graphics/usr/lib/x86_64-linux-gnu/libxcb-dri3.so.0.0.0
+  /usr/lib/x86_64-linux-gnu/libxcb-dri3.so.0:
+    symlink: $SNAP/graphics/usr/lib/x86_64-linux-gnu/libxcb-dri3.so.0.0.0
+  /usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0:
+    symlink: $SNAP/graphics/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0
+  /usr/lib/x86_64-linux-gnu/libxcb.so:
+    symlink: $SNAP/graphics/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0
+  /usr/lib/x86_64-linux-gnu/libxcb.so.1:
+    symlink: $SNAP/graphics/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0
+  /etc/ld.so.cache:
+    bind-file: $SNAP_DATA/etc/ld.so.cache
+  /etc/fonts:
+    bind: $SNAP/etc/fonts
+
+plugs:
+  gaming-mesa:
+    interface: content
+    target: $SNAP/graphics
+    default-provider: gaming-graphics-core22
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/share/themes
+    default-provider: gtk-common-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/share/icons
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/share/sounds
+    default-provider: gtk-common-themes
+  dot-local-share-steam:
+    interface: personal-files
+    write:
+      - $HOME/.local/share/Steam
+      - $HOME/Steam
+  dot-local-share-applications:
+    interface: personal-files
+    write:
+      - $HOME/.local/share/applications
+  dot-local-share-icons:
+    interface: personal-files
+    write:
+      - $HOME/.local/share/icons
+  desktop:
+    mount-host-font-cache: false
+  shmem:
+    interface: shared-memory
+    private: true
+
+slots:
+  dbus:
+    interface: dbus
+    bus: session
+    name: com.steampowered.PressureVessel.LaunchAlongsideSteam
+
+hooks:
+  configure:
+    plugs:
+      - opengl
+
+environment:
+  LD_LIBRARY_PATH: $SNAP/graphics/lib/i386-linux-gnu:$SNAP/graphics/usr/lib:$SNAP/usr/lib/i386-linux-gnu:$SNAP/lib/i386-linux-gnu:$SNAP/usr/lib/i386-linux-gnu/pulseaudio${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+  LIBGL_DRIVERS_PATH: $SNAP/graphics/usr/lib/i386-linux-gnu/dri:$SNAP/graphics/usr/lib/x86_64-linux-gnu/dri:${LIBGL_DRIVERS_PATH:+:$LIBGL_DRIVERS_PATH}
+
+parts:
+  umu-run:
+    plugin: dump
+    source: https://github.com/Open-Wine-Components/umu-launcher.git
+    source-branch: main
+    build-packages:
+      - git
+      - make
+      - gcc
+      - scdoc
+      - dpkg-dev
+      - dirmngr
+      - python3-build
+      - python3-hatchling
+      - python3-installer
+    stage-packages:
+      - libappindicator3-1
+      - libxcb-dri3-0:amd64
+      - libxcb-dri3-0:i386
+      - libpci3
+      - libvulkan1:i386
+      - libvulkan1:amd64
+      - libxml2:i386
+      - libxml2:amd64
+      - libicu70:i386
+      - libicu70:amd64
+      - zlib1g:i386
+      - zlib1g:amd64
+      - xdg-utils
+      - xdg-user-dirs
+      - fontconfig-config
+      - fontconfig:i386
+      - fontconfig:amd64
+      - pciutils
+      - lsof
+      - locales-all
+      - usbutils # Allows finding controllers etc
+      - psmisc
+      - python3-gi
+      - gir1.2-gtk-3.0
+    override-build: |
+      set -e
+      git submodule update --init --recursive
+      ./configure.sh --prefix=$SNAPCRAFT_PART_INSTALL
+      make
+      make install DESTDIR=umu_build
+      cp -R umu_build$SNAPCRAFT_PART_INSTALL/* $SNAPCRAFT_PART_INSTALL/
+      cp -R umu_build$SNAPCRAFT_PART_INSTALL/* $SNAPCRAFT_PART_INSTALL/
+      cp -R umu_build/usr/local/bin $SNAPCRAFT_PART_INSTALL/usr/
+      cp -R umu_build/usr/local/lib/python*/* $SNAPCRAFT_PART_INSTALL/usr/lib/python3/
+      rm -Rf umu_build
+    prime:
+      - -usr/share/doc
+      - -usr/share/man
+      - -usr/share/bug
+      - -usr/share/gdb
+      - -usr/share/emacs*
+      - -usr/share/lintian
+      - -usr/share/drirc.d
+      - -usr/share/vulkan
+      - -usr/share/Xsession.d
+      - -usr/lib/*/dri
+      - -usr/lib/*/vdpau
+      - -usr/lib/*/libvkd3d*
+      - -usr/lib/*/libvulkan*
+      - -usr/lib/*/libVk*
+      - -usr/lib/*/libLLVM*
+    build-snaps: [core22]
+    # For some braindead stupid reason sed doesn't work here so we have to overwrite the file instead.
+    override-prime: |
+      set -eux
+      craftctl default
+      cp -a /snap/core22/current/usr/lib/i386-linux-gnu usr/lib/
+
+
+  py-deps:
+    after: [umu-run]
+    plugin: nil
+    stage-packages:
+      - python3-xlib
+    prime:
+      - usr/lib/python3
+
+  alsa-mixin:
+    plugin: dump
+    source: https://github.com/diddlesnaps/snapcraft-alsa.git
+    source-subdir: snapcraft-assets
+    build-packages:
+      - libasound2-dev
+    stage-packages:
+      - libasound2
+      - libasound2-plugins
+      - yad
+    stage:
+      # restrict to only audio-related files - you need to ensure
+      # that gtk3 is staged for yad to work correctly, to prompt
+      # users to connect the alsa plug or proceed with pulseaudio.
+      #
+      # This helps prevent symbol conflicts in situations where
+      # you're using a non-default library, such as those that the
+      # gnome-3-34 extension for core18 provides.
+      - etc/asound.conf
+      - snap/command-chain/alsa-launch
+      - usr/bin/yad*
+      - usr/lib/*/alsa-lib
+      - usr/lib/*/libasound*
+      - usr/lib/*/libasyncns*
+      - usr/lib/*/libdnsfile*
+      - usr/lib/*/libFLAC*
+      - usr/lib/*/libjack*
+      - usr/lib/*/libpulse*
+      - usr/lib/*/libsamplerate*
+      - usr/lib/*/libsndfile*
+      - usr/lib/*/libspeex*
+      - usr/lib/*/libvorbis*
+      - usr/lib/*/pulseaudio
+      - usr/share/alsa
+
+apps:
+  umu-run:
+    command: /usr/bin/umu-run
+    plugs:
+      - shmem
+      - desktop
+      - desktop-legacy
+      - wayland
+      - home
+      - x11
+      - gsettings
+      - hardware-observe
+      - mount-observe
+      - system-observe
+      - joystick
+      - network
+      - network-bind
+      - opengl
+      - audio-playback
+      - audio-record
+      - screen-inhibit-control
+      - process-control
+      - bluez
+      - network-control
+      - fuse-support
+      - steam-support
+      - removable-media
+      - upower-observe
+      - uinput
+    environment:
+      HOME: $SNAP_USER_COMMON
+      #LIBGL_DEBUG: verbose
+      TMPDIR: $XDG_RUNTIME_DIR
+      ALWAYS_USE_PULSEAUDIO: 1
+      DISABLE_WAYLAND: 1
+      PKG_CONFIG_PATH: $SNAP/usr/lib/i386-linux-gnu/pkgconfig:$SNAP/usr/lib/x86_64-linux-gnu/pkgconfig:$SNAP/usr/lib/pkgconfig
+      PYTHONPATH: $SNAP/usr/lib/python3/dist-packages
+      GI_TYPELIB_PATH: $SNAP/usr/lib/x86_64-linux-gnu/girepository-1.0
