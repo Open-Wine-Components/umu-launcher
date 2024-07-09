@@ -6,22 +6,25 @@ With that being said, we have put the snap together for convenience for those th
 
 Please be aware that this runs in devmode with without any standard snap confinements.
 
-1. Install build dependencies:
-
+1. Install build dependencies:  
+```
 snap install snapcraft --classic
-
-2. Create snap structure:
-
+```
+2. Create snap structure:  
+```
 mkdir snap
 cp snapcraft.yaml snap/
-
-3. Build:
+```
+3. Build:  
+```  
 snapcraft
-
-4. Install:
-
-snap install --dangerous --devmode umu-launcher*.snap
-
-5. Test:
-
+```
+4. Install:    
+```
+sudo snap install --dangerous --devmode umu-launcher*.snap
+```
+5. Test:  
+```
+sudo snap connect umu-launcher:gaming-mesa gaming-graphics-core22
 WINEPREFIX=~/umu-test STORE=none GAMEID=0 umu-launcher.umu-run winecfg
+```
