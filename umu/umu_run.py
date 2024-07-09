@@ -359,7 +359,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     if not libc:
         log.warning("libc.so could not be found")
         log.info("LD_LIBRARY_PATH=%s", os.environ.get("LD_LIBRARY_PATH") or "")
-        env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
+        env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
         return env
 
     # Set the shared library paths of the system after finding libc.so
@@ -367,7 +367,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
         if not Path(rtpath).is_symlink() and Path(rtpath, libc).is_file():
             paths.add(rtpath)
 
-    env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(list(paths))
+    env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
 
     return env
 
