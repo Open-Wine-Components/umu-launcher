@@ -79,8 +79,6 @@ Borderlands 3 from EGS store.
 ## Building
 Building umu-launcher currently requires `bash`, `make`, and `scdoc`, as well as the following Python build tools: [build](https://github.com/pypa/build), [hatchling](https://github.com/pypa/hatch), and [installer](https://github.com/pypa/installer).
 
-Optionally, for building umu-launcher's Python dependencies, [pip](https://github.com/pypa/pip) is required.
-
 To build umu-launcher, after downloading and extracting the source code from this repository, change into the newly extracted directory
 ```shell
 cd umu-launcher
@@ -93,6 +91,13 @@ To configure the installation `PREFIX` (this is not related to wine's `WINEPREFI
 Change the `--prefix` as fit for your distribution, for example `/usr/local`, or `/app` for packaging through Flatpak.
 
 Then run `make` to build. After a successful build the resulting files should be available in the `./builddir` directory
+
+**Note**: For umu clients, [pip](https://github.com/pypa/pip) is required to build its Python dependencies and they will need to be put within same directory as the runtime directory (e.g., `$HOME/.config/heroic/tools/runtimes/umu`).
+
+To build all dependencies:
+```shell
+make DESTDIR=<packaging_directory> umu-subprojects
+```
 
 ### Installing 
 To install umu-launcher run the following command after completing the steps described above
