@@ -109,6 +109,11 @@ or if you are packaging umu-launcher
 make DESTDIR=<packaging_directory> install
 ```
 
+**Note**: For umu clients, to install all of its dependencies, run:
+```shell
+make DESTDIR=<packaging_directory> umu-subprojects-install
+```
+
 ### Installing as user
 If you want to install umu just for your user, or for quickly testing, you can configure umu with the following command
 ```shell
