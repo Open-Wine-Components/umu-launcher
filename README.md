@@ -128,6 +128,8 @@ dnf install -y umu-launcher*.rpm
 [![Stable version badge](https://img.shields.io/aur/version/umu-launcher?style=flat&label=umu-launcher)](https://aur.archlinux.org/packages/umu-launcher)
 
 ### NixOS
+If there is any problem with the flake feel free to open a bug report and tag any of the maintainers
+> maintainers: @beh-10257
 If you want to add umu-launcher as a flake add this to your inputs in `flake.nix`
 ```nix
   inputs = {
@@ -144,8 +146,6 @@ and in your `configuration.nix`
   environment.systemPackages = [  inputs.umu.packages.${pkgs.system}.umu  ];
 }
 ```
-If there is any problem with the flake feel free to open a bug report and tag any of the maintainers
-> maintainers: @beh-10257
 
 ## Contributing
 

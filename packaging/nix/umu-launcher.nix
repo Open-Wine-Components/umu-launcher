@@ -16,8 +16,6 @@ python3Packages.buildPythonPackage {
   propagatedBuildInputs = [
     pyth1
     pkgs.python3Packages.xlib
-    pkgs.gvfs
-    pkgs.dconf
   ];
   makeFlags = [ "PYTHON_INTERPRETER=${pyth1}/bin/python" "SHELL_INTERPRETER=/run/current-system/sw/bin/bash" "DESTDIR=${placeholder "out"}" ];
   dontUseMesonConfigure = true;
