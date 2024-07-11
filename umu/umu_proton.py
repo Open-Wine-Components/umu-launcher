@@ -5,6 +5,7 @@ from hashlib import sha512
 from http.client import HTTPException
 from json import loads
 from pathlib import Path
+from re import split as resplit
 from shutil import rmtree
 from ssl import SSLContext, create_default_context
 from tarfile import open as tar_open
@@ -257,11 +258,17 @@ def _get_from_steamcompat(
 
     try:
         latest: Path = max(
-            proton
-            for proton in steam_compat.glob("*")
-            if proton.name.startswith(version)
+            (
+                proton
+                for proton in steam_compat.glob("*")
+                if proton.name.startswith(version)
+            ),
+            key=lambda proton: [
+                int(text) if text.isdigit() else text.lower()
+                for text in resplit(r"(\d+)", proton.name)
+            ],
         )
-        log.console(f"{latest.name} found in: '{steam_compat}'")
+        log.console(f"{latest.name} found in '{steam_compat}'")
         log.console(f"Using {latest.name}")
         os.environ["PROTONPATH"] = str(latest)
         env["PROTONPATH"] = os.environ["PROTONPATH"]
