@@ -92,6 +92,13 @@ Change the `--prefix` as fit for your distribution, for example `/usr/local`, or
 
 Then run `make` to build. After a successful build the resulting files should be available in the `./builddir` directory
 
+**Note**: For umu clients, [pip](https://github.com/pypa/pip) is required to build its Python dependencies and they will need to be put within same directory as the runtime directory (e.g., `$HOME/.config/heroic/tools/runtimes/umu`).
+
+To build all dependencies:
+```shell
+make DESTDIR=<packaging_directory> umu-subprojects
+```
+
 ### Installing 
 To install umu-launcher run the following command after completing the steps described above
 ```shell
@@ -100,6 +107,11 @@ make install
 or if you are packaging umu-launcher
 ```shell
 make DESTDIR=<packaging_directory> install
+```
+
+**Note**: For umu clients, to install all of its dependencies, run:
+```shell
+make DESTDIR=<packaging_directory> umu-subprojects-install
 ```
 
 ### Installing as user
