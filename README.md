@@ -130,6 +130,7 @@ dnf install -y umu-launcher*.rpm
 ### NixOS
 If there is any problem with the flake feel free to open a bug report and tag any of the maintainers
 > maintainers: @beh-10257
+
 If you want to add umu-launcher as a flake add this to your inputs in `flake.nix`
 ```nix
   inputs = {
