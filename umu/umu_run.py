@@ -605,6 +605,7 @@ def run_command(command: list[AnyPath]) -> int:
     proc: Popen
     ret: int = 0
     libc: str = get_libc()
+    gamescope_baselayer_sequence: list[int] | None = None
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -638,7 +639,9 @@ def run_command(command: list[AnyPath]) -> int:
             preexec_fn=lambda: prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0),
             cwd=cwd,
         )
-    gamescope_baselayer_sequence = get_gamescope_baselayer_order()
+
+    if os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
+        gamescope_baselayer_sequence = get_gamescope_baselayer_order()
 
     # Dont do window fuckery if we're not inside gamescope
     if gamescope_baselayer_sequence and not os.environ.get("EXE", "").endswith(
