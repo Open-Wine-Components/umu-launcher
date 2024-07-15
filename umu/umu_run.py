@@ -4,6 +4,7 @@ import os
 import sys
 import threading
 import time
+import zipfile
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -691,7 +692,15 @@ def main() -> int:  # noqa: D103
     }
     command: list[AnyPath] = []
     opts: list[str] = []
-    root: Path = Path(__file__).resolve(strict=True).parent
+    root: Path
+    try:
+        root = Path(__file__).resolve(strict=True).parent
+    except NotADirectoryError:
+        # raised when whithin a zipapp. Try again in non-strict mode, root
+        # should be zipapp.pyz/umu. Split and set root to /umu within zip.
+        root = Path(__file__).resolve().parent
+        root = zipfile.Path(root.parent, root.name)
+
     args: Namespace | tuple[str, list[str]] = parse_args()
 
     if os.geteuid() == 0:
