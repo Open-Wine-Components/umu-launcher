@@ -646,6 +646,10 @@ def run_command(command: list[AnyPath]) -> int:
     d_primary: display.Display | None = None
     d_secondary: display.Display | None = None
     gamescope_baselayer_sequence: list[int] | None = None
+    # Root window of the primary xwayland server
+    root_primary: Window
+    # Root window of the client application
+    root_secondary: Window
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -683,8 +687,7 @@ def run_command(command: list[AnyPath]) -> int:
     if os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
         # Primary xwayland server on the Steam Deck
         d_primary = display.Display(":0")
-        # Root window of the primary xwayland server
-        root_primary: Window = d_primary.screen().root
+        root_primary = d_primary.screen().root
         gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
 
     # Dont do window fuckery if we're not inside gamescope
@@ -692,7 +695,7 @@ def run_command(command: list[AnyPath]) -> int:
         "winetricks"
     ):
         d_secondary = display.Display(":1")
-        root_secondary: Window = d_secondary.screen().root
+        root_secondary = d_secondary.screen().root
         window_client_list: list[str] = []
 
         root_secondary.change_attributes(event_mask=X.SubstructureNotifyMask)
