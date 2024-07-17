@@ -490,13 +490,12 @@ def set_steam_game_property(  # noqa: D103
         log.exception(e)
 
 
-def get_gamescope_baselayer_order() -> list[int] | None:  # noqa: D103
-    d = display.Display(":0")
+def get_gamescope_baselayer_order(d: display.Display) -> list[int] | None:  # noqa: D103
     try:
-        root = d.screen().root
+        root: Window = d.screen().root
 
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.intern_atom("GAMESCOPECTRL_BASELAYER_APPID")
+        atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
 
         # Get the property value
         prop = root.get_full_property(atom, Xatom.CARDINAL)
@@ -508,8 +507,6 @@ def get_gamescope_baselayer_order() -> list[int] | None:  # noqa: D103
     except Exception as e:
         log.error("Error getting GAMESCOPECTRL_BASELAYER_APPID property")
         log.exception(e)
-    finally:
-        d.close()
 
     return None
 
@@ -524,6 +521,8 @@ def rearrange_gamescope_baselayer_order(  # noqa
 
     # Rearrange the sequence
     rearranged = [sequence[0], sequence[3], sequence[1], sequence[2]]
+    log.debug("Rearranging base layer sequence")
+    log.debug("'%s' -> '%s'", sequence, rearranged)
 
     # Return the rearranged sequence and the second element
     return rearranged, rearranged[1]
