@@ -628,7 +628,6 @@ def monitor_windows(
         if not current_window_list:
             continue
 
-        log.debug("Current windows: %s", current_window_list)
         if current_window_list != window_client_list:
             log.debug("New window sequence detected")
             set_steam_game_property(
