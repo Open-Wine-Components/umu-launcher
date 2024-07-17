@@ -624,6 +624,10 @@ def monitor_windows(
         current_window_list = get_window_client_ids(
             d_secondary, root_secondary
         )
+
+        if not current_window_list:
+            continue
+
         log.debug("Current windows: %s", current_window_list)
         if current_window_list != window_client_list:
             log.debug("New window sequence detected")
@@ -688,8 +692,9 @@ def run_command(command: list[AnyPath]) -> int:
         "winetricks"
     ):
         d_secondary = display.Display(":1")
-        window_client_list: list[str] = []
         root_secondary: Window = d_secondary.screen().root
+        window_client_list: list[str] = []
+
         root_secondary.change_attributes(event_mask=X.SubstructureNotifyMask)
 
         while not window_client_list:
