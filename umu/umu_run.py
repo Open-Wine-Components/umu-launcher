@@ -547,11 +547,9 @@ def window_setup(  # noqa
     d_primary: display.Display,
     d_secondary: display.Display,
     root_primary: Window,
-    root_secondary: Window,
     gamescope_baselayer_sequence: list[int],
+    game_window_ids: list[str],
 ) -> None:
-    game_window_ids: list[str] = []
-
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
         rearranged_sequence, steam_assigned_layer_id = (
@@ -559,14 +557,10 @@ def window_setup(  # noqa
         )
 
         # Assign our window a STEAM_GAME id
-        while not game_window_ids:
-            game_window_ids = get_window_client_ids(
-                d_secondary, root_secondary
-            )
-
         set_steam_game_property(
             d_secondary, game_window_ids, steam_assigned_layer_id
         )
+
         set_gamescope_baselayer_order(
             d_primary, root_primary, rearranged_sequence
         )
@@ -713,8 +707,8 @@ def run_command(command: list[AnyPath]) -> int:
             d_primary,
             d_secondary,
             root_primary,
-            root_secondary,
             gamescope_baselayer_sequence,
+            window_client_list,
         )
 
         # Monitor the windows
