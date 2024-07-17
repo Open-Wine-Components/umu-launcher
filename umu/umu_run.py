@@ -528,13 +528,14 @@ def rearrange_gamescope_baselayer_order(  # noqa
     return rearranged, rearranged[1]
 
 
-def set_gamescope_baselayer_order(rearranged: list[int]) -> None:  # noqa
+def set_gamescope_baselayer_order(  # noqa
+    d: display.Display, rearranged: list[int]
+) -> None:
     try:
-        d = display.Display(":0")
-        root = d.screen().root
+        root: Window = d.screen().root
 
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.intern_atom("GAMESCOPECTRL_BASELAYER_APPID")
+        atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
 
         # Set the property value
         root.change_property(atom, Xatom.CARDINAL, 32, rearranged)
@@ -545,8 +546,6 @@ def set_gamescope_baselayer_order(rearranged: list[int]) -> None:  # noqa
     except Exception as e:
         log.error("Error setting GAMESCOPECTRL_BASELAYER_APPID property")
         log.exception(e)
-    finally:
-        d.close()
 
 
 def window_setup(gamescope_baselayer_sequence: list[int]) -> None:  # noqa
