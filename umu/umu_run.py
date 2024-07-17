@@ -27,7 +27,9 @@ elif this_path.is_relative_to(Path.home()) and os.environ.get(
 ):
     sys.path.append(os.environ["UMU_CLIENT_RTPATH"])
 
-from Xlib import Xatom, display
+from Xlib import X, Xatom, display
+from Xlib.protocol.event import AnyEvent
+from Xlib.xobject.drawable import Window
 
 from umu.umu_consts import (
     DEBUG_FORMAT,
@@ -439,34 +441,22 @@ def build_command(
     return command
 
 
-def get_window_client_ids() -> list[str]:
+def get_window_client_ids(d: display.Display) -> list[str]:
     """Get the list of client windows."""
-    d = display.Display(":1")
     try:
-        root = d.screen().root
+        root: Window = d.screen().root
+        root.change_attributes(event_mask=X.SubstructureNotifyMask)
 
-        max_wait_time = 30  # Maximum wait time in seconds
-        wait_interval = 1  # Interval between checks in seconds
-        elapsed_time = 0
-        window_ids: list[str] = []
+        log.debug("Waiting for new child windows")
+        event: AnyEvent = d.next_event()
 
-        while elapsed_time < max_wait_time:
-            children = root.query_tree().children
-            if children and len(children) > 1:
-                for child in children:
-                    log.debug("Window ID: %s", child.id)
-                    log.debug("Window Name: %s", child.get_wm_name())
-                    log.debug("Window Class: %s", child.get_wm_class())
-                    log.debug("Window Geometry: %s", child.get_geometry())
-                    log.debug("Window Attributes: %s", child.get_attributes())
-                    # if "steam_app" in str(child.get_wm_class()):
-                    window_ids.append(child.id)
-                return window_ids
-            time.sleep(wait_interval)
-            elapsed_time += wait_interval
-        return []
-    finally:
-        d.close()
+        if event.type == X.CreateNotify:
+            log.debug("Found new child windows")
+            return [child.id for child in root.query_tree().children]
+    except Exception as e:
+        log.exception(e)
+
+    return []
 
 
 def set_steam_game_property(  # noqa: D103
