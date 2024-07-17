@@ -563,26 +563,26 @@ def window_setup(  # noqa
 
         # Assign our window a STEAM_GAME id
         while not game_window_ids:
-            game_window_ids = get_window_client_ids(d_primary)
+            game_window_ids = get_window_client_ids(d_secondary)
 
         set_steam_game_property(
-            d_primary, game_window_ids, steam_assigned_layer_id
+            d_secondary, game_window_ids, steam_assigned_layer_id
         )
-        set_gamescope_baselayer_order(d_secondary, rearranged_sequence)
+        set_gamescope_baselayer_order(d_primary, rearranged_sequence)
 
 
 def monitor_baselayer(
-    d_secondary: display.Display, gamescope_baselayer_sequence: list[int]
+    d_primary: display.Display, gamescope_baselayer_sequence: list[int]
 ) -> None:
     """Monitor for broken gamescope baselayer sequences."""
-    root: Window = d_secondary.screen().root
-    atom = d_secondary.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
+    root: Window = d_primary.screen().root
+    atom = d_primary.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
     root.change_attributes(event_mask=X.PropertyChangeMask)
 
     log.debug("Monitoring base layers")
 
     while True:
-        event: AnyEvent = d_secondary.next_event()
+        event: AnyEvent = d_primary.next_event()
 
         # Check if the layer sequence has changed to the broken one
         if event.type == X.PropertyNotify and event.atom == atom:
@@ -599,13 +599,13 @@ def monitor_baselayer(
                     prop.value[2],
                 ]
                 log.debug("'%s' -> '%s'", prop.value, rearranged)
-                set_gamescope_baselayer_order(d_secondary, rearranged)
+                set_gamescope_baselayer_order(d_primary, rearranged)
 
         time.sleep(0.1)
 
 
 def monitor_windows(
-    d_primary: display.Display,
+    d_secondary: display.Display,
     gamescope_baselayer_sequence: list[int],
     window_client_list: list[str],
 ) -> None:
@@ -616,11 +616,11 @@ def monitor_windows(
 
     while True:
         # Check if the window sequence has changed
-        current_window_list = get_window_client_ids(d_primary)
+        current_window_list = get_window_client_ids(d_secondary)
         if current_window_list != window_client_list:
             log.debug("New window sequence detected")
             set_steam_game_property(
-                d_primary, current_window_list, steam_assigned_layer_id
+                d_secondary, current_window_list, steam_assigned_layer_id
             )
 
 
@@ -669,27 +669,30 @@ def run_command(command: list[AnyPath]) -> int:
         )
 
     if os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
-        d_secondary = display.Display(":0")
-        gamescope_baselayer_sequence = get_gamescope_baselayer_order(
-            d_secondary
-        )
+        # Primary xwayland server on the Steam Deck
+        d_primary = display.Display(":0")
+        gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
 
     # Dont do window fuckery if we're not inside gamescope
     if gamescope_baselayer_sequence and not os.environ.get("EXE", "").endswith(
         "winetricks"
     ):
-        d_primary = display.Display(":1")
+        d_secondary = display.Display(":1")
         window_client_list: list[str] = []
 
         while not window_client_list:
-            window_client_list = get_window_client_ids(d_primary)
+            window_client_list = get_window_client_ids(d_secondary)
 
         window_setup(d_primary, d_secondary, gamescope_baselayer_sequence)
 
         # Monitor the windows
         window_thread = threading.Thread(
             target=monitor_windows,
-            args=(d_primary, gamescope_baselayer_sequence, window_client_list),
+            args=(
+                d_secondary,
+                gamescope_baselayer_sequence,
+                window_client_list,
+            ),
         )
         window_thread.daemon = True
         window_thread.start()
@@ -698,7 +701,7 @@ def run_command(command: list[AnyPath]) -> int:
         baselayer_thread = threading.Thread(
             target=monitor_baselayer,
             args=(
-                d_secondary,
+                d_primary,
                 gamescope_baselayer_sequence,
             ),
         )
