@@ -442,7 +442,7 @@ def build_command(
 
 
 def get_window_client_ids(d: display.Display, root: Window) -> list[str]:
-    """Get the list of client windows."""
+    """Get the list of new client windows under the root window."""
     try:
         log.debug("Waiting for new child windows")
         event: AnyEvent = d.next_event()
@@ -643,8 +643,11 @@ def run_command(command: list[AnyPath]) -> int:
     proc: Popen
     ret: int = 0
     libc: str = get_libc()
+    # Primary display of the focusable app under the gamescope session
     d_primary: display.Display | None = None
+    # Display of the client application under the gamescope session
     d_secondary: display.Display | None = None
+    # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
     gamescope_baselayer_sequence: list[int] | None = None
     # Root window of the primary xwayland server
     root_primary: Window
@@ -685,7 +688,7 @@ def run_command(command: list[AnyPath]) -> int:
         )
 
     if os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
-        # Primary xwayland server on the Steam Deck
+        # :0 is where the primary xwayland server is on the Steam Deck
         d_primary = display.Display(":0")
         root_primary = d_primary.screen().root
         gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
@@ -700,12 +703,13 @@ def run_command(command: list[AnyPath]) -> int:
 
         root_secondary.change_attributes(event_mask=X.SubstructureNotifyMask)
 
+        # Get new windows under the client display's window
         while not window_client_list:
             window_client_list = get_window_client_ids(
                 d_secondary, root_secondary
             )
 
-        # Setup the windows and pass the displays with their root windows
+        # Setup the windows
         window_setup(
             d_primary,
             d_secondary,
