@@ -460,26 +460,21 @@ def get_window_client_ids(d: display.Display) -> list[str]:
 
 
 def set_steam_game_property(  # noqa: D103
-    window_ids: list[str], steam_assigned_layer_id: int
+    d: display.Display, window_ids: list[str], steam_assigned_layer_id: int
 ) -> None:
-    d = display.Display(":1")
     try:
-        root = d.screen().root
-        log.debug("Root: %s", root)
-
+        log.debug("steam_layer: %s", steam_assigned_layer_id)
         for window_id in window_ids:
             log.debug("window_id: %s", window_id)
-            log.debug("steam_layer: %s", steam_assigned_layer_id)
             try:
-                window = d.create_resource_object("window", int(window_id))
-                window.get_full_property(
-                    d.intern_atom("STEAM_GAME"), Xatom.CARDINAL
+                window: Window = d.create_resource_object(
+                    "window", int(window_id)
                 )
                 window.change_property(
-                    d.intern_atom("STEAM_GAME"),
+                    d.get_atom("STEAM_GAME"),
                     Xatom.CARDINAL,
                     32,
-                    [int(steam_assigned_layer_id)],
+                    [steam_assigned_layer_id],
                 )
                 log.debug(
                     "Successfully set STEAM_GAME property for window ID: %s",
@@ -493,8 +488,6 @@ def set_steam_game_property(  # noqa: D103
                 log.exception(e)
     except Exception as e:
         log.exception(e)
-    finally:
-        d.close()
 
 
 def get_gamescope_baselayer_order() -> list[int] | None:  # noqa: D103
