@@ -617,6 +617,7 @@ def monitor_windows(
     while True:
         # Check if the window sequence has changed
         current_window_list = get_window_client_ids(d_secondary)
+        log.debug("Current windows: %s", current_window_list)
         if current_window_list != window_client_list:
             log.debug("New window sequence detected")
             set_steam_game_property(
