@@ -548,18 +548,27 @@ def set_gamescope_baselayer_order(  # noqa
         log.exception(e)
 
 
-def window_setup(gamescope_baselayer_sequence: list[int]) -> None:  # noqa
+def window_setup(  # noqa
+    d_primary: display.Display,
+    d_secondary: display.Display,
+    gamescope_baselayer_sequence: list[int],
+) -> None:
+    game_window_ids: list[str] = []
+
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
         rearranged_sequence, steam_assigned_layer_id = (
             rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
         )
-        # Assign our window a STEAM_GAME id
-        game_window_ids = get_window_client_ids()
-        if game_window_ids:
-            set_steam_game_property(game_window_ids, steam_assigned_layer_id)
 
-        set_gamescope_baselayer_order(rearranged_sequence)
+        # Assign our window a STEAM_GAME id
+        while not game_window_ids:
+            game_window_ids = get_window_client_ids(d_primary)
+
+        set_steam_game_property(
+            d_primary, game_window_ids, steam_assigned_layer_id
+        )
+        set_gamescope_baselayer_order(d_secondary, rearranged_sequence)
 
 
 def monitor_baselayer(
