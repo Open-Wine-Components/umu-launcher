@@ -444,7 +444,6 @@ def build_command(
 def get_window_client_ids(d: display.Display) -> list[str]:
     """Get the list of new client windows under the root window."""
     try:
-        log.debug("Waiting for new child windows")
         event: AnyEvent = d.next_event()
 
         if event.type == X.CreateNotify:
