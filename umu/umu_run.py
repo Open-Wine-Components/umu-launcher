@@ -623,7 +623,7 @@ def monitor_windows(
             continue
 
         if current_window_list != window_client_list:
-            log.debug("New window sequence detected")
+            log.debug("New windows detected")
             set_steam_game_property(
                 d_secondary, current_window_list, steam_assigned_layer_id
             )
