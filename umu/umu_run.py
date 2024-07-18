@@ -773,10 +773,10 @@ def main() -> int:  # noqa: D103
 
     log.debug("Arguments: %s", args)
 
-    if FLATPAK_PATH and root == Path("/app/share/umu"):
+    if FLATPAK_PATH and root.is_relative_to("/app"):
         log.debug("Flatpak environment detected")
         log.debug("FLATPAK_ID: %s", FLATPAK_ID)
-        log.debug("Persisting the runtime at: %s", FLATPAK_PATH)
+        log.debug("Runtime path: '%s'", FLATPAK_PATH)
 
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
