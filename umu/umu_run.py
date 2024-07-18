@@ -642,9 +642,9 @@ def run_command(command: list[AnyPath]) -> int:
     d_secondary: display.Display | None = None
     # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
     gamescope_baselayer_sequence: list[int] | None = None
-    # Root window of the primary xwayland server
+    # Root window of the primary display
     root_primary: Window
-    # Root window of the client application
+    # Root window of the client application's display
     root_secondary: Window
 
     if not command:
@@ -711,7 +711,7 @@ def run_command(command: list[AnyPath]) -> int:
             window_client_list,
         )
 
-        # Monitor the windows
+        # Monitor for new windows
         window_thread = threading.Thread(
             target=monitor_windows,
             args=(
@@ -724,7 +724,7 @@ def run_command(command: list[AnyPath]) -> int:
         window_thread.daemon = True
         window_thread.start()
 
-        # Monitor the baselayer
+        # Monitor for broken baselayers
         baselayer_thread = threading.Thread(
             target=monitor_baselayer,
             args=(
