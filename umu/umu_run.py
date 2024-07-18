@@ -598,6 +598,7 @@ def monitor_baselayer(
                 set_gamescope_baselayer_order(
                     d_primary, root_primary, rearranged
                 )
+                continue
 
         time.sleep(0.1)
 
