@@ -114,21 +114,6 @@ make DESTDIR=<packaging_directory> install
 make DESTDIR=<packaging_directory> umu-subprojects-install
 ```
 
-### Installing as user
-If you want to install umu just for your user, or for quickly testing, you can configure umu with the following command
-```shell
-./configure.sh --user-install
-```
-followed by 
-```shell
-make install
-```
-This will install umu-launcher under `$HOME/.local/share/umu` and place the executable in `$HOME/.local/bin`
-You will need to add `$HOME/.local/bin` in your `$PATH` to be able to run umu-launcher this way by exporting the path in your shell's configuration, for example `$HOME/.bash_profile`
-```shell
-export PATH="$HOME/.local/bin:$PATH"
-```
-
 ## Packaging
 
 ### Nobara
