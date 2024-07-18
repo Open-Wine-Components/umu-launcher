@@ -457,9 +457,10 @@ def get_window_client_ids(d: display.Display) -> list[str]:
     return []
 
 
-def set_steam_game_property(  # noqa: D103
+def set_steam_game_property(
     d: display.Display, window_ids: list[str], steam_assigned_layer_id: int
 ) -> None:
+    """Set Steam's assigned layer ID on a list of windows."""
     try:
         log.debug("steam_layer: %s", steam_assigned_layer_id)
         for window_id in window_ids:
@@ -488,7 +489,8 @@ def set_steam_game_property(  # noqa: D103
         log.exception(e)
 
 
-def get_gamescope_baselayer_order(d: display.Display) -> list[int] | None:  # noqa: D103
+def get_gamescope_baselayer_order(d: display.Display) -> list[int] | None:
+    """Get the gamescope base layer seq on the primary root window."""
     try:
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
         atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
@@ -507,9 +509,10 @@ def get_gamescope_baselayer_order(d: display.Display) -> list[int] | None:  # no
     return None
 
 
-def rearrange_gamescope_baselayer_order(  # noqa
+def rearrange_gamescope_baselayer_order(
     sequence: list[int],
 ) -> tuple[list[int], int]:
+    """Rearrange a gamescope base layer sequence retrieved from a window."""
     # Ensure there are exactly 4 numbers
     if len(sequence) != 4:
         err = "Unexpected number of elements in sequence"
@@ -524,9 +527,10 @@ def rearrange_gamescope_baselayer_order(  # noqa
     return rearranged, rearranged[1]
 
 
-def set_gamescope_baselayer_order(  # noqa
+def set_gamescope_baselayer_order(
     d: display.Display, rearranged: list[int]
 ) -> None:
+    """Set a new gamescope base layer seq on the primary root window."""
     try:
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
         atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
