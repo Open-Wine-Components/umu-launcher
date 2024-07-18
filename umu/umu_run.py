@@ -441,7 +441,7 @@ def build_command(
     return command
 
 
-def get_window_client_ids(d: display.Display, root: Window) -> list[str]:
+def get_window_client_ids(d: display.Display) -> list[str]:
     """Get the list of new client windows under the root window."""
     try:
         log.debug("Waiting for new child windows")
@@ -526,7 +526,7 @@ def rearrange_gamescope_baselayer_order(  # noqa
 
 
 def set_gamescope_baselayer_order(  # noqa
-    d: display.Display, root_primary: Window, rearranged: list[int]
+    d: display.Display, rearranged: list[int]
 ) -> None:
     try:
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
@@ -546,7 +546,6 @@ def set_gamescope_baselayer_order(  # noqa
 def window_setup(  # noqa
     d_primary: display.Display,
     d_secondary: display.Display,
-    root_primary: Window,
     gamescope_baselayer_sequence: list[int],
     game_window_ids: list[str],
 ) -> None:
@@ -561,17 +560,15 @@ def window_setup(  # noqa
             d_secondary, game_window_ids, steam_assigned_layer_id
         )
 
-        set_gamescope_baselayer_order(
-            d_primary, root_primary, rearranged_sequence
-        )
+        set_gamescope_baselayer_order(d_primary, rearranged_sequence)
 
 
 def monitor_baselayer(
     d_primary: display.Display,
-    root_primary: Window,
     gamescope_baselayer_sequence: list[int],
 ) -> None:
     """Monitor for broken gamescope baselayer sequences."""
+    root_primary: Window = d_primary.screen().root
     atom = d_primary.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
     root_primary.change_attributes(event_mask=X.PropertyChangeMask)
 
@@ -595,9 +592,7 @@ def monitor_baselayer(
                     prop.value[2],
                 ]
                 log.debug("'%s' -> '%s'", prop.value, rearranged)
-                set_gamescope_baselayer_order(
-                    d_primary, root_primary, rearranged
-                )
+                set_gamescope_baselayer_order(d_primary, rearranged)
                 continue
 
         time.sleep(0.1)
@@ -605,7 +600,6 @@ def monitor_baselayer(
 
 def monitor_windows(
     d_secondary: display.Display,
-    root_secondary: Window,
     gamescope_baselayer_sequence: list[int],
     window_client_list: list[str],
 ) -> None:
@@ -616,9 +610,7 @@ def monitor_windows(
 
     while True:
         # Check if the window sequence has changed
-        current_window_list = get_window_client_ids(
-            d_secondary, root_secondary
-        )
+        current_window_list = get_window_client_ids(d_secondary)
 
         if not current_window_list:
             continue
@@ -643,10 +635,6 @@ def run_command(command: list[AnyPath]) -> int:
     d_secondary: display.Display | None = None
     # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
     gamescope_baselayer_sequence: list[int] | None = None
-    # Root window of the primary display
-    root_primary: Window
-    # Root window of the client application's display
-    root_secondary: Window
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -684,7 +672,6 @@ def run_command(command: list[AnyPath]) -> int:
     if os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
         # :0 is where the primary xwayland server is on the Steam Deck
         d_primary = display.Display(":0")
-        root_primary = d_primary.screen().root
         gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
 
     # Dont do window fuckery if we're not inside gamescope
@@ -692,22 +679,19 @@ def run_command(command: list[AnyPath]) -> int:
         "winetricks"
     ):
         d_secondary = display.Display(":1")
-        root_secondary = d_secondary.screen().root
+        d_secondary.screen().root.change_attributes(
+            event_mask=X.SubstructureNotifyMask
+        )
         window_client_list: list[str] = []
-
-        root_secondary.change_attributes(event_mask=X.SubstructureNotifyMask)
 
         # Get new windows under the client display's window
         while not window_client_list:
-            window_client_list = get_window_client_ids(
-                d_secondary, root_secondary
-            )
+            window_client_list = get_window_client_ids(d_secondary)
 
         # Setup the windows
         window_setup(
             d_primary,
             d_secondary,
-            root_primary,
             gamescope_baselayer_sequence,
             window_client_list,
         )
@@ -717,7 +701,6 @@ def run_command(command: list[AnyPath]) -> int:
             target=monitor_windows,
             args=(
                 d_secondary,
-                root_secondary,
                 gamescope_baselayer_sequence,
                 window_client_list,
             ),
@@ -728,11 +711,7 @@ def run_command(command: list[AnyPath]) -> int:
         # Monitor for broken baselayers
         baselayer_thread = threading.Thread(
             target=monitor_baselayer,
-            args=(
-                d_primary,
-                root_primary,
-                gamescope_baselayer_sequence,
-            ),
+            args=(d_primary, gamescope_baselayer_sequence),
         )
         baselayer_thread.daemon = True
         baselayer_thread.start()
