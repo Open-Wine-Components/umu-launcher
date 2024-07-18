@@ -449,7 +449,9 @@ def get_window_client_ids(d: display.Display) -> list[str]:
 
         if event.type == X.CreateNotify:
             log.debug("Found new child windows")
-            return [child.id for child in root.query_tree().children]
+            return [
+                child.id for child in d.screen().root.query_tree().children
+            ]
     except Exception as e:
         log.exception(e)
 
@@ -489,13 +491,11 @@ def set_steam_game_property(  # noqa: D103
 
 def get_gamescope_baselayer_order(d: display.Display) -> list[int] | None:  # noqa: D103
     try:
-        root: Window = d.screen().root
-
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
         atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
 
         # Get the property value
-        prop = root.get_full_property(atom, Xatom.CARDINAL)
+        prop = d.screen().root.get_full_property(atom, Xatom.CARDINAL)
 
         if prop:
             # Extract and return the value
@@ -533,7 +533,7 @@ def set_gamescope_baselayer_order(  # noqa
         atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
 
         # Set the property value
-        root_primary.change_property(atom, Xatom.CARDINAL, 32, rearranged)
+        d.screen().root.change_property(atom, Xatom.CARDINAL, 32, rearranged)
         log.debug(
             "Successfully set GAMESCOPECTRL_BASELAYER_APPID property: %s",
             ", ".join(map(str, rearranged)),
