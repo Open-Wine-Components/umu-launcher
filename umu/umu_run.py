@@ -587,13 +587,7 @@ def monitor_baselayer(
             log.debug("Property value for atom '%s': %s", atom, prop.value)
             if prop.value == gamescope_baselayer_sequence:
                 log.debug("Broken base layer sequence detected")
-                log.debug("Rearranging base layer sequence")
-                rearranged = [
-                    prop.value[0],
-                    prop.value[3],
-                    prop.value[1],
-                    prop.value[2],
-                ]
+                rearranged, _ = rearrange_gamescope_baselayer_order(prop.value)
                 log.debug("'%s' -> '%s'", prop.value, rearranged)
                 set_gamescope_baselayer_order(d_primary, rearranged)
                 continue
