@@ -513,18 +513,25 @@ def rearrange_gamescope_baselayer_order(
     sequence: list[int],
 ) -> tuple[list[int], int]:
     """Rearrange a gamescope base layer sequence retrieved from a window."""
+    seq_len = len(sequence)
+
     # Ensure there are exactly 4 numbers
-    if len(sequence) != 4:
-        err = "Unexpected number of elements in sequence"
-        raise ValueError(err)
+    if seq_len == 3:
+        rearranged = [sequence[0], sequence[2], sequence[1]]
+        log.debug("Rearranging 3 element base layer sequence")
+        log.debug("'%s' -> '%s'", sequence, rearranged)
+        return rearranged, rearranged[1]
 
-    # Rearrange the sequence
-    rearranged = [sequence[0], sequence[3], sequence[1], sequence[2]]
-    log.debug("Rearranging base layer sequence")
-    log.debug("'%s' -> '%s'", sequence, rearranged)
+    if seq_len == 4:
+        # Rearrange the sequence
+        rearranged = [sequence[0], sequence[3], sequence[1], sequence[2]]
+        log.debug("Rearranging 4 element base layer sequence")
+        log.debug("'%s' -> '%s'", sequence, rearranged)
+        # Return the rearranged sequence and the second element
+        return rearranged, rearranged[1]
 
-    # Return the rearranged sequence and the second element
-    return rearranged, rearranged[1]
+    err = f"Unexpected number of elements in sequence: {sequence}"
+    raise ValueError(err)
 
 
 def set_gamescope_baselayer_order(
