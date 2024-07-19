@@ -515,7 +515,6 @@ def rearrange_gamescope_baselayer_order(
     """Rearrange a gamescope base layer sequence retrieved from a window."""
     seq_len = len(sequence)
 
-    # Ensure there are exactly 4 numbers
     if seq_len == 3:
         rearranged = [sequence[0], sequence[2], sequence[1]]
         log.debug("Rearranging 3 element base layer sequence")
