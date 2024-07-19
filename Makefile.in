@@ -22,9 +22,9 @@ FLATPAK ?= xfalse
 
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)
-all: version umu umu-launcher
+all: umu umu-launcher
 else
-all: version umu umu-docs umu-launcher
+all: umu umu-docs umu-launcher
 endif
 
 .PHONY: install
@@ -44,22 +44,6 @@ fix_shebangs:
 	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/env python\b|#!/usr/bin/env $(PYTHON_INTERPRETER)|' {} \;
 	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
 	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
-
-# Special case, do this inside the source directory for release distribution
-umu/umu_version.json: umu/umu_version.json.in
-	$(info :: Updating $(@) )
-	cp $(<) $(<).tmp
-	sed 's|##UMU_VERSION##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
-	mv $(<).tmp $(@)
-
-.PHONY: version
-version: umu/umu_version.json
-
-version-install: version
-	$(info :: Installing umu_version.json )
-	install -d $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_version.json -t $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
-
 
 $(OBJDIR)/.build-umu-docs: | $(OBJDIR)
 	$(info :: Building umu man pages )
@@ -92,9 +76,9 @@ umu-dist-install: umu-dist
 	$(PYTHON_INTERPRETER)  -m installer --destdir=$(DESTDIR) $(OBJDIR)/*.whl
 
 ifeq ($(FLATPAK), xtrue)
-umu-install: version-install umu-dist-install
+umu-install: umu-dist-install
 else
-umu-install: version-install umu-dist-install umu-docs-install
+umu-install: umu-dist-install umu-docs-install
 endif
 
 ifeq ($(FLATPAK), xtrue)
@@ -154,7 +138,7 @@ $(RELEASEDIR):
 	mkdir -p $(@)
 
 .PHONY: release
-release: $(RELEASEDIR) | version
+release: $(RELEASEDIR)
 	$(info :: Creating source distribution for release )
 	mkdir -p $(<)
 	rm -rf umu/__pycache__

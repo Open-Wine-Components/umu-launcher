@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
@@ -42,7 +42,20 @@ dependencies = ["python-xlib>=0.33"]
 umu-run = "umu.__main__:main"
 
 [tool.hatch.version]
-path = "umu/__init__.py"
+source = "vcs"
+fallback-version = "0.0.1"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "umu/umu_version.json"
+template = '''{{
+  "umu": {{
+    "versions": {{
+      "launcher": "{version}",
+      "runner": "{version}",
+      "runtime_platform": "sniper"
+    }}
+  }}
+}}'''
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -63,6 +76,9 @@ exclude = [
   "/umu/umu-run.in",
   "/umu/umu_test.py",
   "/umu/umu_test_plugins.py",
+]
+artifacts = [
+  "umu/umu_version.json",
 ]
 
 [tool.mypy]
