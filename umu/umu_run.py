@@ -466,7 +466,6 @@ def set_steam_game_property(
     try:
         log.debug("steam_layer: %s", steam_assigned_layer_id)
         for window_id in window_ids:
-            log.debug("window_id: %s", window_id)
             try:
                 window: Window = d.create_resource_object(
                     "window", int(window_id)
