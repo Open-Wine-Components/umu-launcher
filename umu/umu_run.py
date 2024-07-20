@@ -441,20 +441,20 @@ def build_command(
     return command
 
 
-def get_window_client_ids(d: display.Display) -> list[str]:
+def get_window_client_ids(d: display.Display) -> set[str] | None:
     """Get the list of new client windows under the root window."""
     try:
         event: AnyEvent = d.next_event()
 
         if event.type == X.CreateNotify:
             log.debug("Found new child windows")
-            return [
+            return {
                 child.id for child in d.screen().root.query_tree().children
-            ]
+            }
     except Exception as e:
         log.exception(e)
 
-    return []
+    return None
 
 
 def set_steam_game_property(
@@ -545,7 +545,7 @@ def window_setup(  # noqa
     d_primary: display.Display,
     d_secondary: display.Display,
     gamescope_baselayer_sequence: list[int],
-    game_window_ids: list[str],
+    game_window_ids: set[str],
 ) -> None:
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
@@ -602,14 +602,14 @@ def monitor_windows(
 
     while True:
         # Check if the window sequence has changed
-        current_window_list: list[str] = get_window_client_ids(d_secondary)
+        current_window_list: set[str] | None = get_window_client_ids(
+            d_secondary
+        )
 
         if not current_window_list:
             continue
 
-        if diff := window_client_set.symmetric_difference(
-            set(current_window_list)
-        ):
+        if diff := window_client_set.symmetric_difference(current_window_list):
             log.debug("New windows detected")
             window_client_set |= diff
             set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
@@ -675,7 +675,7 @@ def run_command(command: list[AnyPath]) -> int:
         d_secondary.screen().root.change_attributes(
             event_mask=X.SubstructureNotifyMask
         )
-        window_client_list: list[str] = []
+        window_client_list: set[str] | None = None
 
         # Get new windows under the client display's window
         while not window_client_list:
