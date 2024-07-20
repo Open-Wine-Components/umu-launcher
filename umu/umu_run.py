@@ -458,7 +458,9 @@ def get_window_client_ids(d: display.Display) -> list[str]:
 
 
 def set_steam_game_property(
-    d: display.Display, window_ids: list[str], steam_assigned_layer_id: int
+    d: display.Display,
+    window_ids: list[str] | set[str],
+    steam_assigned_layer_id: int,
 ) -> None:
     """Set Steam's assigned layer ID on a list of windows."""
     try:
