@@ -441,30 +441,30 @@ def build_command(
     return command
 
 
-def get_window_client_ids(d: display.Display) -> list[str]:
+def get_window_client_ids(d: display.Display) -> set[str] | None:
     """Get the list of new client windows under the root window."""
     try:
         event: AnyEvent = d.next_event()
 
         if event.type == X.CreateNotify:
-            log.debug("Found new child windows")
-            return [
+            return {
                 child.id for child in d.screen().root.query_tree().children
-            ]
+            }
     except Exception as e:
         log.exception(e)
 
-    return []
+    return None
 
 
 def set_steam_game_property(
-    d: display.Display, window_ids: list[str], steam_assigned_layer_id: int
+    d: display.Display,
+    window_ids: list[str] | set[str],
+    steam_assigned_layer_id: int,
 ) -> None:
     """Set Steam's assigned layer ID on a list of windows."""
     try:
         log.debug("steam_layer: %s", steam_assigned_layer_id)
         for window_id in window_ids:
-            log.debug("window_id: %s", window_id)
             try:
                 window: Window = d.create_resource_object(
                     "window", int(window_id)
@@ -513,17 +513,10 @@ def rearrange_gamescope_baselayer_order(
     sequence: list[int],
 ) -> tuple[list[int], int]:
     """Rearrange a gamescope base layer sequence retrieved from a window."""
-    # Ensure there are exactly 4 numbers
-    if len(sequence) != 4:
-        err = "Unexpected number of elements in sequence"
-        raise ValueError(err)
-
-    # Rearrange the sequence
-    rearranged = [sequence[0], sequence[3], sequence[1], sequence[2]]
+    rearranged: list[int] = [sequence[0], sequence[-1], *sequence[1:-1]]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
-    # Return the rearranged sequence and the second element
     return rearranged, rearranged[1]
 
 
@@ -550,7 +543,7 @@ def window_setup(  # noqa
     d_primary: display.Display,
     d_secondary: display.Display,
     gamescope_baselayer_sequence: list[int],
-    game_window_ids: list[str],
+    game_window_ids: set[str],
 ) -> None:
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
@@ -597,25 +590,27 @@ def monitor_baselayer(
 def monitor_windows(
     d_secondary: display.Display,
     gamescope_baselayer_sequence: list[int],
-    window_client_list: list[str],
+    game_window_ids: set[str],
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
+    window_ids: set[str] = game_window_ids.copy()
     steam_assigned_layer_id: int = gamescope_baselayer_sequence[-1]
 
     log.debug("Monitoring windows")
 
+    # Check if the window sequence has changed
     while True:
-        # Check if the window sequence has changed
-        current_window_list = get_window_client_ids(d_secondary)
+        current_window_ids: set[str] | None = get_window_client_ids(
+            d_secondary
+        )
 
-        if not current_window_list:
+        if not current_window_ids:
             continue
 
-        if current_window_list != window_client_list:
+        if diff := window_ids.symmetric_difference(current_window_ids):
             log.debug("New windows detected")
-            set_steam_game_property(
-                d_secondary, current_window_list, steam_assigned_layer_id
-            )
+            window_ids |= diff
+            set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
 
 
 def run_command(command: list[AnyPath]) -> int:
@@ -678,7 +673,7 @@ def run_command(command: list[AnyPath]) -> int:
         d_secondary.screen().root.change_attributes(
             event_mask=X.SubstructureNotifyMask
         )
-        window_client_list: list[str] = []
+        window_client_list: set[str] | None = None
 
         # Get new windows under the client display's window
         while not window_client_list:
