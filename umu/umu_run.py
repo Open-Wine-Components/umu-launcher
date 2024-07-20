@@ -447,7 +447,6 @@ def get_window_client_ids(d: display.Display) -> set[str] | None:
         event: AnyEvent = d.next_event()
 
         if event.type == X.CreateNotify:
-            log.debug("Found new child windows")
             return {
                 child.id for child in d.screen().root.query_tree().children
             }
@@ -609,6 +608,7 @@ def monitor_windows(
             continue
 
         if diff := window_ids.symmetric_difference(current_window_ids):
+            log.debug("New windows detected")
             window_ids |= diff
             set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
 
