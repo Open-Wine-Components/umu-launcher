@@ -593,22 +593,24 @@ def monitor_windows(
     window_client_list: list[str],
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
+    window_client_set: set[str] = set(window_client_list)
     steam_assigned_layer_id: int = gamescope_baselayer_sequence[-1]
 
     log.debug("Monitoring windows")
 
     while True:
         # Check if the window sequence has changed
-        current_window_list = get_window_client_ids(d_secondary)
+        current_window_list: list[str] = get_window_client_ids(d_secondary)
 
         if not current_window_list:
             continue
 
-        if current_window_list != window_client_list:
+        if diff := window_client_set.symmetric_difference(
+            set(current_window_list)
+        ):
             log.debug("New windows detected")
-            set_steam_game_property(
-                d_secondary, current_window_list, steam_assigned_layer_id
-            )
+            window_client_set |= diff
+            set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
 
 
 def run_command(command: list[AnyPath]) -> int:
