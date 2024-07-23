@@ -1,4 +1,4 @@
-%define commit 9f4179d4c7c78c98ae2ff84c4dc65a5a88199647
+%define commit 9b12f90b4e113275b5e8ea33a88674275bf3a1c8
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global build_timestamp %(date +"%Y%m%d")
