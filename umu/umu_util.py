@@ -124,30 +124,3 @@ def is_winetricks_verb(
             return False
 
     return True
-
-
-@lru_cache
-def is_steamdeck() -> bool:
-    """Determine if the host device is a Steam Deck by its CPU model."""
-    cpu_info: Path = Path("/proc/cpuinfo")
-    is_sd: bool = False
-    sd_models: set[str] = {"AMD Custom APU 0405", "AMD Custom APU 0932"}
-
-    if not cpu_info.is_file():
-        return is_sd
-
-    with cpu_info.open(mode="r", encoding="utf-8") as file:
-        for line in file:
-            if line.startswith("model name"):
-                _: str = line[line.find(":") + 1 :].strip()
-                if _ in sd_models:
-                    is_sd = True
-                    break
-
-    return is_sd
-
-
-@lru_cache
-def whereis(bin: str) -> str:
-    """Return the absolute path of an executable."""
-    return which(bin) or ""
