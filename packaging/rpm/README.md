@@ -7,9 +7,9 @@ su username
 
 # Build:
 ```
-fedpkg --release f39 srpm
-mock -r /etc/mock/fedora-39-x86_64.cfg --rebuild --enable-network *.src.rpm
-mv /var/lib/mock/fedora-39-x86_64/result .
+fedpkg --release f40 srpm
+mock -r /etc/mock/fedora-40-x86_64.cfg --rebuild --enable-network *.src.rpm
+mv /var/lib/mock/fedora-40-x86_64/result .
 ```
 
 # Install:
