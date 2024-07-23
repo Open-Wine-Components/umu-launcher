@@ -147,9 +147,6 @@ def find_obsolete() -> None:
             log.warning("'%s' is obsolete", file)
 
     # $HOME/.local/share/Steam/compatibilitytool.d
-    if (launcher := STEAM_COMPAT.joinpath("umu-launcher")).is_dir():
-        log.warning("'%s' is obsolete", launcher)
-
     if (launcher := STEAM_COMPAT.joinpath("ULWGL-Launcher")).is_dir():
         log.warning("'%s' is obsolete", launcher)
 
