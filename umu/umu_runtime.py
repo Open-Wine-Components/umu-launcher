@@ -14,7 +14,7 @@ from typing import Any
 
 from umu.umu_consts import CONFIG, UMU_LOCAL
 from umu.umu_log import log
-from umu.umu_util import run_zenity
+from umu.umu_util import find_obsolete, run_zenity
 
 client_session: HTTPSConnection = HTTPSConnection(
     "repo.steampowered.com",
@@ -186,6 +186,7 @@ def setup_umu(
         _install_umu(json, thread_pool)
         return
 
+    find_obsolete()
     _update_umu(local, json, thread_pool)
 
 

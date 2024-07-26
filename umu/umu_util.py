@@ -5,6 +5,7 @@ from re import Pattern, compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
+from umu.umu_consts import STEAM_COMPAT, UMU_LOCAL
 from umu.umu_log import log
 
 
@@ -124,3 +125,35 @@ def is_winetricks_verb(
             return False
 
     return True
+
+
+def find_obsolete() -> None:
+    """Find obsoleted launcher files and log them."""
+    home: Path = Path.home()
+    obsoleted: set[str] = {
+        "reaper",
+        "sniper_platform_0.20240125.75305",
+        "BUILD_ID.txt",
+        "umu_version.json",
+        "sniper_platform_0.20231211.70175",
+    }
+
+    # Obsoleted files in $HOME/.local/share/umu from RC4 and below
+    for file in UMU_LOCAL.glob("*"):
+        is_umu_file: bool = file.name.endswith(".py") and (
+            file.name.startswith(("umu", "ulwgl"))
+        )
+        if is_umu_file or file.name in obsoleted:
+            log.warning("'%s' is obsolete", file)
+
+    # $HOME/.local/share/Steam/compatibilitytool.d
+    if (launcher := STEAM_COMPAT.joinpath("ULWGL-Launcher")).is_dir():
+        log.warning("'%s' is obsolete", launcher)
+
+    # $HOME/.cache
+    if (cache := home.joinpath(".cache", "ULWGL")).is_dir():
+        log.warning("'%s' is obsolete", cache)
+
+    # $HOME/.local/share
+    if (ulwgl := home.joinpath(".local", "share", "ULWGL")).is_dir():
+        log.warning("'%s' is obsolete", ulwgl)
