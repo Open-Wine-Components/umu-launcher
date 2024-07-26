@@ -164,7 +164,7 @@ _UMU_ZENITY_
 	Optional. Creates a *zenity*[5] popup window when downloading large files.
 
 _UMU_RUNTIME_UPDATE_
-	Optional. Disables automatic updates to the Steam Runtime platform.
+	Optional. Disables automatic updates to the *Steam Linux Runtime*[6].
 
 	Set _0_ to disable updates.
 
