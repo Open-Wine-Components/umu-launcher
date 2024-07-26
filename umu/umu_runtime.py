@@ -184,11 +184,11 @@ def setup_umu(
         _install_umu(json, thread_pool)
         return
 
-    find_obsolete()
-
     if os.environ.get("UMU_RUNTIME_UPDATE") == "0":
         log.debug("Runtime Platform updates disabled")
         return
+
+    find_obsolete()
 
     _update_umu(local, json, thread_pool)
 
