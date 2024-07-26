@@ -139,10 +139,10 @@ def find_obsolete() -> None:
     }
 
     for file in UMU_LOCAL.glob("*"):
-        if (
-            file.name.endswith(".py")
-            and file.name.startswith(("umu", "ulwgl"))
-        ) or file.name in obsoleted:
+        is_umu_file: bool = file.name.endswith(".py") and (
+            file.name.startswith(("umu", "ulwgl"))
+        )
+        if is_umu_file or file.name in obsoleted:
             log.warning("'%s' is obsolete", file)
 
     # $HOME/.local/share/Steam/compatibilitytool.d
