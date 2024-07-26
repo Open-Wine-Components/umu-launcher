@@ -129,7 +129,6 @@ def is_winetricks_verb(
 
 def find_obsolete() -> None:
     """Find obsoleted launcher files and log them."""
-    # Obsoleted files in $HOME/.local/share/umu from RC4 and below
     home: Path = Path.home()
     obsoleted: set[str] = {
         "reaper",
@@ -139,6 +138,7 @@ def find_obsolete() -> None:
         "sniper_platform_0.20231211.70175",
     }
 
+    # Obsoleted files in $HOME/.local/share/umu from RC4 and below
     for file in UMU_LOCAL.glob("*"):
         is_umu_file: bool = file.name.endswith(".py") and (
             file.name.startswith(("umu", "ulwgl"))
