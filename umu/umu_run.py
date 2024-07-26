@@ -412,10 +412,13 @@ def build_command(
         )
         return command
 
+    # Exit if the entry point is missing
+    # The _v2-entry-point script and container framework tools are included in
+    # the same image, so this can happen if the image failed to download
     if not entry_point.is_file():
         err: str = (
-            f"Path to _v2-entry-point cannot be found in '{local}'\n"
-            "Please install a Steam Runtime platform"
+            f"_v2-entry-point (umu) cannot be found in '{local}'\n"
+            "Runtime Platform missing or download incomplete"
         )
         raise FileNotFoundError(err)
 
