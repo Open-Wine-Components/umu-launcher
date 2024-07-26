@@ -130,6 +130,7 @@ def is_winetricks_verb(
 def find_obsolete() -> None:
     """Find obsoleted launcher files and log them."""
     # Obsoleted files in $HOME/.local/share/umu from RC4 and below
+    home: Path = Path.home()
     obsoleted: set[str] = {
         "reaper",
         "sniper_platform_0.20240125.75305",
@@ -150,9 +151,9 @@ def find_obsolete() -> None:
         log.warning("'%s' is obsolete", launcher)
 
     # $HOME/.cache
-    if (cache := Path.home().joinpath(".cache", "ULWGL")).is_dir():
+    if (cache := home.joinpath(".cache", "ULWGL")).is_dir():
         log.warning("'%s' is obsolete", cache)
 
     # $HOME/.local/share
-    if (ulwgl := Path.home().joinpath(".local", "share", "ULWGL")).is_dir():
+    if (ulwgl := home.joinpath(".local", "share", "ULWGL")).is_dir():
         log.warning("'%s' is obsolete", ulwgl)
