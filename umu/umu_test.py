@@ -51,6 +51,7 @@ class TestGameLauncher(unittest.TestCase):
             "LD_PRELOAD": "",
             "WINETRICKS_SUPER_QUIET": "",
             "UMU_NO_RUNTIME": "",
+            "UMU_RUNTIME_UPDATE": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -243,7 +244,6 @@ class TestGameLauncher(unittest.TestCase):
                 umu_run, "get_gamescope_baselayer_order", return_value=None
             ),
         ):
-            # TODO: Mock the call
             umu_run.run_command(mock_command)
             proc.assert_called_once()
 
@@ -1865,6 +1865,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = test_str
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
+            os.environ["UMU_RUNTIME_UPDATE"] = "0"
             # Args
             result = umu_run.parse_args()
             # Check
@@ -1964,6 +1965,13 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_MOUNTS"],
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 "Expected STEAM_COMPAT_MOUNTS to be set",
+            )
+
+            # Runtime
+            self.assertEqual(
+                os.environ.get("UMU_RUNTIME_UPDATE"),
+                self.env["UMU_RUNTIME_UPDATE"],
+                "Expected UMU_RUNTIME_UPDATE to be '0'",
             )
 
     def test_set_env_winetricks(self):
