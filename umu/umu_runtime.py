@@ -147,12 +147,10 @@ def _install_umu(
         log.debug("Destination: %s", UMU_LOCAL)
 
         # Move each file to the destination directory, overwriting if it exists
-        futures.extend(
-            [
-                thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
-                for file in source_dir.glob("*")
-            ]
-        )
+        futures.extend([
+            thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
+            for file in source_dir.glob("*")
+        ])
 
         # Remove the archive
         futures.append(thread_pool.submit(tmp.joinpath(archive).unlink, True))
@@ -186,7 +184,12 @@ def setup_umu(
         _install_umu(json, thread_pool)
         return
 
+    if os.environ.get("UMU_RUNTIME_UPDATE") == "0":
+        log.debug("Runtime Platform updates disabled")
+        return
+
     find_obsolete()
+
     _update_umu(local, json, thread_pool)
 
 

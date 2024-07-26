@@ -315,6 +315,7 @@ def set_env(
 
     # Runtime
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
+    env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
 
     return env
 
@@ -750,6 +751,7 @@ def main() -> int:  # noqa: D103
         "ULWGL_ID": "",
         "UMU_ZENITY": "",
         "UMU_NO_RUNTIME": "",
+        "UMU_RUNTIME_UPDATE": "",
     }
     command: list[AnyPath] = []
     opts: list[str] = []
