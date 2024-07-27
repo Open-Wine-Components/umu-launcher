@@ -30,6 +30,7 @@ jobs:
         python3 -m pip install --upgrade pip
         pip install ruff
         pip install python-xlib
+        pip install filelock
     - name: Lint umu_*.py files with Ruff
       run: |
         pip install ruff
