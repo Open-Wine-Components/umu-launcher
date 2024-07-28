@@ -247,6 +247,7 @@ parts:
     plugin: nil
     stage-packages:
       - python3-xlib
+      - python3-filelock
     prime:
       - usr/lib/python3
 

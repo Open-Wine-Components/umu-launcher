@@ -31,6 +31,7 @@ BuildRequires:  python3
 Requires:	python
 Requires:	python3
 Requires:	python3-xlib
+Requires:	python3-filelock
 
 
 %description
