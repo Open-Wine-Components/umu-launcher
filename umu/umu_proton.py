@@ -328,8 +328,8 @@ def _get_latest(
     # Use the latest UMU/GE-Proton
     try:
         lock = FileLock(f"{UMU_LOCAL}/compatibilitytools.d.lock")
+        log.debug("Acquiring file lock '%s'...", lock.lock_file)
         lock.acquire()
-        log.debug("Acquired lock 'compatibilitytools.d.lock'")
 
         if steam_compat.joinpath(proton).is_dir():
             raise FileExistsError
@@ -365,6 +365,7 @@ def _get_latest(
     except FileExistsError:
         pass
     finally:
+        log.debug("Released file lock '%s'", lock.lock_file)
         lock.release()
 
     os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))

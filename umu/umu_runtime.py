@@ -429,8 +429,8 @@ def _restore_umu(
     lock: FileLock = FileLock(f"{UMU_LOCAL}/umu.lock")
 
     try:
+        log.debug("Acquiring file lock '%s'...", lock.lock_file)
         lock.acquire()
-        log.debug("Acquired lock 'umu.lock'")
 
         if UMU_LOCAL.joinpath("umu").is_file():
             raise FileExistsError
@@ -441,4 +441,5 @@ def _restore_umu(
     except BaseException:
         raise
     finally:
+        log.debug("Released file lock '%s'", lock.lock_file)
         lock.release()
