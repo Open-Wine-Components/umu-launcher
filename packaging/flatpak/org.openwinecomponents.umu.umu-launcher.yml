@@ -393,3 +393,14 @@ modules:
           - type: archive
             url: https://files.pythonhosted.org/packages/08/dd/49e06f09b6645156550fb9aee9cc1e59aba7efbc972d665a1bd6ae0435d4/filelock-3.15.4.tar.gz
             sha256: 2207938cbc1844345cb01a5a95524dae30f0ce089eba5b00378295a17e3e90cb
+
+      # --- python-hatch-vcs ---
+      - name: python-hatch-vcs
+        buildsystem: simple
+        build-commands:
+          - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
+        cleanup: ['*']
+        sources:
+          - type: archive
+            url: https://files.pythonhosted.org/packages/f5/c9/54bb4fa27b4e4a014ef3bb17710cdf692b3aa2cbc7953da885f1bf7e06ea/hatch_vcs-0.4.0.tar.gz
+            sha256: 093810748fe01db0d451fabcf2c1ac2688caefd232d4ede967090b1c1b07d9f7
