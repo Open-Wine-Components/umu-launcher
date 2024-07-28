@@ -127,7 +127,7 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
 $(OBJDIR)/.build-umu-subprojects: | $(OBJDIR)
 	$(info :: Building subprojects )
-	pip install -r requirements.in -t $(OBJDIR)
+	pip3 install -r requirements.in -t $(OBJDIR)
 
 .PHONY: umu-subprojects
 umu-subprojects: $(OBJDIR)/.build-umu-subprojects
@@ -135,9 +135,10 @@ umu-subprojects: $(OBJDIR)/.build-umu-subprojects
 umu-subprojects-install:
 	$(info :: Installing subprojects )
 	install -d $(DESTDIR)$(PYTHONDIR)
-	cp      -r $(OBJDIR)/*-info $(DESTDIR)$(PYTHONDIR)
-	cp      -r $(OBJDIR)/Xlib   $(DESTDIR)$(PYTHONDIR)
-	cp         $(OBJDIR)/six.py $(DESTDIR)$(PYTHONDIR)
+	cp      -r $(OBJDIR)/*-info     $(DESTDIR)$(PYTHONDIR)
+	cp      -r $(OBJDIR)/Xlib       $(DESTDIR)$(PYTHONDIR)
+	cp      -r $(OBJDIR)/filelock   $(DESTDIR)$(PYTHONDIR)
+	cp         $(OBJDIR)/six.py     $(DESTDIR)$(PYTHONDIR)
 
 $(OBJDIR):
 	@mkdir -p $(@)

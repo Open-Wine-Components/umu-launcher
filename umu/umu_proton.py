@@ -14,7 +14,9 @@ from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-from umu.umu_consts import STEAM_COMPAT
+from filelock import FileLock
+
+from umu.umu_consts import STEAM_COMPAT, UMU_LOCAL
 from umu.umu_log import log
 from umu.umu_util import run_zenity
 
@@ -301,6 +303,7 @@ def _get_latest(
     proton: str
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
     version: str
+    lock: FileLock
 
     if not assets:
         return None
@@ -324,7 +327,15 @@ def _get_latest(
 
     # Use the latest UMU/GE-Proton
     try:
+        lock = FileLock(f"{UMU_LOCAL}/compatibilitytools.d.lock")
+        log.debug("Acquiring file lock '%s'...", lock.lock_file)
+        lock.acquire()
+
+        if steam_compat.joinpath(proton).is_dir():
+            raise FileExistsError
+
         _fetch_proton(env, tmp, assets)
+
         if version == "UMU-Proton":
             protons: list[Path] = [
                 file
@@ -339,11 +350,6 @@ def _get_latest(
             future.result()
         else:
             _extract_dir(tmp.joinpath(tarball), steam_compat)
-        os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
-        env["PROTONPATH"] = os.environ["PROTONPATH"]
-        log.debug("Removing: %s", tarball)
-        thread_pool.submit(tmp.joinpath(tarball).unlink, True)
-        log.console(f"Using {version} ({proton})")
     except ValueError as e:  # Digest mismatched
         log.exception(e)
         # Since we do not want the user to use a suspect file, delete it
@@ -356,6 +362,17 @@ def _get_latest(
     except HTTPException as e:  # Download failed
         log.exception(e)
         return None
+    except FileExistsError:
+        pass
+    finally:
+        log.debug("Released file lock '%s'", lock.lock_file)
+        lock.release()
+
+    os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
+    env["PROTONPATH"] = os.environ["PROTONPATH"]
+    log.debug("Removing: %s", tarball)
+    thread_pool.submit(tmp.joinpath(tarball).unlink, True)
+    log.console(f"Using {version} ({proton})")
 
     return env
 

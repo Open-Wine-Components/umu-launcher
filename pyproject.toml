@@ -36,7 +36,10 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 urls = { repository = "https://github.com/Open-Wine-Components/umu-launcher" }
-dependencies = ["python-xlib>=0.33"]
+dependencies = [
+  "python-xlib>=0.33",
+  "filelock>=3.15.4",
+]
 
 [project.scripts]
 umu-run = "umu.__main__:main"
@@ -77,6 +80,8 @@ exclude = [
   'umu/umu_test.py',
   'umu/umu_test_plugins.py',
   'subprojects',
+  'builddir',
+  'dist',
 ]
 
 [tool.ruff]

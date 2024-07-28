@@ -34,5 +34,6 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends},
  python3,
- python3-xlib (>= 0.33)
+ python3-xlib (>= 0.33),
+ python3-filelock (>= 3.13.1)
 Description: A tool for launching non-steam games with proton.

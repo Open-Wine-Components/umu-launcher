@@ -12,6 +12,8 @@ from tarfile import open as taropen
 from tempfile import mkdtemp
 from typing import Any
 
+from filelock import FileLock
+
 from umu.umu_consts import CONFIG, UMU_LOCAL
 from umu.umu_log import log
 from umu.umu_util import find_obsolete, run_zenity
@@ -181,7 +183,7 @@ def setup_umu(
             "Setting up Unified Launcher for Windows Games on Linux..."
         )
         local.mkdir(parents=True, exist_ok=True)
-        _install_umu(json, thread_pool)
+        _restore_umu(json, thread_pool)
         return
 
     if os.environ.get("UMU_RUNTIME_UPDATE") == "0":
@@ -219,7 +221,7 @@ def _update_umu(
     except ValueError:
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
-        _install_umu(json, thread_pool)
+        _restore_umu(json, thread_pool)
         return
 
     log.debug("Runtime: %s", runtime.name)
@@ -228,7 +230,7 @@ def _update_umu(
     if not local.joinpath("pressure-vessel").is_dir():
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
-        _install_umu(json, thread_pool)
+        _restore_umu(json, thread_pool)
         return
 
     # Restore VERSIONS.txt
@@ -244,7 +246,7 @@ def _update_umu(
         if not release.is_file():
             log.warning("Runtime Platform corrupt")
             log.console("Restoring Runtime Platform...")
-            _install_umu(json, thread_pool)
+            _restore_umu(json, thread_pool)
             return
 
         # Get the BUILD_ID value in os-release
@@ -301,10 +303,11 @@ def _update_umu(
         != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     ):
         log.console("Updating steamrt to latest...")
-        _install_umu(json, thread_pool)
+        _restore_umu(json, thread_pool)
         log.debug("Removing: %s", runtime)
         rmtree(str(runtime))
         return
+
     log.console("steamrt is up to date")
 
     client_session.close()
@@ -418,3 +421,25 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     log.console(f"{runtime.name}: mtree is OK")
 
     return ret
+
+
+def _restore_umu(
+    json: dict[str, Any], thread_pool: ThreadPoolExecutor
+) -> None:
+    lock: FileLock = FileLock(f"{UMU_LOCAL}/umu.lock")
+
+    try:
+        log.debug("Acquiring file lock '%s'...", lock.lock_file)
+        lock.acquire()
+
+        if UMU_LOCAL.joinpath("umu").is_file():
+            raise FileExistsError
+
+        _install_umu(json, thread_pool)
+    except FileExistsError:
+        pass
+    except BaseException:
+        raise
+    finally:
+        log.debug("Released file lock '%s'", lock.lock_file)
+        lock.release()
