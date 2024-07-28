@@ -80,6 +80,8 @@ exclude = [
   'umu/umu_test.py',
   'umu/umu_test_plugins.py',
   'subprojects',
+  'builddir',
+  'dist',
 ]
 
 [tool.ruff]
