@@ -466,31 +466,27 @@ def set_steam_game_property(
     steam_assigned_layer_id: int,
 ) -> None:
     """Set Steam's assigned layer ID on a list of windows."""
-    try:
-        log.debug("steam_layer: %s", steam_assigned_layer_id)
-        for window_id in window_ids:
-            try:
-                window: Window = d.create_resource_object(
-                    "window", int(window_id)
-                )
-                window.change_property(
-                    d.get_atom("STEAM_GAME"),
-                    Xatom.CARDINAL,
-                    32,
-                    [steam_assigned_layer_id],
-                )
-                log.debug(
-                    "Successfully set STEAM_GAME property for window ID: %s",
-                    window_id,
-                )
-            except Exception as e:
-                log.error(
-                    "Error setting STEAM_GAME property for window ID: %s",
-                    window_id,
-                )
-                log.exception(e)
-    except Exception as e:
-        log.exception(e)
+    log.debug("steam_layer: %s", steam_assigned_layer_id)
+
+    for window_id in window_ids:
+        try:
+            window: Window = d.create_resource_object("window", int(window_id))
+            window.change_property(
+                d.get_atom("STEAM_GAME"),
+                Xatom.CARDINAL,
+                32,
+                [steam_assigned_layer_id],
+            )
+            log.debug(
+                "Successfully set STEAM_GAME property for window ID: %s",
+                window_id,
+            )
+        except Exception as e:
+            log.error(
+                "Error setting STEAM_GAME property for window ID: %s",
+                window_id,
+            )
+            log.exception(e)
 
 
 def get_gamescope_baselayer_order(d: display.Display) -> list[int] | None:
