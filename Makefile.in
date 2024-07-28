@@ -135,9 +135,10 @@ umu-subprojects: $(OBJDIR)/.build-umu-subprojects
 umu-subprojects-install:
 	$(info :: Installing subprojects )
 	install -d $(DESTDIR)$(PYTHONDIR)
-	cp      -r $(OBJDIR)/*-info $(DESTDIR)$(PYTHONDIR)
-	cp      -r $(OBJDIR)/Xlib   $(DESTDIR)$(PYTHONDIR)
-	cp         $(OBJDIR)/six.py $(DESTDIR)$(PYTHONDIR)
+	cp      -r $(OBJDIR)/*-info     $(DESTDIR)$(PYTHONDIR)
+	cp      -r $(OBJDIR)/Xlib       $(DESTDIR)$(PYTHONDIR)
+	cp      -r $(OBJDIR)/filelock   $(DESTDIR)$(PYTHONDIR)
+	cp         $(OBJDIR)/six.py     $(DESTDIR)$(PYTHONDIR)
 
 $(OBJDIR):
 	@mkdir -p $(@)
