@@ -373,39 +373,6 @@ modules:
             url: https://files.pythonhosted.org/packages/51/65/50db4dda066951078f0a96cf12f4b9ada6e4b811516bf0262c0f4f7064d4/packaging-24.1.tar.gz
             sha256: 026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002
 
-      # --- trove_classifiers ---
-      - name: trove_classifiers
-        buildsystem: simple
-        build-commands:
-          - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-        cleanup: ['*']
-        sources:
-          - type: archive
-            url: https://files.pythonhosted.org/packages/78/c9/83f915c3f6f94f4c862c7470284fd714f312cce8e3cf98361312bc02493d/trove_classifiers-2024.7.2.tar.gz
-            sha256: 8328f2ac2ce3fd773cbb37c765a0ed7a83f89dc564c7d452f039b69249d0ac35
-
-      # --- pathspec ---
-      - name: pathspec
-        buildsystem: simple
-        build-commands:
-          - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-        cleanup: ['*']
-        sources:
-          - type: archive
-            url: https://files.pythonhosted.org/packages/ca/bc/f35b8446f4531a7cb215605d100cd88b7ac6f44ab3fc94870c120ab3adbf/pathspec-0.12.1.tar.gz
-            sha256: a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712
-
-      # --- pluggy ---
-      - name: pluggy
-        buildsystem: simple
-        build-commands:
-          - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-        cleanup: ['*']
-        sources:
-          - type: archive
-            url: https://files.pythonhosted.org/packages/96/2d/02d4312c973c6050a18b314a5ad0b3210edb65a906f868e31c111dede4a6/pluggy-1.5.0.tar.gz
-            sha256: 2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1
-
       # --- pyproject_hooks ---
       - name: pyproject_hooks
         buildsystem: simple
