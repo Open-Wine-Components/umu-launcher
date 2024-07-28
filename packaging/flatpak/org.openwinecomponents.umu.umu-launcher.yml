@@ -277,7 +277,7 @@ modules:
         url: https://files.pythonhosted.org/packages/source/p/python-xlib/python-xlib-0.33.tar.gz
         sha256: 55af7906a2c75ce6cb280a584776080602444f75815a7aff4d287bb2d7018b32
 
-  # --- python-filelock ---
+  # --- filelock ---
   - name: filelock
     buildsystem: simple
     build-commands:
@@ -331,8 +331,8 @@ modules:
                 url: https://files.pythonhosted.org/packages/78/c9/83f915c3f6f94f4c862c7470284fd714f312cce8e3cf98361312bc02493d/trove_classifiers-2024.7.2.tar.gz
                 sha256: 8328f2ac2ce3fd773cbb37c765a0ed7a83f89dc564c7d452f039b69249d0ac35
 
-      # --- python-hatch-vcs ---
-      - name: python-hatch-vcs
+      # --- hatch-vcs ---
+      - name: hatch-vcs
         buildsystem: simple
         build-commands:
           - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
