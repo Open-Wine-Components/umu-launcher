@@ -383,17 +383,6 @@ modules:
             url: https://files.pythonhosted.org/packages/a3/51/8a4a67a8174ce59cf49e816e38e9502900aea9b4af672d0127df8e10d3b0/hatchling-1.25.0.tar.gz
             sha256: 7064631a512610b52250a4d3ff1bd81551d6d1431c4eb7b72e734df6c74f4262
 
-      # --- python-filelock ---
-      - name: python-filelock
-        buildsystem: simple
-        build-commands:
-          - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-        cleanup: ['*']
-        sources:
-          - type: archive
-            url: https://files.pythonhosted.org/packages/08/dd/49e06f09b6645156550fb9aee9cc1e59aba7efbc972d665a1bd6ae0435d4/filelock-3.15.4.tar.gz
-            sha256: 2207938cbc1844345cb01a5a95524dae30f0ce089eba5b00378295a17e3e90cb
-
       # --- python-hatch-vcs ---
       - name: python-hatch-vcs
         buildsystem: simple
@@ -404,3 +393,14 @@ modules:
           - type: archive
             url: https://files.pythonhosted.org/packages/f5/c9/54bb4fa27b4e4a014ef3bb17710cdf692b3aa2cbc7953da885f1bf7e06ea/hatch_vcs-0.4.0.tar.gz
             sha256: 093810748fe01db0d451fabcf2c1ac2688caefd232d4ede967090b1c1b07d9f7
+
+      # --- python-filelock ---
+      - name: python-filelock
+        buildsystem: simple
+        build-commands:
+          - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
+        cleanup: ['*']
+        sources:
+          - type: archive
+            url: https://files.pythonhosted.org/packages/08/dd/49e06f09b6645156550fb9aee9cc1e59aba7efbc972d665a1bd6ae0435d4/filelock-3.15.4.tar.gz
+            sha256: 2207938cbc1844345cb01a5a95524dae30f0ce089eba5b00378295a17e3e90cb
