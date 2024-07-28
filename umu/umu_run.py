@@ -367,7 +367,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 
     # Set the shared library paths of the system after finding libc.so
     for rtpath in steamrt_paths:
-        if not Path(rtpath).is_symlink() and Path(rtpath, libc).is_file():
+        if Path(rtpath, libc).resolve().is_file():
             paths.add(rtpath)
 
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
