@@ -298,14 +298,38 @@ def _update_umu(
         client_session.close()
         return
 
+    steamrt_latest_digest: bytes = sha256(resp.read()).digest()
+
     if (
-        sha256(resp.read()).digest()
+        steamrt_latest_digest
         != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     ):
-        log.console("Updating steamrt to latest...")
-        _restore_umu(json, thread_pool)
-        log.debug("Removing: %s", runtime)
-        rmtree(str(runtime))
+        lock: FileLock = FileLock(f"{UMU_LOCAL}/umu.lock")
+
+        try:
+            log.console("Updating steamrt to latest...")
+            log.debug("Acquiring file lock '%s'...", lock.lock_file)
+            lock.acquire()
+
+            # Once another process acquires the lock, check if the latest
+            # runtime has already been downloaded
+            if (
+                steamrt_latest_digest
+                == sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
+            ):
+                raise FileExistsError
+
+            _install_umu(json, thread_pool)
+            log.debug("Removing: %s", runtime)
+            rmtree(str(runtime))
+        except FileExistsError:
+            pass
+        except BaseException:
+            raise
+        finally:
+            log.debug("Released file lock '%s'", lock.lock_file)
+            lock.release()
+            client_session.close()
         return
 
     log.console("steamrt is up to date")
