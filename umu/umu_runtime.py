@@ -1,5 +1,6 @@
 import os
 import sys
+from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha256
 from http.client import HTTPException, HTTPResponse, HTTPSConnection
@@ -183,7 +184,9 @@ def setup_umu(
             "Setting up Unified Launcher for Windows Games on Linux..."
         )
         local.mkdir(parents=True, exist_ok=True)
-        _restore_umu(json, thread_pool)
+        _restore_umu(
+            json, thread_pool, lambda: local.joinpath("umu").is_file()
+        )
         return
 
     if os.environ.get("UMU_RUNTIME_UPDATE") == "0":
@@ -219,18 +222,31 @@ def _update_umu(
             file for file in local.glob(f"{codename}*") if file.is_dir()
         )
     except ValueError:
+        log.debug("*_platform_* directory missing in '%s'", local)
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
-        _restore_umu(json, thread_pool)
+        _restore_umu(
+            json,
+            thread_pool,
+            lambda: len([
+                file for file in local.glob(f"{codename}*") if file.is_dir()
+            ])
+            > 0,
+        )
         return
 
     log.debug("Runtime: %s", runtime.name)
     log.debug("Codename: %s", codename)
 
     if not local.joinpath("pressure-vessel").is_dir():
+        log.debug("pressure-vessel directory missing in '%s'", local)
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
-        _restore_umu(json, thread_pool)
+        _restore_umu(
+            json,
+            thread_pool,
+            lambda: local.joinpath("pressure-vessel").is_dir(),
+        )
         return
 
     # Restore VERSIONS.txt
@@ -241,12 +257,19 @@ def _update_umu(
         release: Path = runtime.joinpath("files", "lib", "os-release")
         versions: str = f"SteamLinuxRuntime_{codename}.VERSIONS.txt"
 
+        log.debug("VERSIONS.txt file missing in '%s'", local)
+
         # Restore the runtime if os-release is missing, otherwise pressure
         # vessel will crash when creating the variable directory
         if not release.is_file():
+            log.debug("os-release file missing in '%s'", local)
             log.warning("Runtime Platform corrupt")
             log.console("Restoring Runtime Platform...")
-            _restore_umu(json, thread_pool)
+            _restore_umu(
+                json,
+                thread_pool,
+                lambda: local.joinpath("VERSIONS.txt").is_file(),
+            )
             return
 
         # Get the BUILD_ID value in os-release
@@ -448,7 +471,9 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
 
 
 def _restore_umu(
-    json: dict[str, Any], thread_pool: ThreadPoolExecutor
+    json: dict[str, Any],
+    thread_pool: ThreadPoolExecutor,
+    callback: Callable[[], bool],
 ) -> None:
     lock: FileLock = FileLock(f"{UMU_LOCAL}/umu.lock")
 
@@ -456,7 +481,9 @@ def _restore_umu(
         log.debug("Acquiring file lock '%s'...", lock.lock_file)
         lock.acquire()
 
-        if UMU_LOCAL.joinpath("umu").is_file():
+        if ret := callback():
+            log.debug("Callback returned: %s", ret)
+            log.debug("Will not restore Runtime Platform")
             raise FileExistsError
 
         _install_umu(json, thread_pool)
