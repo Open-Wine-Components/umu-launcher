@@ -180,6 +180,49 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_winepfx.exists():
             rmtree(self.test_winepfx.as_posix())
 
+    def test_set_steamrt_paths(self):
+        """Test set_steamrt_paths to ensure resolved filesystem paths.
+
+        Expects a set to contain strings representing the user's shared
+        library paths and for the paths to not contain symbolic links.
+
+        Note: This test is distribution dependent, and will be skipped if
+        the libc paths acquired in /usr does not contain symbolic links
+        """
+        libc = umu_util.get_libc()
+        steamrt_path_candidates = (
+            "/usr/lib64",
+            "/usr/lib32",
+            "/usr/lib",
+            "/usr/lib/x86_64-linux-gnu",
+            "/usr/lib/i386-linux-gnu",
+        )
+        steamrt_paths = set()
+
+        # Skip if libc.so could not be found
+        if not libc:
+            return
+
+        steamrt_paths = {
+            str(Path(path))
+            for path in steamrt_path_candidates
+            if Path(path, libc).is_file()
+        }
+
+        # Skip this test if nonoe of the path candidates are symbolic links
+        if not all(
+            Path(path).is_symlink() for path in steamrt_path_candidates
+        ):
+            return
+
+        result = umu_run.set_steamrt_paths(steamrt_path_candidates, set())
+
+        self.assertNotEqual(
+            steamrt_paths,
+            result,
+            f"Expected '{steamrt_paths}' != '{result}'",
+        )
+
     def test_run_command(self):
         """Test run_command."""
         mock_exe = "foo"
