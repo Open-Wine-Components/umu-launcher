@@ -79,6 +79,9 @@ class TestGameLauncher(unittest.TestCase):
         # Wine prefix
         self.test_winepfx = Path("./tmp.AlfLPDhDvA")
 
+        # /usr
+        self.test_usr = Path("./tmp.QnZRGFfnqH")
+
         # Dictionary that represents the umu_versionS.json
         self.root_config = {
             "umu": {
@@ -98,6 +101,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_cache.mkdir(exist_ok=True)
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
+        self.test_usr.mkdir(exist_ok=True)
 
         # Mock a valid configuration file at /usr/share/umu:
         # tmp.BXk2NnvW2m/umu_version.json
@@ -179,6 +183,71 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_winepfx.exists():
             rmtree(self.test_winepfx.as_posix())
+
+        if self.test_usr.exists():
+            rmtree(self.test_usr.as_posix())
+
+    def test_set_steamrt_paths(self):
+        """Test set_steamrt_paths to ensure resolved filesystem paths.
+
+        set_steamrt_path will find path containing the libc.so file from the
+        system, resolving any symbolic links in its path.
+
+        Expects a set to contain strings representing the user's shared
+        library paths and for the paths to not contain symbolic links.
+        """
+        lib64_link = f"{self.test_usr}/lib64"
+        lib64 = f"{self.test_usr}/lib"
+        libc = "libc.so.6"
+        steamrt_path_candidates = (
+            lib64_link,
+            lib64,
+            f"{self.test_usr}/lib32",
+            f"{self.test_usr}/lib/x86_64-linux-gnu",
+            f"{self.test_usr}/lib/i386-linux-gnu",
+        )
+        steamrt_paths = set()
+
+        # Mock shared library paths and libc.so.6
+        for path in steamrt_path_candidates:
+            if path == lib64_link:
+                Path(lib64_link).symlink_to("lib")
+                continue
+            Path(path).mkdir()
+
+        Path(lib64, libc).touch()
+
+        # Find shared lib paths containing libc
+        for path in steamrt_path_candidates:
+            if Path(path, libc).is_file():
+                steamrt_paths.add(path)
+
+        # Assert mocked runtime paths
+        self.assertEqual(
+            len(steamrt_paths),
+            2,
+            f"Expected 2 elements for '{steamrt_paths}'",
+        )
+        self.assertTrue(
+            lib64 in steamrt_paths and lib64_link in steamrt_paths,
+            f"Expected '{steamrt_paths}' to contain linked and resolved path",
+        )
+        self.assertEqual(
+            Path(lib64_link).resolve(),
+            Path(lib64).absolute(),
+            "Expected linked shared library path to resolve to real path",
+        )
+
+        result = umu_run.set_steamrt_paths(
+            steamrt_path_candidates, set(), libc
+        )
+
+        # Ensure the resolved shared library paths is not the unresolved paths
+        self.assertNotEqual(
+            steamrt_paths,
+            result,
+            "Expected linked shared library paths to not be resolved paths",
+        )
 
     def test_run_command(self):
         """Test run_command."""
@@ -1293,6 +1362,14 @@ class TestGameLauncher(unittest.TestCase):
         str1, str2 = self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")
         self.assertTrue(str1 in libpaths, f"Expected a path in: {libpaths}")
         self.assertTrue(str2 in libpaths, f"Expected a path in: {libpaths}")
+
+        # Ensure that umu sets the resolved shared library paths. The only time
+        # this variable will contain links is from the LD_LIBRARY_PATH set in
+        # the user's environment or client
+        for path in self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":"):
+            if Path(path).is_symlink():
+                err = f"Symbolic link found: {path}"
+                raise AssertionError(err)
 
         # Both of these values should be empty still after calling
         # enable_steam_game_drive
