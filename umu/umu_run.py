@@ -329,7 +329,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     # All library paths that are currently supported by the container framework
     # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#filesystem-layout
     # Non-FHS filesystems should run in a FHS chroot to comply
-    steamrt_path_candidates: tuple[str] = (
+    steamrt_path_candidates: tuple[str, ...] = (
         "/usr/lib64",
         "/usr/lib32",
         "/usr/lib",
@@ -374,7 +374,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 
 
 def set_steamrt_paths(
-    steamrt_path_candidiates: tuple[str],
+    steamrt_path_candidiates: tuple[str, ...],
     steamrt_paths: set[str],
     libc: str,
 ) -> set[str]:
