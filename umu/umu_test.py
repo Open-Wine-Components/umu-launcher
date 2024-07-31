@@ -241,7 +241,6 @@ class TestGameLauncher(unittest.TestCase):
         result = umu_run.set_steamrt_paths(
             steamrt_path_candidates, set(), libc
         )
-        print(f"result: {result}")
 
         # Ensure the resolved shared library paths is not the unresolved paths
         self.assertNotEqual(
@@ -1363,6 +1362,12 @@ class TestGameLauncher(unittest.TestCase):
         str1, str2 = self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")
         self.assertTrue(str1 in libpaths, f"Expected a path in: {libpaths}")
         self.assertTrue(str2 in libpaths, f"Expected a path in: {libpaths}")
+
+        # Ensure there are no symbolic links
+        for path in self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":"):
+            if Path(path).is_symlink():
+                err = f"Symbolic link found: {path}"
+                raise AssertionError(err)
 
         # Both of these values should be empty still after calling
         # enable_steam_game_drive
