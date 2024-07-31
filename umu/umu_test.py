@@ -1363,7 +1363,9 @@ class TestGameLauncher(unittest.TestCase):
         self.assertTrue(str1 in libpaths, f"Expected a path in: {libpaths}")
         self.assertTrue(str2 in libpaths, f"Expected a path in: {libpaths}")
 
-        # Ensure there are no symbolic links
+        # Ensure that umu sets the resolved shared library paths. The only time
+        # this variable will contain links is from the LD_LIBRARY_PATH set in
+        # the user's environment or client
         for path in self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":"):
             if Path(path).is_symlink():
                 err = f"Symbolic link found: {path}"
