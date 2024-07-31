@@ -366,7 +366,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
         return env
 
     # Set the shared library paths of the system after finding libc.so
-    set_steamrt_paths(steamrt_path_candidates, paths)
+    set_steamrt_paths(steamrt_path_candidates, paths, libc)
 
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
 
@@ -376,10 +376,9 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 def set_steamrt_paths(
     steamrt_path_candidiates: tuple[str],
     steamrt_paths: set[str],
+    libc: str,
 ) -> set[str]:
     """Set the shared library paths for the Steam Runtime."""
-    libc: str = get_libc()
-
     for rtpath in steamrt_path_candidiates:
         if (libc_path := Path(rtpath, libc).resolve()).is_file():
             steamrt_paths.add(str(libc_path.parent))
