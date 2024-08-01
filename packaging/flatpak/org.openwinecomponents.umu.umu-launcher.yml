@@ -359,8 +359,8 @@ modules:
         pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
     sources:
       - type: git
-        url: https://github.com/R1kaB3rN/ULWGL-launcher.git
-        branch: filelock
+        url: https://github.com/Open-Wine-Components/umu-launcher.git
+        branch: main
     modules:
       # --- packaging ---
       - name: packaging
