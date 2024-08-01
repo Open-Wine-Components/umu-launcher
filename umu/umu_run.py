@@ -28,7 +28,8 @@ elif this_path.is_relative_to(Path.home()) and os.environ.get(
     sys.path.append(os.environ["UMU_CLIENT_RTPATH"])
 
 from Xlib import X, Xatom, display
-from Xlib.protocol.event import AnyEvent
+from Xlib.protocol.request import GetProperty
+from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
 
 from umu.umu_consts import (
@@ -459,7 +460,7 @@ def build_command(
 def get_window_client_ids(d: display.Display) -> set[str] | None:
     """Get the list of new client windows under the root window."""
     try:
-        event: AnyEvent = d.next_event()
+        event: Event = d.next_event()
 
         if event.type == X.CreateNotify:
             return {
@@ -503,11 +504,15 @@ def set_steam_game_property(
 def get_gamescope_baselayer_order(d: display.Display) -> list[int] | None:
     """Get the gamescope base layer seq on the primary root window."""
     try:
+        root_primary: Window = d.screen().root
+
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
         atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
 
         # Get the property value
-        prop = d.screen().root.get_full_property(atom, Xatom.CARDINAL)
+        prop: GetProperty | None = root_primary.get_full_property(
+            atom, Xatom.CARDINAL
+        )
 
         if prop:
             # Extract and return the value
@@ -582,7 +587,7 @@ def monitor_baselayer(
     log.debug("Monitoring base layers")
 
     while True:
-        event: AnyEvent = d_primary.next_event()
+        event: Event = d_primary.next_event()
 
         # Check if the layer sequence has changed to the broken one
         if event.type == X.PropertyNotify and event.atom == atom:
