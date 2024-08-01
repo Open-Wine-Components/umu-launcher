@@ -586,11 +586,13 @@ def monitor_baselayer(
 
         # Check if the layer sequence has changed to the broken one
         if event.type == X.PropertyNotify and event.atom == atom:
-            prop = root_primary.get_full_property(atom, Xatom.CARDINAL)
+            prop: GetProperty | None = root_primary.get_full_property(
+                atom, Xatom.CARDINAL
+            )
 
-            log.debug("Property value for atom '%s': %s", atom, prop.value)
-            if prop.value == gamescope_baselayer_sequence:
+            if prop and prop.value == gamescope_baselayer_sequence:
                 log.debug("Broken base layer sequence detected")
+                log.debug("Property value for atom '%s': %s", atom, prop.value)
                 rearranged, _ = rearrange_gamescope_baselayer_order(prop.value)
                 set_gamescope_baselayer_order(d_primary, rearranged)
                 continue
