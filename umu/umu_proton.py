@@ -128,7 +128,7 @@ def _fetch_proton(
     assets: tuple[tuple[str, str], tuple[str, str]],
 ) -> dict[str, str]:
     """Download the latest UMU-Proton or GE-Proton."""
-    hash, hash_url = assets[0]
+    proton_hash, hash_url = assets[0]
     tarball, tar_url = assets[1]
     proton: str = tarball.removesuffix(".tar.gz")
     ret: int = 0  # Exit code from zenity
@@ -142,13 +142,13 @@ def _fetch_proton(
     # Digest file
     # Since the URLs are not hardcoded links, Ruff will flag the urlopen call
     # See https://github.com/astral-sh/ruff/issues/7918
-    log.console(f"Downloading {hash}...")
+    log.console(f"Downloading {proton_hash}...")
     with (
         urlopen(hash_url, context=ssl_default_context) as resp,  # noqa: S310
     ):
         if resp.status != 200:
             err: str = (
-                f"Unable to download {hash}\n"
+                f"Unable to download {proton_hash}\n"
                 f"github.com returned the status: {resp.status}"
             )
             raise HTTPException(err)
@@ -160,7 +160,7 @@ def _fetch_proton(
     # Proton
     # Create a popup with zenity when the env var is set
     if os.environ.get("UMU_ZENITY") == "1":
-        bin: str = "curl"
+        curl: str = "curl"
         opts: list[str] = [
             "-LJO",
             "--silent",
@@ -169,7 +169,7 @@ def _fetch_proton(
             str(tmp),
         ]
         msg: str = f"Downloading {proton}..."
-        ret = run_zenity(bin, opts, msg)
+        ret = run_zenity(curl, opts, msg)
 
     if ret:
         tmp.joinpath(tarball).unlink(missing_ok=True)
