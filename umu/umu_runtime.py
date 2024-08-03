@@ -75,7 +75,7 @@ def _install_umu(
             f"/steamrt-images-{codename}"
             "/snapshots/latest-container-runtime-public-beta"
         )
-        sha_hash = sha256()
+        hashsum = sha256()
 
         # Get the digest for the runtime archive
         client_session.request("GET", f"{endpoint}/SHA256SUMS")
@@ -111,10 +111,10 @@ def _install_umu(
             view: memoryview = memoryview(buffer)
             while size := resp.readinto(buffer):
                 file.write(view[:size])
-                sha_hash.update(view[:size])
+                hashsum.update(view[:size])
 
         # Verify the runtime digest
-        if sha_hash.hexdigest() != digest:
+        if hashsum.hexdigest() != digest:
             err: str = f"Digest mismatched: {archive}"
             client_session.close()
             raise ValueError(err)
