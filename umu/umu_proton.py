@@ -128,15 +128,19 @@ def _fetch_proton(
     assets: tuple[tuple[str, str], tuple[str, str]],
 ) -> dict[str, str]:
     """Download the latest UMU-Proton or GE-Proton."""
-    proton_hash, hash_url = assets[0]
+    proton_hash, proton_hash_url = assets[0]
     tarball, tar_url = assets[1]
     proton: str = tarball.removesuffix(".tar.gz")
     ret: int = 0  # Exit code from zenity
     digest: str = ""  # Digest of the Proton archive
 
     # Verify the scheme from Github for resources
-    if not tar_url.startswith("https:") or not hash_url.startswith("https:"):
-        err: str = f"Scheme in URLs is not 'https:': {(tar_url, hash_url)}"
+    if not tar_url.startswith("https:") or not proton_hash_url.startswith(
+        "https:"
+    ):
+        err: str = (
+            f"Scheme in URLs is not 'https:': {(tar_url, proton_hash_url)}"
+        )
         raise ValueError(err)
 
     # Digest file
@@ -144,7 +148,7 @@ def _fetch_proton(
     # See https://github.com/astral-sh/ruff/issues/7918
     log.console(f"Downloading {proton_hash}...")
     with (
-        urlopen(hash_url, context=ssl_default_context) as resp,  # noqa: S310
+        urlopen(proton_hash_url, context=ssl_default_context) as resp,  # noqa: S310
     ):
         if resp.status != 200:
             err: str = (
