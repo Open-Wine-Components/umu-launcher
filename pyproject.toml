@@ -171,7 +171,9 @@ lint.select = [
     # Sort imports
     "I",
     # Ensure we're smart when using list comprehensions
-    "C4"
+    "C4",
+    # Ensure we do not shadow any Python built-in functionality
+    "A"
 ]
 lint.ignore = [
     # Format
