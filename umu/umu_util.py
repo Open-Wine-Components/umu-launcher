@@ -1,7 +1,8 @@
 from ctypes.util import find_library
 from functools import lru_cache
 from pathlib import Path
-from re import Pattern, compile
+from re import Pattern
+from re import compile as re_compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
@@ -20,11 +21,11 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
 
     Intended to be used for long running operations (e.g. large file downloads)
     """
-    bin: str = which("zenity") or ""
+    zenity: str = which("zenity") or ""
     cmd: str = which(command) or ""
     ret: int = 0  # Exit code returned from zenity
 
-    if not bin:
+    if not zenity:
         log.warning("zenity was not found in system")
         return -1
 
@@ -42,7 +43,7 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
     ):
         with Popen(
             [
-                f"{bin}",
+                f"{zenity}",
                 "--progress",
                 "--auto-close",
                 f"--text={msg}",
@@ -117,7 +118,7 @@ def is_winetricks_verb(
         return False
 
     # When passed a sequence, check each verb and log the non-verbs
-    regex = compile(pattern)
+    regex = re_compile(pattern)
     for verb in verbs:
         if not regex.match(verb):
             err: str = f"Value is not a winetricks verb: '{verb}'"
