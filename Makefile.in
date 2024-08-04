@@ -179,4 +179,14 @@ user-install:
 	$(info :: To run you need to make sure "$(BINDIR)" is in your PATH )
 
 
+ZIPAPP := $(OBJDIR)/umu-run-$(shell git describe --always --long --tags)
+ZIPAPP_STAGING := $(OBJDIR)/umu-run_staging
+
+.PHONY: zipapp
+zipapp: version | $(OBJDIR)
+	@$(PYTHON_INTERPRETER) -m pip install -t "$(ZIPAPP_STAGING)" --upgrade .
+	cp umu/umu_version.json "$(ZIPAPP_STAGING)"/umu
+	@$(PYTHON_INTERPRETER) -m zipapp $(ZIPAPP_STAGING) -m "umu.__main__:main" -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
+	@echo "Standalone application created: $(ZIPAPP))"
+
 # vim: ft=make
