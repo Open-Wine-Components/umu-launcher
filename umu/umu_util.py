@@ -158,3 +158,16 @@ def find_obsolete() -> None:
     # $HOME/.local/share
     if (ulwgl := home.joinpath(".local", "share", "ULWGL")).is_dir():
         log.warning("'%s' is obsolete", ulwgl)
+
+
+def is_steamos() -> bool:
+    """Check if the current OS is steamos."""
+    release: Path = Path("/etc/os-release")
+
+    if not release.is_file():
+        log.debug("File '%s' could not be found", release)
+        log.debug("Will assume OS is not steamos")
+        return False
+
+    with release.open(mode="r", encoding="utf-8") as file:
+        return any(line.startswith("ID=steamos") for line in file)
