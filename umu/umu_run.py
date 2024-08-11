@@ -45,7 +45,12 @@ from umu.umu_log import CustomFormatter, console_handler, log
 from umu.umu_plugins import set_env_toml
 from umu.umu_proton import get_umu_proton
 from umu.umu_runtime import setup_umu
-from umu.umu_util import get_libc, is_installed_verb, is_winetricks_verb
+from umu.umu_util import (
+    get_libc,
+    is_installed_verb,
+    is_steamos,
+    is_winetricks_verb,
+)
 
 AnyPath = os.PathLike | str
 
@@ -694,6 +699,7 @@ def run_command(command: list[AnyPath]) -> int:
     d_secondary: display.Display | None = None
     # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
     gamescope_baselayer_sequence: list[int] | None = None
+    gamescope_displays: list[display.Display] = []
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -728,16 +734,34 @@ def run_command(command: list[AnyPath]) -> int:
             cwd=cwd,
         )
 
-    if os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
-        # :0 is where the primary xwayland server is on the Steam Deck
-        d_primary = display.Display(":0")
+    # Currently, Flatpak apps that use umu as their runtime will not have their
+    # game window brought to the foreground due to the base layer being out of
+    # order. Ensure we're in a steamos gamescope session fixing them
+    # See https://github.com/ValveSoftware/gamescope/issues/1341
+    if is_steamos() and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
+        log.debug("SteamOS gamescope session detected")
+        gamescope_displays = discover_gamescope_displays()
+        d_primary = get_gamescope_xwayland_primary(gamescope_displays)
         gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
 
-    # Dont do window fuckery if we're not inside gamescope
-    if gamescope_baselayer_sequence and not os.environ.get("EXE", "").endswith(
-        "winetricks"
+    # Currently, steamos creates two xwayland servers
+    # Ensure that there are exactly two before connecting to the second display
+    if (
+        d_primary
+        and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
+        and gamescope_displays
+        and len(gamescope_displays) == 2
     ):
-        d_secondary = display.Display(":1")
+        d_secondary = next(
+            (d for d in gamescope_displays if d != d_primary), None
+        )
+
+    # Dont do window fuckery if we're not inside gamescope
+    if (
+        d_secondary
+        and gamescope_baselayer_sequence
+        and not os.environ.get("EXE", "").endswith("winetricks")
+    ):
         d_secondary.screen().root.change_attributes(
             event_mask=X.SubstructureNotifyMask
         )
@@ -781,10 +805,8 @@ def run_command(command: list[AnyPath]) -> int:
     except KeyboardInterrupt:
         raise
     finally:
-        if d_primary:
-            d_primary.close()
-        if d_secondary:
-            d_secondary.close()
+        for d in gamescope_displays:
+            d.close()
 
     return ret
 
