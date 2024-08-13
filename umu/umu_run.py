@@ -640,56 +640,6 @@ def monitor_windows(
             set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
 
 
-def discover_gamescope_displays() -> list[display.Display]:
-    """Find all gamescope displays."""
-    sockets: list[Path] = list(Path("/tmp/.X11-unix").glob("*"))
-    displays: list[display.Display] = []
-
-    for sock in sockets:
-        log.debug("Socket: %s", sock)
-        display_no = f":{sock.name.removeprefix('X')}"
-
-        try:
-            d: display.Display = display.Display(display_no)
-        except Exception as e:
-            log.exception(e)
-            continue
-
-        if (
-            d.get_atom(
-                "GAMESCOPE_CURSOR_VISIBLE_FEEDBACK", only_if_exists=True
-            )
-            != X.NONE
-        ):
-            log.debug("Gamescope display found: %s", d.get_display_name())
-            displays.append(d)
-            continue
-
-        d.close()
-
-    return displays
-
-
-def get_gamescope_xwayland_primary(
-    gamescope_displays: list[display.Display],
-) -> display.Display | None:
-    """Get the primary gamescope xwayland server."""
-    if not gamescope_displays:
-        return None
-
-    for d in gamescope_displays:
-        if (
-            d.get_atom("GAMESCOPE_FOCUSED_WINDOW", only_if_exists=True)
-            != X.NONE
-        ):
-            log.debug(
-                "Primary gamescope display found: %s", d.get_display_name()
-            )
-            return d
-
-    return None
-
-
 def run_command(command: list[AnyPath]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     prctl: CFuncPtr
