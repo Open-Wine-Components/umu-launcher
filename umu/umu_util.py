@@ -166,6 +166,8 @@ def get_osrelease_id() -> str:
     release: Path
     osid: str = ""
 
+    # Flatpak follows the Container Interface outlined by systemd
+    # See https://systemd.io/CONTAINER_INTERFACE
     if os.environ.get("container") == "flatpak":  # noqa: SIM112
         release = Path("/run/host/os-release")
     else:
