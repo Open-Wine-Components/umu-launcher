@@ -48,7 +48,7 @@ from umu.umu_runtime import setup_umu
 from umu.umu_util import (
     get_libc,
     is_installed_verb,
-    is_steamos,
+    get_osrelease_id,
     is_winetricks_verb,
 )
 
@@ -742,7 +742,10 @@ def run_command(command: list[AnyPath]) -> int:
     # game window brought to the foreground due to the base layer being out of
     # order. Ensure we're in a steamos gamescope session before fixing them
     # See https://github.com/ValveSoftware/gamescope/issues/1341
-    if is_steamos() and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
+    if (
+        get_osrelease_id() == "steamos"
+        and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+    ):
         log.debug("SteamOS gamescope session detected")
         # Currently, steamos creates two xwayland servers at :0 and :1
         # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
