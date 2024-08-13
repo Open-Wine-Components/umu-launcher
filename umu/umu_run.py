@@ -744,11 +744,14 @@ def run_command(command: list[AnyPath]) -> int:
     # See https://github.com/ValveSoftware/gamescope/issues/1341
     if is_steamos() and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
         log.debug("SteamOS gamescope session detected")
+        # Currently, steamos creates two xwayland servers at :0 and :1
+        # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
+        # the Flatpak, it is still possible to connect to it.
         d_primary = display.Display(":0")
         gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
 
-    # Currently, steamos creates two xwayland servers
-    # Ensure that there are exactly two before connecting to the second display
+    # Connect to the display associated with the game
+    # Display :1 will be visible in the Flatpak
     if d_primary and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1":
         d_secondary = display.Display(":1")
 
