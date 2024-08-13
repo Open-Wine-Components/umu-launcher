@@ -743,7 +743,7 @@ def run_command(command: list[AnyPath]) -> int:
     # game window brought to the foreground due to the base layer being out of
     # order. Ensure we're in a steamos gamescope session fixing them
     # See https://github.com/ValveSoftware/gamescope/issues/1341
-    if is_steamos() and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
+    if os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
         log.debug("SteamOS gamescope session detected")
         gamescope_displays = discover_gamescope_displays()
         d_primary = get_gamescope_xwayland_primary(gamescope_displays)
