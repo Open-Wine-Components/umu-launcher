@@ -179,6 +179,7 @@ def get_osrelease_id() -> str:
         for line in file:
             if line.startswith("ID="):
                 osid = line.removeprefix("ID=").strip()
+                log.debug("os-release: ID=%s", osid)
                 break
 
     return osid
