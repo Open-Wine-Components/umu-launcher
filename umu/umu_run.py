@@ -47,8 +47,8 @@ from umu.umu_proton import get_umu_proton
 from umu.umu_runtime import setup_umu
 from umu.umu_util import (
     get_libc,
-    is_installed_verb,
     get_osrelease_id,
+    is_installed_verb,
     is_winetricks_verb,
 )
 
