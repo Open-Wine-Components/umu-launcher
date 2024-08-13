@@ -161,9 +161,10 @@ def find_obsolete() -> None:
         log.warning("'%s' is obsolete", ulwgl)
 
 
-def is_steamos() -> bool:
-    """Check if the current OS is steamos."""
+def get_osrelease_id() -> str:
+    """Get the identity of the OS."""
     release: Path
+    osid: str = ""
 
     if os.environ.get("container") == "flatpak":  # noqa: SIM112
         release = Path("/run/host/os-release")
@@ -172,8 +173,12 @@ def is_steamos() -> bool:
 
     if not release.is_file():
         log.debug("File '%s' could not be found", release)
-        log.debug("Will assume OS is not steamos")
-        return False
+        return osid
 
     with release.open(mode="r", encoding="utf-8") as file:
-        return any(line.startswith("ID=steamos") for line in file)
+        for line in file:
+            if line.startswith("ID="):
+                osid = line.removeprefix("ID=").strip()
+                break
+
+    return osid
