@@ -162,7 +162,7 @@ def find_obsolete() -> None:
 
 
 def get_osrelease_id() -> str:
-    """Get the identity of the OS."""
+    """Get the identity of the host OS."""
     release: Path
     osid: str = ""
 
