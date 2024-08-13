@@ -804,8 +804,10 @@ def run_command(command: list[AnyPath]) -> int:
     except KeyboardInterrupt:
         raise
     finally:
-        for d in gamescope_displays:
-            d.close()
+        if d_primary:
+            d_primary.close()
+        if d_secondary:
+            d_secondary.close()
 
     return ret
 
