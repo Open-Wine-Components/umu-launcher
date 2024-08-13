@@ -1,3 +1,4 @@
+import os
 from ctypes.util import find_library
 from functools import lru_cache
 from pathlib import Path
@@ -158,3 +159,29 @@ def find_obsolete() -> None:
     # $HOME/.local/share
     if (ulwgl := home.joinpath(".local", "share", "ULWGL")).is_dir():
         log.warning("'%s' is obsolete", ulwgl)
+
+
+def get_osrelease_id() -> str:
+    """Get the identity of the host OS."""
+    release: Path
+    osid: str = ""
+
+    # Flatpak follows the Container Interface outlined by systemd
+    # See https://systemd.io/CONTAINER_INTERFACE
+    if os.environ.get("container") == "flatpak":  # noqa: SIM112
+        release = Path("/run/host/os-release")
+    else:
+        release = Path("/etc/os-release")
+
+    if not release.is_file():
+        log.debug("File '%s' could not be found", release)
+        return osid
+
+    with release.open(mode="r", encoding="utf-8") as file:
+        for line in file:
+            if line.startswith("ID="):
+                osid = line.removeprefix("ID=").strip()
+                log.debug("OS: %s", osid)
+                break
+
+    return osid

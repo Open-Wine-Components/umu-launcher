@@ -45,7 +45,12 @@ from umu.umu_log import CustomFormatter, console_handler, log
 from umu.umu_plugins import set_env_toml
 from umu.umu_proton import get_umu_proton
 from umu.umu_runtime import setup_umu
-from umu.umu_util import get_libc, is_installed_verb, is_winetricks_verb
+from umu.umu_util import (
+    get_libc,
+    get_osrelease_id,
+    is_installed_verb,
+    is_winetricks_verb,
+)
 
 AnyPath = os.PathLike | str
 
@@ -501,7 +506,9 @@ def set_steam_game_property(
             log.exception(e)
 
 
-def get_gamescope_baselayer_order(d: display.Display) -> list[int] | None:
+def get_gamescope_baselayer_order(
+    d: display.Display,
+) -> list[int] | None:
     """Get the gamescope base layer seq on the primary root window."""
     try:
         root_primary: Window = d.screen().root
@@ -677,16 +684,32 @@ def run_command(command: list[AnyPath]) -> int:
             cwd=cwd,
         )
 
-    if os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
-        # :0 is where the primary xwayland server is on the Steam Deck
+    # Currently, Flatpak apps that use umu as their runtime will not have their
+    # game window brought to the foreground due to the base layer being out of
+    # order. Ensure we're in a steamos gamescope session before fixing them
+    # See https://github.com/ValveSoftware/gamescope/issues/1341
+    if (
+        get_osrelease_id() == "steamos"
+        and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+    ):
+        log.debug("SteamOS gamescope session detected")
+        # Currently, steamos creates two xwayland servers at :0 and :1
+        # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
+        # the Flatpak, it is still possible to connect to it.
         d_primary = display.Display(":0")
         gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
 
-    # Dont do window fuckery if we're not inside gamescope
-    if gamescope_baselayer_sequence and not os.environ.get("EXE", "").endswith(
-        "winetricks"
-    ):
+    # Connect to the display associated with the game
+    # Display :1 will be visible in the Flatpak
+    if d_primary and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1":
         d_secondary = display.Display(":1")
+
+    # Dont do window fuckery if we're not inside gamescope
+    if (
+        d_secondary
+        and gamescope_baselayer_sequence
+        and not os.environ.get("EXE", "").endswith("winetricks")
+    ):
         d_secondary.screen().root.change_attributes(
             event_mask=X.SubstructureNotifyMask
         )
