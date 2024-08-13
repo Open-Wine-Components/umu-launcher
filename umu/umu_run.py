@@ -507,12 +507,9 @@ def set_steam_game_property(
 
 
 def get_gamescope_baselayer_order(
-    d: display.Display | None,
+    d: display.Display,
 ) -> list[int] | None:
     """Get the gamescope base layer seq on the primary root window."""
-    if not d:
-        return None
-
     try:
         root_primary: Window = d.screen().root
 
