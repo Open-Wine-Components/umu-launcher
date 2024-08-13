@@ -648,6 +648,7 @@ def discover_gamescope_displays() -> list[display.Display]:
     displays: list[display.Display] = []
 
     for sock in sockets:
+        log.debug("Socket: %s", sock)
         display_no = f":{sock.name.removeprefix('X')}"
 
         try:
@@ -746,7 +747,9 @@ def run_command(command: list[AnyPath]) -> int:
     if os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
         log.debug("SteamOS gamescope session detected")
         gamescope_displays = discover_gamescope_displays()
+        log.debug("Gamescope displays: %s", gamescope_displays)
         d_primary = get_gamescope_xwayland_primary(gamescope_displays)
+        log.debug("Gamescope primary display: %s", d_primary)
         gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
 
     # Currently, steamos creates two xwayland servers
