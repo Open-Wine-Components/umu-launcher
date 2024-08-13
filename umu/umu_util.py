@@ -1,3 +1,4 @@
+import os
 from ctypes.util import find_library
 from functools import lru_cache
 from pathlib import Path
@@ -162,7 +163,12 @@ def find_obsolete() -> None:
 
 def is_steamos() -> bool:
     """Check if the current OS is steamos."""
-    release: Path = Path("/etc/os-release")
+    release: Path
+
+    if os.environ.get("container") == "flatpak":  # noqa: SIM112
+        release = Path("/run/host/os-release")
+    else:
+        release = Path("/etc/os-release")
 
     if not release.is_file():
         log.debug("File '%s' could not be found", release)
