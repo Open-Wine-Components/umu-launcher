@@ -740,7 +740,7 @@ def run_command(command: list[AnyPath]) -> int:
 
     # Currently, Flatpak apps that use umu as their runtime will not have their
     # game window brought to the foreground due to the base layer being out of
-    # order. Ensure we're in a steamos gamescope session fixing them
+    # order. Ensure we're in a steamos gamescope session before fixing them
     # See https://github.com/ValveSoftware/gamescope/issues/1341
     if is_steamos() and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope":
         log.debug("SteamOS gamescope session detected")
