@@ -642,9 +642,7 @@ def monitor_windows(
 
 def discover_gamescope_displays() -> list[display.Display]:
     """Find all gamescope displays."""
-    sockets: list[Path] = [
-        path for path in Path("/tmp/.X11-unix").glob("*") if path.is_socket()
-    ]
+    sockets: list[Path] = list(Path("/tmp/.X11-unix").glob("*"))
     displays: list[display.Display] = []
 
     for sock in sockets:
