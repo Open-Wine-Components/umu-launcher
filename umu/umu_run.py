@@ -703,7 +703,6 @@ def run_command(command: list[AnyPath]) -> int:
     d_secondary: display.Display | None = None
     # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
     gamescope_baselayer_sequence: list[int] | None = None
-    gamescope_displays: list[display.Display] = []
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
