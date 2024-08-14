@@ -34,8 +34,6 @@ from Xlib.xobject.drawable import Window
 
 from umu.umu_consts import (
     DEBUG_FORMAT,
-    FLATPAK_ID,
-    FLATPAK_PATH,
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
     STEAM_COMPAT,
@@ -664,8 +662,8 @@ def run_command(command: list[AnyPath]) -> int:
     else:
         cwd = Path.cwd()
 
-    # Create a subprocess but do not set it as subreaper
-    if FLATPAK_PATH or not libc:
+    if os.environ.get("container") == "flatpak" or not libc:  # noqa: SIM112
+        # Create a subprocess but do not set it as subreaper
         proc = Popen(command, start_new_session=True, cwd=cwd)
     else:
         prctl = CDLL(libc).prctl
