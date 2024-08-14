@@ -45,6 +45,6 @@ UMU_LOCAL: Path = (
     if os.environ.get("container") == "flatpak"  # noqa: SIM112
     else Path.home().joinpath(".local", "share", "umu")
 )
-# Constants defined in prctl.h
+# Constant defined in prctl.h
 # See prctl(2) for more details
 PR_SET_CHILD_SUBREAPER = 36
