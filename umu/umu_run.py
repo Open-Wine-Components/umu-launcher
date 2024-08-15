@@ -34,8 +34,6 @@ from Xlib.xobject.drawable import Window
 
 from umu.umu_consts import (
     DEBUG_FORMAT,
-    FLATPAK_ID,
-    FLATPAK_PATH,
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
     STEAM_COMPAT,
@@ -664,8 +662,8 @@ def run_command(command: list[AnyPath]) -> int:
     else:
         cwd = Path.cwd()
 
-    # Create a subprocess but do not set it as subreaper
-    if FLATPAK_PATH or not libc:
+    if os.environ.get("container") == "flatpak" or not libc:  # noqa: SIM112
+        # Create a subprocess but do not set it as subreaper
         proc = Popen(command, start_new_session=True, cwd=cwd)
     else:
         prctl = CDLL(libc).prctl
@@ -808,11 +806,6 @@ def main() -> int:  # noqa: D103
         set_log()
 
     log.debug("Arguments: %s", args)
-
-    if FLATPAK_PATH and root.is_relative_to("/app"):
-        log.debug("Flatpak environment detected")
-        log.debug("FLATPAK_ID: %s", FLATPAK_ID)
-        log.debug("Runtime path: %s", FLATPAK_PATH)
 
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
