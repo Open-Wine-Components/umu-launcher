@@ -687,8 +687,8 @@ def run_command(command: list[AnyPath]) -> int:
     # order. Ensure we're in a steamos gamescope session before fixing them
     # See https://github.com/ValveSoftware/gamescope/issues/1341
     if (
-        get_osrelease_id() == "steamos"
-        and os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+        os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+        and get_osrelease_id() == "steamos"
     ):
         log.debug("SteamOS gamescope session detected")
         # Currently, steamos creates two xwayland servers at :0 and :1
