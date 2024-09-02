@@ -150,10 +150,12 @@ def _install_umu(
         log.debug("Destination: %s", UMU_LOCAL)
 
         # Move each file to the destination directory, overwriting if it exists
-        futures.extend([
-            thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
-            for file in source_dir.glob("*")
-        ])
+        futures.extend(
+            [
+                thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
+                for file in source_dir.glob("*")
+            ]
+        )
 
         # Remove the archive
         futures.append(thread_pool.submit(tmp.joinpath(archive).unlink, True))
@@ -228,9 +230,9 @@ def _update_umu(
         _restore_umu(
             json,
             thread_pool,
-            lambda: len([
-                file for file in local.glob(f"{codename}*") if file.is_dir()
-            ])
+            lambda: len(
+                [file for file in local.glob(f"{codename}*") if file.is_dir()]
+            )
             > 0,
         )
         return
