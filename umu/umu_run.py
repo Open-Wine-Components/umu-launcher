@@ -52,8 +52,6 @@ from umu.umu_util import (
 
 AnyPath = os.PathLike | str
 
-thread_pool: ThreadPoolExecutor = ThreadPoolExecutor()
-
 
 def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     opt_args: set[str] = {"--help", "-h", "--config"}
@@ -155,7 +153,10 @@ def setup_pfx(path: str) -> None:
     log.debug("steamuser in prefix is link: %s", steam.is_symlink())
     log.debug("user in prefix is link: %s", wineuser.is_symlink())
 
-def check_env(env: dict[str, str]) -> dict[str, str] | dict[str, Any]:
+
+def check_env(
+    env: dict[str, str], thread_pool: ThreadPoolExecutor
+) -> dict[str, str] | dict[str, Any]:
     """Before executing a game, check for environment variables and set them.
 
     GAMEID is strictly required and the client is responsible for setting this.
@@ -749,6 +750,7 @@ def run_command(command: list[AnyPath]) -> int:
 
 
 def main() -> int:  # noqa: D103
+    thread_pool: ThreadPoolExecutor = ThreadPoolExecutor()
     future: Future | None = None
     env: dict[str, str] = {
         "WINEPREFIX": "",
@@ -829,7 +831,7 @@ def main() -> int:  # noqa: D103
         env, opts = set_env_toml(env, args)
     else:
         opts = args[1]  # Reference the executable options
-        check_env(env)
+        check_env(env, thread_pool)
 
     # Prepare the prefix
     setup_pfx(env["WINEPREFIX"])
