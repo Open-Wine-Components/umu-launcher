@@ -151,11 +151,9 @@ def setup_pfx(path: str) -> None:
         steam.symlink_to(user)
     elif not wineuser.exists() and steam.is_dir():
         wineuser.symlink_to("steamuser")
-    else:
-        log.debug("Skipping link creation for prefix")
-        log.debug("User steamuser is link: %s", steam.is_symlink())
-        log.debug("User home directory is link: %s", wineuser.is_symlink())
 
+    log.debug("steamuser in prefix is link: %s", steam.is_symlink())
+    log.debug("user in prefix is link: %s", wineuser.is_symlink())
 
 def check_env(env: dict[str, str]) -> dict[str, str] | dict[str, Any]:
     """Before executing a game, check for environment variables and set them.
@@ -191,14 +189,12 @@ def check_env(env: dict[str, str]) -> dict[str, str] | dict[str, Any]:
         os.environ.get("PROTONPATH")
         and Path(STEAM_COMPAT, os.environ["PROTONPATH"]).is_dir()
     ):
-        log.debug("Proton version selected")
         os.environ["PROTONPATH"] = str(
             STEAM_COMPAT.joinpath(os.environ["PROTONPATH"])
         )
 
     # GE-Proton
     if os.environ.get("PROTONPATH") == "GE-Proton":
-        log.debug("GE-Proton selected")
         get_umu_proton(env, thread_pool)
 
     if "PROTONPATH" not in os.environ:
@@ -227,15 +223,12 @@ def set_env(
     protonpath: Path = (
         Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
     )
-
     # Command execution usage
     is_cmd: bool = isinstance(args, tuple)
-
     # Command execution usage, but client wants to create a prefix. When an
     # empty string is the executable, Proton is expected to create the prefix
     # but will fail because the executable is not found
     is_createpfx: bool = is_cmd and not args[0]  # type: ignore
-
     # Command execution usage, but client wants to run winetricks verbs
     is_winetricks: bool = is_cmd and args[0] == "winetricks"  # type: ignore
 
@@ -365,7 +358,6 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     # See https://github.com/Open-Wine-Components/umu-launcher/issues/106
     if not libc:
         log.warning("libc.so could not be found")
-        log.info("LD_LIBRARY_PATH=%s", os.environ.get("LD_LIBRARY_PATH") or "")
         env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
         return env
 
@@ -653,9 +645,6 @@ def run_command(command: list[AnyPath]) -> int:
         err: str = f"Command list is empty or None: {command}"
         raise ValueError(err)
 
-    if not libc:
-        log.warning("Will not set subprocess as subreaper")
-
     # For winetricks, change directory to $PROTONPATH/protonfixes
     if os.environ.get("EXE", "").endswith("winetricks"):
         cwd = f"{os.environ['PROTONPATH']}/protonfixes"
@@ -804,8 +793,6 @@ def main() -> int:  # noqa: D103
 
     if "UMU_LOG" in os.environ:
         set_log()
-
-    log.debug("Arguments: %s", args)
 
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
