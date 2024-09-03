@@ -29,7 +29,7 @@ jobs:
     - name: Make system package
       run: |
         ./configure.sh --prefix=/usr
-        sudo make PREFIX=/usr install
+        make DESTDIR=dist install
     - name: Make release
       run: |
         # TODO: Figure out release without requiring root
