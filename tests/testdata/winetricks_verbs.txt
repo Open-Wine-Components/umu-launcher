@@ -1,7 +1,15 @@
+3m_library
+7zip
+adobe_diged4
+adobe_diged
+autohotkey
+busybox
 cmake
 colorprofile
 controlpad
 controlspy
+dbgview
+depends
 dotnet20sdk
 dxsdk_aug2006
 dxsdk_jun2010
@@ -33,6 +41,7 @@ ollydbg200
 ollydbg201
 openwatcom
 origin
+procexp
 protectionid
 psdk2003
 psdkwin71
@@ -319,6 +328,8 @@ pdh
 peverify
 physx
 pngfilt
+powershell_core
+powershell
 prntvpt
 python26
 python27
@@ -410,6 +421,7 @@ ipamona
 liberation
 lucida
 meiryo
+micross
 opensymbol
 pptfonts
 sourcehansans
@@ -443,6 +455,10 @@ forcemono
 good
 grabfullscreen=n
 grabfullscreen=y
+graphics=default
+graphics=mac
+graphics=wayland
+graphics=x11
 gsm=0
 gsm=1
 gsm=2
@@ -452,8 +468,6 @@ hidewineexports=disable
 hidewineexports=enable
 hosts
 isolate_home
-macdriver=mac
-macdriver=x11
 mackeyremap=both
 mackeyremap=left
 mackeyremap=none
