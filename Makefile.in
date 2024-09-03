@@ -194,10 +194,10 @@ build-zipapp: $(OBJDIR)/.build-zipapp
 
 zipapp-install: build-zipapp
 	$(info :: Installing umu-launcher as zipapp )
-	install -d $(PREFIX)/opt/$(INSTALLDIR)
 	$(PYTHON_INTERPRETER) -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
 	touch -d "$(SOURCE_DATE_EPOCH)" $(ZIPAPP)
-	mv $(ZIPAPP) $(PREFIX)/opt/$(INSTALLDIR)/
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install -Dm755 $(ZIPAPP) $(DESTDIR)$(PREFIX)/bin/$(ZIPAPP)
 	@echo "Standalone application created: $(ZIPAPP))"
 
 # vim: ft=make
