@@ -4,7 +4,12 @@ from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha256
 from http.client import HTTPException, HTTPResponse, HTTPSConnection
-from importlib.resources.abc import Traversable
+
+try:
+    from importlib.resources.abc import Traversable
+except ModuleNotFoundError:
+    from importlib.abc import Traversable
+
 from json import load
 from pathlib import Path
 from shutil import move, rmtree
