@@ -731,6 +731,7 @@ def run_command(command: list[AnyPath]) -> int:
 
 def main() -> int:  # noqa: D103
     thread_pool: ThreadPoolExecutor = ThreadPoolExecutor()
+    args: Namespace | tuple[str, list[str]] = parse_args()
     future: Future | None = None
     env: dict[str, str] = {
         "WINEPREFIX": "",
@@ -761,7 +762,6 @@ def main() -> int:  # noqa: D103
     command: list[AnyPath] = []
     opts: list[str] = []
     root: Path = Path(__file__).resolve(strict=True).parent
-    args: Namespace | tuple[str, list[str]] = parse_args()
 
     if os.geteuid() == 0:
         err: str = "This script should never be run as the root user"
