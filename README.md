@@ -75,9 +75,9 @@ Borderlands 3 from EGS store.
 3. In our umu unified database, we create a 'title' column, 'store' column, 'codename' column, 'umu-ID' column. We add a line for Borderlands 3 and fill in the details for each column.
 4. Now the launcher can search 'Catnip' and 'egs' as the codename and store in the database and correlate it with Borderlands 3 and umu-12345. It can then feed umu-12345 to the `umu-run` script.
 
-
 ## Building
-Building umu-launcher currently requires `bash`, `make`, and `scdoc`, as well as the following Python build tools: [build](https://github.com/pypa/build), [hatchling](https://github.com/pypa/hatch), and [installer](https://github.com/pypa/installer).
+
+Building umu-launcher currently requires `bash`, `make`, and `scdoc` for distribution, as well as the following Python build tools: [build](https://github.com/pypa/build), [hatchling](https://github.com/pypa/hatch), and [installer](https://github.com/pypa/installer).
 
 To build umu-launcher, after downloading and extracting the source code from this repository, change into the newly extracted directory
 ```shell
@@ -92,26 +92,36 @@ Change the `--prefix` as fit for your distribution, for example `/usr/local`, or
 
 Then run `make` to build. After a successful build the resulting files should be available in the `./builddir` directory
 
-**Note**: For umu clients, [pip](https://github.com/pypa/pip) is required to build its Python dependencies and they will need to be put within same directory as the runtime directory (e.g., `$HOME/.config/heroic/tools/runtimes/umu`).
 
-To build all dependencies:
-```shell
-make DESTDIR=<packaging_directory> umu-subprojects
-```
+## Installing 
 
-### Installing 
 To install umu-launcher run the following command after completing the steps described above
 ```shell
 make install
 ```
-or if you are packaging umu-launcher
+
+Or if you are packaging umu-launcher
 ```shell
 make DESTDIR=<packaging_directory> install
 ```
 
-**Note**: For umu clients, to install all of its dependencies, run:
+### Installing as user
+
+Additionally, user installations are supported if desired.
+
+First, configure the build for a user installation
 ```shell
-make DESTDIR=<packaging_directory> umu-subprojects-install
+./configure.sh --user-install
+```
+
+Then run `make` install
+```shell
+make install
+```
+
+**Note**: When installing as a user, this will place the executable `umu-run` in `$HOME/.local/bin`. You will need to add `$HOME/.local/bin` in your `$PATH` to be able to run umu-launcher this way by exporting the path in your shell's configuration, for example `$HOME/.bash_profile`
+```shell
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
 ## Packaging
