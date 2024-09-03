@@ -22,18 +22,16 @@ FLATPAK ?= xfalse
 
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)
-all: version umu umu-launcher
-endif
-
-ifeq ($(USERINSTALL), xfalse)
-all: version umu umu-docs umu-launcher
+all: umu-dist umu-launcher
 endif
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
 SOURCE_DATE_EPOCH = $(shell LC_ALL=C date --date='@1580601600')
+all: zipapp
 install: zipapp-install
 else
+all: umu-dist umu-docs umu-launcher
 install: umu-install umu-launcher-install fix_shebangs
 endif
 
@@ -81,7 +79,7 @@ umu-docs-install: umu-docs
 	install -m644 $(OBJDIR)/umu.5 $(DESTDIR)$(MANDIR)/man5/umu.5
 
 
-$(OBJDIR)/.build-umu-dist: | $(OBJDIR)
+$(OBJDIR)/.build-umu-dist: | $(OBJDIR) version
 	$(info :: Building umu )
 	$(PYTHON_INTERPRETER) -m build --wheel --skip-dependency-check --no-isolation --outdir=$(OBJDIR)
 	touch $(@)
@@ -176,24 +174,25 @@ uninstall:
 
 
 ZIPAPP := $(OBJDIR)/umu-run
-ZIPAPP_STAGING := $(OBJDIR)/umu-run_staging
+ZIPAPP_STAGING := $(OBJDIR)/zipapp_staging
+ZIPAPP_VENV := $(OBJDIR)/zipapp_venv
 
-$(OBJDIR)/.build-zipapp: | $(OBJDIR)
+$(OBJDIR)/.build-zipapp: | $(OBJDIR) version
 	$(info :: Building umu-launcher as zipapp )
-	$(PYTHON_INTERPRETER) -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile .
-	cp umu/umu_version.json.in umu/umu_version.json.in.tmp
-	sed 's|##UMU_VERSION##|$(shell git describe --always --long --tags)|g' -i umu/umu_version.json.in.tmp
-	mv umu/umu_version.json.in.tmp "$(ZIPAPP_STAGING)"/umu/umu_version.json
+	$(PYTHON_INTERPRETER) -m venv $(ZIPAPP_VENV)
+	. $(ZIPAPP_VENV)/bin/activate && python3 -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile .
+	install -Dm644 umu/umu_version.json "$(ZIPAPP_STAGING)"/umu/umu_version.json
 	cp umu/__main__.py "$(ZIPAPP_STAGING)"
 	# Make zipapp reproducible
 	find "$(ZIPAPP_STAGING)" -exec touch -h -d "$(SOURCE_DATE_EPOCH)" {} +
+	. $(ZIPAPP_VENV)/bin/activate && python3 -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
 	touch -d "$(SOURCE_DATE_EPOCH)" $(ZIPAPP)
 	touch $(@)
 
-.PHONY: zipapp-install
-build-zipapp: $(OBJDIR)/.build-zipapp
+.PHONY: zipapp
+zipapp: $(OBJDIR)/.build-zipapp
 
-zipapp-install: build-zipapp
+zipapp-install: zipapp
 	$(info :: Installing umu-launcher as zipapp )
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -Dm755 $(ZIPAPP) $(DESTDIR)$(PREFIX)/bin/$(ZIPAPP)
