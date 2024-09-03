@@ -176,7 +176,7 @@ uninstall:
 	@rm -rf -v --preserve-root=all $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 
-ZIPAPP := $(OBJDIR)/umu-run-$(shell git describe --always --long --tags)
+ZIPAPP := $(OBJDIR)/umu-run
 ZIPAPP_STAGING := $(OBJDIR)/umu-run_staging
 
 $(OBJDIR)/.build-zipapp: | $(OBJDIR)
