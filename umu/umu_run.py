@@ -101,25 +101,6 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     return sys.argv[1], sys.argv[2:]
 
 
-def set_log() -> None:
-    """Adjust the log level for the logger."""
-    levels: set[str] = {"1", "warn", "debug"}
-
-    if os.environ["UMU_LOG"] not in levels:
-        return
-
-    if os.environ["UMU_LOG"] == "1":
-        # Show the envvars and command at this level
-        log.setLevel(level=INFO)
-    elif os.environ["UMU_LOG"] == "warn":
-        log.setLevel(level=WARNING)
-    elif os.environ["UMU_LOG"] == "debug":
-        # Show all logs
-        console_handler.setFormatter(CustomFormatter(DEBUG_FORMAT))
-        log.addHandler(console_handler)
-        log.setLevel(level=DEBUG)
-
-
 def setup_pfx(path: str) -> None:
     """Prepare a Proton compatible WINE prefix."""
     pfx: Path = Path(path).joinpath("pfx").expanduser()
@@ -793,8 +774,15 @@ def main() -> int:  # noqa: D103
         log.error(err)
         sys.exit(1)
 
-    if "UMU_LOG" in os.environ:
-        set_log()
+    # Adjust the log level for the logger
+    if os.environ.get("UMU_LOG") == "1":
+        log.setLevel(level=INFO)
+    elif os.environ.get("UMU_LOG") == "warn":
+        log.setLevel(level=WARNING)
+    elif os.environ.get("UMU_LOG") == "debug":
+        console_handler.setFormatter(CustomFormatter(DEBUG_FORMAT))
+        log.addHandler(console_handler)
+        log.setLevel(level=DEBUG)
 
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
