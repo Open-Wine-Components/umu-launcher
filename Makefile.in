@@ -171,8 +171,6 @@ release: $(RELEASEDIR) | version zipapp
 uninstall:
 	$(info :: Removing $(INSTALLDIR) files in $(DESTDIR)$(BINDIR) )
 	@rm -rf -v --preserve-root=all $(DESTDIR)$(BINDIR)/umu-run
-	$(info :: Removing $(INSTALLDIR) directory in $(DESTDIR)$(DATADIR) )
-	@rm -rf -v --preserve-root=all $(DESTDIR)$(DATADIR)/$(INSTALLDIR)
 
 
 ZIPAPP := $(OBJDIR)/umu-run
