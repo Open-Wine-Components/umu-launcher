@@ -49,8 +49,6 @@ from umu.umu_util import (
     is_winetricks_verb,
 )
 
-AnyPath = os.PathLike | str
-
 
 def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     opt_args: set[str] = {"--help", "-h", "--config"}
@@ -366,9 +364,8 @@ def set_steamrt_paths(
 def build_command(
     env: dict[str, str],
     local: Path,
-    command: list[AnyPath],
     opts: list[str] = [],
-) -> list[AnyPath]:
+) -> tuple[Path | str, ...]:
     """Build the command to be executed."""
     proton: Path = Path(env["PROTONPATH"], "proton")
     entry_point: Path = local.joinpath("umu")
@@ -377,13 +374,7 @@ def build_command(
     # option is intended for debugging purposes, and is otherwise useless
     if env.get("UMU_NO_RUNTIME") == "1":
         log.warning("Runtime Platform disabled")
-        command.extend(
-            [
-                env["EXE"],
-                *opts,
-            ],
-        )
-        return command
+        return env["EXE"], *opts
 
     if not proton.is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
@@ -391,15 +382,7 @@ def build_command(
 
     if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
         log.warning("Using Proton without Runtime Platform")
-        command.extend(
-            [
-                proton,
-                env["PROTON_VERB"],
-                env["EXE"],
-                *opts,
-            ],
-        )
-        return command
+        return proton, env["PROTON_VERB"], env["EXE"], *opts
 
     # Exit if the entry point is missing
     # The _v2-entry-point script and container framework tools are included in
@@ -417,20 +400,16 @@ def build_command(
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         opts = ["-q", *opts]
 
-    command.extend(
-        [
-            entry_point,
-            "--verb",
-            env["PROTON_VERB"],
-            "--",
-            proton,
-            env["PROTON_VERB"],
-            env["EXE"],
-            *opts,
-        ],
+    return (
+        entry_point,
+        "--verb",
+        env["PROTON_VERB"],
+        "--",
+        proton,
+        env["PROTON_VERB"],
+        env["EXE"],
+        *opts,
     )
-
-    return command
 
 
 def get_window_client_ids(d: display.Display) -> set[str] | None:
@@ -608,10 +587,10 @@ def monitor_windows(
             set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
 
 
-def run_command(command: list[AnyPath]) -> int:
+def run_command(command: tuple[Path | str, ...]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     prctl: CFuncPtr
-    cwd: AnyPath
+    cwd: Path | str
     proc: Popen
     ret: int = 0
     libc: str = get_libc()
@@ -759,7 +738,6 @@ def main() -> int:  # noqa: D103
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
     }
-    command: list[AnyPath] = []
     opts: list[str] = []
     root: Path = Path(__file__).resolve(strict=True).parent
 
@@ -845,7 +823,7 @@ def main() -> int:  # noqa: D103
         sys.exit(1)
 
     # Build the command
-    build_command(env, UMU_LOCAL, command, opts)
+    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, opts)
     log.debug("%s", command)
 
     # Run the command
