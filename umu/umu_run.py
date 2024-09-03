@@ -10,6 +10,7 @@ from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
+from importlib.resources.abc import Traversable
 from logging import DEBUG, INFO, WARNING
 from pathlib import Path
 from pwd import getpwuid
@@ -741,11 +742,12 @@ def main() -> int:  # noqa: D103
         "UMU_RUNTIME_UPDATE": "",
     }
     opts: list[str] = []
-    root: Path
+    root: Traversable
+
     try:
         root = Path(__file__).resolve(strict=True).parent
     except NotADirectoryError:
-        # raised when whithin a zipapp. Try again in non-strict mode, root
+        # Raised when within a zipapp. Try again in non-strict mode, root
         # should be zipapp.pyz/umu. Split and set root to /umu within zip.
         root = Path(__file__).resolve().parent
         root = zipfile.Path(root.parent, root.name)
