@@ -31,3 +31,7 @@ jobs:
     - name: Make release
       run: |
         make release
+    - name: Make user install
+      run: |
+        ./configure.sh --user-install
+        make install
