@@ -15,13 +15,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Install dependencies
       run: |
         sudo apt-get install meson shellcheck scdoc python3-hatchling python3-build python3-installer python3-filelock
     - name: Initialize submodules
       run: |
         git submodule update --init --recursive
-        git fetch --prune --unshallow
     - name: Lint using Shellcheck
       run: |
         shellcheck configure.sh
