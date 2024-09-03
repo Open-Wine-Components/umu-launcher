@@ -24,16 +24,6 @@ from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
 from typing import Any
 
-# Add client's runtime path to PYTHONPATH to find dependencies
-if (this_path := Path(__file__)).is_relative_to(
-    Path.home()
-) and "runtime" in this_path.parent.parent.name:
-    sys.path.append(str(this_path.parent.parent))
-elif this_path.is_relative_to(Path.home()) and os.environ.get(
-    "UMU_CLIENT_RTPATH"
-):
-    sys.path.append(os.environ["UMU_CLIENT_RTPATH"])
-
 from Xlib import X, Xatom, display
 from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
