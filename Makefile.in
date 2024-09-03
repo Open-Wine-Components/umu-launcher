@@ -25,13 +25,15 @@ SOURCE_DATE_EPOCH := $(shell date --date='@1580601600')
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)
 all: version umu umu-launcher
-else
+endif
+
+ifeq ($(USERINSTALL), xfalse)
 all: version umu umu-docs umu-launcher
 endif
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
-install: umu-install umu-launcher-install user-install fix_shebangs
+install: zipapp-install
 else
 install: umu-install umu-launcher-install fix_shebangs
 endif
@@ -184,16 +186,26 @@ user-install:
 ZIPAPP := $(OBJDIR)/umu-run-$(shell git describe --always --long --tags)
 ZIPAPP_STAGING := $(OBJDIR)/umu-run_staging
 
-.PHONY: zipapp
-zipapp: version | $(OBJDIR)
-	@$(PYTHON_INTERPRETER) -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile .
+$(OBJDIR)/.build-zipapp: | $(OBJDIR)
+	$(info :: Building umu-launcher as zipapp )
+	$(PYTHON_INTERPRETER) -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile .
 	cp umu/umu_version.json.in umu/umu_version.json.in.tmp
 	sed 's|##UMU_VERSION##|$(shell git describe --always --long --tags)|g' -i umu/umu_version.json.in.tmp
 	mv umu/umu_version.json.in.tmp "$(ZIPAPP_STAGING)"/umu/umu_version.json
 	cp umu/__main__.py "$(ZIPAPP_STAGING)"
+	# Make zipapp reproducible
 	find "$(ZIPAPP_STAGING)" -exec touch -h -d "$(SOURCE_DATE_EPOCH)" {} +
-	@$(PYTHON_INTERPRETER) -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
+	touch $(@)
+
+.PHONY: zipapp-install
+build-zipapp: $(OBJDIR)/.build-zipapp
+
+zipapp-install: build-zipapp
+	$(info :: Installing umu-launcher as zipapp )
+	install -d $(PREFIX)/opt/$(INSTALLDIR)
+	$(PYTHON_INTERPRETER) -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
 	touch -d "$(SOURCE_DATE_EPOCH)" $(ZIPAPP)
+	mv $(ZIPAPP) $(PREFIX)/opt/$(INSTALLDIR)/
 	@echo "Standalone application created: $(ZIPAPP))"
 
 # vim: ft=make
