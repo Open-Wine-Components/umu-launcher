@@ -163,7 +163,7 @@ release: $(RELEASEDIR) | version zipapp
 	cp -r umu packaging Makefile.in configure.sh README.md LICENSE $(<)
 	tar -cvzf $(<).tar.gz $(<)
 	cp -a $(ZIPAPP) .
-	sha512sum umu-run > umu-run.sha512sum 
+	sha512sum umu-run > umu-run.sha512sum
 
 
 .PHONY: uninstall
