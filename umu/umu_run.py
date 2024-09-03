@@ -520,6 +520,7 @@ def window_setup(  # noqa
 ) -> None:
     if gamescope_baselayer_sequence:
         # Rearrange the sequence
+        # TODO: Consider only rearranging the sequence when we need to.
         rearranged_sequence, steam_assigned_layer_id = (
             rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
         )

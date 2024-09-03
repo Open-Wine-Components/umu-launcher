@@ -187,6 +187,28 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_usr.exists():
             rmtree(self.test_usr.as_posix())
 
+    def test_rearrange_gamescope_baselayer_order_err(self):
+        """Test rearrange_gamescope_baselayer_order for unexpected seq."""
+        baselayer = []
+
+        with self.assertRaises(IndexError):
+            umu_run.rearrange_gamescope_baselayer_order(baselayer)
+
+    def test_rearrange_gamescope_baselayer_order(self):
+        """Test rearrange_gamescope_baselayer_order for expected sequences."""
+        baselayer = [1, 2, 3, 4]
+        expected = (
+            [baselayer[0], baselayer[-1], *baselayer[1:-1]],
+            baselayer[-1],
+        )
+        result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
+
+        self.assertEqual(
+            result,
+            expected,
+            f"Expected {expected}, received {result}",
+        )
+
     def test_set_steamrt_paths(self):
         """Test set_steamrt_paths to ensure resolved filesystem paths.
 
