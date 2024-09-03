@@ -156,12 +156,14 @@ $(RELEASEDIR):
 	mkdir -p $(@)
 
 .PHONY: release
-release: $(RELEASEDIR) | version
+release: $(RELEASEDIR) | version zipapp
 	$(info :: Creating source distribution for release )
 	mkdir -p $(<)
 	rm -rf umu/__pycache__
 	cp -r umu packaging Makefile.in configure.sh README.md LICENSE $(<)
 	tar -cvzf $(<).tar.gz $(<)
+	cp -a $(ZIPAPP) .
+	sha512sum umu-run > umu-run.sha512sum 
 
 
 .PHONY: uninstall
