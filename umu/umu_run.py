@@ -742,10 +742,10 @@ def main() -> int:  # noqa: D103
     try:
         root = Path(__file__).resolve(strict=True).parent
     except NotADirectoryError:
-        # Raised when within a zipapp. Try again in non-strict mode, root
-        # should be zipapp.pyz/umu. Split and set root to /umu within zip.
-        root = Path(__file__).resolve().parent
-        root = zipfile.Path(root.parent, root.name)
+        # Raised when within a zipapp. Try again in non-strict mode
+        root = zipfile.Path(
+            Path(__file__).resolve().parent.parent, Path(__file__).parent.name
+        )
 
     if os.geteuid() == 0:
         err: str = "This script should never be run as the root user"
