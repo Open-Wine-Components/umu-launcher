@@ -348,7 +348,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
         toml_path = self.test_file + "/" + test_toml
         result = None
         test_command = []
-        test_command_result = None
 
         Path(self.test_file + "/proton").touch()
         Path(toml_path).touch()
@@ -404,12 +403,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             os.environ[key] = val
 
         # Build
-        test_command_result = umu_run.build_command(
-            self.env, self.test_local_share, test_command
-        )
-        self.assertTrue(
-            test_command_result is test_command, "Expected the same reference"
-        )
+        test_command = umu_run.build_command(self.env, self.test_local_share)
 
         # Verify contents of the command
         entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
