@@ -33,7 +33,6 @@ from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
 
 from umu.umu_consts import (
-    DEBUG_FORMAT,
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
     STEAM_COMPAT,
@@ -780,7 +779,7 @@ def main() -> int:  # noqa: D103
     elif os.environ.get("UMU_LOG") == "warn":
         log.setLevel(level=WARNING)
     elif os.environ.get("UMU_LOG") == "debug":
-        console_handler.setFormatter(CustomFormatter(DEBUG_FORMAT))
+        console_handler.setFormatter(CustomFormatter(DEBUG))
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
 

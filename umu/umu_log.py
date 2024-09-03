@@ -1,4 +1,5 @@
 import sys
+from enum import Enum
 from logging import (
     DEBUG,
     ERROR,
@@ -11,7 +12,23 @@ from logging import (
     getLogger,
 )
 
-from umu.umu_consts import SIMPLE_FORMAT, Color
+
+class Color(Enum):
+    """Represent the color to be applied to a string."""
+
+    RESET = "\u001b[0m"
+    INFO = "\u001b[34m"
+    WARNING = "\033[33m"
+    ERROR = "\033[31m"
+    BOLD = "\033[1m"
+    DEBUG = "\u001b[35m"
+
+
+SIMPLE_FORMAT = (
+    f"%(levelname)s: {Color.BOLD.value}%(message)s{Color.RESET.value}"
+)
+
+DEBUG_FORMAT = f"[%(module)s] %(levelname)s: {Color.BOLD.value}%(message)s{Color.RESET.value}"  # noqa: E501
 
 
 class CustomLogger(Logger):  # noqa: D101
@@ -28,9 +45,9 @@ class CustomLogger(Logger):  # noqa: D101
 
 
 class CustomFormatter(Formatter):  # noqa: D101
-    def __init__(self, fmt: str = SIMPLE_FORMAT) -> None:
+    def __init__(self, level: int = INFO) -> None:
         """Apply colors to the record style for each level."""
-        self._fmt = fmt
+        self._fmt = DEBUG_FORMAT if level == DEBUG else SIMPLE_FORMAT
         self._formats = {
             DEBUG: f"{Color.DEBUG.value}{self._fmt}",
             INFO: f"{Color.INFO.value}{self._fmt}",
