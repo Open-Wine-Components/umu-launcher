@@ -730,8 +730,8 @@ def run_command(command: list[AnyPath]) -> int:
 
 
 def main() -> int:  # noqa: D103
-    thread_pool: ThreadPoolExecutor = ThreadPoolExecutor()
     args: Namespace | tuple[str, list[str]] = parse_args()
+    thread_pool: ThreadPoolExecutor | None = None
     future: Future | None = None
     env: dict[str, str] = {
         "WINEPREFIX": "",
@@ -772,6 +772,8 @@ def main() -> int:  # noqa: D103
         err: str = "This script is not designed to run on musl-based systems"
         log.error(err)
         sys.exit(1)
+
+    thread_pool = ThreadPoolExecutor()
 
     # Adjust the log level for the logger
     if os.environ.get("UMU_LOG") == "1":
