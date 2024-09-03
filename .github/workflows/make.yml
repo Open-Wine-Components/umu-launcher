@@ -34,4 +34,5 @@ jobs:
     - name: Make user install
       run: |
         ./configure.sh --user-install
-        make install
+        # TODO: Figure out user install without requiring root
+        sudo make install
