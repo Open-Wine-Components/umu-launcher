@@ -195,7 +195,7 @@ zipapp: $(OBJDIR)/.build-zipapp
 zipapp-install: zipapp
 	$(info :: Installing umu-launcher as zipapp )
 	install -d $(DESTDIR)$(PREFIX)/bin
-	install -Dm755 $(ZIPAPP) $(DESTDIR)$(PREFIX)/bin/$(ZIPAPP)
-	@echo "Standalone application created: $(ZIPAPP))"
+	install -Dm755 $(ZIPAPP) $(DESTDIR)$(PREFIX)/bin
+	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
 
 # vim: ft=make
