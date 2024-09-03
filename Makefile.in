@@ -187,6 +187,7 @@ $(OBJDIR)/.build-zipapp: | $(OBJDIR)
 	cp umu/__main__.py "$(ZIPAPP_STAGING)"
 	# Make zipapp reproducible
 	find "$(ZIPAPP_STAGING)" -exec touch -h -d "$(SOURCE_DATE_EPOCH)" {} +
+	touch -d "$(SOURCE_DATE_EPOCH)" $(ZIPAPP)
 	touch $(@)
 
 .PHONY: zipapp-install
@@ -194,8 +195,6 @@ build-zipapp: $(OBJDIR)/.build-zipapp
 
 zipapp-install: build-zipapp
 	$(info :: Installing umu-launcher as zipapp )
-	$(PYTHON_INTERPRETER) -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
-	touch -d "$(SOURCE_DATE_EPOCH)" $(ZIPAPP)
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -Dm755 $(ZIPAPP) $(DESTDIR)$(PREFIX)/bin/$(ZIPAPP)
 	@echo "Standalone application created: $(ZIPAPP))"
