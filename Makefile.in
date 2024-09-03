@@ -31,7 +31,7 @@ endif
 
 .PHONY: install
 ifeq ($(USERINSTALL), xtrue)
-SOURCE_DATE_EPOCH = $(shell date --date='@1580601600')
+SOURCE_DATE_EPOCH = $(shell LC_ALL=C date --date='@1580601600')
 install: zipapp-install
 else
 install: umu-install umu-launcher-install fix_shebangs
