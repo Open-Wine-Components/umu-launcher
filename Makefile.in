@@ -185,7 +185,6 @@ $(OBJDIR)/.build-zipapp: | $(OBJDIR) version
 	. $(ZIPAPP_VENV)/bin/activate && python3 -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile .
 	install -Dm644 umu/umu_version.json "$(ZIPAPP_STAGING)"/umu/umu_version.json
 	cp umu/__main__.py "$(ZIPAPP_STAGING)"
-	# Make zipapp reproducible
 	find "$(ZIPAPP_STAGING)" -exec touch -h -d "$(SOURCE_DATE_EPOCH)" {} +
 	. $(ZIPAPP_VENV)/bin/activate && python3 -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
 	touch -d "$(SOURCE_DATE_EPOCH)" $(ZIPAPP)
