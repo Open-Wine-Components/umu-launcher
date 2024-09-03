@@ -20,6 +20,8 @@ DESTDIR ?=
 USERINSTALL ?= xfalse
 FLATPAK ?= xfalse
 
+SOURCE_DATE_EPOCH := $(shell date --date='@1580601600')
+
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)
 all: version umu umu-launcher
@@ -184,9 +186,14 @@ ZIPAPP_STAGING := $(OBJDIR)/umu-run_staging
 
 .PHONY: zipapp
 zipapp: version | $(OBJDIR)
-	@$(PYTHON_INTERPRETER) -m pip install -t "$(ZIPAPP_STAGING)" --upgrade .
-	cp umu/umu_version.json "$(ZIPAPP_STAGING)"/umu
-	@$(PYTHON_INTERPRETER) -m zipapp $(ZIPAPP_STAGING) -m "umu.__main__:main" -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
+	@$(PYTHON_INTERPRETER) -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile .
+	cp umu/umu_version.json.in umu/umu_version.json.in.tmp
+	sed 's|##UMU_VERSION##|$(shell git describe --always --long --tags)|g' -i umu/umu_version.json.in.tmp
+	mv umu/umu_version.json.in.tmp "$(ZIPAPP_STAGING)"/umu/umu_version.json
+	cp umu/__main__.py "$(ZIPAPP_STAGING)"
+	find "$(ZIPAPP_STAGING)" -exec touch -h -d "$(SOURCE_DATE_EPOCH)" {} +
+	@$(PYTHON_INTERPRETER) -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
+	touch -d "$(SOURCE_DATE_EPOCH)" $(ZIPAPP)
 	@echo "Standalone application created: $(ZIPAPP))"
 
 # vim: ft=make
