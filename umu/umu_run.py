@@ -10,7 +10,12 @@ from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
-from importlib.resources.abc import Traversable
+
+try:
+    from importlib.resources.abc import Traversable
+except ModuleNotFoundError:
+    from importlib.abc import Traversable
+
 from logging import DEBUG, INFO, WARNING
 from pathlib import Path
 from pwd import getpwuid
