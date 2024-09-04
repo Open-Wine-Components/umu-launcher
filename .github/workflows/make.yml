@@ -15,6 +15,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Install dependencies
       run: |
         sudo apt-get install meson shellcheck scdoc python3-hatchling python3-build python3-installer python3-filelock
@@ -27,7 +29,13 @@ jobs:
     - name: Make system package
       run: |
         ./configure.sh --prefix=/usr
-        sudo make PREFIX=/usr install
+        make DESTDIR=dist install
     - name: Make release
       run: |
-        make release
+        # TODO: Figure out release without requiring root
+        sudo make release
+    - name: Make user install
+      run: |
+        ./configure.sh --user-install
+        # TODO: Figure out user install without requiring root
+        sudo make install

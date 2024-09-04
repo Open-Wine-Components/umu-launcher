@@ -4,6 +4,12 @@ from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha256
 from http.client import HTTPException, HTTPResponse, HTTPSConnection
+
+try:
+    from importlib.resources.abc import Traversable
+except ModuleNotFoundError:
+    from importlib.abc import Traversable
+
 from json import load
 from pathlib import Path
 from shutil import move, rmtree
@@ -172,12 +178,12 @@ def _install_umu(
 
 
 def setup_umu(
-    root: Path, local: Path, thread_pool: ThreadPoolExecutor
+    root: Traversable, local: Path, thread_pool: ThreadPoolExecutor
 ) -> None:
     """Install or update the runtime for the current user."""
-    json: dict[str, Any] = _get_json(root, CONFIG)
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
+    json: dict[str, Any] = _get_json(root, CONFIG)
 
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
@@ -362,7 +368,7 @@ def _update_umu(
     client_session.close()
 
 
-def _get_json(path: Path, config: str) -> dict[str, Any]:
+def _get_json(path: Traversable, config: str) -> dict[str, Any]:
     """Validate the state of the configuration file umu_version.json in a path.
 
     The configuration file will be used to update the runtime and it reflects

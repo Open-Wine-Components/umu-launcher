@@ -4,11 +4,18 @@ import os
 import sys
 import threading
 import time
+import zipfile
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
+
+try:
+    from importlib.resources.abc import Traversable
+except ModuleNotFoundError:
+    from importlib.abc import Traversable
+
 from logging import DEBUG, INFO, WARNING
 from pathlib import Path
 from pwd import getpwuid
@@ -18,14 +25,12 @@ from subprocess import Popen
 from typing import Any
 
 # Add client's runtime path to PYTHONPATH to find dependencies
-if (this_path := Path(__file__)).is_relative_to(
-    Path.home()
-) and "runtime" in this_path.parent.parent.name:
-    sys.path.append(str(this_path.parent.parent))
-elif this_path.is_relative_to(Path.home()) and os.environ.get(
-    "UMU_CLIENT_RTPATH"
+# TODO: Remove this after Heroic/Lutris have updated their logic
+if (
+    Path(__file__).is_relative_to(Path.home())
+    and "runtime" in Path(__file__).parent.parent.name
 ):
-    sys.path.append(os.environ["UMU_CLIENT_RTPATH"])
+    sys.path.append(str(Path(__file__).parent.parent))
 
 from Xlib import X, Xatom, display
 from Xlib.protocol.request import GetProperty
@@ -740,7 +745,15 @@ def main() -> int:  # noqa: D103
         "UMU_RUNTIME_UPDATE": "",
     }
     opts: list[str] = []
-    root: Path = Path(__file__).resolve(strict=True).parent
+    root: Traversable
+
+    try:
+        root = Path(__file__).resolve(strict=True).parent
+    except NotADirectoryError:
+        # Raised when within a zipapp. Try again in non-strict mode
+        root = zipfile.Path(
+            Path(__file__).resolve().parent.parent, Path(__file__).parent.name
+        )
 
     if os.geteuid() == 0:
         err: str = "This script should never be run as the root user"
