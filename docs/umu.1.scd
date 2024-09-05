@@ -168,6 +168,11 @@ _UMU_RUNTIME_UPDATE_
 
 	Set _0_ to disable updates.
 
+_UMU_NO_RUNTIME_
+	Optional. Runs the executable natively within the Steam Linux Runtime. Intended for native Linux games.
+
+	Set _1_ to run the executable natively within the SLR.
+
 # SEE ALSO
 
 _umu_(5), _winetricks_(1), _zenity_(1)
