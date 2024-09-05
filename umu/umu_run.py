@@ -341,12 +341,6 @@ def build_command(
     proton: Path = Path(env["PROTONPATH"], "proton")
     entry_point: Path = local.joinpath("umu")
 
-    # Will run the game w/o Proton, effectively running the game as is. This
-    # option is intended for debugging purposes, and is otherwise useless
-    if env.get("UMU_NO_RUNTIME") == "1":
-        log.warning("Runtime Platform disabled")
-        return env["EXE"], *opts
-
     if not proton.is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
@@ -374,6 +368,19 @@ def build_command(
             env["PROTON_VERB"],
             env["EXE"],
             "-q",
+            *opts,
+        )
+
+    # Will run the game within the Steam Runtime w/o Proton
+    # Ideally, for reliability, executables should be compiled within
+    # the Steam Runtime
+    if env.get("UMU_NO_RUNTIME") == "1":
+        return (
+            entry_point,
+            "--verb",
+            env["PROTON_VERB"],
+            "--",
+            env["EXE"],
             *opts,
         )
 
