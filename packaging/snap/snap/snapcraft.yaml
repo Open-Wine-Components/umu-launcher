@@ -1,5 +1,5 @@
 name: umu-launcher
-version: '1.0'  # You can set this to the appropriate version
+version: '0.1.0'  # You can set this to the appropriate version
 summary: UMU Launcher
 description: |
   UMU Launcher is a tool for managing and launching applications.
