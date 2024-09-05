@@ -18,9 +18,10 @@ PROTON_VERBS = {
 
 # Flatpak will be detected as outlined by systemd
 # See https://systemd.io/CONTAINER_INTERFACE
-IS_FLATPAK = os.environ.get("container") == "flatpak" 
+IS_FLATPAK = os.environ.get("container") == "flatpak" # noqa: SIM112
 default_data_home = Path.home().joinpath(".local", "share")
-flatpak_data_home = Path(os.environ.get("HOST_XDG_DATA_HOME", default_data_home))
+flatpak_data_home = Path(
+        os.environ.get("HOST_XDG_DATA_HOME", default_data_home))
 
 # Installation path of the runtime files
 UMU_LOCAL: Path = (
