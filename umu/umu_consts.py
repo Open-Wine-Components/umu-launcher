@@ -16,16 +16,18 @@ PROTON_VERBS = {
     "getnativepath",
 }
 
-# Installation path of the runtime files
 # Flatpak will be detected as outlined by systemd
 # See https://systemd.io/CONTAINER_INTERFACE
+IS_FLATPAK = os.environ.get("container") == "flatpak" 
+default_data_home = Path.home().joinpath(".local", "share")
+flatpak_data_home = Path(os.environ.get("HOST_XDG_DATA_HOME", default_data_home))
+
+# Installation path of the runtime files
 UMU_LOCAL: Path = (
-    Path.home().joinpath(
-        ".var", "app", "org.openwinecomponents.umu.umu-launcher", "data", "umu"
-    )
-    if os.environ.get("container") == "flatpak"  # noqa: SIM112
-    else Path.home().joinpath(".local", "share", "umu")
-)
+    flatpak_data_home
+    if IS_FLATPAK
+    else Path(os.environ.get("XDG_DATA_HOME", default_data_home))
+).joinpath("umu")
 
 # Constant defined in prctl.h
 # See prctl(2) for more details

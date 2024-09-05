@@ -1,0 +1,342 @@
+{
+  "name": "umu-launcher",
+  "modules": [
+    {
+      "name": "python-flit-core",
+      "buildsystem": "simple",
+      "build-commands": [
+        "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+      ],
+      "cleanup": ["*"],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://files.pythonhosted.org/packages/c4/e6/c1ac50fe3eebb38a155155711e6e864e254ce4b6e17fe2429b4c4d5b9e80/flit_core-3.9.0.tar.gz",
+          "sha256": "72ad266176c4a3fcfab5f2930d76896059851240570ce9a98733b658cb786eba"
+        }
+      ]
+    },
+    {
+      "name": "python-ninja",
+      "buildsystem": "simple",
+      "build-commands": [
+        "python3 setup.py build -j${FLATPAK_BUILDER_N_JOBS} -DARCHIVE_DOWNLOAD_DIR=\"${FLATPAK_BUILDER_BUILDDIR}\"",
+        "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+      ],
+      "cleanup": ["*"],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://files.pythonhosted.org/packages/00/99/5beedbf09e3ec6b617606df42d04c4251959caddbd98397cce21da4c52d1/ninja-1.10.2.3.tar.gz",
+          "sha256": "e1b86ad50d4e681a7dbdff05fc23bb52cb773edb90bc428efba33fa027738408"
+        },
+        {
+          "type": "file",
+          "url": "https://github.com/Kitware/ninja/archive/v1.10.2.g51db2.kitware.jobserver-1.tar.gz",
+          "sha256": "549c31ee596566b952c600e23eb9b8d39a4112cd5fdeb2e5a83370669176da40"
+        }
+      ],
+      "modules": [
+        {
+          "name": "python-skbuild",
+          "buildsystem": "simple",
+          "build-commands": [
+            "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+          ],
+          "cleanup": ["*"],
+          "sources": [
+            {
+              "type": "archive",
+              "url": "https://files.pythonhosted.org/packages/9e/e2/2e440c30e93fc5b505ee56169a4396b05e797a1daadb721aba429adbfd51/scikit-build-0.15.0.tar.gz",
+              "sha256": "e723cd0f3489a042370b9ea988bbb9cfd7725e8b25b20ca1c7981821fcf65fb9"
+            }
+          ],
+          "modules": [
+            {
+              "name": "python-distro",
+              "buildsystem": "simple",
+              "build-commands": [
+                "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+              ],
+              "cleanup": ["*"],
+              "sources": [
+                {
+                  "type": "archive",
+                  "url": "https://files.pythonhosted.org/packages/b5/7e/ddfbd640ac9a82e60718558a3de7d5988a7d4648385cf00318f60a8b073a/distro-1.7.0.tar.gz",
+                  "sha256": "151aeccf60c216402932b52e40ee477a939f8d58898927378a02abbe852c1c39"
+                }
+              ]
+            },
+            {
+              "name": "python-setuptools-scm",
+              "buildsystem": "simple",
+              "build-commands": [
+                "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+              ],
+              "cleanup": ["*"],
+              "sources": [
+                {
+                  "type": "archive",
+                  "url": "https://files.pythonhosted.org/packages/d0/43/f038b5009f93bcd77b1b8da9e6d424b739ab17aec9726f3a99eba23d53ca/setuptools_scm-7.0.5.tar.gz",
+                  "sha256": "031e13af771d6f892b941adb6ea04545bbf91ebc5ce68c78aaf3fff6e1fb4844"
+                }
+              ],
+              "modules": [
+                {
+                  "name": "python-packaging",
+                  "buildsystem": "simple",
+                  "build-commands": [
+                    "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+                  ],
+                  "cleanup": ["*"],
+                  "sources": [
+                    {
+                      "type": "archive",
+                      "url": "https://files.pythonhosted.org/packages/51/65/50db4dda066951078f0a96cf12f4b9ada6e4b811516bf0262c0f4f7064d4/packaging-24.1.tar.gz",
+                      "sha256": "026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002"
+                    }
+                  ],
+                  "modules": [
+                    {
+                      "name": "python-pyparsing",
+                      "buildsystem": "simple",
+                      "build-commands": [
+                        "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+                      ],
+                      "cleanup": ["*"],
+                      "sources": [
+                        {
+                          "type": "archive",
+                          "url": "https://files.pythonhosted.org/packages/71/22/207523d16464c40a0310d2d4d8926daffa00ac1f5b1576170a32db749636/pyparsing-3.0.9.tar.gz",
+                          "sha256": "2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "python-typing-extensions",
+                  "buildsystem": "simple",
+                  "build-commands": [
+                    "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+                  ],
+                  "cleanup": ["*"],
+                  "sources": [
+                    {
+                      "type": "archive",
+                      "url": "https://files.pythonhosted.org/packages/9e/1d/d128169ff58c501059330f1ad96ed62b79114a2eb30b8238af63a2e27f70/typing_extensions-4.3.0.tar.gz",
+                      "sha256": "e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6"
+                    }
+                  ]
+                },
+                {
+                  "name": "python-tomli",
+                  "buildsystem": "simple",
+                  "build-commands": [
+                    "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+                  ],
+                  "cleanup": ["*"],
+                  "sources": [
+                    {
+                      "type": "archive",
+                      "url": "https://files.pythonhosted.org/packages/c0/3f/d7af728f075fb08564c5949a9c95e44352e23dee646869fa104a3b2060a3/tomli-2.0.1.tar.gz",
+                      "sha256": "de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "python-xlib",
+      "buildsystem": "simple",
+      "build-commands": [
+        "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+      ],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://files.pythonhosted.org/packages/source/p/python-xlib/python-xlib-0.33.tar.gz",
+          "sha256": "55af7906a2c75ce6cb280a584776080602444f75815a7aff4d287bb2d7018b32"
+        }
+      ]
+    },
+    {
+      "name": "filelock",
+      "buildsystem": "simple",
+      "build-commands": [
+        "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+      ],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://files.pythonhosted.org/packages/08/dd/49e06f09b6645156550fb9aee9cc1e59aba7efbc972d665a1bd6ae0435d4/filelock-3.15.4.tar.gz",
+          "sha256": "2207938cbc1844345cb01a5a95524dae30f0ce089eba5b00378295a17e3e90cb"
+        }
+      ],
+      "modules": [
+        {
+          "name": "python-hatchling",
+          "buildsystem": "simple",
+          "build-commands": [
+            "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+          ],
+          "cleanup": ["*"],
+          "sources": [
+            {
+              "type": "archive",
+              "url": "https://files.pythonhosted.org/packages/a3/51/8a4a67a8174ce59cf49e816e38e9502900aea9b4af672d0127df8e10d3b0/hatchling-1.25.0.tar.gz",
+              "sha256": "7064631a512610b52250a4d3ff1bd81551d6d1431c4eb7b72e734df6c74f4262"
+            }
+          ],
+          "modules": [
+            {
+              "name": "pathspec",
+              "buildsystem": "simple",
+              "build-commands": [
+                "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+              ],
+              "cleanup": ["*"],
+              "sources": [
+                {
+                  "type": "archive",
+                  "url": "https://files.pythonhosted.org/packages/ca/bc/f35b8446f4531a7cb215605d100cd88b7ac6f44ab3fc94870c120ab3adbf/pathspec-0.12.1.tar.gz",
+                  "sha256": "a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712"
+                }
+              ]
+            },
+            {
+              "name": "pluggy",
+              "buildsystem": "simple",
+              "build-commands": [
+                "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+              ],
+              "cleanup": ["*"],
+              "sources": [
+                {
+                  "type": "archive",
+                  "url": "https://files.pythonhosted.org/packages/96/2d/02d4312c973c6050a18b314a5ad0b3210edb65a906f868e31c111dede4a6/pluggy-1.5.0.tar.gz",
+                  "sha256": "2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1"
+                }
+              ]
+            },
+            {
+              "name": "trove_classifiers",
+              "buildsystem": "simple",
+              "build-commands": [
+                "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+              ],
+              "cleanup": ["*"],
+              "sources": [
+                {
+                  "type": "archive",
+                  "url": "https://files.pythonhosted.org/packages/78/c9/83f915c3f6f94f4c862c7470284fd714f312cce8e3cf98361312bc02493d/trove_classifiers-2024.7.2.tar.gz",
+                  "sha256": "8328f2ac2ce3fd773cbb37c765a0ed7a83f89dc564c7d452f039b69249d0ac35"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "hatch-vcs",
+          "buildsystem": "simple",
+          "build-commands": [
+            "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+          ],
+          "cleanup": ["*"],
+          "sources": [
+            {
+              "type": "archive",
+              "url": "https://files.pythonhosted.org/packages/f5/c9/54bb4fa27b4e4a014ef3bb17710cdf692b3aa2cbc7953da885f1bf7e06ea/hatch_vcs-0.4.0.tar.gz",
+              "sha256": "093810748fe01db0d451fabcf2c1ac2688caefd232d4ede967090b1c1b07d9f7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "umu-run",
+      "buildsystem": "simple",
+      "build-commands": [
+        "./configure.sh --prefix=/app",
+        "make FLATPAK=xtrue install DESTDIR=/app",
+        "cp -R /app/app/share/* /app/share/",
+        "cp -R /app/usr/* /app/",
+        "rm -Rf /app/app/",
+        "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+      ],
+      "sources": [
+        {
+          "type": "git",
+          "url": "https://github.com/Open-Wine-Components/umu-launcher.git",
+          "branch": "main"
+        }
+      ],
+      "modules": [
+        {
+          "name": "packaging",
+          "buildsystem": "simple",
+          "build-commands": [
+            "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+          ],
+          "cleanup": ["*"],
+          "sources": [
+            {
+              "type": "archive",
+              "url": "https://files.pythonhosted.org/packages/51/65/50db4dda066951078f0a96cf12f4b9ada6e4b811516bf0262c0f4f7064d4/packaging-24.1.tar.gz",
+              "sha256": "026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002"
+            }
+          ]
+        },
+        {
+          "name": "pyproject_hooks",
+          "buildsystem": "simple",
+          "build-commands": [
+            "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+          ],
+          "cleanup": ["*"],
+          "sources": [
+            {
+              "type": "archive",
+              "url": "https://files.pythonhosted.org/packages/c7/07/6f63dda440d4abb191b91dc383b472dae3dd9f37e4c1e4a5c3db150531c6/pyproject_hooks-1.1.0.tar.gz",
+              "sha256": "4b37730834edbd6bd37f26ece6b44802fb1c1ee2ece0e54ddff8bfc06db86965"
+            }
+          ]
+        },
+        {
+          "name": "python-build",
+          "buildsystem": "simple",
+          "build-commands": [
+            "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+          ],
+          "cleanup": ["*"],
+          "sources": [
+            {
+              "type": "archive",
+              "url": "https://files.pythonhosted.org/packages/ce/9e/2d725d2f7729c6e79ca62aeb926492abbc06e25910dd30139d60a68bcb19/build-1.2.1.tar.gz",
+              "sha256": "526263f4870c26f26c433545579475377b2b7588b6f1eac76a001e873ae3e19d"
+            }
+          ]
+        },
+        {
+          "name": "python-installer",
+          "buildsystem": "simple",
+          "build-commands": [
+            "pip3 install --no-index --no-build-isolation --prefix=\"${FLATPAK_DEST}\" ."
+          ],
+          "cleanup": ["*"],
+          "sources": [
+            {
+              "type": "archive",
+              "url": "https://files.pythonhosted.org/packages/05/18/ceeb4e3ab3aa54495775775b38ae42b10a92f42ce42dfa44da684289b8c8/installer-0.7.0.tar.gz",
+              "sha256": "a26d3e3116289bb08216e0d0f7d925fcef0b0194eedfa0c944bcaaa106c4b631"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

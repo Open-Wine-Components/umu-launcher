@@ -54,6 +54,7 @@ finish-args:
   - --filesystem=/run/udev:ro
   # should fix discord rich presence
   - --filesystem=xdg-run/app/com.discordapp.Discord:create
+  - --filesystem=xdg-data/umu
   - --persist=.
   - --share=ipc
   - --socket=wayland
