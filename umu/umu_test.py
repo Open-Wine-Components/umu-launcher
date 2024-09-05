@@ -1222,8 +1222,6 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
-            # Setting this mocks a Flatpak environment and UMU_NO_RUNTIME is
-            # only valid for Flatpak apps
             os.environ["UMU_NO_RUNTIME"] = "1"
             # Args
             result_args = umu_run.parse_args()
@@ -1233,13 +1231,39 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
             umu_run.set_env(self.env, result_args)
-            # Mock setting UMU_NO_RUNTIME. This will not be set in the function
-            # because the FLATPAK_PATH constant will evaluate to None
             self.env["UMU_NO_RUNTIME"] = os.environ["UMU_NO_RUNTIME"]
             # Game drive
             umu_run.enable_steam_game_drive(self.env)
 
         os.environ |= self.env
+
+        # Mock setting up the runtime
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
+            umu_runtime.setup_umu(
+                self.test_user_share, self.test_local_share, None
+            )
+            copytree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(
+                    self.test_local_share, "sniper_platform_0.20240125.75305"
+                ),
+                dirs_exist_ok=True,
+                symlinks=True,
+            )
+            copy(
+                Path(self.test_user_share, "run"),
+                Path(self.test_local_share, "run"),
+            )
+            copy(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            copy(
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
+            )
 
         # Build
         test_command = umu_run.build_command(self.env, self.test_local_share)
@@ -1248,10 +1272,19 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertEqual(
             len(test_command),
-            1,
-            f"Expected 1 element, received {len(test_command)}",
+            5,
+            f"Expected 5 element, received {len(test_command)}",
         )
-        exe, *_ = [*test_command]
+
+        entry_point, opt, verb, sep, exe = [*test_command]
+        self.assertEqual(
+            entry_point,
+            self.test_local_share / "umu",
+            "Expected an entry point",
+        )
+        self.assertEqual(opt, "--verb", "Expected --verb")
+        self.assertEqual(verb, "waitforexitandrun", "Expected PROTON_VERB")
+        self.assertEqual(sep, "--", "Expected --")
         self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
 
     def test_build_command_nopv(self):
@@ -1276,8 +1309,6 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
-            # Setting this mocks a Flatpak environment and UMU_NO_RUNTIME is
-            # only valid for Flatpak apps
             os.environ["UMU_NO_RUNTIME"] = "pressure-vessel"
             # Args
             result_args = umu_run.parse_args()
@@ -1287,11 +1318,36 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
             umu_run.set_env(self.env, result_args)
-            # Mock setting UMU_NO_RUNTIME. This will not be set in the function
-            # because the FLATPAK_PATH constant will evaluate to None
-            self.env["UMU_NO_RUNTIME"] = os.environ["UMU_NO_RUNTIME"]
             # Game drive
             umu_run.enable_steam_game_drive(self.env)
+
+        # Mock setting up the runtime
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
+            umu_runtime.setup_umu(
+                self.test_user_share, self.test_local_share, None
+            )
+            copytree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(
+                    self.test_local_share, "sniper_platform_0.20240125.75305"
+                ),
+                dirs_exist_ok=True,
+                symlinks=True,
+            )
+            copy(
+                Path(self.test_user_share, "run"),
+                Path(self.test_local_share, "run"),
+            )
+            copy(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            copy(
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
+            )
 
         os.environ |= self.env
 
