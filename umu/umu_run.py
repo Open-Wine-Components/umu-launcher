@@ -351,10 +351,6 @@ def build_command(
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
-    if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
-        log.warning("Using Proton without Runtime Platform")
-        return proton, env["PROTON_VERB"], env["EXE"], *opts
-
     # Exit if the entry point is missing
     # The _v2-entry-point script and container framework tools are included in
     # the same image, so this can happen if the image failed to download
@@ -365,11 +361,26 @@ def build_command(
         )
         raise FileNotFoundError(err)
 
-    # Configure winetricks to not be prompted for any windows
+    # Winetricks
     if env.get("EXE", "").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
-        opts = ["-q", *opts]
+        return (
+            entry_point,
+            "--verb",
+            env["PROTON_VERB"],
+            "--",
+            proton,
+            env["PROTON_VERB"],
+            env["EXE"],
+            "-q",
+            *opts,
+        )
+
+    # Will run the game outside the Steam Runtime w/ Proton
+    if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
+        log.warning("Runtime Platform disabled")
+        return proton, env["PROTON_VERB"], env["EXE"], *opts
 
     return (
         entry_point,
