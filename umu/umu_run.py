@@ -386,7 +386,7 @@ def build_command(
         )
 
     # Will run the game outside the Steam Runtime w/ Proton
-    if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
+    if env.get("UMU_NO_RUNTIME") == "1":
         log.warning("Runtime Platform disabled")
         return proton, env["PROTON_VERB"], env["EXE"], *opts
 
