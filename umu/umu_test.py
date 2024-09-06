@@ -1200,13 +1200,11 @@ class TestGameLauncher(unittest.TestCase):
             self.env["EXE"], "Expected EXE to be empty on empty string"
         )
 
-    def test_build_command_noruntime(self):
-        """Test build_command when disabling the Steam Runtime.
+    def test_build_command_linux_exe(self):
+        """Test build_command when running a Linux executable.
 
-        UMU_NO_RUNTIME=1 disables the Steam Runtime, which is no different than
-        running the executable directly.
-
-        Expects the list to contain one string element.
+        UMU_NO_PROTON=1 disables Proton, running the executable directly in the
+        Steam Linux Runtime.
         """
         result_args = None
         test_command = []
@@ -1222,7 +1220,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
-            os.environ["UMU_NO_RUNTIME"] = "1"
+            os.environ["UMU_NO_PROTON"] = "1"
             # Args
             result_args = umu_run.parse_args()
             # Config
@@ -1231,7 +1229,6 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
             umu_run.set_env(self.env, result_args)
-            self.env["UMU_NO_RUNTIME"] = os.environ["UMU_NO_RUNTIME"]
             # Game drive
             umu_run.enable_steam_game_drive(self.env)
 
@@ -1290,7 +1287,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_build_command_nopv(self):
         """Test build_command when disabling Pressure Vessel.
 
-        UMU_NO_RUNTIME=pressure-vessel disables Pressure Vessel, allowing
+        UMU_NO_RUNTIME=1 disables Pressure Vessel, allowing
         the launcher to run Proton on the host -- Flatpak environment.
 
         Expects the list to contain 3 string elements.
@@ -1309,7 +1306,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
-            os.environ["UMU_NO_RUNTIME"] = "pressure-vessel"
+            os.environ["UMU_NO_RUNTIME"] = "1"
             # Args
             result_args = umu_run.parse_args()
             # Config
