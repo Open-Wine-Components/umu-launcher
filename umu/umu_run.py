@@ -297,6 +297,7 @@ def set_env(
     # Runtime
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
+    env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
 
     return env
 
@@ -408,7 +409,7 @@ def build_command(
     # Will run the game within the Steam Runtime w/o Proton
     # Ideally, for reliability, executables should be compiled within
     # the Steam Runtime
-    if env.get("UMU_NO_RUNTIME") == "1":
+    if env.get("UMU_NO_PROTON") == "1":
         return (
             entry_point,
             "--verb",
@@ -761,6 +762,7 @@ def main() -> int:  # noqa: D103
         "UMU_ZENITY": "",
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
+        "UMU_NO_PROTON": "",
     }
     opts: list[str] = []
     root: Traversable
