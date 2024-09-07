@@ -148,7 +148,7 @@ $(OBJDIR):
 .PHONY: clean
 clean:
 	$(info :: Cleaning source directory )
-	@rm -rf -v $(OBJDIR) umu/umu_version.json ./$(RELEASEDIR) $(RELEASEDIR).tar.gz
+	@rm -rf -v $(OBJDIR) umu/umu_version.json ./$(RELEASEDIR) $(RELEASEDIR).tar.gz subprojects/gamescope-dbus/target
 
 
 RELEASEDIR := $(PROJECT)-$(shell git describe --abbrev=0)
@@ -196,5 +196,20 @@ zipapp-install: zipapp
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -Dm755 $(ZIPAPP) $(DESTDIR)$(BINDIR)
 	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
+
+
+$(OBJDIR)/.build-gamescope-dbus: | $(OBJDIR)
+	$(info :: Building gamescope-dbus )
+	cd subprojects/gamescope-dbus && \
+	cargo update && \
+	make build
+	touch $(@)
+
+.PHONY: gamescope-dbus
+gamescope-dbus: $(OBJDIR)/.build-gamescope-dbus
+
+gamescope-dbus-install: gamescope-dbus
+	$(info :: Installing gamescope-dbus )
+	PREFIX=$(DESTDIR) make -C subprojects/gamescope-dbus install
 
 # vim: ft=make
