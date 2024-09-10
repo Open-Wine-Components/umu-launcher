@@ -306,8 +306,6 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     """Enable Steam Game Drive functionality."""
     paths: set[str] = set()
     root: Path = Path("/")
-    libc: str = get_libc()
-
 
     # Check for mount points going up toward the root
     # NOTE: Subvolumes can be mount points
@@ -326,15 +324,6 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 
     if env["STEAM_COMPAT_INSTALL_PATH"]:
         paths.add(env["STEAM_COMPAT_INSTALL_PATH"])
-
-    # When libc.so could not be found, depend on LD_LIBRARY_PATH
-    # In some cases, using ldconfig to determine library paths can fail in non-
-    # FHS compliant filesystems (e.g., NixOS).
-    # See https://github.com/Open-Wine-Components/umu-launcher/issues/106
-    if not libc:
-        log.warning("libc.so could not be found")
-        env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
-        return env
 
     # Set the shared library paths of the system
     paths |= get_library_paths()
