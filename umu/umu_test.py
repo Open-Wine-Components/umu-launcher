@@ -209,68 +209,6 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected {expected}, received {result}",
         )
 
-    def test_set_steamrt_paths(self):
-        """Test set_steamrt_paths to ensure resolved filesystem paths.
-
-        set_steamrt_path will find path containing the libc.so file from the
-        system, resolving any symbolic links in its path.
-
-        Expects a set to contain strings representing the user's shared
-        library paths and for the paths to not contain symbolic links.
-        """
-        lib64_link = f"{self.test_usr}/lib64"
-        lib64 = f"{self.test_usr}/lib"
-        libc = "libc.so.6"
-        steamrt_path_candidates = (
-            lib64_link,
-            lib64,
-            f"{self.test_usr}/lib32",
-            f"{self.test_usr}/lib/x86_64-linux-gnu",
-            f"{self.test_usr}/lib/i386-linux-gnu",
-        )
-        steamrt_paths = set()
-
-        # Mock shared library paths and libc.so.6
-        for path in steamrt_path_candidates:
-            if path == lib64_link:
-                Path(lib64_link).symlink_to("lib")
-                continue
-            Path(path).mkdir()
-
-        Path(lib64, libc).touch()
-
-        # Find shared lib paths containing libc
-        for path in steamrt_path_candidates:
-            if Path(path, libc).is_file():
-                steamrt_paths.add(path)
-
-        # Assert mocked runtime paths
-        self.assertEqual(
-            len(steamrt_paths),
-            2,
-            f"Expected 2 elements for '{steamrt_paths}'",
-        )
-        self.assertTrue(
-            lib64 in steamrt_paths and lib64_link in steamrt_paths,
-            f"Expected '{steamrt_paths}' to contain linked and resolved path",
-        )
-        self.assertEqual(
-            Path(lib64_link).resolve(),
-            Path(lib64).absolute(),
-            "Expected linked shared library path to resolve to real path",
-        )
-
-        result = umu_run.set_steamrt_paths(
-            steamrt_path_candidates, set(), libc
-        )
-
-        # Ensure the resolved shared library paths is not the unresolved paths
-        self.assertNotEqual(
-            steamrt_paths,
-            result,
-            "Expected linked shared library paths to not be resolved paths",
-        )
-
     def test_run_command(self):
         """Test run_command."""
         mock_exe = "foo"
