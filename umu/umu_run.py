@@ -49,6 +49,7 @@ from umu.umu_proton import get_umu_proton
 from umu.umu_runtime import setup_umu
 from umu.umu_util import (
     get_libc,
+    get_library_paths,
     get_osrelease_id,
     is_installed_verb,
     is_winetricks_verb,
@@ -335,6 +336,8 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
         env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
         return env
 
+    # Set the shared library paths of the system
+    paths |= get_library_paths()
 
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
 
