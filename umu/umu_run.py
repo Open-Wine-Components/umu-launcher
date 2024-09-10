@@ -307,16 +307,6 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     root: Path = Path("/")
     libc: str = get_libc()
 
-    # All library paths that are currently supported by the container framework
-    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#filesystem-layout
-    # Non-FHS filesystems should run in a FHS chroot to comply
-    steamrt_path_candidates: tuple[str, ...] = (
-        "/usr/lib64",
-        "/usr/lib32",
-        "/usr/lib",
-        "/usr/lib/x86_64-linux-gnu",
-        "/usr/lib/i386-linux-gnu",
-    )
 
     # Check for mount points going up toward the root
     # NOTE: Subvolumes can be mount points
@@ -345,25 +335,10 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
         env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
         return env
 
-    # Set the shared library paths of the system after finding libc.so
-    set_steamrt_paths(steamrt_path_candidates, paths, libc)
 
     env["STEAM_RUNTIME_LIBRARY_PATH"] = ":".join(paths)
 
     return env
-
-
-def set_steamrt_paths(
-    steamrt_path_candidiates: tuple[str, ...],
-    steamrt_paths: set[str],
-    libc: str,
-) -> set[str]:
-    """Set the shared library paths for the Steam Runtime."""
-    for rtpath in steamrt_path_candidiates:
-        if (libc_path := Path(rtpath, libc).resolve()).is_file():
-            steamrt_paths.add(str(libc_path.parent))
-
-    return steamrt_paths
 
 
 def build_command(
