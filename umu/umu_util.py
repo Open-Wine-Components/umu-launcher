@@ -44,7 +44,7 @@ def get_library_paths() -> set[str]:
         ) as proc:
             stdout, _ = proc.communicate()
             library_paths |= {
-                line[: line.rfind("/")]
+                os.path.realpath(line[: line.rfind("/")])
                 for line in stdout.split()
                 if line.startswith("/")
             }
