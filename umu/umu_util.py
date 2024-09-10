@@ -17,6 +17,43 @@ def get_libc() -> str:
     return find_library("c") or ""
 
 
+@lru_cache
+def get_library_paths() -> set[str]:
+    """Find the shared library paths from the user's system."""
+    library_paths: set[str] = set()
+    ldconfig: str = which("ldconfig") or ""
+
+    if not ldconfig:
+        log.warning("ldconfig not found in $PATH, cannot find library paths")
+        return library_paths
+
+    # Find all shared library path prefixes within the assumptions of the
+    # Steam Runtime container framework. The framework already works hard by
+    # attempting to work with various distibutions' quirks. Unless it's Flatpak
+    # related, let's continue to make it their job.
+    try:
+        # Here, opt to using the ld.so cache similar to the stdlib
+        # implementation of _findSoname_ldconfig.
+        with Popen(
+            (ldconfig, "-p"),
+            text=True,
+            encoding="utf-8",
+            stdout=PIPE,
+            stderr=PIPE,
+            env={"LC_ALL": "C", "LANG": "C"},
+        ) as proc:
+            stdout, _ = proc.communicate()
+            library_paths |= {
+                os.path.realpath(line[: line.rfind("/")])
+                for line in stdout.split()
+                if line.startswith("/")
+            }
+    except OSError as e:
+        log.exception(e)
+
+    return library_paths
+
+
 def run_zenity(command: str, opts: list[str], msg: str) -> int:
     """Execute the command and pipe the output to zenity.
 
