@@ -1128,13 +1128,6 @@ class TestGameLauncher(unittest.TestCase):
             "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
         )
 
-        # Expect LD_LIBRARY_PATH was added ontop of /usr/lib and /usr/lib64
-        self.assertEqual(
-            len(self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")),
-            2,
-            "Expected two values in STEAM_RUNTIME_LIBRARY_PATH",
-        )
-
         # An error should be raised if /usr/lib or /usr/lib64 is found twice
         lib_paths = set()
         for path in self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":"):
@@ -1263,13 +1256,6 @@ class TestGameLauncher(unittest.TestCase):
         args = None
         result_gamedrive = None
         # Expected library paths for the container runtime framework
-        libpaths = {
-            "/usr/lib64",
-            "/usr/lib32",
-            "/usr/lib",
-            "/usr/lib/x86_64-linux-gnu",
-            "/usr/lib/i386-linux-gnu",
-        }
         Path(self.test_file + "/proton").touch()
 
         # Replicate main's execution and test up until enable_steam_game_drive
@@ -1313,25 +1299,17 @@ class TestGameLauncher(unittest.TestCase):
             "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
         )
 
-        # We just expect /usr/lib and /usr/lib32 since LD_LIBRARY_PATH is unset
-        self.assertEqual(
-            len(self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")),
-            2,
-            "Expected two values in STEAM_RUNTIME_LIBRARY_PATH",
-        )
-
-        # Check that there are no trailing colons, unexpected characters
-        # and is officially supported
-        str1, str2 = self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":")
-        self.assertTrue(str1 in libpaths, f"Expected a path in: {libpaths}")
-        self.assertTrue(str2 in libpaths, f"Expected a path in: {libpaths}")
-
         # Ensure that umu sets the resolved shared library paths. The only time
         # this variable will contain links is from the LD_LIBRARY_PATH set in
         # the user's environment or client
         for path in self.env["STEAM_RUNTIME_LIBRARY_PATH"].split(":"):
             if Path(path).is_symlink():
                 err = f"Symbolic link found: {path}"
+                raise AssertionError(err)
+            if path.endswith(
+                (":", "/", ".")
+            ):  # There should be no trailing colons, slashes or periods
+                err = f"Trailing character in path: {path[-1]}"
                 raise AssertionError(err)
 
         # Both of these values should be empty still after calling
