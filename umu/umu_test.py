@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import random
 import re
 import sys
 import tarfile
@@ -68,6 +69,29 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat = Path("./tmp.ZssGZoiNod")
         # umu-proton dir
         self.test_proton_dir = Path("UMU-Proton-5HYdpddgvs")
+        # toolmanifest.vdf within Proton
+        self.test_vdf = (
+            '"manifest"\n'
+            "{\n"
+            '    "version" "2"\n'
+            '    "commandline" "/proton %verb%"\n'
+            '    "require_tool_appid" "1628350"\n'
+            '    "use_sessions" "1"\n'
+            '    "compatmanager_layer_name" "proton"\n'
+            "}"
+        )
+        # app_build_*.vdf within the runtime dir
+        self.test_app_build_vdf = (
+            '"appbuild"\n'
+            "{\n"
+            '    "appid" "1628350"\n'
+            '    "buildoutput" "output"\n'
+            '    "depots"\n'
+            "     {\n"
+            '        "1628351" "depot_build_1628351.vdf"\n'
+            "     }\n"
+            "}"
+        )
         # umu-proton release
         self.test_archive = Path(self.test_cache).joinpath(
             f"{self.test_proton_dir}.tar.gz"
@@ -102,6 +126,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
         self.test_usr.mkdir(exist_ok=True)
+        self.test_local_share.joinpath("steampipe").mkdir(exist_ok=True)
 
         # Mock a valid configuration file at /usr/share/umu:
         # tmp.BXk2NnvW2m/umu_version.json
@@ -130,6 +155,11 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "run-in-sniper").touch()
         Path(self.test_user_share, "umu").touch()
 
+        # Mock app_build_*.vdf in $HOME/.local/share/umu/steampipe
+        self.test_local_share.joinpath(
+            "steampipe", "app_build_1628350.vdf"
+        ).write_text(self.test_app_build_vdf, encoding="utf-8")
+
         # Mock pressure vessel
         Path(self.test_user_share, "pressure-vessel", "bin").mkdir(
             parents=True
@@ -138,6 +168,11 @@ class TestGameLauncher(unittest.TestCase):
         Path(
             self.test_user_share, "pressure-vessel", "bin", "pv-verify"
         ).touch()
+
+        # Mock toolmanifest.vdf in the dir
+        self.test_proton_dir.joinpath("toolmanifest.vdf").write_text(
+            self.test_vdf, encoding="utf-8"
+        )
 
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
@@ -187,6 +222,53 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_usr.exists():
             rmtree(self.test_usr.as_posix())
 
+    def test_has_matching_compat(self):
+        """Test has_mismatching_compat.
+
+        Expects True when the tools do not match
+        """
+        test_vdf = (
+            '"manifest"\n'
+            "{\n"
+            '    "version" "2"\n'
+            '    "commandline" "/proton %verb%"\n'
+            '    "require_tool_appid" "1628352"\n'
+            '    "use_sessions" "1"\n'
+            '    "compatmanager_layer_name" "proton"\n'
+            "}"
+        )
+        # Create a new directory for this test to avoid the cache
+        proton_dir = Path("UMU-Proton-9.0-testvdf")
+
+        proton_dir.mkdir()
+        # Mock a Proton with a different require_tool_appid value
+        proton_dir.joinpath("toolmanifest.vdf").write_text(
+            test_vdf, encoding="utf-8"
+        )
+        result = umu_run.has_mismatching_compat(
+            proton_dir.joinpath("toolmanifest.vdf"),
+            self.test_local_share.joinpath("steampipe/"),
+        )
+        self.assertTrue(
+            result,
+            "Expected True to be returned for mismatching Proton and SLR",
+        )
+        proton_dir.joinpath("toolmanifest.vdf").unlink()
+        proton_dir.rmdir()
+
+    def test_has_mismatching_compat(self):
+        """Test has_mismatching_compat.
+
+        Expects False when the tools match
+        """
+        result = umu_run.has_mismatching_compat(
+            self.test_proton_dir.joinpath("toolmanifest.vdf"),
+            self.test_local_share.joinpath("steampipe/"),
+        )
+        self.assertFalse(
+            result,
+            "Expected False to be returned for matching Proton and SLR",
+        )
     def test_rearrange_gamescope_baselayer_order_err(self):
         """Test rearrange_gamescope_baselayer_order for unexpected seq."""
         baselayer = []
