@@ -50,6 +50,7 @@ from umu.umu_runtime import setup_umu
 from umu.umu_util import (
     get_libc,
     get_library_paths,
+    get_vdf_value,
     is_installed_verb,
     is_winetricks_verb,
     xdisplay,
@@ -797,6 +798,36 @@ def main() -> int:  # noqa: D103
         opts, Path(env["WINEPREFIX"])
     ):
         sys.exit(1)
+
+    # Determine if the set of compatibility tools match.
+    # Proton is a compatibility tool as it will contain toolmanifest.vdf,
+    # therefore conforming to Steam's compatability tool interface.
+    # See steam-compat-tool-interface.md
+    # The value of 'require_tool_appid' will be the id of the SLR
+    toolappid_proton: str = get_vdf_value(
+        Path(env["PROTONPATH"], "toolmanifest.vdf"), "require_tool_appid"
+    )
+
+    # SLR is a compatibility tool, but will not contain the metadata of
+    # interest in toolmanifest.vdf. If we want to know if the tools are
+    # related, instead of toolmanifest.vdf, read a file from the depot.
+    # The value of 'appid' is the id of the SLR.
+    toolappid_slr: str = ""
+    for file in UMU_LOCAL.joinpath("steampipe/").glob("*.vdf"):
+        if toolappid_slr := get_vdf_value(file, "appid"):
+            break
+
+    # Warn about mismatching compatibility tools, but don't crash
+    # e.g., Proton 7.0 should not be used with steamrt3 (sniper)
+    if toolappid_slr != toolappid_proton:
+        proton: Path = Path(env["PROTONPATH"])
+        log.warning("Compatibility tools mismatch")
+        log.warning(
+            "%s requires Runtime Platform with App ID '%s'",
+            proton.name,
+            toolappid_slr,
+        )
+        log.warning("See https://steamdb.info/app/%s/", toolappid_slr)
 
     # Build the command
     command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, opts)
