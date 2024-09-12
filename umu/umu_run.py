@@ -800,8 +800,8 @@ def main() -> int:  # noqa: D103
         console_handler.setFormatter(CustomFormatter(DEBUG))
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
-        # Log host environment variables
-        log.debug("%s", os.environ)
+        for key, val in os.environ.items():
+            log.debug("%s=%s", key, val)
 
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
