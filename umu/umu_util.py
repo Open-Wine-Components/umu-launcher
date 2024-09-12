@@ -173,6 +173,42 @@ def is_winetricks_verb(
     return True
 
 
+@lru_cache
+def get_vdf_value(path: Path, key: str) -> str:
+    """Get a value from a specific key in a VDF file."""
+    value: str = ""
+
+    try:
+        with path.open(mode="r", encoding="utf-8") as file:
+            pass
+    except (UnicodeDecodeError, FileNotFoundError) as e:
+        log.exception(e)
+        return value
+
+    log.debug("Reading: %s", path)
+
+    # Assumes the input is a VDF file and conforms to the
+    # KeyValues Text File Format
+    # See https://developer.valvesoftware.com/wiki/VDF
+    # See https://developer.valvesoftware.com/wiki/KeyValues
+    with path.open(mode="r", encoding="utf-8") as file:
+        for line in (line for line in file if line.isascii()):
+            tokens: list[str] = line.split()
+            if len(tokens) != 2:
+                continue
+
+            # In each token, a double quote is used as a control character and
+            # a double quote must not be used within its name or value
+            # See https://developer.valvesoftware.com/wiki/KeyValues#About_KeyValues_Text_File_Format
+            vdf_key, vdf_val = (token.strip('"') for token in tokens)
+            log.debug("%s=%s", vdf_key, vdf_val)
+            if key == vdf_key:
+                value = vdf_val
+                break
+
+    return value
+
+
 def find_obsolete() -> None:
     """Find obsoleted launcher files and log them."""
     home: Path = Path.home()
