@@ -269,6 +269,69 @@ class TestGameLauncher(unittest.TestCase):
             result,
             "Expected False to be returned for matching Proton and SLR",
         )
+
+    def test_get_vdf_na(self):
+        """Test get_vdf_value when the toolmanifest.vdf isn't found.
+
+        Expects an empty string to be returned
+        """
+        key = "qux"
+
+        self.test_proton_dir.joinpath("toolmanifest.vdf").unlink()
+        result = umu_util.get_vdf_value(
+            self.test_proton_dir.joinpath("toolmanifest.vdf"), key
+        )
+        self.assertFalse(
+            result, "Expected an empty string when file was not found"
+        )
+
+    def test_get_vdf_binary(self):
+        """Test get_vdf_value when reading binary data.
+
+        Expects an empty string to be returned when reading binary data
+        """
+        key = "baz"
+        data = random.randbytes(16)  # noqa: S311
+        self.test_proton_dir.joinpath("toolmanifest.vdf").write_bytes(data)
+
+        result = umu_util.get_vdf_value(
+            self.test_proton_dir.joinpath("toolmanifest.vdf"), key
+        )
+        self.assertFalse(
+            result, "Expected an empty string when reading binary"
+        )
+
+    def test_get_vdf_value_foo(self):
+        """Test get_vdf_value when a key does not exist.
+
+        Expects an empty string to be returned.
+        """
+        key = "foo"
+        result = umu_util.get_vdf_value(
+            self.test_proton_dir.joinpath("toolmanifest.vdf"), key
+        )
+        expected = ""
+
+        self.assertEqual(
+            result, expected, f"Expected '{expected}', received '{result}'"
+        )
+
+    def test_get_vdf_value(self):
+        """Test get_vdf_value.
+
+        Expects a value to be returned when passed a valid key from reading a
+        non-binary VDF file
+        """
+        key = "require_tool_appid"
+        result = umu_util.get_vdf_value(
+            self.test_proton_dir.joinpath("toolmanifest.vdf"), key
+        )
+        expected = "1628350"
+
+        self.assertEqual(
+            result, expected, f"Expected '{expected}', received '{result}'"
+        )
+
     def test_rearrange_gamescope_baselayer_order_err(self):
         """Test rearrange_gamescope_baselayer_order for unexpected seq."""
         baselayer = []
