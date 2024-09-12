@@ -166,6 +166,10 @@ def check_env(
 
     env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
+    # Skip Proton if running a native Linux executable
+    if os.environ.get("UMU_NO_PROTON") == "1":
+        return env
+
     # Proton Version
     if (
         os.environ.get("PROTONPATH")
