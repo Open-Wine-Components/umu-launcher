@@ -678,6 +678,50 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     return ret
 
 
+def has_mismatching_compat(path_proton: Path, path_runtime: Path) -> bool:
+    """Check if the current Proton is not using its required compat tool.
+
+    Arguments:
+      path_proton: Path to a Proton build containing toolmanifest.vdf in top
+          Path is expected to end with toolmanifest.vdf as the last segment.
+      path_runtime: Path to the SLR, the required compatibility tool for
+          Proton. Path is expected to end with the `steampipe` subdirectory
+          where all its *.vdf files will be read.
+
+    """
+    # App ID of Proton's required compatibility tool -- Steam Linux Runtime
+    toolappid_proton: str = ""
+    # App ID of the SLR
+    toolappid_slr: str = ""
+
+    # Proton is a compatibility tool, conforming to Steam's compatability tool
+    # interface. See steam-compat-tool-interface.md
+    # Parses the vdf file using our custom parser, which should suffice as
+    # long as the file isn't the new binary format
+    toolappid_proton = get_vdf_value(path_proton, "require_tool_appid")
+
+    # SLR is a compatibility tool that is required for Proton. However, will
+    # not contain the metadata of interest in toolmanifest.vdf. If we want to
+    # know if the tools are related, instead, read the *.vdf files within the
+    # steampipe subdirectory
+    for file in path_runtime.glob("*.vdf"):
+        if toolappid_slr := get_vdf_value(file, "appid"):
+            break
+
+    # Don't warn when either values are empty
+    if not toolappid_slr or not toolappid_proton:
+        return toolappid_slr != toolappid_proton
+
+    if toolappid_slr != toolappid_proton:
+        log.warning(
+            "%s requires Runtime Platform with App ID '%s'",
+            path_proton.parent.name,
+            toolappid_slr,
+        )
+
+    return toolappid_slr != toolappid_proton
+
+
 def main() -> int:  # noqa: D103
     args: Namespace | tuple[str, list[str]] = parse_args()
     future: Future | None = None
@@ -799,35 +843,11 @@ def main() -> int:  # noqa: D103
     ):
         sys.exit(1)
 
-    # Determine if the set of compatibility tools match.
-    # Proton is a compatibility tool as it will contain toolmanifest.vdf,
-    # therefore conforming to Steam's compatability tool interface.
-    # See steam-compat-tool-interface.md
-    # The value of 'require_tool_appid' will be the id of the SLR
-    toolappid_proton: str = get_vdf_value(
-        Path(env["PROTONPATH"], "toolmanifest.vdf"), "require_tool_appid"
+    # Check if the Proton is using its required runtime
+    has_mismatching_compat(
+        Path(env["PROTONPATH"], "toolmanifest.vdf"),
+        UMU_LOCAL.joinpath("steampipe/"),
     )
-
-    # SLR is a compatibility tool, but will not contain the metadata of
-    # interest in toolmanifest.vdf. If we want to know if the tools are
-    # related, instead of toolmanifest.vdf, read a file from the depot.
-    # The value of 'appid' is the id of the SLR.
-    toolappid_slr: str = ""
-    for file in UMU_LOCAL.joinpath("steampipe/").glob("*.vdf"):
-        if toolappid_slr := get_vdf_value(file, "appid"):
-            break
-
-    # Warn about mismatching compatibility tools, but don't crash
-    # e.g., Proton 7.0 should not be used with steamrt3 (sniper)
-    if toolappid_slr != toolappid_proton:
-        proton: Path = Path(env["PROTONPATH"])
-        log.warning("Compatibility tools mismatch")
-        log.warning(
-            "%s requires Runtime Platform with App ID '%s'",
-            proton.name,
-            toolappid_slr,
-        )
-        log.warning("See https://steamdb.info/app/%s/", toolappid_slr)
 
     # Build the command
     command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, opts)
