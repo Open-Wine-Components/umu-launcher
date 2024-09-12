@@ -346,7 +346,7 @@ def build_command(
     proton: Path = Path(env["PROTONPATH"], "proton")
     entry_point: Path = local.joinpath("umu")
 
-    if not proton.is_file():
+    if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
 
