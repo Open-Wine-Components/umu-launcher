@@ -230,20 +230,6 @@ def _extract_dir(file: Path, steam_compat: Path) -> None:
         tar.extractall(path=steam_compat)  # noqa: S202
 
 
-def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
-    """Remove files that may have been left in an incomplete state.
-
-    We want to do this when a download for a new release is interrupted to
-    avoid corruption.
-    """
-    log.console("Keyboard Interrupt.\nCleaning...")
-
-    if tmp.joinpath(tarball).is_file():
-        log.console(f"Purging '{tarball}' in '{tmp}'...")
-        tmp.joinpath(tarball).unlink()
-    if steam_compat.joinpath(proton).is_dir():
-        log.console(f"Purging '{proton}' in '{steam_compat}'...")
-        rmtree(str(steam_compat.joinpath(proton)))
 
 
 def _get_from_steamcompat(
