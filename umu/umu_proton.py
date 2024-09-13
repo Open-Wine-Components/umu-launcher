@@ -316,36 +316,22 @@ def _get_latest(
         log.debug("Acquiring file lock '%s'...", lock.lock_file)
         lock.acquire()
 
+        # Once acquiring the lock check if Proton hasn't been installed
         if steam_compat.joinpath(proton).is_dir():
             raise FileExistsError
 
+        # Download the archive to a temporary directory
         _fetch_proton(env, tmp, assets)
 
-        if version == "UMU-Proton":
-            protons: list[Path] = [
-                file
-                for file in steam_compat.glob("*")
-                if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
-            ]
-            log.debug("Updating UMU-Proton")
-            future: Future = thread_pool.submit(
-                _update_proton, proton, steam_compat, protons, thread_pool
-            )
-            _extract_dir(tmp.joinpath(tarball), steam_compat)
-            future.result()
-        else:
-            _extract_dir(tmp.joinpath(tarball), steam_compat)
-    except ValueError as e:  # Digest mismatched
+        # Extract the archive then move the directory
+        _install_proton(tarball, tmp, steam_compat, thread_pool)
+    except (
+        ValueError,
+        KeyboardInterrupt,
+        HTTPException,
+    ) as e:
         log.exception(e)
-        # Since we do not want the user to use a suspect file, delete it
         tmp.joinpath(tarball).unlink(missing_ok=True)
-        return None
-    except KeyboardInterrupt:  # ctrl+c or signal sent from parent proc
-        # Clean up extracted data in compatibilitytools.d and temporary dir
-        _cleanup(tarball, proton, tmp, steam_compat)
-        return None
-    except HTTPException as e:  # Download failed
-        log.exception(e)
         return None
     except FileExistsError:
         pass
@@ -357,7 +343,7 @@ def _get_latest(
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     log.debug("Removing: %s", tarball)
     thread_pool.submit(tmp.joinpath(tarball).unlink, True)
-    log.console(f"Using {version} ({proton})")
+    log.console(f"Using {proton}")
 
     return env
 
