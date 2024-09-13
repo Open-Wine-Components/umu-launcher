@@ -1,4 +1,5 @@
 import os
+from contextlib import contextmanager
 from ctypes.util import find_library
 from functools import lru_cache
 from pathlib import Path
@@ -6,6 +7,8 @@ from re import Pattern
 from re import compile as re_compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+
+from Xlib import display
 
 from umu.umu_consts import STEAM_COMPAT, UMU_LOCAL
 from umu.umu_log import log
@@ -222,3 +225,12 @@ def get_osrelease_id() -> str:
                 break
 
     return osid
+@contextmanager
+def xdisplay(no: str):  # noqa: ANN201
+    """Create a Display."""
+    d: display.Display = display.Display(no)
+
+    try:
+        yield d
+    finally:
+        d.close()
