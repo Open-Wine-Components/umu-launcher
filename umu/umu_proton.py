@@ -6,7 +6,7 @@ from http.client import HTTPException
 from json import loads
 from pathlib import Path
 from re import split as resplit
-from shutil import rmtree
+from shutil import move, rmtree
 from ssl import SSLContext, create_default_context
 from tarfile import open as tar_open
 from tempfile import mkdtemp
@@ -381,3 +381,37 @@ def _update_proton(
 
     for _ in futures:
         _.result()
+
+
+def _install_proton(
+    tarball: str,
+    tmp: Path,
+    steam_compat: Path,
+    thread_pool: ThreadPoolExecutor,
+) -> None:
+    future: Future | None = None
+    version: str = (
+        "GE-Proton"
+        if os.environ.get("PROTONPATH") == "GE-Proton"
+        else "UMU-Proton"
+    )
+    proton: str = tarball.removesuffix(".tar.gz")
+
+    # Remove all previous builds when the version is UMU-Proton
+    if version == "UMU-Proton":
+        protons: list[Path] = [
+            file
+            for file in steam_compat.glob("*")
+            if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
+        ]
+        future = thread_pool.submit(
+            _update_proton, proton, steam_compat, protons, thread_pool
+        )
+
+    # Extract the new build in a temporary directory then move it
+    _extract_dir(tmp.joinpath(tarball))
+    log.console(f"'{tmp.joinpath(proton)}' -> '{steam_compat}'")
+    thread_pool.submit(move, tmp.joinpath(proton), steam_compat)
+
+    if future:
+        future.result()
