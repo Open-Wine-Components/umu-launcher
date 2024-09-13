@@ -364,11 +364,11 @@ def _update_proton(
     will be removed, so users should not be storing important files there.
     """
     futures: list[Future] = []
-
-    log.debug("Previous builds: %s", protons)
-    log.debug("Linking UMU-Latest -> %s", proton)
     steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
     steam_compat.joinpath("UMU-Latest").symlink_to(proton)
+    log.debug("Updating UMU-Proton")
+    log.debug("Previous builds: %s", protons)
+    log.debug("Linking UMU-Latest -> %s", proton)
 
     if not protons:
         return
@@ -379,8 +379,8 @@ def _update_proton(
             log.debug("Removing: %s", stable)
             futures.append(thread_pool.submit(rmtree, str(stable)))
 
-    for _ in futures:
-        _.result()
+    for future in futures:
+        future.result()
 
 
 def _install_proton(
