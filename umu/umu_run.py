@@ -683,7 +683,6 @@ def run_command(command: tuple[Path | str, ...]) -> int:
 
 def main() -> int:  # noqa: D103
     args: Namespace | tuple[str, list[str]] = parse_args()
-    thread_pool: ThreadPoolExecutor | None = None
     future: Future | None = None
     env: dict[str, str] = {
         "WINEPREFIX": "",
@@ -732,8 +731,6 @@ def main() -> int:  # noqa: D103
         log.error(err)
         sys.exit(1)
 
-    thread_pool = ThreadPoolExecutor()
-
     # Adjust the log level for the logger
     if os.environ.get("UMU_LOG") == "1":
         log.setLevel(level=INFO)
@@ -746,56 +743,58 @@ def main() -> int:  # noqa: D103
 
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
-    try:
-        with socket(AF_INET, SOCK_DGRAM) as sock:
-            sock.settimeout(5)
-            sock.connect(("1.1.1.1", 53))
-        future = thread_pool.submit(setup_umu, root, UMU_LOCAL, thread_pool)
-    except TimeoutError:  # Request to a server timed out
-        if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
-            err: str = (
-                "umu has not been setup for the user\n"
-                "An internet connection is required to setup umu"
+    with ThreadPoolExecutor() as thread_pool:
+        try:
+            with socket(AF_INET, SOCK_DGRAM) as sock:
+                sock.settimeout(5)
+                sock.connect(("1.1.1.1", 53))
+            future = thread_pool.submit(
+                setup_umu, root, UMU_LOCAL, thread_pool
             )
-            raise RuntimeError(err)
-        log.debug("Request timed out")
-    except OSError as e:  # No internet
-        if (
-            e.errno == ENETUNREACH
-            and not UMU_LOCAL.exists()
-            or not any(UMU_LOCAL.iterdir())
-        ):
-            err: str = (
-                "umu has not been setup for the user\n"
-                "An internet connection is required to setup umu"
-            )
-            raise RuntimeError(err)
-        if e.errno != ENETUNREACH:
-            raise
-        log.debug("Network is unreachable")
+        except TimeoutError:  # Request to a server timed out
+            if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
+                err: str = (
+                    "umu has not been setup for the user\n"
+                    "An internet connection is required to setup umu"
+                )
+                raise RuntimeError(err)
+            log.debug("Request timed out")
+        except OSError as e:  # No internet
+            if (
+                e.errno == ENETUNREACH
+                and not UMU_LOCAL.exists()
+                or not any(UMU_LOCAL.iterdir())
+            ):
+                err: str = (
+                    "umu has not been setup for the user\n"
+                    "An internet connection is required to setup umu"
+                )
+                raise RuntimeError(err)
+            if e.errno != ENETUNREACH:
+                raise
+            log.debug("Network is unreachable")
 
-    # Check environment
-    if isinstance(args, Namespace):
-        env, opts = set_env_toml(env, args)
-    else:
-        opts = args[1]  # Reference the executable options
-        check_env(env, thread_pool)
+        # Check environment
+        if isinstance(args, Namespace):
+            env, opts = set_env_toml(env, args)
+        else:
+            opts = args[1]  # Reference the executable options
+            check_env(env, thread_pool)
 
-    # Prepare the prefix
-    setup_pfx(env["WINEPREFIX"])
+        # Prepare the prefix
+        setup_pfx(env["WINEPREFIX"])
 
-    # Configure the environment
-    set_env(env, args)
+        # Configure the environment
+        set_env(env, args)
 
-    # Set all environment variables
-    # NOTE: `env` after this block should be read only
-    for key, val in env.items():
-        log.info("%s=%s", key, val)
-        os.environ[key] = val
+        # Set all environment variables
+        # NOTE: `env` after this block should be read only
+        for key, val in env.items():
+            log.info("%s=%s", key, val)
+            os.environ[key] = val
 
-    if future:
-        future.result()
-    thread_pool.shutdown()
+        if future:
+            future.result()
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(
