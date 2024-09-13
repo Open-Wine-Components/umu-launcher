@@ -73,6 +73,7 @@ def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
     """Fetch the latest releases from the Github API."""
     digest_asset: tuple[str, str]
     proton_asset: tuple[str, str]
+    releases: list[dict[str, Any]]
     asset_count: int = 0
     url: str = "https://api.github.com"
     repo: str = "/repos/Open-Wine-Components/umu-proton/releases/latest"
@@ -89,31 +90,29 @@ def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
         Request(f"{url}{repo}", headers=headers),  # noqa: S310
         context=ssl_default_context,
     ) as resp:
-        releases: list[dict[str, Any]]
-
         if resp.status != 200:
             return ()
-
         releases = loads(resp.read().decode("utf-8")).get("assets", [])
 
-        for release in releases:
-            if release["name"].endswith("sum"):
-                digest_asset = (
-                    release["name"],
-                    release["browser_download_url"],
-                )
-                asset_count += 1
-            elif release["name"].endswith("tar.gz") and release[
-                "name"
-            ].startswith(("UMU-Proton", "GE-Proton")):
-                proton_asset = (
-                    release["name"],
-                    release["browser_download_url"],
-                )
-                asset_count += 1
-
-            if asset_count == 2:
-                break
+    for release in releases:
+        if release["name"].endswith("sum"):
+            digest_asset = (
+                release["name"],
+                release["browser_download_url"],
+            )
+            asset_count += 1
+            continue
+        if release["name"].endswith("tar.gz") and release["name"].startswith(
+            ("UMU-Proton", "GE-Proton")
+        ):
+            proton_asset = (
+                release["name"],
+                release["browser_download_url"],
+            )
+            asset_count += 1
+            continue
+        if asset_count == 2:
+            break
 
     if asset_count != 2:
         err: str = "Failed to acquire all assets from api.github.com"
