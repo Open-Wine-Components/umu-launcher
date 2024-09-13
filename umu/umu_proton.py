@@ -213,7 +213,7 @@ def _fetch_proton(
     return env
 
 
-def _extract_dir(file: Path, steam_compat: Path) -> None:
+def _extract_dir(file: Path) -> None:
     """Extract from a path to another location."""
     with tar_open(file, "r:gz") as tar:
         if has_data_filter:
@@ -223,13 +223,9 @@ def _extract_dir(file: Path, steam_compat: Path) -> None:
             log.warning("Python: %s", sys.version)
             log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
-
-        log.console(f"Extracting '{file}' -> '{steam_compat}'...")
-        # TODO: Rather than extracting all of the contents, we should prefer
-        # the difference (e.g., rsync)
-        tar.extractall(path=steam_compat)  # noqa: S202
-
-
+        log.console(f"Extracting {file.name}...")
+        log.debug("Source: %s", str(file).removesuffix(".tar.gz"))
+        tar.extractall(path=file.parent)  # noqa: S202
 
 
 def _get_from_steamcompat(
