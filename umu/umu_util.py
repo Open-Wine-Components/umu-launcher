@@ -2,16 +2,20 @@ import os
 from contextlib import contextmanager
 from ctypes.util import find_library
 from functools import lru_cache
+from http.client import HTTPSConnection
 from pathlib import Path
 from re import Pattern
 from re import compile as re_compile
 from shutil import which
+from ssl import SSLContext, create_default_context
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
 from Xlib import display
 
 from umu.umu_consts import STEAM_COMPAT, UMU_LOCAL
 from umu.umu_log import log
+
+ssl_context: SSLContext | None = None
 
 
 @lru_cache
@@ -223,8 +227,24 @@ def get_osrelease_id() -> str:
                 osid = line.removeprefix("ID=").strip()
                 log.debug("OS: %s", osid)
                 break
+@contextmanager
+def https_connection(host: str):  # noqa: ANN201
+    """Create an HTTPSConnection."""
+    global ssl_context
+    conn: HTTPSConnection
 
     return osid
+    if not ssl_context:
+        ssl_context = create_default_context()
+
+    conn = HTTPSConnection(host, context=ssl_context)
+
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
 @contextmanager
 def xdisplay(no: str):  # noqa: ANN201
     """Create a Display."""
