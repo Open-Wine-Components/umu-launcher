@@ -50,7 +50,6 @@ from umu.umu_runtime import setup_umu
 from umu.umu_util import (
     get_libc,
     get_library_paths,
-    get_osrelease_id,
     is_installed_verb,
     is_winetricks_verb,
     xdisplay,
