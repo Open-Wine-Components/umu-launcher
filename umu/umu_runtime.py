@@ -13,7 +13,6 @@ except ModuleNotFoundError:
 from json import load
 from pathlib import Path
 from shutil import move, rmtree
-from ssl import create_default_context
 from subprocess import run
 from tarfile import open as taropen
 from tempfile import mkdtemp
@@ -23,12 +22,7 @@ from filelock import FileLock
 
 from umu.umu_consts import CONFIG, UMU_LOCAL
 from umu.umu_log import log
-from umu.umu_util import find_obsolete, run_zenity
-
-client_session: HTTPSConnection = HTTPSConnection(
-    "repo.steampowered.com",
-    context=create_default_context(),
-)
+from umu.umu_util import find_obsolete, https_connection, run_zenity
 
 try:
     from tarfile import tar_filter
@@ -39,7 +33,9 @@ except ImportError:
 
 
 def _install_umu(
-    json: dict[str, Any], thread_pool: ThreadPoolExecutor
+    json: dict[str, Any],
+    thread_pool: ThreadPoolExecutor,
+    client_session: HTTPSConnection,
 ) -> None:
     resp: HTTPResponse
     tmp: Path = Path(mkdtemp())
@@ -91,15 +87,16 @@ def _install_umu(
             err: str = (
                 f"repo.steampowered.com returned the status: {resp.status}"
             )
-            client_session.close()
             raise HTTPException(err)
 
+        # Parse SHA256SUMS
         for line in resp.read().decode("utf-8").splitlines():
             if line.endswith(archive):
                 digest = line.split(" ")[0]
                 break
 
         # Download the runtime
+        log.console(f"Downloading latest steamrt {codename}, please wait...")
         client_session.request("GET", f"{endpoint}/{archive}")
         resp = client_session.getresponse()
 
@@ -107,10 +104,8 @@ def _install_umu(
             err: str = (
                 f"repo.steampowered.com returned the status: {resp.status}"
             )
-            client_session.close()
             raise HTTPException(err)
 
-        log.console(f"Downloading latest steamrt {codename}, please wait...")
         with tmp.joinpath(archive).open(mode="ab+", buffering=0) as file:
             chunk_size: int = 64 * 1024  # 64 KB
             buffer: bytearray = bytearray(chunk_size)
@@ -122,11 +117,9 @@ def _install_umu(
         # Verify the runtime digest
         if hashsum.hexdigest() != digest:
             err: str = f"Digest mismatched: {archive}"
-            client_session.close()
             raise ValueError(err)
 
         log.console(f"{archive}: SHA256 is OK")
-        client_session.close()
 
     # Open the tar file and move the files
     log.debug("Opening: %s", tmp.joinpath(archive))
@@ -166,8 +159,8 @@ def _install_umu(
         # Remove the archive
         futures.append(thread_pool.submit(tmp.joinpath(archive).unlink, True))
 
-        for _ in futures:
-            _.result()
+        for future in futures:
+            future.result()
 
         # Rename _v2-entry-point
         log.debug("Renaming: _v2-entry-point -> umu")
@@ -184,6 +177,7 @@ def setup_umu(
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
     json: dict[str, Any] = _get_json(root, CONFIG)
+    host: str = "repo.steampowered.com"
 
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
@@ -192,9 +186,13 @@ def setup_umu(
             "Setting up Unified Launcher for Windows Games on Linux..."
         )
         local.mkdir(parents=True, exist_ok=True)
-        _restore_umu(
-            json, thread_pool, lambda: local.joinpath("umu").is_file()
-        )
+        with https_connection(host) as client_session:
+            _restore_umu(
+                json,
+                thread_pool,
+                lambda: local.joinpath("umu").is_file(),
+                client_session,
+            )
         return
 
     if os.environ.get("UMU_RUNTIME_UPDATE") == "0":
@@ -203,11 +201,15 @@ def setup_umu(
 
     find_obsolete()
 
-    _update_umu(local, json, thread_pool)
+    with https_connection(host) as client_session:
+        _update_umu(local, json, thread_pool, client_session)
 
 
 def _update_umu(
-    local: Path, json: dict[str, Any], thread_pool: ThreadPoolExecutor
+    local: Path,
+    json: dict[str, Any],
+    thread_pool: ThreadPoolExecutor,
+    client_session: HTTPSConnection,
 ) -> None:
     """For existing installations, check for updates to the runtime.
 
@@ -240,6 +242,7 @@ def _update_umu(
                 [file for file in local.glob(f"{codename}*") if file.is_dir()]
             )
             > 0,
+            client_session,
         )
         return
 
@@ -254,6 +257,7 @@ def _update_umu(
             json,
             thread_pool,
             lambda: local.joinpath("pressure-vessel").is_dir(),
+            client_session,
         )
         return
 
@@ -277,6 +281,7 @@ def _update_umu(
                 json,
                 thread_pool,
                 lambda: local.joinpath("VERSIONS.txt").is_file(),
+                client_session,
             )
             return
 
@@ -326,7 +331,6 @@ def _update_umu(
         log.warning(
             "repo.steampowered.com returned the status: %s", resp.status
         )
-        client_session.close()
         return
 
     steamrt_latest_digest: bytes = sha256(resp.read()).digest()
@@ -350,7 +354,7 @@ def _update_umu(
             ):
                 raise FileExistsError
 
-            _install_umu(json, thread_pool)
+            _install_umu(json, thread_pool, client_session)
             log.debug("Removing: %s", runtime)
             rmtree(str(runtime))
         except FileExistsError:
@@ -360,12 +364,9 @@ def _update_umu(
         finally:
             log.debug("Released file lock '%s'", lock.lock_file)
             lock.release()
-            client_session.close()
         return
 
     log.console("steamrt is up to date")
-
-    client_session.close()
 
 
 def _get_json(path: Traversable, config: str) -> dict[str, Any]:
@@ -482,6 +483,7 @@ def _restore_umu(
     json: dict[str, Any],
     thread_pool: ThreadPoolExecutor,
     callback: Callable[[], bool],
+    client_session: HTTPSConnection,
 ) -> None:
     lock: FileLock = FileLock(f"{UMU_LOCAL}/umu.lock")
 
@@ -494,7 +496,7 @@ def _restore_umu(
             log.debug("Will not restore Runtime Platform")
             raise FileExistsError
 
-        _install_umu(json, thread_pool)
+        _install_umu(json, thread_pool, client_session)
     except FileExistsError:
         pass
     except BaseException:
