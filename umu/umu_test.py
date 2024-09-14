@@ -232,11 +232,9 @@ class TestGameLauncher(unittest.TestCase):
                 umu_run,
                 "Popen",
             ) as mock_popen,
-            patch.object(
-                umu_run, "get_gamescope_baselayer_order", return_value=None
-            ),
         ):
             mock_proc = MagicMock()
+            mock_proc.__enter__.return_value = mock_proc
             mock_proc.wait.return_value = 0
             mock_proc.pid = 1234
             mock_popen.return_value = mock_proc
@@ -245,18 +243,12 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 result,
                 0,
-                "Expected 0 status code when libc could not be found",
+                "Expected 0 status code",
             )
-
 
     def test_run_command_none(self):
         """Test run_command when passed an empty tuple or None."""
-        with (
-            self.assertRaises(ValueError),
-            patch.object(
-                umu_run, "get_gamescope_baselayer_order", return_value=None
-            ),
-        ):
+        with self.assertRaises(ValueError):
             umu_run.run_command(())
             umu_run.run_command(None)
 
