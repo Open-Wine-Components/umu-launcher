@@ -577,7 +577,8 @@ def run_in_steammode(proc: Popen) -> int:
     # Currently, steamos creates two xwayland servers at :0 and :1
     # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
     # in the Flatpak, it is still possible to connect to it.
-    # TODO: Find a way to get the displays
+    # TODO: Find a robust way to get gamescope displays both in a container
+    # and outside a container
     with (
         xdisplay(":0") as d_primary,
         xdisplay(":1") as d_secondary,
@@ -623,7 +624,6 @@ def run_in_steammode(proc: Popen) -> int:
             )
             baselayer_thread.daemon = True
             baselayer_thread.start()
-
         return proc.wait()
 
     return proc.wait()
@@ -637,6 +637,8 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     ret: int = 0
     prctl_ret: int = 0
     libc: str = get_libc()
+    # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
+    # documented to be a legacy env var.
     is_steammode: bool = (
         os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
         and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
