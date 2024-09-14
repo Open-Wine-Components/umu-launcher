@@ -326,7 +326,6 @@ def _update_umu(
         "GET", f"{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt"
     )
     resp = client_session.getresponse()
-
     if resp.status != 200:
         log.warning(
             "repo.steampowered.com returned the status: %s", resp.status
@@ -339,32 +338,21 @@ def _update_umu(
         steamrt_latest_digest
         != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     ):
-        lock: FileLock = FileLock(f"{UMU_LOCAL}/umu.lock")
-
-        try:
-            log.console("Updating steamrt to latest...")
-            log.debug("Acquiring file lock '%s'...", lock.lock_file)
-            lock.acquire()
-
+        log.console("Updating steamrt to latest...")
+        with FileLock(f"{UMU_LOCAL}/umu.lock") as lock:
+            log.debug("Acquired file lock '%s'...", lock.lock_file)
             # Once another process acquires the lock, check if the latest
             # runtime has already been downloaded
             if (
                 steamrt_latest_digest
                 == sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
             ):
-                raise FileExistsError
-
+                log.debug("Released file lock '%s'", lock.lock_file)
+                return
             _install_umu(json, thread_pool, client_session)
             log.debug("Removing: %s", runtime)
             rmtree(str(runtime))
-        except FileExistsError:
-            pass
-        except BaseException:
-            raise
-        finally:
             log.debug("Released file lock '%s'", lock.lock_file)
-            lock.release()
-        return
 
     log.console("steamrt is up to date")
 
@@ -482,25 +470,13 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
 def _restore_umu(
     json: dict[str, Any],
     thread_pool: ThreadPoolExecutor,
-    callback: Callable[[], bool],
+    callback_fn: Callable[[], bool],
     client_session: HTTPSConnection,
 ) -> None:
-    lock: FileLock = FileLock(f"{UMU_LOCAL}/umu.lock")
-
-    try:
-        log.debug("Acquiring file lock '%s'...", lock.lock_file)
-        lock.acquire()
-
-        if ret := callback():
-            log.debug("Callback returned: %s", ret)
-            log.debug("Will not restore Runtime Platform")
-            raise FileExistsError
-
+    with FileLock(f"{UMU_LOCAL}/umu.lock") as lock:
+        log.debug("Acquired file lock '%s'...", lock.lock_file)
+        if callback_fn():
+            log.debug("Released file lock '%s'", lock.lock_file)
+            return
         _install_umu(json, thread_pool, client_session)
-    except FileExistsError:
-        pass
-    except BaseException:
-        raise
-    finally:
         log.debug("Released file lock '%s'", lock.lock_file)
-        lock.release()
