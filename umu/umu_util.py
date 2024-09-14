@@ -1,14 +1,21 @@
 import os
+from contextlib import contextmanager
 from ctypes.util import find_library
 from functools import lru_cache
+from http.client import HTTPSConnection
 from pathlib import Path
 from re import Pattern
 from re import compile as re_compile
 from shutil import which
+from ssl import SSLContext, create_default_context
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+
+from Xlib import display
 
 from umu.umu_consts import STEAM_COMPAT, UMU_LOCAL
 from umu.umu_log import log
+
+ssl_context: SSLContext | None = None
 
 
 @lru_cache
@@ -198,27 +205,29 @@ def find_obsolete() -> None:
         log.warning("'%s' is obsolete", ulwgl)
 
 
-def get_osrelease_id() -> str:
-    """Get the identity of the host OS."""
-    release: Path
-    osid: str = ""
+@contextmanager
+def https_connection(host: str):  # noqa: ANN201
+    """Create an HTTPSConnection."""
+    global ssl_context
+    conn: HTTPSConnection
 
-    # Flatpak follows the Container Interface outlined by systemd
-    # See https://systemd.io/CONTAINER_INTERFACE
-    if os.environ.get("container") == "flatpak":  # noqa: SIM112
-        release = Path("/run/host/os-release")
-    else:
-        release = Path("/etc/os-release")
+    if not ssl_context:
+        ssl_context = create_default_context()
 
-    if not release.is_file():
-        log.debug("File '%s' could not be found", release)
-        return osid
+    conn = HTTPSConnection(host, context=ssl_context)
 
-    with release.open(mode="r", encoding="utf-8") as file:
-        for line in file:
-            if line.startswith("ID="):
-                osid = line.removeprefix("ID=").strip()
-                log.debug("OS: %s", osid)
-                break
+    try:
+        yield conn
+    finally:
+        conn.close()
 
-    return osid
+
+@contextmanager
+def xdisplay(no: str):  # noqa: ANN201
+    """Create a Display."""
+    d: display.Display = display.Display(no)
+
+    try:
+        yield d
+    finally:
+        d.close()

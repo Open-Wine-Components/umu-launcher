@@ -232,11 +232,9 @@ class TestGameLauncher(unittest.TestCase):
                 umu_run,
                 "Popen",
             ) as mock_popen,
-            patch.object(
-                umu_run, "get_gamescope_baselayer_order", return_value=None
-            ),
         ):
             mock_proc = MagicMock()
+            mock_proc.__enter__.return_value = mock_proc
             mock_proc.wait.return_value = 0
             mock_proc.pid = 1234
             mock_popen.return_value = mock_proc
@@ -245,45 +243,12 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 result,
                 0,
-                "Expected 0 status code when libc could not be found",
+                "Expected 0 status code",
             )
-
-    def test_run_command_nolibc(self):
-        """Test run_command when libc.so could not be found in system.
-
-        In this case, we do not set the subprocess as the subreaper and a
-        warning message should be logged
-        """
-        mock_exe = "foo"
-        mock_command = (
-            "/home/foo/.local/share/umu/umu",
-            "--verb",
-            "waitforexitandrun",
-            "--",
-            "/home/foo/.local/share/Steam/compatibilitytools.d/GE-Proton9-7/proton",
-            mock_exe,
-        )
-        mock = MagicMock()
-
-        os.environ["EXE"] = mock_exe
-        with (
-            patch.object(umu_run, "Popen", return_value=mock) as proc,
-            patch.object(umu_run, "get_libc", return_value=""),
-            patch.object(
-                umu_run, "get_gamescope_baselayer_order", return_value=None
-            ),
-        ):
-            umu_run.run_command(mock_command)
-            proc.assert_called_once()
 
     def test_run_command_none(self):
         """Test run_command when passed an empty tuple or None."""
-        with (
-            self.assertRaises(ValueError),
-            patch.object(
-                umu_run, "get_gamescope_baselayer_order", return_value=None
-            ),
-        ):
+        with self.assertRaises(ValueError):
             umu_run.run_command(())
             umu_run.run_command(None)
 

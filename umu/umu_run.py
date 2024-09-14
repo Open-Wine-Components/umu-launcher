@@ -50,9 +50,9 @@ from umu.umu_runtime import setup_umu
 from umu.umu_util import (
     get_libc,
     get_library_paths,
-    get_osrelease_id,
     is_installed_verb,
     is_winetricks_verb,
+    xdisplay,
 )
 
 
@@ -560,19 +560,89 @@ def monitor_windows(
             set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
 
 
+def run_in_steammode(proc: Popen) -> int:
+    """Set properties on gamescope windows when running in steam mode.
+
+    Currently, Flatpak apps that use umu as their runtime will not have their
+    game window brought to the foreground due to the base layer being out of
+    order.
+
+    See https://github.com/ValveSoftware/gamescope/issues/1341
+    """
+    # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
+    gamescope_baselayer_sequence: list[int] | None = None
+    # Windows that will be assigned Steam's layer ID
+    window_client_list: set[str] | None = None
+
+    # Currently, steamos creates two xwayland servers at :0 and :1
+    # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
+    # in the Flatpak, it is still possible to connect to it.
+    # TODO: Find a robust way to get gamescope displays both in a container
+    # and outside a container
+    with (
+        xdisplay(":0") as d_primary,
+        xdisplay(":1") as d_secondary,
+    ):
+        gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
+
+        # Dont do window fuckery if we're not inside gamescope
+        if gamescope_baselayer_sequence and not os.environ.get(
+            "EXE", ""
+        ).endswith("winetricks"):
+            d_secondary.screen().root.change_attributes(
+                event_mask=X.SubstructureNotifyMask
+            )
+
+            # Get new windows under the client display's window
+            while not window_client_list:
+                window_client_list = get_window_client_ids(d_secondary)
+
+            # Setup the windows
+            window_setup(
+                d_primary,
+                d_secondary,
+                gamescope_baselayer_sequence,
+                window_client_list,
+            )
+
+            # Monitor for new windows
+            window_thread = threading.Thread(
+                target=monitor_windows,
+                args=(
+                    d_secondary,
+                    gamescope_baselayer_sequence,
+                    window_client_list,
+                ),
+            )
+            window_thread.daemon = True
+            window_thread.start()
+
+            # Monitor for broken baselayers
+            baselayer_thread = threading.Thread(
+                target=monitor_baselayer,
+                args=(d_primary, gamescope_baselayer_sequence),
+            )
+            baselayer_thread.daemon = True
+            baselayer_thread.start()
+        return proc.wait()
+
+    return proc.wait()
+
+
 def run_command(command: tuple[Path | str, ...]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     prctl: CFuncPtr
     cwd: Path | str
     proc: Popen
     ret: int = 0
+    prctl_ret: int = 0
     libc: str = get_libc()
-    # Primary display of the focusable app under the gamescope session
-    d_primary: display.Display | None = None
-    # Display of the client application under the gamescope session
-    d_secondary: display.Display | None = None
-    # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
-    gamescope_baselayer_sequence: list[int] | None = None
+    # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
+    # documented to be a legacy env var.
+    is_steammode: bool = (
+        os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+        and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
+    )
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -584,106 +654,31 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     else:
         cwd = Path.cwd()
 
-    if os.environ.get("container") == "flatpak" or not libc:  # noqa: SIM112
-        # Create a subprocess but do not set it as subreaper
-        proc = Popen(command, start_new_session=True, cwd=cwd)
-    else:
-        prctl = CDLL(libc).prctl
-        prctl.restype = c_int
-        prctl.argtypes = [
-            c_int,
-            c_ulong,
-            c_ulong,
-            c_ulong,
-            c_ulong,
-        ]
-        proc = Popen(
-            command,
-            start_new_session=True,
-            preexec_fn=lambda: prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0),
-            cwd=cwd,
-        )
+    prctl = CDLL(libc).prctl
+    prctl.restype = c_int
+    prctl.argtypes = [
+        c_int,
+        c_ulong,
+        c_ulong,
+        c_ulong,
+        c_ulong,
+    ]
+    prctl_ret = prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0)
+    log.debug("prctl exited with status: %s", prctl_ret)
 
-    # Currently, Flatpak apps that use umu as their runtime will not have their
-    # game window brought to the foreground due to the base layer being out of
-    # order. Ensure we're in a steamos gamescope session before fixing them
-    # See https://github.com/ValveSoftware/gamescope/issues/1341
-    if (
-        os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
-        and get_osrelease_id() == "steamos"
-    ):
-        log.debug("SteamOS gamescope session detected")
-        # Currently, steamos creates two xwayland servers at :0 and :1
-        # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
-        # the Flatpak, it is still possible to connect to it.
-        d_primary = display.Display(":0")
-        gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
-
-    # Connect to the display associated with the game
-    # Display :1 will be visible in the Flatpak
-    if d_primary and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1":
-        d_secondary = display.Display(":1")
-
-    # Dont do window fuckery if we're not inside gamescope
-    if (
-        d_secondary
-        and gamescope_baselayer_sequence
-        and not os.environ.get("EXE", "").endswith("winetricks")
-    ):
-        d_secondary.screen().root.change_attributes(
-            event_mask=X.SubstructureNotifyMask
-        )
-        window_client_list: set[str] | None = None
-
-        # Get new windows under the client display's window
-        while not window_client_list:
-            window_client_list = get_window_client_ids(d_secondary)
-
-        # Setup the windows
-        window_setup(
-            d_primary,
-            d_secondary,
-            gamescope_baselayer_sequence,
-            window_client_list,
-        )
-
-        # Monitor for new windows
-        window_thread = threading.Thread(
-            target=monitor_windows,
-            args=(
-                d_secondary,
-                gamescope_baselayer_sequence,
-                window_client_list,
-            ),
-        )
-        window_thread.daemon = True
-        window_thread.start()
-
-        # Monitor for broken baselayers
-        baselayer_thread = threading.Thread(
-            target=monitor_baselayer,
-            args=(d_primary, gamescope_baselayer_sequence),
-        )
-        baselayer_thread.daemon = True
-        baselayer_thread.start()
-
-    try:
-        ret = proc.wait()
+    with Popen(
+        command,
+        start_new_session=True,
+        cwd=cwd,
+    ) as proc:
+        ret = run_in_steammode(proc) if is_steammode else proc.wait()
         log.debug("Child %s exited with wait status: %s", proc.pid, ret)
-    except KeyboardInterrupt:
-        raise
-    finally:
-        if d_primary:
-            d_primary.close()
-        if d_secondary:
-            d_secondary.close()
 
     return ret
 
 
 def main() -> int:  # noqa: D103
     args: Namespace | tuple[str, list[str]] = parse_args()
-    thread_pool: ThreadPoolExecutor | None = None
     future: Future | None = None
     env: dict[str, str] = {
         "WINEPREFIX": "",
@@ -732,8 +727,6 @@ def main() -> int:  # noqa: D103
         log.error(err)
         sys.exit(1)
 
-    thread_pool = ThreadPoolExecutor()
-
     # Adjust the log level for the logger
     if os.environ.get("UMU_LOG") == "1":
         log.setLevel(level=INFO)
@@ -746,56 +739,58 @@ def main() -> int:  # noqa: D103
 
     # Setup the launcher and runtime files
     # An internet connection is required for new setups
-    try:
-        with socket(AF_INET, SOCK_DGRAM) as sock:
-            sock.settimeout(5)
-            sock.connect(("1.1.1.1", 53))
-        future = thread_pool.submit(setup_umu, root, UMU_LOCAL, thread_pool)
-    except TimeoutError:  # Request to a server timed out
-        if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
-            err: str = (
-                "umu has not been setup for the user\n"
-                "An internet connection is required to setup umu"
+    with ThreadPoolExecutor() as thread_pool:
+        try:
+            with socket(AF_INET, SOCK_DGRAM) as sock:
+                sock.settimeout(5)
+                sock.connect(("1.1.1.1", 53))
+            future = thread_pool.submit(
+                setup_umu, root, UMU_LOCAL, thread_pool
             )
-            raise RuntimeError(err)
-        log.debug("Request timed out")
-    except OSError as e:  # No internet
-        if (
-            e.errno == ENETUNREACH
-            and not UMU_LOCAL.exists()
-            or not any(UMU_LOCAL.iterdir())
-        ):
-            err: str = (
-                "umu has not been setup for the user\n"
-                "An internet connection is required to setup umu"
-            )
-            raise RuntimeError(err)
-        if e.errno != ENETUNREACH:
-            raise
-        log.debug("Network is unreachable")
+        except TimeoutError:  # Request to a server timed out
+            if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
+                err: str = (
+                    "umu has not been setup for the user\n"
+                    "An internet connection is required to setup umu"
+                )
+                raise RuntimeError(err)
+            log.debug("Request timed out")
+        except OSError as e:  # No internet
+            if (
+                e.errno == ENETUNREACH
+                and not UMU_LOCAL.exists()
+                or not any(UMU_LOCAL.iterdir())
+            ):
+                err: str = (
+                    "umu has not been setup for the user\n"
+                    "An internet connection is required to setup umu"
+                )
+                raise RuntimeError(err)
+            if e.errno != ENETUNREACH:
+                raise
+            log.debug("Network is unreachable")
 
-    # Check environment
-    if isinstance(args, Namespace):
-        env, opts = set_env_toml(env, args)
-    else:
-        opts = args[1]  # Reference the executable options
-        check_env(env, thread_pool)
+        # Check environment
+        if isinstance(args, Namespace):
+            env, opts = set_env_toml(env, args)
+        else:
+            opts = args[1]  # Reference the executable options
+            check_env(env, thread_pool)
 
-    # Prepare the prefix
-    setup_pfx(env["WINEPREFIX"])
+        # Prepare the prefix
+        setup_pfx(env["WINEPREFIX"])
 
-    # Configure the environment
-    set_env(env, args)
+        # Configure the environment
+        set_env(env, args)
 
-    # Set all environment variables
-    # NOTE: `env` after this block should be read only
-    for key, val in env.items():
-        log.info("%s=%s", key, val)
-        os.environ[key] = val
+        # Set all environment variables
+        # NOTE: `env` after this block should be read only
+        for key, val in env.items():
+            log.info("%s=%s", key, val)
+            os.environ[key] = val
 
-    if future:
-        future.result()
-    thread_pool.shutdown()
+        if future:
+            future.result()
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(
