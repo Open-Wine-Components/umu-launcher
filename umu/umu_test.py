@@ -248,33 +248,6 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected 0 status code when libc could not be found",
             )
 
-    def test_run_command_nolibc(self):
-        """Test run_command when libc.so could not be found in system.
-
-        In this case, we do not set the subprocess as the subreaper and a
-        warning message should be logged
-        """
-        mock_exe = "foo"
-        mock_command = (
-            "/home/foo/.local/share/umu/umu",
-            "--verb",
-            "waitforexitandrun",
-            "--",
-            "/home/foo/.local/share/Steam/compatibilitytools.d/GE-Proton9-7/proton",
-            mock_exe,
-        )
-        mock = MagicMock()
-
-        os.environ["EXE"] = mock_exe
-        with (
-            patch.object(umu_run, "Popen", return_value=mock) as proc,
-            patch.object(umu_run, "get_libc", return_value=""),
-            patch.object(
-                umu_run, "get_gamescope_baselayer_order", return_value=None
-            ),
-        ):
-            umu_run.run_command(mock_command)
-            proc.assert_called_once()
 
     def test_run_command_none(self):
         """Test run_command when passed an empty tuple or None."""
