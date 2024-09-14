@@ -205,35 +205,12 @@ def find_obsolete() -> None:
         log.warning("'%s' is obsolete", ulwgl)
 
 
-def get_osrelease_id() -> str:
-    """Get the identity of the host OS."""
-    release: Path
-    osid: str = ""
-
-    # Flatpak follows the Container Interface outlined by systemd
-    # See https://systemd.io/CONTAINER_INTERFACE
-    if os.environ.get("container") == "flatpak":  # noqa: SIM112
-        release = Path("/run/host/os-release")
-    else:
-        release = Path("/etc/os-release")
-
-    if not release.is_file():
-        log.debug("File '%s' could not be found", release)
-        return osid
-
-    with release.open(mode="r", encoding="utf-8") as file:
-        for line in file:
-            if line.startswith("ID="):
-                osid = line.removeprefix("ID=").strip()
-                log.debug("OS: %s", osid)
-                break
 @contextmanager
 def https_connection(host: str):  # noqa: ANN201
     """Create an HTTPSConnection."""
     global ssl_context
     conn: HTTPSConnection
 
-    return osid
     if not ssl_context:
         ssl_context = create_default_context()
 
