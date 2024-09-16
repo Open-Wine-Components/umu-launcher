@@ -408,7 +408,7 @@ def _install_proton(
     # Extract the new build in a temporary directory then move it
     _extract_dir(tmp.joinpath(tarball))
     log.console(f"'{tmp.joinpath(proton)}' -> '{steam_compat}'")
-    thread_pool.submit(move, tmp.joinpath(proton), steam_compat)
+    move(tmp.joinpath(proton), steam_compat)
 
     if future:
         future.result()
