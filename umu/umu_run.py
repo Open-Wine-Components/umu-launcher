@@ -678,7 +678,9 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     return ret
 
 
-def has_mismatching_compat(path_proton: Path, path_runtime: Path) -> bool:
+def has_mismatching_compat(
+    path_proton: Path, path_runtime: Path
+) -> tuple[str, str] | tuple[()]:
     """Check if the current Proton is not using its required compat tool.
 
     Arguments:
@@ -708,18 +710,13 @@ def has_mismatching_compat(path_proton: Path, path_runtime: Path) -> bool:
         if toolappid_slr := get_vdf_value(file, "appid"):
             break
 
-    # Don't warn when either values are empty
     if not toolappid_slr or not toolappid_proton:
-        return toolappid_slr != toolappid_proton
+        return ()
 
     if toolappid_slr != toolappid_proton:
-        log.warning(
-            "%s requires Runtime Platform with App ID '%s'",
-            path_proton.parent.name,
-            toolappid_slr,
-        )
+        return (path_proton.parent.name, toolappid_slr)
 
-    return toolappid_slr != toolappid_proton
+    return ()
 
 
 def main() -> int:  # noqa: D103
@@ -843,11 +840,18 @@ def main() -> int:  # noqa: D103
     ):
         sys.exit(1)
 
-    # Check if the Proton is using its required runtime
-    has_mismatching_compat(
+    # Check if the current Proton is using its required runtime
+    if compat_tools := has_mismatching_compat(
         Path(env["PROTONPATH"], "toolmanifest.vdf"),
         UMU_LOCAL.joinpath("steampipe/"),
-    )
+    ):
+        proton, toolappid_slr = compat_tools
+        log.warning(
+            "%s requires Runtime Platform with App ID '%s'",
+            proton,
+            toolappid_slr,
+        )
+        log.warning("See https://steamdb.info/app/%s", toolappid_slr)
 
     # Build the command
     command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, opts)
