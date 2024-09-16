@@ -9,7 +9,7 @@ from re import split as resplit
 from shutil import move, rmtree
 from ssl import SSLContext, create_default_context
 from tarfile import open as tar_open
-from tempfile import mkdtemp
+from tempfile import TemporaryDirectory
 from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
@@ -48,8 +48,6 @@ def get_umu_proton(
     # First element is the digest asset, second is the Proton asset. Each asset
     # will contain the asset's name and the URL that hosts it.
     assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()] = ()
-    tmp: Path = Path(mkdtemp())
-
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
     try:
@@ -58,11 +56,12 @@ def get_umu_proton(
     except URLError:
         log.debug("Network is unreachable")
 
-    if _get_latest(env, STEAM_COMPAT, tmp, assets, thread_pool) is env:
-        return env
-
-    if _get_from_steamcompat(env, STEAM_COMPAT) is env:
-        return env
+    with TemporaryDirectory() as tmpdir:
+        tmp: Path = Path(tmpdir)
+        if _get_latest(env, STEAM_COMPAT, tmp, assets, thread_pool) is env:
+            return env
+        if _get_from_steamcompat(env, STEAM_COMPAT) is env:
+            return env
 
     os.environ["PROTONPATH"] = ""
 
@@ -331,7 +330,6 @@ def _get_latest(
         HTTPException,
     ) as e:
         log.exception(e)
-        tmp.joinpath(tarball).unlink(missing_ok=True)
         return None
     except FileExistsError:
         pass
@@ -342,7 +340,6 @@ def _get_latest(
     os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     log.debug("Removing: %s", tarball)
-    thread_pool.submit(tmp.joinpath(tarball).unlink, True)
     log.console(f"Using {proton}")
 
     return env
