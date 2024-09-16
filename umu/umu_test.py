@@ -249,6 +249,7 @@ class TestGameLauncher(unittest.TestCase):
             proton_dir.joinpath("toolmanifest.vdf"),
             self.test_local_share.joinpath("steampipe/"),
         )
+        self.assertIsInstance(result, tuple, "Expected a tuple")
         self.assertTrue(
             result,
             "Expected True to be returned for mismatching Proton and SLR",
@@ -265,6 +266,7 @@ class TestGameLauncher(unittest.TestCase):
             self.test_proton_dir.joinpath("toolmanifest.vdf"),
             self.test_local_share.joinpath("steampipe/"),
         )
+        self.assertIsInstance(result, tuple, "Expected a tuple")
         self.assertFalse(
             result,
             "Expected False to be returned for matching Proton and SLR",
