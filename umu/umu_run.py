@@ -689,7 +689,7 @@ def has_mismatching_compat(
           segment.
       path_runtime: Path to the SLR, the required compatibility tool for
           Proton. Path is expected to end with the `steampipe` or similar
-          subdirectory where all its *.vdf files will be read.
+          as the last segment where all its *.vdf files will be read.
 
     Returns:
         Tuple of mismatching compatibility tools where [0] is the Proton
