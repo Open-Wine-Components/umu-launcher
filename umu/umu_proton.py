@@ -6,10 +6,10 @@ from http.client import HTTPException
 from json import loads
 from pathlib import Path
 from re import split as resplit
-from shutil import rmtree
+from shutil import move, rmtree
 from ssl import SSLContext, create_default_context
 from tarfile import open as tar_open
-from tempfile import mkdtemp
+from tempfile import TemporaryDirectory
 from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
@@ -48,8 +48,6 @@ def get_umu_proton(
     # First element is the digest asset, second is the Proton asset. Each asset
     # will contain the asset's name and the URL that hosts it.
     assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()] = ()
-    tmp: Path = Path(mkdtemp())
-
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
     try:
@@ -58,11 +56,12 @@ def get_umu_proton(
     except URLError:
         log.debug("Network is unreachable")
 
-    if _get_latest(env, STEAM_COMPAT, tmp, assets, thread_pool) is env:
-        return env
-
-    if _get_from_steamcompat(env, STEAM_COMPAT) is env:
-        return env
+    with TemporaryDirectory() as tmpdir:
+        tmp: Path = Path(tmpdir)
+        if _get_latest(env, STEAM_COMPAT, tmp, assets, thread_pool) is env:
+            return env
+        if _get_from_steamcompat(env, STEAM_COMPAT) is env:
+            return env
 
     os.environ["PROTONPATH"] = ""
 
@@ -73,6 +72,7 @@ def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
     """Fetch the latest releases from the Github API."""
     digest_asset: tuple[str, str]
     proton_asset: tuple[str, str]
+    releases: list[dict[str, Any]]
     asset_count: int = 0
     url: str = "https://api.github.com"
     repo: str = "/repos/Open-Wine-Components/umu-proton/releases/latest"
@@ -89,31 +89,29 @@ def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
         Request(f"{url}{repo}", headers=headers),  # noqa: S310
         context=ssl_default_context,
     ) as resp:
-        releases: list[dict[str, Any]]
-
         if resp.status != 200:
             return ()
-
         releases = loads(resp.read().decode("utf-8")).get("assets", [])
 
-        for release in releases:
-            if release["name"].endswith("sum"):
-                digest_asset = (
-                    release["name"],
-                    release["browser_download_url"],
-                )
-                asset_count += 1
-            elif release["name"].endswith("tar.gz") and release[
-                "name"
-            ].startswith(("UMU-Proton", "GE-Proton")):
-                proton_asset = (
-                    release["name"],
-                    release["browser_download_url"],
-                )
-                asset_count += 1
-
-            if asset_count == 2:
-                break
+    for release in releases:
+        if release["name"].endswith("sum"):
+            digest_asset = (
+                release["name"],
+                release["browser_download_url"],
+            )
+            asset_count += 1
+            continue
+        if release["name"].endswith("tar.gz") and release["name"].startswith(
+            ("UMU-Proton", "GE-Proton")
+        ):
+            proton_asset = (
+                release["name"],
+                release["browser_download_url"],
+            )
+            asset_count += 1
+            continue
+        if asset_count == 2:
+            break
 
     if asset_count != 2:
         err: str = "Failed to acquire all assets from api.github.com"
@@ -214,7 +212,7 @@ def _fetch_proton(
     return env
 
 
-def _extract_dir(file: Path, steam_compat: Path) -> None:
+def _extract_dir(file: Path) -> None:
     """Extract from a path to another location."""
     with tar_open(file, "r:gz") as tar:
         if has_data_filter:
@@ -224,27 +222,9 @@ def _extract_dir(file: Path, steam_compat: Path) -> None:
             log.warning("Python: %s", sys.version)
             log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
-
-        log.console(f"Extracting '{file}' -> '{steam_compat}'...")
-        # TODO: Rather than extracting all of the contents, we should prefer
-        # the difference (e.g., rsync)
-        tar.extractall(path=steam_compat)  # noqa: S202
-
-
-def _cleanup(tarball: str, proton: str, tmp: Path, steam_compat: Path) -> None:
-    """Remove files that may have been left in an incomplete state.
-
-    We want to do this when a download for a new release is interrupted to
-    avoid corruption.
-    """
-    log.console("Keyboard Interrupt.\nCleaning...")
-
-    if tmp.joinpath(tarball).is_file():
-        log.console(f"Purging '{tarball}' in '{tmp}'...")
-        tmp.joinpath(tarball).unlink()
-    if steam_compat.joinpath(proton).is_dir():
-        log.console(f"Purging '{proton}' in '{steam_compat}'...")
-        rmtree(str(steam_compat.joinpath(proton)))
+        log.console(f"Extracting {file.name}...")
+        log.debug("Source: %s", str(file).removesuffix(".tar.gz"))
+        tar.extractall(path=file.parent)  # noqa: S202
 
 
 def _get_from_steamcompat(
@@ -335,35 +315,20 @@ def _get_latest(
         log.debug("Acquiring file lock '%s'...", lock.lock_file)
         lock.acquire()
 
+        # Once acquiring the lock check if Proton hasn't been installed
         if steam_compat.joinpath(proton).is_dir():
             raise FileExistsError
 
+        # Download the archive to a temporary directory
         _fetch_proton(env, tmp, assets)
 
-        if version == "UMU-Proton":
-            protons: list[Path] = [
-                file
-                for file in steam_compat.glob("*")
-                if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
-            ]
-            log.debug("Updating UMU-Proton")
-            future: Future = thread_pool.submit(
-                _update_proton, proton, steam_compat, protons, thread_pool
-            )
-            _extract_dir(tmp.joinpath(tarball), steam_compat)
-            future.result()
-        else:
-            _extract_dir(tmp.joinpath(tarball), steam_compat)
-    except ValueError as e:  # Digest mismatched
-        log.exception(e)
-        # Since we do not want the user to use a suspect file, delete it
-        tmp.joinpath(tarball).unlink(missing_ok=True)
-        return None
-    except KeyboardInterrupt:  # ctrl+c or signal sent from parent proc
-        # Clean up extracted data in compatibilitytools.d and temporary dir
-        _cleanup(tarball, proton, tmp, steam_compat)
-        return None
-    except HTTPException as e:  # Download failed
+        # Extract the archive then move the directory
+        _install_proton(tarball, tmp, steam_compat, thread_pool)
+    except (
+        ValueError,
+        KeyboardInterrupt,
+        HTTPException,
+    ) as e:
         log.exception(e)
         return None
     except FileExistsError:
@@ -375,8 +340,7 @@ def _get_latest(
     os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     log.debug("Removing: %s", tarball)
-    thread_pool.submit(tmp.joinpath(tarball).unlink, True)
-    log.console(f"Using {version} ({proton})")
+    log.console(f"Using {proton}")
 
     return env
 
@@ -397,11 +361,11 @@ def _update_proton(
     will be removed, so users should not be storing important files there.
     """
     futures: list[Future] = []
-
-    log.debug("Previous builds: %s", protons)
-    log.debug("Linking UMU-Latest -> %s", proton)
     steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
     steam_compat.joinpath("UMU-Latest").symlink_to(proton)
+    log.debug("Updating UMU-Proton")
+    log.debug("Previous builds: %s", protons)
+    log.debug("Linking UMU-Latest -> %s", proton)
 
     if not protons:
         return
@@ -412,5 +376,48 @@ def _update_proton(
             log.debug("Removing: %s", stable)
             futures.append(thread_pool.submit(rmtree, str(stable)))
 
-    for _ in futures:
-        _.result()
+    for future in futures:
+        future.result()
+
+
+def _install_proton(
+    tarball: str,
+    tmp: Path,
+    steam_compat: Path,
+    thread_pool: ThreadPoolExecutor,
+) -> None:
+    """Install a Proton directory to Steam's compatibilitytools.d.
+
+    An installation is primarily composed of two steps: extract and move. A
+    UMU-Proton or GE-Proton build will first be extracted to a secure temporary
+    directory then moved to compatibilitytools.d, which is expected to be in
+    $HOME. In the case of UMU-Proton, an installation will include a remove
+    step, where old builds will be removed in parallel.
+    """
+    future: Future | None = None
+    version: str = (
+        "GE-Proton"
+        if os.environ.get("PROTONPATH") == "GE-Proton"
+        else "UMU-Proton"
+    )
+    proton: str = tarball.removesuffix(".tar.gz")
+
+    # TODO: Refactor when differential updates are implemented.
+    # Remove all previous builds when the build is UMU-Proton
+    if version == "UMU-Proton":
+        protons: list[Path] = [
+            file
+            for file in steam_compat.glob("*")
+            if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
+        ]
+        future = thread_pool.submit(
+            _update_proton, proton, steam_compat, protons, thread_pool
+        )
+
+    # Extract the new build in its temporary directory then move it
+    _extract_dir(tmp.joinpath(tarball))
+    log.console(f"'{tmp.joinpath(proton)}' -> '{steam_compat}'")
+    move(tmp.joinpath(proton), steam_compat)
+
+    if future:
+        future.result()

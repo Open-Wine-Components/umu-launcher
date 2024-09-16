@@ -9,7 +9,7 @@ from argparse import Namespace
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from pwd import getpwuid
-from shutil import copy, copytree, rmtree
+from shutil import copy, copytree, move, rmtree
 from subprocess import CompletedProcess
 from unittest.mock import MagicMock, patch
 
@@ -449,7 +449,7 @@ class TestGameLauncher(unittest.TestCase):
         wasn't found in local system.
         """
         test_archive = self.test_archive.rename("GE-Proton9-2.tar.gz")
-        umu_proton._extract_dir(test_archive, self.test_compat)
+        umu_proton._extract_dir(test_archive)
 
         with (
             self.assertRaises(FileNotFoundError),
@@ -639,21 +639,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
             )
-            self.assertFalse(result, "Expected None when a ValueError occurs")
-
-            # Verify the state of the compat dir/cache
-            self.assertFalse(
-                self.test_compat.joinpath(
-                    self.test_archive.name[
-                        : self.test_archive.name.find(".tar.gz")
-                    ]
-                ).exists(),
-                "Expected Proton dir in compat to be cleaned",
-            )
-            self.assertFalse(
-                self.test_cache.joinpath(self.test_archive.name).exists(),
-                "Expected Proton dir in compat to be cleaned",
-            )
+            self.assertFalse(result, "Expected None on KeyboardInterrupt")
 
     def test_latest_val_err(self):
         """Test _get_latest when something goes wrong when downloading Proton.
@@ -688,12 +674,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
             )
             self.assertFalse(result, "Expected None when a ValueError occurs")
-
-            # Ensure we clean up suspected files
-            self.assertFalse(
-                self.test_archive.is_file(),
-                "Expected test file in cache to be deleted",
-            )
 
     def test_latest_offline(self):
         """Test _get_latest when the user doesn't have internet."""
@@ -882,7 +862,8 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        umu_proton._extract_dir(self.test_archive, self.test_compat)
+        umu_proton._extract_dir(self.test_archive)
+        move(str(self.test_archive).removesuffix(".tar.gz"), self.test_compat)
 
         result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
 
@@ -895,111 +876,6 @@ class TestGameLauncher(unittest.TestCase):
                 ]
             ).as_posix(),
             "Expected PROTONPATH to be proton dir in compat",
-        )
-
-    def test_cleanup_no_exists(self):
-        """Test _cleanup when passed files that do not exist.
-
-        In the event of an interrupt during the download/extract process, we
-        only want to clean the files that exist
-
-        NOTE: This is **extremely** important, as we do **not** want to delete
-        anything else but the files we downloaded/extracted -- the incomplete
-        tarball/extracted dir
-        """
-        result = None
-
-        umu_proton._extract_dir(self.test_archive, self.test_compat)
-
-        # Create a file in the cache and compat
-        self.test_cache.joinpath("foo").touch()
-        self.test_compat.joinpath("foo").touch()
-
-        # Before cleaning
-        # On setUp, an archive is created and a dir should exist in compat
-        # after extraction
-        self.assertTrue(
-            self.test_compat.joinpath("foo").exists(),
-            "Expected test file to exist in compat before cleaning",
-        )
-        self.assertTrue(
-            self.test_cache.joinpath("foo").exists(),
-            "Expected test file to exist in cache before cleaning",
-        )
-        self.assertTrue(
-            self.test_archive.exists(),
-            "Expected archive to exist in cache before cleaning",
-        )
-        self.assertTrue(
-            self.test_compat.joinpath(self.test_proton_dir)
-            .joinpath("proton")
-            .exists(),
-            "Expected 'proton' to exist before cleaning",
-        )
-
-        # Pass files that do not exist
-        result = umu_proton._cleanup(
-            "foo.tar.gz",
-            "foo",
-            self.test_cache,
-            self.test_compat,
-        )
-
-        # Verify state of cache and compat after cleaning
-        self.assertFalse(result, "Expected None after cleaning")
-        self.assertTrue(
-            self.test_compat.joinpath("foo").exists(),
-            "Expected test file to exist in compat after cleaning",
-        )
-        self.assertTrue(
-            self.test_cache.joinpath("foo").exists(),
-            "Expected test file to exist in cache after cleaning",
-        )
-        self.assertTrue(
-            self.test_compat.joinpath(self.test_proton_dir).exists(),
-            "Expected proton dir to still exist after cleaning",
-        )
-        self.assertTrue(
-            self.test_archive.exists(),
-            "Expected archive to still exist after cleaning",
-        )
-        self.assertTrue(
-            self.test_compat.joinpath(self.test_proton_dir)
-            .joinpath("proton")
-            .exists(),
-            "Expected 'proton' to still exist after cleaning",
-        )
-
-    def test_cleanup(self):
-        """Test _cleanup.
-
-        In the event of an interrupt during the download/extract process, we
-        want to clean the cache or the extracted dir in Steam compat to avoid
-        incomplete files
-        """
-        result = None
-
-        umu_proton._extract_dir(self.test_archive, self.test_compat)
-        result = umu_proton._cleanup(
-            self.test_proton_dir.as_posix() + ".tar.gz",
-            self.test_proton_dir.as_posix(),
-            self.test_cache,
-            self.test_compat,
-        )
-        self.assertFalse(result, "Expected None after cleaning")
-        self.assertFalse(
-            self.test_compat.joinpath(self.test_proton_dir).exists(),
-            "Expected proton dir to be cleaned in compat",
-        )
-        self.assertFalse(
-            self.test_archive.exists(),
-            "Expected archive to be cleaned in cache",
-        )
-        self.assertFalse(
-            self.test_compat.joinpath(self.test_proton_dir)
-            .joinpath("proton")
-            .exists(),
-            "Expected 'proton' to not exist after cleaned",
         )
 
     def test_extract_err(self):
@@ -1016,7 +892,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
         with self.assertRaisesRegex(tarfile.ReadError, "gzip"):
-            umu_proton._extract_dir(test_archive, self.test_compat)
+            umu_proton._extract_dir(test_archive)
 
         if test_archive.exists():
             test_archive.unlink()
@@ -1025,11 +901,12 @@ class TestGameLauncher(unittest.TestCase):
         """Test _extract_dir.
 
         An error should not be raised when the Proton release is extracted to
-        the Steam compat dir
+        a temporary directory
         """
         result = None
 
-        result = umu_proton._extract_dir(self.test_archive, self.test_compat)
+        result = umu_proton._extract_dir(self.test_archive)
+        move(str(self.test_archive).removesuffix(".tar.gz"), self.test_compat)
         self.assertFalse(result, "Expected None after extracting")
         self.assertTrue(
             self.test_compat.joinpath(self.test_proton_dir).exists(),
