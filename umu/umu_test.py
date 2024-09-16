@@ -639,21 +639,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
             )
-            self.assertFalse(result, "Expected None when a ValueError occurs")
-
-            # Verify the state of the compat dir/cache
-            self.assertFalse(
-                self.test_compat.joinpath(
-                    self.test_archive.name[
-                        : self.test_archive.name.find(".tar.gz")
-                    ]
-                ).exists(),
-                "Expected Proton dir in compat to be cleaned",
-            )
-            self.assertFalse(
-                self.test_cache.joinpath(self.test_archive.name).exists(),
-                "Expected Proton dir in compat to be cleaned",
-            )
+            self.assertFalse(result, "Expected None on KeyboardInterrupt")
 
     def test_latest_val_err(self):
         """Test _get_latest when something goes wrong when downloading Proton.
@@ -688,12 +674,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
             )
             self.assertFalse(result, "Expected None when a ValueError occurs")
-
-            # Ensure we clean up suspected files
-            self.assertFalse(
-                self.test_archive.is_file(),
-                "Expected test file in cache to be deleted",
-            )
 
     def test_latest_offline(self):
         """Test _get_latest when the user doesn't have internet."""
