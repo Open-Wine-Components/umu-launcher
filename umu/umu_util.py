@@ -182,7 +182,7 @@ def get_vdf_value(path: Path, key: str) -> str:
         log.debug("File does not contain .vdf suffix: %s", path.name)
         return value
 
-    log.debug("Reading: %s", path)
+    log.debug("Parsing '%s'...", path)
 
     try:
         # Assumes the input is a VDF file and conforms to the
