@@ -386,6 +386,14 @@ def _install_proton(
     steam_compat: Path,
     thread_pool: ThreadPoolExecutor,
 ) -> None:
+    """Install a Proton directory to Steam's compatibilitytools.d.
+
+    An installation is primarily composed of two steps: extract and move. A
+    UMU-Proton or GE-Proton build will first be extracted to a secure temporary
+    directory then moved to compatibilitytools.d, which is expected to be in
+    $HOME. In the case of UMU-Proton, an installation will include a remove
+    step, where old builds will be removed in parallel.
+    """
     future: Future | None = None
     version: str = (
         "GE-Proton"
@@ -394,7 +402,8 @@ def _install_proton(
     )
     proton: str = tarball.removesuffix(".tar.gz")
 
-    # Remove all previous builds when the version is UMU-Proton
+    # TODO: Refactor when differential updates are implemented.
+    # Remove all previous builds when the build is UMU-Proton
     if version == "UMU-Proton":
         protons: list[Path] = [
             file
@@ -405,7 +414,7 @@ def _install_proton(
             _update_proton, proton, steam_compat, protons, thread_pool
         )
 
-    # Extract the new build in a temporary directory then move it
+    # Extract the new build in its temporary directory then move it
     _extract_dir(tmp.joinpath(tarball))
     log.console(f"'{tmp.joinpath(proton)}' -> '{steam_compat}'")
     move(tmp.joinpath(proton), steam_compat)
