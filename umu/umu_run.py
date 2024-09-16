@@ -683,12 +683,18 @@ def has_mismatching_compat(
 ) -> tuple[str, str] | tuple[()]:
     """Check if the current Proton is not using its required compat tool.
 
-    Arguments:
-      path_proton: Path to a Proton build containing toolmanifest.vdf in top
-          Path is expected to end with toolmanifest.vdf as the last segment.
+    Args:
+      path_proton: Path to a Proton build containing toolmanifest.vdf in the
+          top level. Path is expected to end with toolmanifest.vdf as the last
+          segment.
       path_runtime: Path to the SLR, the required compatibility tool for
-          Proton. Path is expected to end with the `steampipe` subdirectory
-          where all its *.vdf files will be read.
+          Proton. Path is expected to end with the `steampipe` or similar
+          subdirectory where all its *.vdf files will be read.
+
+    Returns:
+        Tuple of mismatching compatibility tools where [0] is the Proton
+        compatibility tool's name and [1] is the App ID of its required SLR.
+        An empty tuple will be returned if the compatibility tools match.
 
     """
     # App ID of Proton's required compatibility tool -- Steam Linux Runtime
