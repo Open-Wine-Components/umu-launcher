@@ -332,7 +332,10 @@ def _update_umu(
         )
         return
 
-    steamrt_latest_digest: bytes = sha256(resp.read()).digest()
+    versions_utf8: str = resp.read().decode(encoding="utf-8")
+    steamrt_latest_digest: bytes = sha256(
+        versions_utf8.encode(encoding="utf-8")
+    ).digest()
 
     if (
         steamrt_latest_digest
