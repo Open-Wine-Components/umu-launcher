@@ -63,7 +63,7 @@ Right now protonfixes packages a folder of 'gamefixes' however it could likely b
 ### What is the basic plan of putting this into action?
 
 1. We build a database containing various game titles, their IDs from different stores, and their correlating umu ID.
-2. Various launchers then search the database to pull the umu ID, and feed it as the game ID to `umu-run` alongside the store type, Proton version, wine prefix, game executable, and launch arguements.
+2. Various launchers then search the database to pull the umu ID, and feed it as the game ID to `umu-run` alongside the store type, Proton version, wine prefix, game executable, and launch arguments.
 3. When the game gets launched from `umu-run`, protonfixes picks up the store type and umu ID and finds the appropriate fix script for it, then applies it before running the game.
 4. protonfixes has folders separated for each store type. The umu ID for a game remains the exact same across multiple stores, the only difference being it can have store specific scripts OR it can just symlink to another existing script that already has the fixes it needs.
 
