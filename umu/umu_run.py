@@ -33,10 +33,10 @@ if (
     sys.path.append(str(Path(__file__).parent.parent))
 
 from Xlib import X, Xatom, display
+from Xlib.error import DisplayConnectionError
 from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
-from Xlib.error import DisplayConnectionError
 
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
