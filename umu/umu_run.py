@@ -36,6 +36,7 @@ from Xlib import X, Xatom, display
 from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
+from Xlib.error import DisplayConnectionError
 
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
@@ -579,52 +580,59 @@ def run_in_steammode(proc: Popen) -> int:
     # in the Flatpak, it is still possible to connect to it.
     # TODO: Find a robust way to get gamescope displays both in a container
     # and outside a container
-    with (
-        xdisplay(":0") as d_primary,
-        xdisplay(":1") as d_secondary,
-    ):
-        gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
-
-        # Dont do window fuckery if we're not inside gamescope
-        if gamescope_baselayer_sequence and not os.environ.get(
-            "EXE", ""
-        ).endswith("winetricks"):
-            d_secondary.screen().root.change_attributes(
-                event_mask=X.SubstructureNotifyMask
+    try:
+        with (
+            xdisplay(":0") as d_primary,
+            xdisplay(":1") as d_secondary,
+        ):
+            gamescope_baselayer_sequence = get_gamescope_baselayer_order(
+                d_primary
             )
 
-            # Get new windows under the client display's window
-            while not window_client_list:
-                window_client_list = get_window_client_ids(d_secondary)
+            # Dont do window fuckery if we're not inside gamescope
+            if gamescope_baselayer_sequence and not os.environ.get(
+                "EXE", ""
+            ).endswith("winetricks"):
+                d_secondary.screen().root.change_attributes(
+                    event_mask=X.SubstructureNotifyMask
+                )
 
-            # Setup the windows
-            window_setup(
-                d_primary,
-                d_secondary,
-                gamescope_baselayer_sequence,
-                window_client_list,
-            )
+                # Get new windows under the client display's window
+                while not window_client_list:
+                    window_client_list = get_window_client_ids(d_secondary)
 
-            # Monitor for new windows
-            window_thread = threading.Thread(
-                target=monitor_windows,
-                args=(
+                # Setup the windows
+                window_setup(
+                    d_primary,
                     d_secondary,
                     gamescope_baselayer_sequence,
                     window_client_list,
-                ),
-            )
-            window_thread.daemon = True
-            window_thread.start()
+                )
 
-            # Monitor for broken baselayers
-            baselayer_thread = threading.Thread(
-                target=monitor_baselayer,
-                args=(d_primary, gamescope_baselayer_sequence),
-            )
-            baselayer_thread.daemon = True
-            baselayer_thread.start()
-        return proc.wait()
+                # Monitor for new windows
+                window_thread = threading.Thread(
+                    target=monitor_windows,
+                    args=(
+                        d_secondary,
+                        gamescope_baselayer_sequence,
+                        window_client_list,
+                    ),
+                )
+                window_thread.daemon = True
+                window_thread.start()
+
+                # Monitor for broken baselayers
+                baselayer_thread = threading.Thread(
+                    target=monitor_baselayer,
+                    args=(d_primary, gamescope_baselayer_sequence),
+                )
+                baselayer_thread.daemon = True
+                baselayer_thread.start()
+            return proc.wait()
+    except DisplayConnectionError as e:
+        # Case where steamos changed its display outputs as we're currently
+        # assuming connecting to :0 and :1 is stable
+        log.exception(e)
 
     return proc.wait()
 
