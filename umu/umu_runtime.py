@@ -349,7 +349,6 @@ def _update_umu(
         lock: FileLock = FileLock(f"{local}/umu.lock")
         log.console("Updating steamrt to latest...")
         log.debug("Acquiring file lock '%s'...", lock.lock_file)
-
         with lock:
             log.debug("Acquired file lock '%s'", lock.lock_file)
             # Once another process acquires the lock, check if the latest
@@ -488,6 +487,7 @@ def _restore_umu(
         log.debug("Acquired file lock '%s'...", lock.lock_file)
         if callback_fn():
             log.debug("Released file lock '%s'", lock.lock_file)
+            log.console("steamrt was restored")
             return
         _install_umu(json, thread_pool, client_session)
         log.debug("Released file lock '%s'", lock.lock_file)
