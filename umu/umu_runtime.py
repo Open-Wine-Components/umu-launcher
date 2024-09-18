@@ -12,6 +12,7 @@ except ModuleNotFoundError:
 
 from json import load
 from pathlib import Path
+from secrets import token_urlsafe
 from shutil import move, rmtree
 from subprocess import run
 from tarfile import open as taropen
@@ -48,6 +49,7 @@ def _install_umu(
         f"https://repo.steampowered.com/steamrt-images-{codename}"
         "/snapshots/latest-container-runtime-public-beta"
     )
+    token: str = f"?versions={token_urlsafe(16)}"
 
     log.debug("Codename: %s", codename)
     log.debug("URL: %s", base_url)
@@ -80,7 +82,7 @@ def _install_umu(
         hashsum = sha256()
 
         # Get the digest for the runtime archive
-        client_session.request("GET", f"{endpoint}/SHA256SUMS")
+        client_session.request("GET", f"{endpoint}/SHA256SUMS{token}")
         resp = client_session.getresponse()
 
         if resp.status != 200:
@@ -97,7 +99,7 @@ def _install_umu(
 
         # Download the runtime
         log.console(f"Downloading latest steamrt {codename}, please wait...")
-        client_session.request("GET", f"{endpoint}/{archive}")
+        client_session.request("GET", f"{endpoint}/{archive}{token}")
         resp = client_session.getresponse()
 
         if resp.status != 200:
@@ -223,6 +225,7 @@ def _update_umu(
         f"/steamrt-images-{codename}"
         "/snapshots/latest-container-runtime-public-beta"
     )
+    token: str = f"?version={token_urlsafe(16)}"
     log.debug("Existing install detected")
 
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
@@ -298,7 +301,7 @@ def _update_umu(
                     )
                     break
 
-        client_session.request("GET", url)
+        client_session.request("GET", f"{url}{token}")
         resp = client_session.getresponse()
 
         # Handle the redirect
@@ -308,7 +311,7 @@ def _update_umu(
             # The stdlib requires reading the entire response body before
             # making another request
             resp.read()
-            client_session.request("GET", f"{location}/{versions}")
+            client_session.request("GET", f"{location}/{versions}{token}")
             resp = client_session.getresponse()
 
         if resp.status != 200:
@@ -316,14 +319,19 @@ def _update_umu(
                 "repo.steampowered.com returned the status: %s",
                 resp.status,
             )
-        else:
-            local.joinpath("VERSIONS.txt").write_text(
-                resp.read().decode("utf-8")
-            )
+            return
+        local.joinpath("VERSIONS.txt").write_text(resp.read().decode())
 
     # Update the runtime if necessary by comparing VERSIONS.txt to the remote
+    # repo.steampowered currently sits behind a Cloudflare proxy, which may
+    # respond with cf-cache-status: HIT in the header for subsequent requests
+    # indicating the response was found in the cache and was returned. Valve
+    # has control over the CDN's cache control behavior, so we must not assume
+    # all of the cache will be purged after new files are uploaded. Therefore,
+    # always avoid the cache by appending a unique query to the URI
     client_session.request(
-        "GET", f"{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt"
+        "GET",
+        f"{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt{token}",
     )
     resp = client_session.getresponse()
     if resp.status != 200:
@@ -332,10 +340,7 @@ def _update_umu(
         )
         return
 
-    versions_utf8: str = resp.read().decode(encoding="utf-8")
-    steamrt_latest_digest: bytes = sha256(
-        versions_utf8.encode(encoding="utf-8")
-    ).digest()
+    steamrt_latest_digest: bytes = sha256(resp.read()).digest()
 
     if (
         steamrt_latest_digest
