@@ -346,9 +346,12 @@ def _update_umu(
         steamrt_latest_digest
         != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     ):
+        lock: FileLock = FileLock(f"{local}/umu.lock")
         log.console("Updating steamrt to latest...")
-        with FileLock(f"{UMU_LOCAL}/umu.lock") as lock:
-            log.debug("Acquired file lock '%s'...", lock.lock_file)
+        log.debug("Acquiring file lock '%s'...", lock.lock_file)
+
+        with lock:
+            log.debug("Acquired file lock '%s'", lock.lock_file)
             # Once another process acquires the lock, check if the latest
             # runtime has already been downloaded
             if (
