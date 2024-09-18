@@ -216,6 +216,9 @@ def https_connection(host: str):  # noqa: ANN201
 
     conn = HTTPSConnection(host, context=ssl_context)
 
+    if os.environ.get("UMU_LOG") == "debug":
+        conn.set_debuglevel(1)
+
     try:
         yield conn
     finally:
