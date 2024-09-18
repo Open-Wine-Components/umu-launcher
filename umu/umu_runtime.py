@@ -83,32 +83,34 @@ def _install_umu(
 
         # Get the digest for the runtime archive
         client_session.request("GET", f"{endpoint}/SHA256SUMS{token}")
-        resp = client_session.getresponse()
 
-        if resp.status != 200:
-            err: str = (
-                f"repo.steampowered.com returned the status: {resp.status}"
-            )
-            raise HTTPException(err)
+        with client_session.getresponse() as resp:
+            if resp.status != 200:
+                err: str = (
+                    f"repo.steampowered.com returned the status: {resp.status}"
+                )
+                raise HTTPException(err)
 
-        # Parse SHA256SUMS
-        for line in resp.read().decode("utf-8").splitlines():
-            if line.endswith(archive):
-                digest = line.split(" ")[0]
-                break
+            # Parse SHA256SUMS
+            for line in resp.read().decode("utf-8").splitlines():
+                if line.endswith(archive):
+                    digest = line.split(" ")[0]
+                    break
 
         # Download the runtime
         log.console(f"Downloading latest steamrt {codename}, please wait...")
         client_session.request("GET", f"{endpoint}/{archive}{token}")
-        resp = client_session.getresponse()
 
-        if resp.status != 200:
-            err: str = (
-                f"repo.steampowered.com returned the status: {resp.status}"
-            )
-            raise HTTPException(err)
+        with (
+            client_session.getresponse() as resp,
+            tmp.joinpath(archive).open(mode="ab+", buffering=0) as file,
+        ):
+            if resp.status != 200:
+                err: str = (
+                    f"repo.steampowered.com returned the status: {resp.status}"
+                )
+                raise HTTPException(err)
 
-        with tmp.joinpath(archive).open(mode="ab+", buffering=0) as file:
             chunk_size: int = 64 * 1024  # 64 KB
             buffer: bytearray = bytearray(chunk_size)
             view: memoryview = memoryview(buffer)
@@ -116,10 +118,10 @@ def _install_umu(
                 file.write(view[:size])
                 hashsum.update(view[:size])
 
-        # Verify the runtime digest
-        if hashsum.hexdigest() != digest:
-            err: str = f"Digest mismatched: {archive}"
-            raise ValueError(err)
+            # Verify the runtime digest
+            if hashsum.hexdigest() != digest:
+                err: str = f"Digest mismatched: {archive}"
+                raise ValueError(err)
 
         log.console(f"{archive}: SHA256 is OK")
 
@@ -302,25 +304,28 @@ def _update_umu(
                     break
 
         client_session.request("GET", f"{url}{token}")
-        resp = client_session.getresponse()
 
-        # Handle the redirect
-        if resp.status == 301:
-            location: str = resp.getheader("Location", "")
-            log.debug("Location: %s", resp.getheader("Location"))
-            # The stdlib requires reading the entire response body before
-            # making another request
-            resp.read()
-            client_session.request("GET", f"{location}/{versions}{token}")
-            resp = client_session.getresponse()
+        with client_session.getresponse() as resp:
+            # Handle the redirect
+            if resp.status == 301:
+                location: str = resp.getheader("Location", "")
+                log.debug("Location: %s", resp.getheader("Location"))
+                # The stdlib requires reading the entire response body before
+                # making another request
+                resp.read()
 
-        if resp.status != 200:
-            log.warning(
-                "repo.steampowered.com returned the status: %s",
-                resp.status,
-            )
-            return
-        local.joinpath("VERSIONS.txt").write_text(resp.read().decode())
+                # Make a request to the new location
+                client_session.request("GET", f"{location}/{versions}{token}")
+                with client_session.getresponse() as resp_redirect:
+                    if resp_redirect.status != 200:
+                        log.warning(
+                            "repo.steampowered.com returned the status: %s",
+                            resp_redirect.status,
+                        )
+                        return
+                    local.joinpath("VERSIONS.txt").write_text(
+                        resp.read().decode()
+                    )
 
     # Update the runtime if necessary by comparing VERSIONS.txt to the remote
     # repo.steampowered currently sits behind a Cloudflare proxy, which may
@@ -329,40 +334,47 @@ def _update_umu(
     # has control over the CDN's cache control behavior, so we must not assume
     # all of the cache will be purged after new files are uploaded. Therefore,
     # always avoid the cache by appending a unique query to the URI
-    client_session.request(
-        "GET",
-        f"{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt{token}",
-    )
-    resp = client_session.getresponse()
-    if resp.status != 200:
-        log.warning(
-            "repo.steampowered.com returned the status: %s", resp.status
-        )
-        return
+    url: str = f"{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt{token}"
+    client_session.request("GET", url)
 
-    steamrt_latest_digest: bytes = sha256(resp.read()).digest()
+    # Attempt to compare the digests
+    with client_session.getresponse() as resp:
+        if resp.status != 200:
+            log.warning(
+                "repo.steampowered.com returned the status: %s", resp.status
+            )
+            return
 
-    if (
-        steamrt_latest_digest
-        != sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
-    ):
-        lock: FileLock = FileLock(f"{local}/umu.lock")
-        log.console("Updating steamrt to latest...")
-        log.debug("Acquiring file lock '%s'...", lock.lock_file)
-        with lock:
-            log.debug("Acquired file lock '%s'", lock.lock_file)
-            # Once another process acquires the lock, check if the latest
-            # runtime has already been downloaded
-            if (
-                steamrt_latest_digest
-                == sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
-            ):
+        steamrt_latest_digest: bytes = sha256(resp.read()).digest()
+        steamrt_local_digest: bytes = sha256(
+            local.joinpath("VERSIONS.txt").read_bytes()
+        ).digest()
+        steamrt_versions: Path = local.joinpath("VERSIONS.txt")
+
+        log.debug("Source: %s", url)
+        log.debug("Digest: %s", steamrt_latest_digest)
+        log.debug("Source: %s", steamrt_versions)
+        log.debug("Digest: %s", steamrt_local_digest)
+
+        if steamrt_latest_digest != steamrt_local_digest:
+            lock: FileLock = FileLock(f"{local}/umu.lock")
+            log.console("Updating steamrt to latest...")
+            log.debug("Acquiring file lock '%s'...", lock.lock_file)
+
+            with lock:
+                log.debug("Acquired file lock '%s'", lock.lock_file)
+                # Once another process acquires the lock, check if the latest
+                # runtime has already been downloaded
+                if (
+                    steamrt_latest_digest
+                    == sha256(steamrt_versions.read_bytes()).digest()
+                ):
+                    log.debug("Released file lock '%s'", lock.lock_file)
+                    return
+                _install_umu(json, thread_pool, client_session)
+                log.debug("Removing: %s", runtime)
+                rmtree(str(runtime))
                 log.debug("Released file lock '%s'", lock.lock_file)
-                return
-            _install_umu(json, thread_pool, client_session)
-            log.debug("Removing: %s", runtime)
-            rmtree(str(runtime))
-            log.debug("Released file lock '%s'", lock.lock_file)
 
     log.console("steamrt is up to date")
 
