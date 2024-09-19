@@ -38,7 +38,7 @@ classifiers = [
 urls = { repository = "https://github.com/Open-Wine-Components/umu-launcher" }
 dependencies = [
   "python-xlib>=0.33",
-  "filelock>=3.15.4",
+  "filelock>=3.9.0",
 ]
 
 [project.scripts]
