@@ -51,7 +51,7 @@ def get_umu_proton(
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
 
     try:
-        log.debug("Sending request to api.github.com")
+        log.debug("Sending request to 'api.github.com'...")
         assets = _fetch_releases()
     except URLError:
         log.debug("Network is unreachable")
