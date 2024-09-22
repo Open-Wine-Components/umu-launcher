@@ -20,7 +20,7 @@ from logging import DEBUG, INFO, WARNING
 from pathlib import Path
 from pwd import getpwuid
 from re import match
-from socket import AF_INET, SOCK_DGRAM, socket
+from socket import AF_INET, SOCK_DGRAM, gaierror, socket
 from subprocess import Popen
 from typing import Any
 
@@ -687,7 +687,6 @@ def run_command(command: tuple[Path | str, ...]) -> int:
 
 def main() -> int:  # noqa: D103
     args: Namespace | tuple[str, list[str]] = parse_args()
-    future: Future | None = None
     env: dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
@@ -715,6 +714,7 @@ def main() -> int:  # noqa: D103
         "UMU_RUNTIME_UPDATE": "",
     }
     opts: list[str] = []
+    prereq: bool = False
     root: Traversable
 
     try:
@@ -745,16 +745,16 @@ def main() -> int:  # noqa: D103
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
 
-    # Setup the launcher and runtime files
-    # An internet connection is required for new setups
     with ThreadPoolExecutor() as thread_pool:
         try:
+            # Test the network environment and fail early if the user is trying
+            # to run umu-run offline because an internet connection is required
+            # for new setups
+            log.debug("Connecting to '1.1.1.1'...")
             with socket(AF_INET, SOCK_DGRAM) as sock:
                 sock.settimeout(5)
                 sock.connect(("1.1.1.1", 53))
-            future = thread_pool.submit(
-                setup_umu, root, UMU_LOCAL, thread_pool
-            )
+            prereq = True
         except TimeoutError:  # Request to a server timed out
             if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
                 err: str = (
@@ -763,22 +763,31 @@ def main() -> int:  # noqa: D103
                 )
                 raise RuntimeError(err)
             log.debug("Request timed out")
+            prereq = True
         except OSError as e:  # No internet
-            if (
-                e.errno == ENETUNREACH
-                and not UMU_LOCAL.exists()
-                or not any(UMU_LOCAL.iterdir())
-            ):
+            if e.errno != ENETUNREACH:
+                raise
+            if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
                 err: str = (
                     "umu has not been setup for the user\n"
                     "An internet connection is required to setup umu"
                 )
                 raise RuntimeError(err)
-            if e.errno != ENETUNREACH:
-                raise
             log.debug("Network is unreachable")
+            prereq = True
 
-        # Check environment
+        if not prereq:
+            err: str = (
+                "umu has not been setup for the user\n"
+                "An internet connection is required to setup umu"
+            )
+            raise RuntimeError(err)
+
+        # Setup the launcher and runtime files
+        future: Future = thread_pool.submit(
+            setup_umu, root, UMU_LOCAL, thread_pool
+        )
+
         if isinstance(args, Namespace):
             env, opts = set_env_toml(env, args)
         else:
@@ -797,8 +806,14 @@ def main() -> int:  # noqa: D103
             log.info("%s=%s", key, val)
             os.environ[key] = val
 
-        if future:
+        try:
             future.result()
+        except gaierror as e:
+            # Name resolution error in the request to repo.steampowered.com
+            # At this point, umu was already setup and user is offline
+            if e.errno != -3:
+                raise e
+            log.debug("Name resolution failed")
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(

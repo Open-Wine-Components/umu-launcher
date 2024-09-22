@@ -229,6 +229,7 @@ def _update_umu(
     )
     token: str = f"?version={token_urlsafe(16)}"
     log.debug("Existing install detected")
+    log.debug("Sending request to '%s'...", client_session.host)
 
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the alias
