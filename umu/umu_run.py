@@ -457,9 +457,16 @@ def get_gamescope_baselayer_order(
 
 def rearrange_gamescope_baselayer_order(
     sequence: list[int],
-) -> tuple[list[int], int]:
+) -> tuple[list[int], int] | None:
     """Rearrange a gamescope base layer sequence retrieved from a window."""
-    rearranged: list[int] = [sequence[0], sequence[-1], *sequence[1:-1]]
+    rearranged: list[int]
+
+    # Gamescope identifies Steam's window by the App ID 769 or by the atom
+    # STEAM_BIGPICTURE. This identifier must be last element in the sequence
+    if sequence and sequence[-1] == 769:
+        return None
+
+    rearranged = [sequence[0], sequence[-1], *sequence[1:-1]]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
@@ -491,11 +498,16 @@ def window_setup(  # noqa
     gamescope_baselayer_sequence: list[int],
     game_window_ids: set[str],
 ) -> None:
+    rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
+
     if gamescope_baselayer_sequence:
-        # Rearrange the sequence
-        # TODO: Consider only rearranging the sequence when we need to.
+        rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
+            gamescope_baselayer_sequence
+        )
+
+    if rearranged_gamescope_baselayer:
         rearranged_sequence, steam_assigned_layer_id = (
-            rearrange_gamescope_baselayer_order(gamescope_baselayer_sequence)
+            rearranged_gamescope_baselayer
         )
 
         # Assign our window a STEAM_GAME id
@@ -512,6 +524,7 @@ def monitor_baselayer(
 ) -> None:
     """Monitor for broken gamescope baselayer sequences."""
     root_primary: Window = d_primary.screen().root
+    rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
     atom = d_primary.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
     root_primary.change_attributes(event_mask=X.PropertyChangeMask)
 
@@ -528,7 +541,12 @@ def monitor_baselayer(
         if prop and prop.value == gamescope_baselayer_sequence:
             log.debug("Broken base layer sequence detected")
             log.debug("Property value for atom '%s': %s", atom, prop.value)
-            rearranged, _ = rearrange_gamescope_baselayer_order(prop.value)
+            rearranged_gamescope_baselayer = (
+                rearrange_gamescope_baselayer_order(prop.value)
+            )
+
+        if rearranged_gamescope_baselayer:
+            rearranged, _ = rearranged_gamescope_baselayer
             set_gamescope_baselayer_order(d_primary, rearranged)
             continue
 
