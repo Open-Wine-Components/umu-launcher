@@ -187,6 +187,20 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_usr.exists():
             rmtree(self.test_usr.as_posix())
 
+    def test_rearrange_gamescope_baselayer_none(self):
+        """Test rearrange_gamescope_baselayer_order when passed correct seq.
+
+        A rearranged sequence should only be returned when the last element
+        is 769. Otherwise, None should be returned
+        """
+        baselayer = [1, 2, 3, 769]
+        result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
+
+        self.assertTrue(
+            result is None,
+            f"Expected None to be returned for sequence {baselayer}",
+        )
+
     def test_rearrange_gamescope_baselayer_order_err(self):
         """Test rearrange_gamescope_baselayer_order for unexpected seq."""
         baselayer = []
@@ -195,7 +209,7 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.rearrange_gamescope_baselayer_order(baselayer)
 
     def test_rearrange_gamescope_baselayer_order(self):
-        """Test rearrange_gamescope_baselayer_order for expected sequences."""
+        """Test rearrange_gamescope_baselayer_order when passed a sequence."""
         baselayer = [1, 2, 3, 4]
         expected = (
             [baselayer[0], baselayer[-1], *baselayer[1:-1]],
