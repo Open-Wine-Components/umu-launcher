@@ -548,6 +548,7 @@ def monitor_baselayer(
         if rearranged_gamescope_baselayer:
             rearranged, _ = rearranged_gamescope_baselayer
             set_gamescope_baselayer_order(d_primary, rearranged)
+            rearranged_gamescope_baselayer = None
             continue
 
         time.sleep(0.1)
