@@ -462,7 +462,7 @@ def rearrange_gamescope_baselayer_order(
     rearranged: list[int]
 
     # Gamescope identifies Steam's window by the App ID 769 or by the atom
-    # STEAM_BIGPICTURE. This identifier must be last element in the sequence
+    # STEAM_BIGPICTURE. This id must be the last element in the sequence
     if sequence and sequence[-1] == 769:
         return None
 
