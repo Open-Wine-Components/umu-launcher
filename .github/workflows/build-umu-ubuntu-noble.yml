@@ -35,7 +35,7 @@ jobs:
     - name: Build
       run: dpkg-buildpackage --no-sign 
 
-    - name: Move DEB files to upload artifcat path
+    - name: Move DEB files to upload artifact path
       run: mkdir -p results && cp -rvf ../*.deb results/
 
     - name: Upload artifact
