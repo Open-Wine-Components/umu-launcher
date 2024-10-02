@@ -10,18 +10,17 @@ try:
 except ModuleNotFoundError:
     from importlib.abc import Traversable
 
-from json import load
 from pathlib import Path
 from secrets import token_urlsafe
 from shutil import move, rmtree
 from subprocess import run
 from tarfile import open as taropen
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import Any
 
 from filelock import FileLock
 
-from umu.umu_consts import CONFIG, UMU_CACHE, UMU_LOCAL
+from umu import __runtime_platform__
+from umu.umu_consts import UMU_CACHE, UMU_LOCAL
 from umu.umu_log import log
 from umu.umu_util import find_obsolete, https_connection, run_zenity
 
@@ -34,7 +33,8 @@ except ImportError:
 
 
 def _install_umu(
-    json: dict[str, Any],
+    local: Path,
+    codename: str,
     thread_pool: ThreadPoolExecutor,
     client_session: HTTPSConnection,
 ) -> None:
@@ -42,7 +42,6 @@ def _install_umu(
     tmp: Path = Path(mkdtemp())
     ret: int = 0  # Exit code from zenity
     # Codename for the runtime (e.g., 'sniper')
-    codename: str = json["umu"]["versions"]["runtime_platform"]
     # Archive containing the runtime
     archive: str = f"SteamLinuxRuntime_{codename}.tar.xz"
     base_url: str = (
@@ -135,6 +134,7 @@ def _install_umu(
         log.debug("Moving: %s -> %s", tmp.joinpath(archive), tmpcache)
         move(tmp.joinpath(archive), tmpcache)
 
+        local.mkdir(parents=True, exist_ok=True)
         with (
             taropen(f"{tmpcache}/{archive}", "r:xz") as tar,
         ):
@@ -181,7 +181,7 @@ def _install_umu(
     UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
 
     # Validate the runtime after moving the files
-    check_runtime(UMU_LOCAL, json)
+    check_runtime(UMU_LOCAL, codename)
 
 
 def setup_umu(
@@ -190,8 +190,8 @@ def setup_umu(
     """Install or update the runtime for the current user."""
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
-    json: dict[str, Any] = _get_json(root, CONFIG)
     host: str = "repo.steampowered.com"
+    codename: str = __runtime_platform__
 
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
@@ -202,7 +202,8 @@ def setup_umu(
         local.mkdir(parents=True, exist_ok=True)
         with https_connection(host) as client_session:
             _restore_umu(
-                json,
+                local,
+                codename,
                 thread_pool,
                 lambda: local.joinpath("umu").is_file(),
                 client_session,
@@ -216,12 +217,12 @@ def setup_umu(
     find_obsolete()
 
     with https_connection(host) as client_session:
-        _update_umu(local, json, thread_pool, client_session)
+        _update_umu(local, codename, thread_pool, client_session)
 
 
 def _update_umu(
     local: Path,
-    json: dict[str, Any],
+    codename: str,
     thread_pool: ThreadPoolExecutor,
     client_session: HTTPSConnection,
 ) -> None:
@@ -232,7 +233,6 @@ def _update_umu(
     """
     runtime: Path
     resp: HTTPResponse
-    codename: str = json["umu"]["versions"]["runtime_platform"]
     endpoint: str = (
         f"/steamrt-images-{codename}"
         "/snapshots/latest-container-runtime-public-beta"
@@ -252,7 +252,8 @@ def _update_umu(
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
         _restore_umu(
-            json,
+            local,
+            codename,
             thread_pool,
             lambda: len(
                 [file for file in local.glob(f"{codename}*") if file.is_dir()]
@@ -270,7 +271,8 @@ def _update_umu(
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
         _restore_umu(
-            json,
+            local,
+            codename,
             thread_pool,
             lambda: local.joinpath("pressure-vessel").is_dir(),
             client_session,
@@ -294,7 +296,8 @@ def _update_umu(
             log.warning("Runtime Platform corrupt")
             log.console("Restoring Runtime Platform...")
             _restore_umu(
-                json,
+                local,
+                codename,
                 thread_pool,
                 lambda: local.joinpath("VERSIONS.txt").is_file(),
                 client_session,
@@ -382,56 +385,12 @@ def _update_umu(
                 ):
                     log.debug("Released file lock '%s'", lock.lock_file)
                     return
-                _install_umu(json, thread_pool, client_session)
+                _install_umu(local, codename, thread_pool, client_session)
                 log.debug("Removing: %s", runtime)
                 rmtree(str(runtime))
                 log.debug("Released file lock '%s'", lock.lock_file)
 
     log.console("steamrt is up to date")
-
-
-def _get_json(path: Traversable, config: str) -> dict[str, Any]:
-    """Validate the state of the configuration file umu_version.json in a path.
-
-    The configuration file will be used to update the runtime and it reflects
-    the tools currently used by launcher. The key/value pairs umu and versions
-    must exist.
-    """
-    json: dict[str, Any]
-    # Steam Runtime platform values
-    # See https://gitlab.steamos.cloud/steamrt/steamrt/-/wikis/home
-    steamrts: set[str] = {
-        "soldier",
-        "sniper",
-        "medic",
-        "steamrt5",
-    }
-
-    # umu_version.json in the system path should always exist
-    if not path.joinpath(config).is_file():
-        err: str = (
-            f"File not found: {config}\n"
-            "Please reinstall the package to recover configuration file"
-        )
-        raise FileNotFoundError(err)
-
-    with path.joinpath(config).open(mode="r", encoding="utf-8") as file:
-        json = load(file)
-
-    # Raise an error if "umu" and "versions" doesn't exist
-    if not json or "umu" not in json or "versions" not in json["umu"]:
-        err: str = (
-            f"Failed to load {config} or 'umu' or 'versions' not in: {config}"
-        )
-        raise ValueError(err)
-
-    # The launcher will use the value runtime_platform to glob files. Attempt
-    # to guard against directory removal attacks for non-system wide installs
-    if json["umu"]["versions"]["runtime_platform"] not in steamrts:
-        err: str = "Value for 'runtime_platform' is not a steamrt"
-        raise ValueError(err)
-
-    return json
 
 
 def _move(file: Path, src: Path, dst: Path) -> None:
@@ -453,7 +412,7 @@ def _move(file: Path, src: Path, dst: Path) -> None:
         move(src_file, dest_file)
 
 
-def check_runtime(src: Path, json: dict[str, Any]) -> int:
+def check_runtime(src: Path, codename: str) -> int:
     """Validate the file hierarchy of the runtime platform.
 
     The mtree file included in the Steam runtime platform will be used to
@@ -461,7 +420,6 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     home directory and used to run games.
     """
     runtime: Path
-    codename: str = json["umu"]["versions"]["runtime_platform"]
     pv_verify: Path = src.joinpath("pressure-vessel", "bin", "pv-verify")
     ret: int = 1
 
@@ -501,16 +459,17 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
 
 
 def _restore_umu(
-    json: dict[str, Any],
+    local: Path,
+    codename: str,
     thread_pool: ThreadPoolExecutor,
     callback_fn: Callable[[], bool],
     client_session: HTTPSConnection,
 ) -> None:
-    with FileLock(f"{UMU_LOCAL}/umu.lock") as lock:
+    with FileLock(f"{local}/umu.lock") as lock:
         log.debug("Acquired file lock '%s'...", lock.lock_file)
         if callback_fn():
             log.debug("Released file lock '%s'", lock.lock_file)
             log.console("steamrt was restored")
             return
-        _install_umu(json, thread_pool, client_session)
+        _install_umu(local, codename, thread_pool, client_session)
         log.debug("Released file lock '%s'", lock.lock_file)
