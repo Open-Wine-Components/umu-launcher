@@ -27,6 +27,9 @@ UMU_LOCAL: Path = (
     else Path.home().joinpath(".local", "share", "umu")
 )
 
+# Temporary directory for downloaded resources moved from tmpfs
+UMU_CACHE: Path = Path.home().joinpath(".cache", "umu")
+
 # Constant defined in prctl.h
 # See prctl(2) for more details
 PR_SET_CHILD_SUBREAPER = 36
