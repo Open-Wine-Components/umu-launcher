@@ -351,8 +351,6 @@ def _get_latest(
 
 
 def _update_proton(
-    proton: str,
-    steam_compat: Path,
     protons: list[Path],
     thread_pool: ThreadPoolExecutor,
 ) -> None:
@@ -366,11 +364,8 @@ def _update_proton(
     will be removed, so users should not be storing important files there.
     """
     futures: list[Future] = []
-    steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
-    steam_compat.joinpath("UMU-Latest").symlink_to(proton)
     log.debug("Updating UMU-Proton")
     log.debug("Previous builds: %s", protons)
-    log.debug("Linking UMU-Latest -> %s", proton)
 
     if not protons:
         return
@@ -417,9 +412,7 @@ def _install_proton(
             for file in steam_compat.glob("*")
             if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
         ]
-        future = thread_pool.submit(
-            _update_proton, proton, steam_compat, protons, thread_pool
-        )
+        future = thread_pool.submit(_update_proton, protons, thread_pool)
 
     # Move downloaded file from tmpfs to cache to avoid high memory usage
     log.debug("Moving: %s -> %s", archive_path, tmpdirs[1])
@@ -430,6 +423,10 @@ def _install_proton(
     # Move decompressed archive to compatibilitytools.d
     log.console(f"'{proton_path}' -> '{steam_compat}'")
     move(proton_path, steam_compat)
+
+    steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
+    steam_compat.joinpath("UMU-Latest").symlink_to(proton)
+    log.debug("Linking: UMU-Latest -> %s", proton)
 
     if future:
         future.result()
