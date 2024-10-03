@@ -422,7 +422,7 @@ def _install_proton(
         )
 
     # Move downloaded file from tmpfs to cache to avoid high memory usage
-    log.debug("Move: %s -> %s", archive_path, tmpdirs[1])
+    log.debug("Moving: %s -> %s", archive_path, tmpdirs[1])
     move(archive_path, tmpdirs[1])
 
     _extract_dir(tmpdirs[1] / tarball)
