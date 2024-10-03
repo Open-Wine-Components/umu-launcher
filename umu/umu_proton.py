@@ -16,7 +16,7 @@ from urllib.request import Request, urlopen
 
 from filelock import FileLock
 
-from umu.umu_consts import STEAM_COMPAT, UMU_LOCAL
+from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_LOCAL
 from umu.umu_log import log
 from umu.umu_util import run_zenity
 
@@ -49,6 +49,7 @@ def get_umu_proton(
     # will contain the asset's name and the URL that hosts it.
     assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()] = ()
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
+    UMU_CACHE.mkdir(parents=True, exist_ok=True)
 
     try:
         log.debug("Sending request to 'api.github.com'...")
@@ -56,9 +57,13 @@ def get_umu_proton(
     except URLError:
         log.debug("Network is unreachable")
 
-    with TemporaryDirectory() as tmpdir:
-        tmp: Path = Path(tmpdir)
-        if _get_latest(env, STEAM_COMPAT, tmp, assets, thread_pool) is env:
+    # TODO: Handle interrupts on the move/extract operations
+    with (
+        TemporaryDirectory() as tmp,
+        TemporaryDirectory(dir=UMU_CACHE) as tmpcache,
+    ):
+        tmpdirs: tuple[Path, Path] = (Path(tmp), Path(tmpcache))
+        if _get_latest(env, STEAM_COMPAT, tmpdirs, assets, thread_pool) is env:
             return env
         if _get_from_steamcompat(env, STEAM_COMPAT) is env:
             return env
@@ -267,7 +272,7 @@ def _get_from_steamcompat(
 def _get_latest(
     env: dict[str, str],
     steam_compat: Path,
-    tmp: Path,
+    tmpdirs: tuple[Path, Path],
     assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()],
     thread_pool: ThreadPoolExecutor,
 ) -> dict[str, str] | None:
@@ -320,10 +325,10 @@ def _get_latest(
             raise FileExistsError
 
         # Download the archive to a temporary directory
-        _fetch_proton(env, tmp, assets)
+        _fetch_proton(env, tmpdirs[0], assets)
 
         # Extract the archive then move the directory
-        _install_proton(tarball, tmp, steam_compat, thread_pool)
+        _install_proton(tarball, tmpdirs, steam_compat, thread_pool)
     except (
         ValueError,
         KeyboardInterrupt,
@@ -382,7 +387,7 @@ def _update_proton(
 
 def _install_proton(
     tarball: str,
-    tmp: Path,
+    tmpdirs: tuple[Path, Path],
     steam_compat: Path,
     thread_pool: ThreadPoolExecutor,
 ) -> None:
@@ -401,6 +406,8 @@ def _install_proton(
         else "UMU-Proton"
     )
     proton: str = tarball.removesuffix(".tar.gz")
+    archive_path: str = f"{tmpdirs[0]}/{tarball}"
+    proton_path: str = f"{tmpdirs[1]}/{proton}"
 
     # TODO: Refactor when differential updates are implemented.
     # Remove all previous builds when the build is UMU-Proton
@@ -414,10 +421,15 @@ def _install_proton(
             _update_proton, proton, steam_compat, protons, thread_pool
         )
 
-    # Extract the new build in its temporary directory then move it
-    _extract_dir(tmp.joinpath(tarball))
-    log.console(f"'{tmp.joinpath(proton)}' -> '{steam_compat}'")
-    move(tmp.joinpath(proton), steam_compat)
+    # Move downloaded file from tmpfs to cache to avoid high memory usage
+    log.debug("Moving: %s -> %s", archive_path, tmpdirs[1])
+    move(archive_path, tmpdirs[1])
+
+    _extract_dir(tmpdirs[1] / tarball)
+
+    # Move decompressed archive to compatibilitytools.d
+    log.console(f"'{proton_path}' -> '{steam_compat}'")
+    move(proton_path, steam_compat)
 
     if future:
         future.result()

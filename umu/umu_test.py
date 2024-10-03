@@ -62,6 +62,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_file = "./tmp.WMYQiPb9A"
         # Executable
         self.test_exe = self.test_file + "/" + "foo"
+        self.test_cache_home = Path("./tmp.Ye0g13HmTy")
         # Cache
         self.test_cache = Path("./tmp.5HYdpddgvs")
         # Steam compat dir
@@ -102,6 +103,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
         self.test_usr.mkdir(exist_ok=True)
+        self.test_cache_home.mkdir(exist_ok=True)
 
         # Mock a valid configuration file at /usr/share/umu:
         # tmp.BXk2NnvW2m/umu_version.json
@@ -186,6 +188,9 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_usr.exists():
             rmtree(self.test_usr.as_posix())
+
+        if self.test_cache_home.exists():
+            rmtree(self.test_cache_home.as_posix())
 
     def test_rearrange_gamescope_baselayer_none(self):
         """Test rearrange_gamescope_baselayer_order when passed correct seq.
@@ -639,6 +644,7 @@ class TestGameLauncher(unittest.TestCase):
         # for latest Proton releases
         # In this case, assume the test variable will be downloaded
         files = (("", ""), (self.test_archive.name, ""))
+        tmpdirs = (self.test_cache, self.test_cache_home)
 
         with (
             patch("umu.umu_proton._fetch_proton") as mock_function,
@@ -648,7 +654,7 @@ class TestGameLauncher(unittest.TestCase):
             # We want the dir we tried to extract to be cleaned
             mock_function.side_effect = KeyboardInterrupt
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files, thread_pool
+                self.env, self.test_compat, tmpdirs, files, thread_pool
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -669,6 +675,7 @@ class TestGameLauncher(unittest.TestCase):
         # When empty, it means the callout failed for some reason (e.g. no
         # internet)
         files = (("", ""), (self.test_archive.name, ""))
+        tmpdirs = (self.test_cache, self.test_cache_home)
 
         self.assertTrue(
             self.test_archive.is_file(),
@@ -682,7 +689,7 @@ class TestGameLauncher(unittest.TestCase):
             # Mock the interrupt
             mock_function.side_effect = ValueError
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files, thread_pool
+                self.env, self.test_compat, tmpdirs, files, thread_pool
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -697,6 +704,7 @@ class TestGameLauncher(unittest.TestCase):
         # When empty, it means the callout failed for some reason (e.g. no
         # internet)
         files = ()
+        tmpdirs = (self.test_cache, self.test_cache_home)
 
         os.environ["PROTONPATH"] = ""
 
@@ -705,7 +713,7 @@ class TestGameLauncher(unittest.TestCase):
             ThreadPoolExecutor() as thread_pool,
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files, thread_pool
+                self.env, self.test_compat, tmpdirs, files, thread_pool
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -715,7 +723,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
     def test_link_umu(self):
-        """Test __get_latest for recreating the UMU-Latest link.
+        """Test _get_latest for recreating the UMU-Latest link.
 
         This link should always be recreated to ensure clients can reliably
         kill the wineserver process for the current prefix
@@ -729,6 +737,7 @@ class TestGameLauncher(unittest.TestCase):
         latest.mkdir()
         Path(f"{latest}.sha512sum").touch()
         files = ((f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", ""))
+        tmpdirs = (self.test_cache, self.test_cache_home)
 
         # Mock the latest Proton in /tmp
         test_archive = self.test_cache.joinpath(f"{latest}.tar.gz")
@@ -749,7 +758,7 @@ class TestGameLauncher(unittest.TestCase):
             ThreadPoolExecutor() as thread_pool,
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files, thread_pool
+                self.env, self.test_compat, tmpdirs, files, thread_pool
             )
             self.assertTrue(result is self.env, "Expected the same reference")
             # Verify the latest was set
@@ -783,6 +792,7 @@ class TestGameLauncher(unittest.TestCase):
         latest.mkdir()
         Path(f"{latest}.sha512sum").touch()
         files = ((f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", ""))
+        tmpdirs = (self.test_cache, self.test_cache_home)
 
         # Mock the latest Proton in /tmp
         test_archive = self.test_cache.joinpath(f"{latest}.tar.gz")
@@ -806,7 +816,7 @@ class TestGameLauncher(unittest.TestCase):
             ThreadPoolExecutor() as thread_pool,
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, self.test_cache, files, thread_pool
+                self.env, self.test_compat, tmpdirs, files, thread_pool
             )
             self.assertTrue(result is self.env, "Expected the same reference")
             # Verify the latest was set
