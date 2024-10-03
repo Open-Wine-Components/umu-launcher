@@ -16,12 +16,12 @@ from secrets import token_urlsafe
 from shutil import move, rmtree
 from subprocess import run
 from tarfile import open as taropen
-from tempfile import mkdtemp
+from tempfile import TemporaryDirectory, mkdtemp
 from typing import Any
 
 from filelock import FileLock
 
-from umu.umu_consts import CONFIG, UMU_LOCAL
+from umu.umu_consts import CONFIG, UMU_CACHE, UMU_LOCAL
 from umu.umu_log import log
 from umu.umu_util import find_obsolete, https_connection, run_zenity
 
@@ -127,51 +127,61 @@ def _install_umu(
 
     # Open the tar file and move the files
     log.debug("Opening: %s", tmp.joinpath(archive))
-    with (
-        taropen(tmp.joinpath(archive), "r:xz") as tar,
-    ):
-        futures: list[Future] = []
 
-        if has_data_filter:
-            log.debug("Using filter for archive")
-            tar.extraction_filter = tar_filter
-        else:
-            log.warning("Python: %s", sys.version)
-            log.warning("Using no data filter for archive")
-            log.warning("Archive will be extracted insecurely")
+    UMU_CACHE.mkdir(parents=True, exist_ok=True)
 
-        # Ensure the target directory exists
-        UMU_LOCAL.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(dir=UMU_CACHE) as tmpcache:
+        log.debug("Created: %s", tmpcache)
+        log.debug("Moving: %s -> %s", tmp.joinpath(archive), tmpcache)
+        move(tmp.joinpath(archive), tmpcache)
 
-        # Extract the entirety of the archive w/ or w/o the data filter
-        log.debug("Extracting archive files -> %s", tmp)
-        tar.extractall(path=tmp)  # noqa: S202
+        with (
+            taropen(f"{tmpcache}/{archive}", "r:xz") as tar,
+        ):
+            futures: list[Future] = []
 
-        # Move the files to the correct location
-        source_dir: Path = tmp.joinpath(f"SteamLinuxRuntime_{codename}")
-        log.debug("Source: %s", source_dir)
-        log.debug("Destination: %s", UMU_LOCAL)
+            if has_data_filter:
+                log.debug("Using filter for archive")
+                tar.extraction_filter = tar_filter
+            else:
+                log.warning("Python: %s", sys.version)
+                log.warning("Using no data filter for archive")
+                log.warning("Archive will be extracted insecurely")
 
-        # Move each file to the destination directory, overwriting if it exists
-        futures.extend(
-            [
-                thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
-                for file in source_dir.glob("*")
-            ]
-        )
+            # Ensure the target directory exists
+            UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
-        # Remove the archive
-        futures.append(thread_pool.submit(tmp.joinpath(archive).unlink, True))
+            # Extract the entirety of the archive w/ or w/o the data filter
+            log.debug(
+                "Extracting: %s -> %s", f"{tmpcache}/{archive}", tmpcache
+            )
+            tar.extractall(path=tmpcache)  # noqa: S202
 
-        for future in futures:
-            future.result()
+            # Move the files to the correct location
+            source_dir: Path = Path(tmpcache, f"SteamLinuxRuntime_{codename}")
+            log.debug("Source: %s", source_dir)
+            log.debug("Destination: %s", UMU_LOCAL)
 
-        # Rename _v2-entry-point
-        log.debug("Renaming: _v2-entry-point -> umu")
-        UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
+            # Move each file to the dest dir, overwriting if exists
+            futures.extend(
+                [
+                    thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
+                    for file in source_dir.glob("*")
+                ]
+            )
 
-        # Validate the runtime after moving the files
-        check_runtime(UMU_LOCAL, json)
+            # Remove the archive
+            futures.append(thread_pool.submit(rmtree, str(tmpcache)))
+
+            for future in futures:
+                future.result()
+
+    # Rename _v2-entry-point
+    log.debug("Renaming: _v2-entry-point -> umu")
+    UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
+
+    # Validate the runtime after moving the files
+    check_runtime(UMU_LOCAL, json)
 
 
 def setup_umu(
