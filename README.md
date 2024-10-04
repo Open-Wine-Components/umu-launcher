@@ -5,13 +5,15 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?logo=discord&logoColor=white)](https://discord.com/invite/6y3BdzC)
 
-Unified Linux Wine Game Launcher.
-
 ## Description
 
 ### What is this?
 
 This is a unified launcher for Windows games on Linux. It is essentially a copy of the [Steam Runtime Tools](https://gitlab.steamos.cloud/steamrt/steam-runtime-tools) and [Steam Linux Runtime](https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/container-runtime.md) that Valve uses for [Proton](https://github.com/ValveSoftware/Proton), with some modifications made so that it can be used outside of Steam.
+
+### Why is it called UMU?
+
+An umu is an above-ground oven of hot volcanic stones originating from Samoans. After the stones are heated, the top layer is removed and the food placed on top to heat/cook. We chose the name because Valve's containerization tool is named pressure-vessel. We're "preparing" the pressure vessel similar to how you would use a stove top pressure-cooker -- by placing it on our umu's "stovetop"
 
 ### What does it do?
 
