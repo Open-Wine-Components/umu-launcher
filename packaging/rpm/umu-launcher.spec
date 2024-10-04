@@ -1,4 +1,5 @@
-%define commit 9b12f90b4e113275b5e8ea33a88674275bf3a1c8
+%define commit 12ebba1bea5006aaa0493d4d9e5d1ba1fe434ac1
+%define tag 1.1.1
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global build_timestamp %(date +"%Y%m%d")
@@ -6,7 +7,7 @@
 %global rel_build 1.%{build_timestamp}.%{shortcommit}%{?dist}
 
 Name:           umu-launcher
-Version:        1.0
+Version:        1.1.1
 Release:        %{rel_build}
 Summary:        A tool for launching non-steam games with proton
 
@@ -40,7 +41,7 @@ Requires:	python3-filelock
 %prep
 git clone --single-branch --branch main https://github.com/Open-Wine-Components/umu-launcher.git
 cd umu-launcher
-git checkout %{commit}
+git checkout %{tag}
 git submodule update --init --recursive
 
 %build
