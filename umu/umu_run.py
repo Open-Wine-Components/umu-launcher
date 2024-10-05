@@ -861,7 +861,7 @@ def main() -> int:  # noqa: D103
         if get_vdf_value(file, "appid") == toolappid_proton:
             runtime_platform: Path = file.parent.parent
             log.debug("App ID (Proton): %s", toolappid_proton)
-            log.debug("Steam Linux Runtime: %s", file.name)
+            log.debug("Steam Linux Runtime: %s", file.parent.parent.name)
             log.console(
                 f"Using {Path(env['PROTONPATH']).name} with "
                 f"{runtime_platform.name}"
