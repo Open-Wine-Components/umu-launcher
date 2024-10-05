@@ -1,9 +1,11 @@
 import argparse
 import json
 import os
+import random
 import re
 import sys
 import tarfile
+import tempfile
 import unittest
 from argparse import Namespace
 from concurrent.futures import ThreadPoolExecutor
@@ -69,6 +71,29 @@ class TestGameLauncher(unittest.TestCase):
         self.test_compat = Path("./tmp.ZssGZoiNod")
         # umu-proton dir
         self.test_proton_dir = Path("UMU-Proton-5HYdpddgvs")
+        # toolmanifest.vdf within Proton
+        self.test_vdf = (
+            '"manifest"\n'
+            "{\n"
+            '    "version" "2"\n'
+            '    "commandline" "/proton %verb%"\n'
+            '    "require_tool_appid" "1628350"\n'
+            '    "use_sessions" "1"\n'
+            '    "compatmanager_layer_name" "proton"\n'
+            "}"
+        )
+        # app_build_*.vdf within the runtime dir
+        self.test_app_build_vdf = (
+            '"appbuild"\n'
+            "{\n"
+            '    "appid" "1628350"\n'
+            '    "buildoutput" "output"\n'
+            '    "depots"\n'
+            "     {\n"
+            '        "1628351" "depot_build_1628351.vdf"\n'
+            "     }\n"
+            "}"
+        )
         # umu-proton release
         self.test_archive = Path(self.test_cache).joinpath(
             f"{self.test_proton_dir}.tar.gz"
@@ -104,6 +129,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_proton_dir.mkdir(exist_ok=True)
         self.test_usr.mkdir(exist_ok=True)
         self.test_cache_home.mkdir(exist_ok=True)
+        self.test_local_share.joinpath("steampipe").mkdir(exist_ok=True)
 
         # Mock a valid configuration file at /usr/share/umu:
         # tmp.BXk2NnvW2m/umu_version.json
@@ -132,6 +158,11 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "run-in-sniper").touch()
         Path(self.test_user_share, "umu").touch()
 
+        # Mock app_build_*.vdf in $HOME/.local/share/umu/steampipe
+        self.test_local_share.joinpath(
+            "steampipe", "app_build_1628350.vdf"
+        ).write_text(self.test_app_build_vdf, encoding="utf-8")
+
         # Mock pressure vessel
         Path(self.test_user_share, "pressure-vessel", "bin").mkdir(
             parents=True
@@ -140,6 +171,11 @@ class TestGameLauncher(unittest.TestCase):
         Path(
             self.test_user_share, "pressure-vessel", "bin", "pv-verify"
         ).touch()
+
+        # Mock toolmanifest.vdf in the dir
+        self.test_proton_dir.joinpath("toolmanifest.vdf").write_text(
+            self.test_vdf, encoding="utf-8"
+        )
 
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
@@ -191,6 +227,79 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
+
+    def test_get_vdf_na(self):
+        """Test get_vdf_value when the toolmanifest.vdf isn't found.
+
+        Expects an empty string to be returned
+        """
+        key = "qux"
+
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmp:
+            toolmanifest = Path(tmp, "toolmanifest.vdf")
+            toolmanifest.write_text(self.test_vdf, encoding="utf-8")
+            result = umu_util.get_vdf_value(toolmanifest, key)
+            self.assertFalse(
+                result, "Expected an empty string when file was not found"
+            )
+
+    def test_get_vdf_binary(self):
+        """Test get_vdf_value when reading binary data.
+
+        Expects an empty string to be returned when reading binary data
+        """
+        key = "baz"
+
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmp:
+            toolmanifest = Path(tmp, "toolmanifest.vdf")
+            toolmanifest.write_bytes(random.randbytes(16))  # noqa: S311
+            result = umu_util.get_vdf_value(toolmanifest, key)
+            self.assertFalse(
+                result, "Expected an empty string when file was not found"
+            )
+            result = umu_util.get_vdf_value(
+                self.test_proton_dir.joinpath("toolmanifest.vdf"), key
+            )
+            self.assertFalse(
+                result, "Expected an empty string when reading binary"
+            )
+
+    def test_get_vdf_value_foo(self):
+        """Test get_vdf_value when a key does not exist.
+
+        Expects an empty string to be returned.
+        """
+        key = "foo"
+        expected = ""
+
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmp:
+            toolmanifest = Path(tmp, "toolmanifest.vdf")
+            toolmanifest.write_text(self.test_vdf, encoding="utf-8")
+            result = umu_util.get_vdf_value(
+                self.test_proton_dir.joinpath("toolmanifest.vdf"), key
+            )
+            self.assertEqual(
+                result, expected, f"Expected '{expected}', received '{result}'"
+            )
+
+    def test_get_vdf_value(self):
+        """Test get_vdf_value.
+
+        Expects a value to be returned when passed a valid key from reading a
+        non-binary VDF file
+        """
+        key = "require_tool_appid"
+        expected = "1628350"
+
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmp:
+            toolmanifest = Path(tmp, "toolmanifest.vdf")
+            toolmanifest.write_text(self.test_vdf, encoding="utf-8")
+            result = umu_util.get_vdf_value(
+                self.test_proton_dir.joinpath("toolmanifest.vdf"), key
+            )
+            self.assertEqual(
+                result, expected, f"Expected '{expected}', received '{result}'"
+            )
 
     def test_rearrange_gamescope_baselayer_none(self):
         """Test rearrange_gamescope_baselayer_order when passed correct seq.
@@ -1233,6 +1342,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result_args = None
         test_command = []
+        test_runtime_platform = ("steamrt3", "sniper", "1628350")
 
         # Mock the proton file
         Path(self.test_file, "proton").touch()
@@ -1264,7 +1374,10 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                test_runtime_platform,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
