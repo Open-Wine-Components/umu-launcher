@@ -56,13 +56,14 @@ def _install_umu(
     # been downloaded for them yet.
     if _is_obsolete_umu(runtime_platform):
         toolmanifest: Path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf")
-        compat_tool = get_vdf_value(
+        compat_tool: str = get_vdf_value(
             toolmanifest,
             "require_tool_appid",
         )
 
         log.warning(
-            "Obsolete compatibility tool detected: %s", toolmanifest.parent
+            "%s is obsolete, downloading obsolete steamrt",
+            toolmanifest.parent.name,
         )
 
         for runtime in __pressure_vessel_runtimes__:
@@ -291,7 +292,10 @@ def _update_umu(
 
     # Skip SLR updates when not using the latest variant
     if _is_obsolete_umu(runtime_platform):
-        log.warning("Obsolete compatibility tools detected, skipping updates")
+        log.warning(
+            "%s is obsolete, skipping steamrt update",
+            Path(os.environ["PROTONPATH"]).name,
+        )
         return
 
     log.debug("Existing install detected")
