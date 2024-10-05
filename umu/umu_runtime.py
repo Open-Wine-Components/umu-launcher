@@ -285,10 +285,7 @@ def _update_umu(
     """
     runtime: Path
     resp: HTTPResponse
-    endpoint: str = (
-        f"/steamrt-images-{runtime_platform[1]}"
-        "/snapshots/latest-container-runtime-public-beta"
-    )
+    endpoint: str
     token: str = f"?version={token_urlsafe(16)}"
 
     log.debug("Existing install detected")
@@ -319,6 +316,11 @@ def _update_umu(
                 runtime_platform = pv_runtime
                 local = local.parent / pv_runtime[0]
                 break
+
+    endpoint = (
+        f"/steamrt-images-{runtime_platform[1]}"
+        "/snapshots/latest-container-runtime-public-beta"
+    )
 
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the alias
