@@ -287,13 +287,14 @@ def _update_umu(
     resp: HTTPResponse
     endpoint: str
     token: str = f"?version={token_urlsafe(16)}"
+    is_obsolete: bool = _is_obsolete_umu(runtime_platform)
 
     log.debug("Existing install detected")
     log.debug("Sending request to '%s'...", client_session.host)
 
     # When using an existing obsolete proton build, skip its updates but allow
     # restoring it
-    if _is_obsolete_umu(runtime_platform):
+    if is_obsolete:
         toolmanifest: Path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf")
         compat_tool: str = get_vdf_value(
             toolmanifest,
@@ -429,7 +430,7 @@ def _update_umu(
                     )
 
     # Skip SLR updates when not using the latest
-    if _is_obsolete_umu(runtime_platform):
+    if is_obsolete:
         log.warning(
             "%s is obsolete, skipping steamrt update",
             Path(os.environ["PROTONPATH"]).name,
@@ -580,7 +581,9 @@ def _is_obsolete_umu(runtime_platform: tuple[str, str, str]) -> bool:
         os.environ.get("PROTONPATH")
         and os.environ.get("PROTONPATH") != "GE-Proton"
         and get_vdf_value(
-            Path(os.environ["PROTONPATH"], "toolmanifest.vdf"),
+            Path(os.environ["PROTONPATH"], "toolmanifest.vdf").resolve(
+                strict=True
+            ),
             "require_tool_appid",
         )
         not in runtime_platform
