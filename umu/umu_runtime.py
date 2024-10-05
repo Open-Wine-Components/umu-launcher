@@ -50,10 +50,10 @@ def _install_umu(
     ret: int = 0  # Exit code from zenity
     token: str = f"?versions={token_urlsafe(16)}"
 
-    # When using an existing proton build, download its intended runtime
-    # Handles cases where on a new install, the user or the client passes
-    # and existing obsolete proton build but its corresponding runtime has not
-    # been downloaded for them yet.
+    # When using an existing obsolete proton build, download its intended
+    # runtime. Handles cases where on a new install, the user or the client
+    # passes and existing obsolete proton build but its corresponding runtime
+    # has not been downloaded for them yet.
     if _is_obsolete_umu(runtime_platform):
         toolmanifest: Path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf")
         compat_tool: str = get_vdf_value(
@@ -68,6 +68,7 @@ def _install_umu(
 
         for runtime in __pressure_vessel_runtimes__:
             if compat_tool in runtime:
+        # Change runtime paths and runtime base platform
                 log.debug(
                     "Changing SLR base platform: %s -> %s",
                     runtime_platform,
