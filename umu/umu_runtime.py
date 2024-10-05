@@ -290,16 +290,34 @@ def _update_umu(
     )
     token: str = f"?version={token_urlsafe(16)}"
 
-    # Skip SLR updates when not using the latest variant
-    if _is_obsolete_umu(runtime_platform):
-        log.warning(
-            "%s is obsolete, skipping steamrt update",
-            Path(os.environ["PROTONPATH"]).name,
-        )
-        return
-
     log.debug("Existing install detected")
     log.debug("Sending request to '%s'...", client_session.host)
+
+    # When using an existing obsolete proton build, skip its updates but allow
+    # restoring it
+    if _is_obsolete_umu(runtime_platform):
+        toolmanifest: Path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf")
+        compat_tool: str = get_vdf_value(
+            toolmanifest,
+            "require_tool_appid",
+        )
+
+        # Change runtime paths and runtime base platform
+        for pv_runtime in __pressure_vessel_runtimes__:
+            if compat_tool in pv_runtime:
+                log.debug(
+                    "Changing SLR base platform: %s -> %s",
+                    runtime_platform,
+                    pv_runtime,
+                )
+                log.debug(
+                    "Changing base directory: %s -> %s",
+                    local,
+                    local.parent / pv_runtime[0],
+                )
+                runtime_platform = pv_runtime
+                local = local.parent / pv_runtime[0]
+                break
 
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the alias
@@ -406,6 +424,14 @@ def _update_umu(
                     local.joinpath("VERSIONS.txt").write_text(
                         resp.read().decode()
                     )
+
+    # Skip SLR updates when not using the latest
+    if _is_obsolete_umu(runtime_platform):
+        log.warning(
+            "%s is obsolete, skipping steamrt update",
+            Path(os.environ["PROTONPATH"]).name,
+        )
+        return
 
     # Update the runtime if necessary by comparing VERSIONS.txt to the remote
     # repo.steampowered currently sits behind a Cloudflare proxy, which may
