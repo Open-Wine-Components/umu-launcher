@@ -1,4 +1,5 @@
 import os
+from collections.abc import Generator
 from contextlib import contextmanager
 from ctypes.util import find_library
 from functools import lru_cache
@@ -9,6 +10,7 @@ from re import compile as re_compile
 from shutil import which
 from ssl import SSLContext, create_default_context
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+from typing import Any
 
 from Xlib import display
 
@@ -171,6 +173,57 @@ def is_winetricks_verb(
             return False
 
     return True
+
+
+@lru_cache
+def _parse_vdf(path: Path) -> dict[str, str]:
+    vdf: dict[str, str] = {}
+
+    try:
+        # Assumes the input is a VDF file and conforms to the
+        # KeyValues Text File Format. Also assumes that the file
+        # is not in a compact form e.g., {foo:"bar",baz:"qux"}
+        # See https://developer.valvesoftware.com/wiki/VDF
+        # See https://developer.valvesoftware.com/wiki/KeyValues
+        with path.open(mode="r", encoding="utf-8") as file:
+            for line in (line for line in file if line.isascii()):
+                tokens: list[str] = line.split()
+                if len(tokens) != 2:
+                    continue
+                # In each token, a double quote is used as a control
+                # character and a double quote must not be used within its
+                # name or value
+                # See https://developer.valvesoftware.com/wiki/KeyValues#About_KeyValues_Text_File_Format
+                vdf_key, vdf_val = (token.strip('"') for token in tokens)
+                vdf[vdf_key] = vdf_val
+    except (UnicodeDecodeError, FileNotFoundError) as e:
+        log.exception(e)
+
+    return vdf
+
+
+def get_vdf_value(path: Path, key: str) -> str:
+    """Get a value from a specific key in a VDF file."""
+    if isinstance(path, Path) and not path.name.endswith(".vdf"):
+        return ""
+
+    log.debug("Parsing '%s'", path)
+    for vdf_key, vdf_val in _parse_vdf(path).items():
+        log.debug("%s=%s", vdf_key, vdf_val)
+        if key == vdf_key:
+            return vdf_val
+
+    return ""
+
+
+def get_vdfs(path: Path, pattern: str) -> Generator[Path, Any, None]:
+    """Get all *.vdf files within a path."""
+    if pattern and pattern.endswith(".vdf"):
+        for path in path.glob(pattern):
+            yield path
+
+    for path in path.glob("**/*/*.vdf"):
+        yield path
 
 
 def find_obsolete() -> None:
