@@ -66,21 +66,21 @@ def _install_umu(
             toolmanifest.parent.name,
         )
 
-        for runtime in __pressure_vessel_runtimes__:
-            if compat_tool in runtime:
         # Change runtime paths and runtime base platform
+        for pv_runtime in __pressure_vessel_runtimes__:
+            if compat_tool in pv_runtime:
                 log.debug(
                     "Changing SLR base platform: %s -> %s",
                     runtime_platform,
-                    runtime,
+                    pv_runtime,
                 )
                 log.debug(
                     "Changing base directory: %s -> %s",
                     local,
-                    local.parent / runtime[0],
+                    local.parent / pv_runtime[0],
                 )
-                runtime_platform = runtime
-                local = local.parent / runtime[0]
+                runtime_platform = pv_runtime
+                local = local.parent / pv_runtime[0]
                 break
 
     local.mkdir(parents=True, exist_ok=True)
