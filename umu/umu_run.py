@@ -38,6 +38,7 @@ from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
 
+from umu import __pressure_vessel_runtime__
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
@@ -51,6 +52,8 @@ from umu.umu_runtime import setup_umu
 from umu.umu_util import (
     get_libc,
     get_library_paths,
+    get_vdf_value,
+    get_vdfs,
     is_installed_verb,
     is_winetricks_verb,
     xdisplay,
@@ -733,6 +736,7 @@ def main() -> int:  # noqa: D103
         "UMU_RUNTIME_UPDATE": "",
     }
     opts: list[str] = []
+    runtime_platform: Path = UMU_LOCAL / __pressure_vessel_runtime__[0]
     prereq: bool = False
     root: Traversable
 
@@ -804,7 +808,11 @@ def main() -> int:  # noqa: D103
 
         # Setup the launcher and runtime files
         future: Future = thread_pool.submit(
-            setup_umu, root, UMU_LOCAL, thread_pool
+            setup_umu,
+            root,
+            UMU_LOCAL,
+            __pressure_vessel_runtime__,
+            thread_pool,
         )
 
         if isinstance(args, Namespace):
@@ -840,8 +848,31 @@ def main() -> int:  # noqa: D103
     ):
         sys.exit(1)
 
+    # Get Proton's required compatibility tool in its .vdf file.
+    # The App ID is the runtime that it's built against
+    toolappid_proton: str = get_vdf_value(
+        Path(env["PROTONPATH"], "toolmanifest.vdf"), "require_tool_appid"
+    )
+    has_matching_compat_tools: bool = False
+
+    # Since it's common for people to change Proton versions, verify we're
+    # using Proton's intended runtime and auto change to it if downloaded
+    for file in get_vdfs(UMU_LOCAL, "**/steampipe/app_build*.vdf"):
+        if get_vdf_value(file, "appid") == toolappid_proton:
+            runtime_platform: Path = file.parent.parent
+            log.debug("App ID (Proton): %s", toolappid_proton)
+            log.debug("Steam Linux Runtime: %s", file.name)
+            log.console(
+                f"Using {Path(env['PROTONPATH']).name} with "
+                f"{runtime_platform.name}"
+            )
+            has_matching_compat_tools = True
+            break
+
     # Build the command
-    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, opts)
+    command: tuple[Path | str, ...] = build_command(
+        env, runtime_platform, opts
+    )
     log.debug("%s", command)
 
     # Run the command
