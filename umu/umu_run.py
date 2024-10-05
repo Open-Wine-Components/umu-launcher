@@ -884,7 +884,7 @@ def main() -> int:  # noqa: D103
             env["PROTONPATH"],
         )
         log.warning(
-            "Prefix '%s' was created with compatibility tool '%s'",
+            "Prefix '%s' was created with compatibility tool %s",
             env["WINEPREFIX"],
             Path(env["PROTONPATH"], "version").read_text(encoding="utf-8"),
         )
