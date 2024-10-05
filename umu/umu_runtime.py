@@ -75,7 +75,7 @@ def _install_umu(
                     pv_runtime,
                 )
                 log.debug(
-                    "Changing base directory: %s -> %s",
+                    "Changing base directory: '%s' -> '%s'",
                     local,
                     local.parent / pv_runtime[0],
                 )
@@ -309,7 +309,7 @@ def _update_umu(
                     pv_runtime,
                 )
                 log.debug(
-                    "Changing base directory: %s -> %s",
+                    "Changing base directory: '%s' -> '%s'",
                     local,
                     local.parent / pv_runtime[0],
                 )
