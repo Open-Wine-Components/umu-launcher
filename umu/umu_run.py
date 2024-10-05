@@ -869,6 +869,26 @@ def main() -> int:  # noqa: D103
             has_matching_compat_tools = True
             break
 
+    # Warn if compatibility tools mismatch (e.g., using proton 7 with sniper)
+    # Assuming our parser is correct, at this point, the user is probably
+    # trying to use a proton without its required runtime. This may happen if
+    # we did not bump the runtime in time because, at the time of this writing,
+    # we're currently assuming the usage of sniper. In this case, just warn
+    # them and opt not to set an appropriate proton for the user to avoid the
+    # risk of breaking users' pfxs
+    if not has_matching_compat_tools:
+        log.warning("Compatibility tools mismatch")
+        log.warning(
+            "'%s' is not a required compatibility tool for '%s'",
+            runtime_platform,
+            env["PROTONPATH"],
+        )
+        log.warning(
+            "Prefix '%s' was created with compatibility tool '%s'",
+            env["WINEPREFIX"],
+            Path(env["PROTONPATH"], "version").read_text(encoding="utf-8"),
+        )
+
     # Build the command
     command: tuple[Path | str, ...] = build_command(
         env, runtime_platform, opts
