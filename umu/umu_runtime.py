@@ -20,7 +20,7 @@ from tempfile import TemporaryDirectory, mkdtemp
 from filelock import FileLock
 
 from umu import __pressure_vessel_runtimes__
-from umu.umu_consts import UMU_CACHE, UMU_LOCAL
+from umu.umu_consts import UMU_CACHE
 from umu.umu_log import log
 from umu.umu_util import (
     find_obsolete,
@@ -208,7 +208,7 @@ def _install_umu(
             # Move each file to the dest dir, overwriting if exists
             futures.extend(
                 [
-                    thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
+                    thread_pool.submit(_move, file, source_dir, local)
                     for file in source_dir.glob("*")
                 ]
             )
@@ -221,7 +221,7 @@ def _install_umu(
 
     # Rename _v2-entry-point
     log.debug("Renaming: _v2-entry-point -> umu")
-    UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
+    local.joinpath("_v2-entry-point").rename(local.joinpath("umu"))
 
     # Validate the runtime after moving the files
     check_runtime(local, runtime_platform[1])
