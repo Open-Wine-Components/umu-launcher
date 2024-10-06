@@ -1371,7 +1371,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock setting up the runtime
         with (
-            patch.object(umu_runtime, "_install_umu", return_value=None),
+            patch.object(umu_runtime, "setup_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
                 self.test_user_share,
