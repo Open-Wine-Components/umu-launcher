@@ -193,6 +193,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         toml_path = self.test_file + "/" + test_toml
         result = None
         test_command = []
+        test_runtime_platform = ("steamrt3", "sniper", "1628350")
         Path(toml_path).touch()
 
         # Mock the proton file
@@ -220,10 +221,13 @@ class TestGameLauncherPlugins(unittest.TestCase):
         # Mock setting up the runtime
         # Don't copy _v2-entry-point
         with (
-            patch.object(umu_runtime, "_install_umu", return_value=None),
+            patch.object(umu_runtime, "setup_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                test_runtime_platform,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -272,6 +276,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         toml_path = self.test_file + "/" + test_toml
         result = None
         test_command = []
+        test_runtime_platform = ("steamrt3", "sniper", "1628350")
         Path(toml_path).touch()
 
         with Path(toml_path).open(mode="w", encoding="utf-8") as file:
@@ -298,7 +303,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                test_runtime_platform,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -348,6 +356,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         toml_path = self.test_file + "/" + test_toml
         result = None
         test_command = []
+        test_runtime_platform = ("steamrt3", "sniper", "1628350")
 
         Path(self.test_file + "/proton").touch()
         Path(toml_path).touch()
@@ -373,10 +382,13 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Mock setting up the runtime
         with (
-            patch.object(umu_runtime, "_install_umu", return_value=None),
+            patch.object(umu_runtime, "setup_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                test_runtime_platform,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
