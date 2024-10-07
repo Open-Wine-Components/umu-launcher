@@ -10,20 +10,24 @@ try:
 except ModuleNotFoundError:
     from importlib.abc import Traversable
 
-from json import load
 from pathlib import Path
 from secrets import token_urlsafe
 from shutil import move, rmtree
 from subprocess import run
 from tarfile import open as taropen
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import Any
 
 from filelock import FileLock
 
-from umu.umu_consts import CONFIG, UMU_CACHE, UMU_LOCAL
+from umu import __pressure_vessel_runtimes__
+from umu.umu_consts import UMU_CACHE
 from umu.umu_log import log
-from umu.umu_util import find_obsolete, https_connection, run_zenity
+from umu.umu_util import (
+    find_obsolete,
+    get_vdf_value,
+    https_connection,
+    run_zenity,
+)
 
 try:
     from tarfile import tar_filter
@@ -34,24 +38,62 @@ except ImportError:
 
 
 def _install_umu(
-    json: dict[str, Any],
+    local: Path,
+    runtime_platform: tuple[str, str, str],
     thread_pool: ThreadPoolExecutor,
     client_session: HTTPSConnection,
 ) -> None:
     resp: HTTPResponse
+    archive: str
+    base_url: str
     tmp: Path = Path(mkdtemp())
     ret: int = 0  # Exit code from zenity
-    # Codename for the runtime (e.g., 'sniper')
-    codename: str = json["umu"]["versions"]["runtime_platform"]
-    # Archive containing the runtime
-    archive: str = f"SteamLinuxRuntime_{codename}.tar.xz"
-    base_url: str = (
-        f"https://repo.steampowered.com/steamrt-images-{codename}"
-        "/snapshots/latest-container-runtime-public-beta"
-    )
     token: str = f"?versions={token_urlsafe(16)}"
 
-    log.debug("Codename: %s", codename)
+    # When using an existing obsolete proton build, download its intended
+    # runtime. Handles cases where on a new install, the user or the client
+    # passes and existing obsolete proton build but its corresponding runtime
+    # has not been downloaded for them yet.
+    if _is_obsolete_umu(runtime_platform):
+        toolmanifest: Path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf")
+        compat_tool: str = get_vdf_value(
+            toolmanifest,
+            "require_tool_appid",
+        )
+
+        log.warning(
+            "%s is obsolete, downloading obsolete steamrt",
+            toolmanifest.parent.name,
+        )
+
+        # Change runtime paths and runtime base platform
+        for pv_runtime in __pressure_vessel_runtimes__:
+            if compat_tool in pv_runtime:
+                log.debug(
+                    "Changing SLR base platform: %s -> %s",
+                    runtime_platform,
+                    pv_runtime,
+                )
+                log.debug(
+                    "Changing base directory: '%s' -> '%s'",
+                    local,
+                    local.parent / pv_runtime[0],
+                )
+                runtime_platform = pv_runtime
+                local = local.parent / pv_runtime[0]
+                break
+
+    local.mkdir(parents=True, exist_ok=True)
+
+    # Codename for the runtime (e.g., 'sniper')
+    # Archive containing the runtime
+    archive = f"SteamLinuxRuntime_{runtime_platform[1]}.tar.xz"
+    base_url = (
+        f"https://repo.steampowered.com/steamrt-images-{runtime_platform[1]}"
+        "/snapshots/latest-container-runtime-public-beta"
+    )
+
+    log.debug("Codename: %s", runtime_platform[1])
     log.debug("URL: %s", base_url)
 
     # Download the runtime and optionally create a popup with zenity
@@ -76,7 +118,7 @@ def _install_umu(
     if not os.environ.get("UMU_ZENITY") or ret:
         digest: str = ""
         endpoint: str = (
-            f"/steamrt-images-{codename}"
+            f"/steamrt-images-{runtime_platform[1]}"
             "/snapshots/latest-container-runtime-public-beta"
         )
         hashsum = sha256()
@@ -98,7 +140,9 @@ def _install_umu(
                     break
 
         # Download the runtime
-        log.console(f"Downloading latest steamrt {codename}, please wait...")
+        log.console(
+            f"Downloading latest steamrt {runtime_platform[1]}, please wait..."
+        )
         client_session.request("GET", f"{endpoint}/{archive}{token}")
 
         with (
@@ -148,9 +192,6 @@ def _install_umu(
                 log.warning("Using no data filter for archive")
                 log.warning("Archive will be extracted insecurely")
 
-            # Ensure the target directory exists
-            UMU_LOCAL.mkdir(parents=True, exist_ok=True)
-
             # Extract the entirety of the archive w/ or w/o the data filter
             log.debug(
                 "Extracting: %s -> %s", f"{tmpcache}/{archive}", tmpcache
@@ -158,14 +199,16 @@ def _install_umu(
             tar.extractall(path=tmpcache)  # noqa: S202
 
             # Move the files to the correct location
-            source_dir: Path = Path(tmpcache, f"SteamLinuxRuntime_{codename}")
+            source_dir: Path = tmp.joinpath(
+                f"SteamLinuxRuntime_{runtime_platform[1]}"
+            )
             log.debug("Source: %s", source_dir)
-            log.debug("Destination: %s", UMU_LOCAL)
+            log.debug("Destination: %s", local)
 
             # Move each file to the dest dir, overwriting if exists
             futures.extend(
                 [
-                    thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
+                    thread_pool.submit(_move, file, source_dir, local)
                     for file in source_dir.glob("*")
                 ]
             )
@@ -178,19 +221,24 @@ def _install_umu(
 
     # Rename _v2-entry-point
     log.debug("Renaming: _v2-entry-point -> umu")
-    UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
+    local.joinpath("_v2-entry-point").rename(local.joinpath("umu"))
 
     # Validate the runtime after moving the files
-    check_runtime(UMU_LOCAL, json)
+    check_runtime(local, runtime_platform[1])
 
 
 def setup_umu(
-    root: Traversable, local: Path, thread_pool: ThreadPoolExecutor
+    root: Traversable,
+    local: Path,
+    runtime_platform: tuple[str, str, str],
+    thread_pool: ThreadPoolExecutor,
 ) -> None:
     """Install or update the runtime for the current user."""
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
-    json: dict[str, Any] = _get_json(root, CONFIG)
+    log.debug("Steam Linux Runtime (latest): %s", runtime_platform[0])
+    log.debug("Codename: %s", runtime_platform[1])
+    log.debug("App ID: %s", runtime_platform[2])
     host: str = "repo.steampowered.com"
 
     # New install or umu dir is empty
@@ -199,10 +247,10 @@ def setup_umu(
         log.console(
             "Setting up Unified Launcher for Windows Games on Linux..."
         )
-        local.mkdir(parents=True, exist_ok=True)
         with https_connection(host) as client_session:
             _restore_umu(
-                json,
+                local / runtime_platform[0],
+                runtime_platform,
                 thread_pool,
                 lambda: local.joinpath("umu").is_file(),
                 client_session,
@@ -216,12 +264,17 @@ def setup_umu(
     find_obsolete()
 
     with https_connection(host) as client_session:
-        _update_umu(local, json, thread_pool, client_session)
+        _update_umu(
+            local / runtime_platform[0],
+            runtime_platform,
+            thread_pool,
+            client_session,
+        )
 
 
 def _update_umu(
     local: Path,
-    json: dict[str, Any],
+    runtime_platform: tuple[str, str, str],
     thread_pool: ThreadPoolExecutor,
     client_session: HTTPSConnection,
 ) -> None:
@@ -232,30 +285,66 @@ def _update_umu(
     """
     runtime: Path
     resp: HTTPResponse
-    codename: str = json["umu"]["versions"]["runtime_platform"]
-    endpoint: str = (
-        f"/steamrt-images-{codename}"
-        "/snapshots/latest-container-runtime-public-beta"
-    )
+    endpoint: str
     token: str = f"?version={token_urlsafe(16)}"
+    is_obsolete: bool = _is_obsolete_umu(runtime_platform)
+
     log.debug("Existing install detected")
     log.debug("Sending request to '%s'...", client_session.host)
+
+    # When using an existing obsolete proton build, skip its updates but allow
+    # restoring it
+    if is_obsolete:
+        toolmanifest: Path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf")
+        compat_tool: str = get_vdf_value(
+            toolmanifest,
+            "require_tool_appid",
+        )
+
+        # Change runtime paths and runtime base platform
+        for pv_runtime in __pressure_vessel_runtimes__:
+            if compat_tool in pv_runtime:
+                log.debug(
+                    "Changing SLR base platform: %s -> %s",
+                    runtime_platform,
+                    pv_runtime,
+                )
+                log.debug(
+                    "Changing base directory: '%s' -> '%s'",
+                    local,
+                    local.parent / pv_runtime[0],
+                )
+                runtime_platform = pv_runtime
+                local = local.parent / pv_runtime[0]
+                break
+
+    endpoint = (
+        f"/steamrt-images-{runtime_platform[1]}"
+        "/snapshots/latest-container-runtime-public-beta"
+    )
 
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the alias
     try:
         runtime = max(
-            file for file in local.glob(f"{codename}*") if file.is_dir()
+            file
+            for file in local.glob(f"{runtime_platform[1]}*")
+            if file.is_dir()
         )
     except ValueError:
         log.debug("*_platform_* directory missing in '%s'", local)
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
         _restore_umu(
-            json,
+            local,
+            runtime_platform,
             thread_pool,
             lambda: len(
-                [file for file in local.glob(f"{codename}*") if file.is_dir()]
+                [
+                    file
+                    for file in local.glob(f"{runtime_platform[1]}*")
+                    if file.is_dir()
+                ]
             )
             > 0,
             client_session,
@@ -263,14 +352,14 @@ def _update_umu(
         return
 
     log.debug("Runtime: %s", runtime.name)
-    log.debug("Codename: %s", codename)
 
     if not local.joinpath("pressure-vessel").is_dir():
         log.debug("pressure-vessel directory missing in '%s'", local)
         log.warning("Runtime Platform not found")
         log.console("Restoring Runtime Platform...")
         _restore_umu(
-            json,
+            local,
+            runtime_platform,
             thread_pool,
             lambda: local.joinpath("pressure-vessel").is_dir(),
             client_session,
@@ -283,7 +372,7 @@ def _update_umu(
     if not local.joinpath("VERSIONS.txt").is_file():
         url: str
         release: Path = runtime.joinpath("files", "lib", "os-release")
-        versions: str = f"SteamLinuxRuntime_{codename}.VERSIONS.txt"
+        versions: str = f"SteamLinuxRuntime_{runtime_platform[1]}.VERSIONS.txt"
 
         log.debug("VERSIONS.txt file missing in '%s'", local)
 
@@ -294,7 +383,8 @@ def _update_umu(
             log.warning("Runtime Platform corrupt")
             log.console("Restoring Runtime Platform...")
             _restore_umu(
-                json,
+                local,
+                runtime_platform,
                 thread_pool,
                 lambda: local.joinpath("VERSIONS.txt").is_file(),
                 client_session,
@@ -310,7 +400,8 @@ def _update_umu(
                         line.removeprefix("BUILD_ID=").rstrip().strip('"')
                     )
                     url = (
-                        f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
+                        f"/steamrt-images-{runtime_platform[1]}"
+                        f"/snapshots/{build_id}"
                     )
                     break
 
@@ -338,6 +429,14 @@ def _update_umu(
                         resp.read().decode()
                     )
 
+    # Skip SLR updates when not using the latest
+    if is_obsolete:
+        log.warning(
+            "%s is obsolete, skipping steamrt update",
+            Path(os.environ["PROTONPATH"]).name,
+        )
+        return
+
     # Update the runtime if necessary by comparing VERSIONS.txt to the remote
     # repo.steampowered currently sits behind a Cloudflare proxy, which may
     # respond with cf-cache-status: HIT in the header for subsequent requests
@@ -345,7 +444,10 @@ def _update_umu(
     # has control over the CDN's cache control behavior, so we must not assume
     # all of the cache will be purged after new files are uploaded. Therefore,
     # always avoid the cache by appending a unique query to the URI
-    url: str = f"{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt{token}"
+    url: str = (
+        f"{endpoint}/SteamLinuxRuntime_{runtime_platform[1]}.VERSIONS.txt"
+        f"{token}"
+    )
     client_session.request("GET", url)
 
     # Attempt to compare the digests
@@ -382,56 +484,14 @@ def _update_umu(
                 ):
                     log.debug("Released file lock '%s'", lock.lock_file)
                     return
-                _install_umu(json, thread_pool, client_session)
+                _install_umu(
+                    local, runtime_platform, thread_pool, client_session
+                )
                 log.debug("Removing: %s", runtime)
                 rmtree(str(runtime))
                 log.debug("Released file lock '%s'", lock.lock_file)
 
     log.console("steamrt is up to date")
-
-
-def _get_json(path: Traversable, config: str) -> dict[str, Any]:
-    """Validate the state of the configuration file umu_version.json in a path.
-
-    The configuration file will be used to update the runtime and it reflects
-    the tools currently used by launcher. The key/value pairs umu and versions
-    must exist.
-    """
-    json: dict[str, Any]
-    # Steam Runtime platform values
-    # See https://gitlab.steamos.cloud/steamrt/steamrt/-/wikis/home
-    steamrts: set[str] = {
-        "soldier",
-        "sniper",
-        "medic",
-        "steamrt5",
-    }
-
-    # umu_version.json in the system path should always exist
-    if not path.joinpath(config).is_file():
-        err: str = (
-            f"File not found: {config}\n"
-            "Please reinstall the package to recover configuration file"
-        )
-        raise FileNotFoundError(err)
-
-    with path.joinpath(config).open(mode="r", encoding="utf-8") as file:
-        json = load(file)
-
-    # Raise an error if "umu" and "versions" doesn't exist
-    if not json or "umu" not in json or "versions" not in json["umu"]:
-        err: str = (
-            f"Failed to load {config} or 'umu' or 'versions' not in: {config}"
-        )
-        raise ValueError(err)
-
-    # The launcher will use the value runtime_platform to glob files. Attempt
-    # to guard against directory removal attacks for non-system wide installs
-    if json["umu"]["versions"]["runtime_platform"] not in steamrts:
-        err: str = "Value for 'runtime_platform' is not a steamrt"
-        raise ValueError(err)
-
-    return json
 
 
 def _move(file: Path, src: Path, dst: Path) -> None:
@@ -453,7 +513,7 @@ def _move(file: Path, src: Path, dst: Path) -> None:
         move(src_file, dest_file)
 
 
-def check_runtime(src: Path, json: dict[str, Any]) -> int:
+def check_runtime(src: Path, codename: str) -> int:
     """Validate the file hierarchy of the runtime platform.
 
     The mtree file included in the Steam runtime platform will be used to
@@ -461,7 +521,6 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     home directory and used to run games.
     """
     runtime: Path
-    codename: str = json["umu"]["versions"]["runtime_platform"]
     pv_verify: Path = src.joinpath("pressure-vessel", "bin", "pv-verify")
     ret: int = 1
 
@@ -501,16 +560,31 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
 
 
 def _restore_umu(
-    json: dict[str, Any],
+    local: Path,
+    runtime_platform: tuple[str, str, str],
     thread_pool: ThreadPoolExecutor,
     callback_fn: Callable[[], bool],
     client_session: HTTPSConnection,
 ) -> None:
-    with FileLock(f"{UMU_LOCAL}/umu.lock") as lock:
+    with FileLock(f"{local.parent}/umu.lock") as lock:
         log.debug("Acquired file lock '%s'...", lock.lock_file)
         if callback_fn():
             log.debug("Released file lock '%s'", lock.lock_file)
             log.console("steamrt was restored")
             return
-        _install_umu(json, thread_pool, client_session)
+        _install_umu(local, runtime_platform, thread_pool, client_session)
         log.debug("Released file lock '%s'", lock.lock_file)
+
+
+def _is_obsolete_umu(runtime_platform: tuple[str, str, str]) -> bool:
+    return bool(
+        os.environ.get("PROTONPATH")
+        and os.environ.get("PROTONPATH") != "GE-Proton"
+        and get_vdf_value(
+            Path(os.environ["PROTONPATH"], "toolmanifest.vdf").resolve(
+                strict=True
+            ),
+            "require_tool_appid",
+        )
+        not in runtime_platform
+    )

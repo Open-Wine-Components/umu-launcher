@@ -46,21 +46,6 @@ fix_shebangs:
 	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
 	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
 
-# Special case, do this inside the source directory for release distribution
-umu/umu_version.json: umu/umu_version.json.in
-	$(info :: Updating $(@) )
-	cp $(<) $(<).tmp
-	sed 's|##UMU_VERSION##|$(shell git describe --always --long --tags)|g' -i $(<).tmp
-	mv $(<).tmp $(@)
-
-.PHONY: version
-version: umu/umu_version.json
-
-version-install: version
-	$(info :: Installing umu_version.json )
-	install -d $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
-	install -Dm 644 umu/umu_version.json -t $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
-
 
 $(OBJDIR)/.build-umu-docs: | $(OBJDIR)
 	$(info :: Building umu man pages )
@@ -79,7 +64,7 @@ umu-docs-install: umu-docs
 	install -m644 $(OBJDIR)/umu.5 $(DESTDIR)$(MANDIR)/man5/umu.5
 
 
-$(OBJDIR)/.build-umu-dist: | $(OBJDIR) version
+$(OBJDIR)/.build-umu-dist: | $(OBJDIR)
 	$(info :: Building umu )
 	$(PYTHON_INTERPRETER) -m build --wheel --skip-dependency-check --no-isolation --outdir=$(OBJDIR)
 	touch $(@)
@@ -93,9 +78,9 @@ umu-dist-install: umu-dist
 	$(PYTHON_INTERPRETER)  -m installer --destdir=$(DESTDIR) $(OBJDIR)/*.whl
 
 ifeq ($(FLATPAK), xtrue)
-umu-install: version-install umu-dist-install
+umu-install: umu-dist-install
 else
-umu-install: version-install umu-dist-install umu-docs-install
+umu-install: umu-dist-install umu-docs-install
 endif
 
 ifeq ($(FLATPAK), xtrue)
@@ -148,7 +133,7 @@ $(OBJDIR):
 .PHONY: clean
 clean:
 	$(info :: Cleaning source directory )
-	@rm -rf -v $(OBJDIR) umu/umu_version.json ./$(RELEASEDIR) $(RELEASEDIR).tar.gz
+	@rm -rf -v $(OBJDIR) ./$(RELEASEDIR) $(RELEASEDIR).tar.gz
 
 
 RELEASEDIR := $(PROJECT)-$(shell git describe --abbrev=0)
@@ -156,7 +141,7 @@ $(RELEASEDIR):
 	mkdir -p $(@)
 
 .PHONY: release
-release: $(RELEASEDIR) | version zipapp
+release: $(RELEASEDIR) | zipapp
 	$(info :: Creating source distribution for release )
 	mkdir -p $(<)
 	rm -rf umu/__pycache__
@@ -177,11 +162,10 @@ ZIPAPP := $(OBJDIR)/umu-run
 ZIPAPP_STAGING := $(OBJDIR)/zipapp_staging
 ZIPAPP_VENV := $(OBJDIR)/zipapp_venv
 
-$(OBJDIR)/.build-zipapp: | $(OBJDIR) version
+$(OBJDIR)/.build-zipapp: | $(OBJDIR)
 	$(info :: Building umu-launcher as zipapp )
 	$(PYTHON_INTERPRETER) -m venv $(ZIPAPP_VENV)
 	. $(ZIPAPP_VENV)/bin/activate && python3 -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile .
-	install -Dm644 umu/umu_version.json "$(ZIPAPP_STAGING)"/umu/umu_version.json
 	cp umu/__main__.py "$(ZIPAPP_STAGING)"
 	find "$(ZIPAPP_STAGING)" -exec touch -h -d "$(SOURCE_DATE_EPOCH)" {} +
 	. $(ZIPAPP_VENV)/bin/activate && python3 -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
