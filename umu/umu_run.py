@@ -24,14 +24,6 @@ from socket import AF_INET, SOCK_DGRAM, gaierror, socket
 from subprocess import Popen
 from typing import Any
 
-# Add client's runtime path to PYTHONPATH to find dependencies
-# TODO: Remove this after Heroic/Lutris have updated their logic
-if (
-    Path(__file__).is_relative_to(Path.home())
-    and "runtime" in Path(__file__).parent.parent.name
-):
-    sys.path.append(str(Path(__file__).parent.parent))
-
 from Xlib import X, Xatom, display
 from Xlib.error import DisplayConnectionError
 from Xlib.protocol.request import GetProperty
