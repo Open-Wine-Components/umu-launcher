@@ -20,7 +20,7 @@ from logging import DEBUG, INFO, WARNING
 from pathlib import Path
 from pwd import getpwuid
 from re import match
-from socket import AF_INET, SOCK_DGRAM, gaierror, socket
+from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
 from typing import Any
 
@@ -819,12 +819,13 @@ def main() -> int:  # noqa: D103
 
         try:
             future.result()
-        except gaierror as e:
-            # Name resolution error in the request to repo.steampowered.com
-            # At this point, umu was already setup and user is offline
-            if e.errno != -3:
-                raise e
-            log.debug("Name resolution failed")
+        except OSError as e:
+            # Name resolution failed or unreachable network error in the
+            # request to repo.steampowered.com. At this point, umu was already
+            # setup and user is offline or has an unreliable network connection
+            if e.errno != -3 and e.errno != ENETUNREACH:
+                raise
+            log.debug("Network is unreachable")
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(
