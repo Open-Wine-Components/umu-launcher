@@ -838,19 +838,3 @@ def main() -> int:  # noqa: D103
 
     # Run the command
     return run_command(command)
-
-
-if __name__ == "__main__":
-    try:
-        sys.exit(main())
-    except KeyboardInterrupt:
-        log.warning("Keyboard Interrupt")
-    except SystemExit as e:
-        if e.code:
-            sys.exit(e.code)
-    except BaseException as e:
-        log.exception(e)
-    finally:
-        UMU_LOCAL.joinpath(".ref").unlink(
-            missing_ok=True
-        )  # Cleanup .ref file on every exit
