@@ -15,7 +15,7 @@ jobs:
       matrix:
         # tomllib requires Python 3.11
         # Ubuntu latest (Jammy) provides Python 3.10
-        version: ["3.10", "3.11", "3.12"]
+        version: ["3.10", "3.11", "3.12", "3.13"]
 
     runs-on: ubuntu-latest
 
@@ -38,5 +38,5 @@ jobs:
     - name: Test with unittest
       run: python3 ./umu/umu_test.py
     - name: Test with unittest for plugins
-      if: ${{ matrix.version == '3.11' || matrix.version == '3.12' }}
+      if: ${{ matrix.version == '3.11' || matrix.version == '3.12' || matrix.version == '3.13' }}
       run: python3 ./umu/umu_test_plugins.py
