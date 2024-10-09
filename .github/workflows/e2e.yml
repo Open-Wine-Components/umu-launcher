@@ -23,7 +23,7 @@ jobs:
     - name: Initialize submodules
       run: |
         git submodule update --init --recursive
-    - name: Make system package
+    - name: Make user install
       run: |
         ./configure.sh --user-install
         make install
