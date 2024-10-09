@@ -38,7 +38,7 @@ jobs:
         rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
 
         uv python install 3.11
-        uv run --python pypy@3.11 -- bash tests/test_config.sh
+        uv run --python 3.11 -- bash tests/test_config.sh
         rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
 
         bash tests/test_install.sh
