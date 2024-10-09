@@ -5,12 +5,12 @@ python --version
 tmp=$(mktemp)
 mkdir -p "$HOME/.local/share/Steam/compatibilitytools.d"
 mkdir -p "$HOME/Games/umu/umu-0"
-curl -LJO "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton9-15/GE-Proton9-15.tar.gz"
-tar xaf GE-Proton9-15.tar.gz
-mv GE-Proton9-15 "$HOME/.local/share/Steam/compatibilitytools.d"
+curl -LJO "https://github.com/Open-Wine-Components/umu-proton/releases/download/UMU-Proton-9.0-3/UMU-Proton-9.0-3.tar.gz"
+tar xaf UMU-Proton-9.0-3.tar.gz
+mv UMU-Proton-9.0-3 "$HOME/.local/share/Steam/compatibilitytools.d"
 
 echo "[umu]
-proton = '~/.local/share/Steam/compatibilitytools.d/GE-Proton9-15'
+proton = '~/.local/share/Steam/compatibilitytools.d/UMU-Proton-9.0-3'
 game_id = 'umu-0'
 prefix = '~/Games/umu/umu-0'
 exe = '~/Games/umu/umu-0/drive_c/windows/syswow64/wineboot.exe'
