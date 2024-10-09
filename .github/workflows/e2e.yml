@@ -32,16 +32,19 @@ jobs:
     - name: Run shellcheck
       run: |
         shellcheck tests/*.sh
-    - name: Run tests
+    - name: Test steamrt install
+      run: |
+        bash tests/test_install.sh
+        rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+    - name: Test steamrt update
       run: |
         bash tests/test_update.sh
         rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
-
+    - name: Test winetricks
+      run: |
+        bash tests/test_winetricks.sh
+        rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+    - name: Test configuration file
+      run: |
         uv python install 3.11
         uv run --python 3.11 -- bash tests/test_config.sh
-        rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
-
-        bash tests/test_install.sh
-        rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
-
-        bash tests/test_winetricks.sh
