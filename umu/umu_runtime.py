@@ -159,6 +159,7 @@ def _install_umu(
 
             # Move the files to the correct location
             source_dir: Path = Path(tmpcache, f"SteamLinuxRuntime_{codename}")
+            var: Path = UMU_LOCAL.joinpath("var")
             log.debug("Source: %s", source_dir)
             log.debug("Destination: %s", UMU_LOCAL)
 
@@ -169,6 +170,10 @@ def _install_umu(
                     for file in source_dir.glob("*")
                 ]
             )
+
+            if var.is_dir():
+                log.debug("Removing: %s", var)
+                thread_pool.submit(rmtree, str(var))
 
             for future in futures:
                 future.result()
