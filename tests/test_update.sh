@@ -8,7 +8,5 @@ mv SteamLinuxRuntime_sniper/* "$HOME/.local/share/umu"
 mv "$HOME/.local/share/umu/_v2-entry-point" "$HOME/.local/share/umu/umu"
 
 # Perform a preflight step, where we ensure everything is in order and create '$HOME/.local/share/umu/var'
-UMU_LOG=debug GAMEID=umu-0 UMU_RUNTIME_UPDATE=0 "$HOME/.local/bin/umu-run" wineboot -u
-
-# Run a 2nd time to perform the runtime update and ensure '$HOME/.local/share/umu/var' is removed
-UMU_LOG=debug GAMEID=umu-0 "$HOME/.local/bin/umu-run" wineboot -u
+# Afterwards, run a 2nd time to perform the runtime update and ensure '$HOME/.local/share/umu/var' is removed
+UMU_LOG=debug GAMEID=umu-0 UMU_RUNTIME_UPDATE=0 "$HOME/.local/bin/umu-run" wineboot -u && UMU_LOG=debug GAMEID=umu-0 "$HOME/.local/bin/umu-run" wineboot -u
