@@ -16,4 +16,4 @@ launch_args = ['-u']
 " >> "$tmp"
 
 
-cd $HOME && UMU_LOG=debug GAMEID=umu-0 "$HOME/.local/bin/umu-run" --config "$tmp"
+UMU_LOG=debug GAMEID=umu-0 "$HOME/.local/bin/umu-run" --config "$tmp"
