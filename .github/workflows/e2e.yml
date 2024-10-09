@@ -26,7 +26,7 @@ jobs:
     - name: Make system package
       run: |
         ./configure.sh --prefix=/usr
-        make DESTDIR=dist install
+        sudo make install
     - name: Run tests
       run: |
         bash tests/test_update.sh
