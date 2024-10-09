@@ -25,9 +25,8 @@ jobs:
         git submodule update --init --recursive
     - name: Make system package
       run: |
-        ./configure.sh --prefix=/usr
-        sudo make install
+        ./configure.sh --user-install
+        make install
     - name: Run tests
       run: |
-        which umu-run
         bash tests/test_update.sh
