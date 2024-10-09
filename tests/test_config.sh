@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+python --version
+
 tmp=$(mktemp)
 mkdir -p "$HOME/.local/share/Steam/compatibilitytools.d"
 mkdir -p "$HOME/Games/umu/umu-0"
