@@ -170,9 +170,6 @@ def _install_umu(
                 ]
             )
 
-            # Remove the archive
-            futures.append(thread_pool.submit(rmtree, str(tmpcache)))
-
             for future in futures:
                 future.result()
 
