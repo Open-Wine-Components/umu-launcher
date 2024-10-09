@@ -7,4 +7,4 @@ tar xaf SteamLinuxRuntime_sniper.tar.xz
 mv SteamLinuxRuntime_sniper/* $HOME/.local/share/umu
 mv $HOME/.local/share/umu/_v2-entry-point $HOME/.local/share/umu/umu
 
-UMU_LOG=debug GAMEID=umu-0 /usr/bin/umu-run wineboot -u
+UMU_LOG=debug GAMEID=umu-0 umu-run wineboot -u
