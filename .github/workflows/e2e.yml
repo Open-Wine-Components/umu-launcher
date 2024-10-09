@@ -19,7 +19,7 @@ jobs:
         fetch-depth: 0
     - name: Install dependencies
       run: |
-        sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock
+        sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck
     - name: Initialize submodules
       run: |
         git submodule update --init --recursive
@@ -27,6 +27,9 @@ jobs:
       run: |
         ./configure.sh --user-install
         make install
+    - name: Run shellcheck
+      run: |
+        shellcheck tests/*.sh
     - name: Run tests
       run: |
         bash tests/test_update.sh
