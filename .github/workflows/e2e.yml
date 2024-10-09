@@ -1,0 +1,32 @@
+name: e2e
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Install dependencies
+      run: |
+        sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock
+    - name: Initialize submodules
+      run: |
+        git submodule update --init --recursive
+    - name: Make system package
+      run: |
+        ./configure.sh --prefix=/usr
+        make DESTDIR=dist install
+    - name: Run tests
+      run: |
+        bash tests/test_update.sh
