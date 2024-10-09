@@ -4,8 +4,7 @@ python --version
 
 tmp=$(mktemp)
 mkdir -p "$HOME/.local/share/Steam/compatibilitytools.d"
-mkdir -p "$HOME/Games/umu/umu-0/drive_c/windows/syswow64"
-touch "$HOME/Games/umu/umu-0/drive_c/windows/syswow64/wineboot.exe"
+mkdir -p "$HOME/Games/umu/umu-0"
 curl -LJO "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton9-15/GE-Proton9-15.tar.gz"
 tar xaf GE-Proton9-15.tar.gz
 mv GE-Proton9-15 "$HOME/.local/share/Steam/compatibilitytools.d"
