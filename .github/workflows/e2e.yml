@@ -19,7 +19,9 @@ jobs:
         fetch-depth: 0
     - name: Install dependencies
       run: |
-        sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock
+        sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck
+        python3 -m pip install --upgrade pip
+        pip install uv
     - name: Initialize submodules
       run: |
         git submodule update --init --recursive
@@ -27,6 +29,22 @@ jobs:
       run: |
         ./configure.sh --user-install
         make install
-    - name: Run tests
+    - name: Run shellcheck
       run: |
-        bash tests/test_update.sh
+        shellcheck tests/*.sh
+    - name: Test steamrt install
+      run: |
+        sh tests/test_install.sh
+        rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+    - name: Test steamrt update
+      run: |
+        sh tests/test_update.sh
+        rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+    - name: Test winetricks
+      run: |
+        sh tests/test_winetricks.sh
+        rm -rf "$HOME/.local/share/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+    - name: Test configuration file
+      run: |
+        uv python install 3.11
+        uv run --python 3.11 -- sh tests/test_config.sh
