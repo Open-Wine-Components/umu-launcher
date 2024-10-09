@@ -43,7 +43,7 @@ jobs:
     - name: Test winetricks
       run: |
         bash tests/test_winetricks.sh
-        rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+        rm -rf "$HOME/.local/share/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
     - name: Test configuration file
       run: |
         uv python install 3.11
