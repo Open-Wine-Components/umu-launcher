@@ -29,4 +29,5 @@ jobs:
         sudo make install
     - name: Run tests
       run: |
+        which umu-run
         bash tests/test_update.sh
