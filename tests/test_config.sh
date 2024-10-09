@@ -18,4 +18,4 @@ launch_args = ['-u']
 " >> "$tmp"
 
 
-UMU_LOG=debug GAMEID=umu-0 "$HOME/.local/bin/umu-run" --config "$tmp"
+UMU_LOG=debug GAMEID=umu-0 "$PWD/.venv/bin/python" "$HOME/.local/bin/umu-run" --config "$tmp"
