@@ -4,6 +4,8 @@ from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha256
 from http.client import HTTPException, HTTPResponse, HTTPSConnection
+from stat import S_ISDIR, S_ISLNK, S_ISREG
+from struct import pack
 
 try:
     from importlib.resources.abc import Traversable
@@ -187,7 +189,18 @@ def _install_umu(
     UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
 
     # Validate the runtime after moving the files
-    check_runtime(UMU_LOCAL, json)
+    ret = check_runtime(UMU_LOCAL, json)
+
+    # Compute a digest of the metadata for future attestation
+    if ret != 1:
+        # At this point, the runtime is authenticated. For subsequent launches,
+        # we'll check against our digest to ensure we're intact
+        UMU_LOCAL.joinpath("umu.hashsum").write_text(
+            get_runtime_digest(UMU_LOCAL), encoding="utf-8"
+        )
+        return
+
+    log.warning("steamrt validation failed, skipping metadata checksum")
 
 
 def setup_umu(
@@ -247,102 +260,47 @@ def _update_umu(
     log.debug("Existing install detected")
     log.debug("Sending request to '%s'...", client_session.host)
 
-    # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
-    # Assume the directory begins with the alias
-    try:
-        runtime = max(
-            file for file in local.glob(f"{codename}*") if file.is_dir()
-        )
-    except ValueError:
-        log.debug("*_platform_* directory missing in '%s'", local)
-        log.warning("Runtime Platform not found")
+    # Restore our runtime if our checksum file is missing
+    if not local.joinpath("umu.hashsum").is_file():
+        log.warning("Runtime Platform corrupt")
         log.console("Restoring Runtime Platform...")
+        rmtree(str(local))
         _restore_umu(
             json,
             thread_pool,
-            lambda: len(
-                [file for file in local.glob(f"{codename}*") if file.is_dir()]
-            )
-            > 0,
+            lambda: local.joinpath("umu").is_file(),
             client_session,
         )
         return
+
+    digest_ret: str = get_runtime_digest(local)
+    digest_local_ret: str = local.joinpath("umu.hashsum").read_text(
+        encoding="utf-8"
+    )
+
+    log.debug("Source: %s", local)
+    log.debug("Digest: %s", digest_ret)
+    log.debug("Source: %s", local / "umu.hashsum")
+    log.debug("Digest: %s", digest_local_ret)
+
+    if digest_ret != digest_local_ret:
+        log.warning("Runtime Platform corrupt")
+        log.console("Restoring Runtime Platform...")
+        rmtree(str(local))
+        _restore_umu(
+            json,
+            thread_pool,
+            lambda: local.joinpath("umu").is_file(),
+            client_session,
+        )
+        return
+
+    # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
+    # Assume the directory begins with the alias
+    runtime = max(file for file in local.glob(f"{codename}*") if file.is_dir())
 
     log.debug("Runtime: %s", runtime.name)
     log.debug("Codename: %s", codename)
-
-    if not local.joinpath("pressure-vessel").is_dir():
-        log.debug("pressure-vessel directory missing in '%s'", local)
-        log.warning("Runtime Platform not found")
-        log.console("Restoring Runtime Platform...")
-        _restore_umu(
-            json,
-            thread_pool,
-            lambda: local.joinpath("pressure-vessel").is_dir(),
-            client_session,
-        )
-        return
-
-    # Restore VERSIONS.txt
-    # When the file is missing, the request for the image will need to be made
-    # to the endpoint of the specific snapshot
-    if not local.joinpath("VERSIONS.txt").is_file():
-        url: str
-        release: Path = runtime.joinpath("files", "lib", "os-release")
-        versions: str = f"SteamLinuxRuntime_{codename}.VERSIONS.txt"
-
-        log.debug("VERSIONS.txt file missing in '%s'", local)
-
-        # Restore the runtime if os-release is missing, otherwise pressure
-        # vessel will crash when creating the variable directory
-        if not release.is_file():
-            log.debug("os-release file missing in '%s'", local)
-            log.warning("Runtime Platform corrupt")
-            log.console("Restoring Runtime Platform...")
-            _restore_umu(
-                json,
-                thread_pool,
-                lambda: local.joinpath("VERSIONS.txt").is_file(),
-                client_session,
-            )
-            return
-
-        # Get the BUILD_ID value in os-release
-        with release.open(mode="r", encoding="utf-8") as file:
-            for line in file:
-                if line.startswith("BUILD_ID"):
-                    # Get the value after 'BUILD_ID=' and strip the quotes
-                    build_id: str = (
-                        line.removeprefix("BUILD_ID=").rstrip().strip('"')
-                    )
-                    url = (
-                        f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
-                    )
-                    break
-
-        client_session.request("GET", f"{url}{token}")
-
-        with client_session.getresponse() as resp:
-            # Handle the redirect
-            if resp.status == 301:
-                location: str = resp.getheader("Location", "")
-                log.debug("Location: %s", resp.getheader("Location"))
-                # The stdlib requires reading the entire response body before
-                # making another request
-                resp.read()
-
-                # Make a request to the new location
-                client_session.request("GET", f"{location}/{versions}{token}")
-                with client_session.getresponse() as resp_redirect:
-                    if resp_redirect.status != 200:
-                        log.warning(
-                            "repo.steampowered.com returned the status: %s",
-                            resp_redirect.status,
-                        )
-                        return
-                    local.joinpath("VERSIONS.txt").write_text(
-                        resp.read().decode()
-                    )
 
     # Update the runtime if necessary by comparing VERSIONS.txt to the remote
     # repo.steampowered currently sits behind a Cloudflare proxy, which may
@@ -504,6 +462,55 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     log.console(f"{runtime.name}: mtree is OK")
 
     return ret
+
+
+def get_runtime_digest(path: Path) -> str:  # noqa: D103
+    hashsum = sha256()
+    # Ignore any lock files, the variable dir and our checksum file
+    # when computing the digest
+    whitelist: tuple[str, ...] = (".lock", ".ref", "var", "umu.hashsum")
+    fmt: str = "iffi"
+    stat_ret: os.stat_result
+
+    # Find all runtime files and compute a hash of its metadata
+    for file in (
+        file_toplvl
+        for file_toplvl in path.glob("*")
+        if not file_toplvl.name.endswith(whitelist)
+    ):
+        # Get all normal files within directories
+        stat_ret = file.stat()
+        if S_ISDIR(stat_ret.st_mode):
+            for subfile in (
+                file_subdir
+                for file_subdir in file.glob("*")
+                if file_subdir.is_file() and not file_subdir.is_symlink()
+            ):
+                stat_ret = subfile.stat()
+                # Convert the metadata to bytes then hash it
+                hashsum.update(
+                    pack(
+                        fmt,
+                        stat_ret.st_size,  # Size
+                        stat_ret.st_mtime,  # Modification time
+                        stat_ret.st_ctime,  # Creation time
+                        stat_ret.st_mode,  # Permissions
+                    )
+                )
+            continue
+        # File is in the top-level and is a normal file
+        if S_ISREG(stat_ret.st_mode) and not S_ISLNK(stat_ret.st_mode):
+            hashsum.update(
+                pack(
+                    fmt,
+                    stat_ret.st_size,
+                    stat_ret.st_mtime,
+                    stat_ret.st_ctime,
+                    stat_ret.st_mode,
+                )
+            )
+
+    return hashsum.hexdigest()
 
 
 def _restore_umu(
