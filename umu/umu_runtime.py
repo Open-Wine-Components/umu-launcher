@@ -212,6 +212,21 @@ def setup_umu(
 
     find_obsolete()
 
+    # Force a runtime update
+    if os.environ.get("UMU_RUNTIME_UPDATE") == "1":
+        log.debug("Forcing update to Runtime Platform")
+        log.debug("Removing: %s", local)
+        rmtree(str(local))
+        local.mkdir(parents=True, exist_ok=True)
+        with https_connection(host) as client_session:
+            _restore_umu(
+                json,
+                thread_pool,
+                lambda: local.joinpath("umu").is_file(),
+                client_session,
+            )
+        return
+
     with https_connection(host) as client_session:
         _update_umu(local, json, thread_pool, client_session)
 
