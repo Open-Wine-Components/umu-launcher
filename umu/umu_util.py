@@ -6,7 +6,7 @@ from http.client import HTTPSConnection
 from pathlib import Path
 from re import Pattern
 from re import compile as re_compile
-from shutil import which
+from shutil import rmtree, which
 from ssl import SSLContext, create_default_context
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
@@ -183,6 +183,7 @@ def find_obsolete() -> None:
         "umu_version.json",
         "sniper_platform_0.20231211.70175",
     }
+    obsolete: Path
 
     # Obsoleted files in $HOME/.local/share/umu from RC4 and below
     for file in UMU_LOCAL.glob("*"):
@@ -190,19 +191,25 @@ def find_obsolete() -> None:
             file.name.startswith(("umu", "ulwgl"))
         )
         if is_umu_file or file.name in obsoleted:
-            log.warning("'%s' is obsolete", file)
+            if file.is_file():
+                file.unlink()
+            if file.is_dir():
+                rmtree(str(file))
 
     # $HOME/.local/share/Steam/compatibilitytool.d
-    if (launcher := STEAM_COMPAT.joinpath("ULWGL-Launcher")).is_dir():
-        log.warning("'%s' is obsolete", launcher)
+    obsolete = STEAM_COMPAT.joinpath("ULWGL-Launcher")
+    if obsolete.is_dir():
+        rmtree(str(obsolete))
 
     # $HOME/.cache
-    if (cache := home.joinpath(".cache", "ULWGL")).is_dir():
-        log.warning("'%s' is obsolete", cache)
+    obsolete = home.joinpath(".cache", "ULWGL")
+    if obsolete.is_dir():
+        rmtree(str(obsolete))
 
     # $HOME/.local/share
-    if (ulwgl := home.joinpath(".local", "share", "ULWGL")).is_dir():
-        log.warning("'%s' is obsolete", ulwgl)
+    obsolete = home.joinpath(".local", "share", "ULWGL")
+    if obsolete.is_dir():
+        rmtree(str(obsolete))
 
 
 @contextmanager

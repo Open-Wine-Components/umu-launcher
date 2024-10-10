@@ -166,7 +166,8 @@ _UMU_ZENITY_
 _UMU_RUNTIME_UPDATE_
 	Optional. Disables automatic updates to the *Steam Linux Runtime*[6].
 
-	Set _0_ to disable updates.
+	Set _0_ to disable updates. Set _1_ to force updates and restore
+	_$HOME/.local/share/umu_ to clean state.
 
 # SEE ALSO
 
