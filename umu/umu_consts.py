@@ -28,7 +28,17 @@ UMU_LOCAL: Path = (
 )
 
 # Temporary directory for downloaded resources moved from tmpfs
-UMU_CACHE: Path = Path.home().joinpath(".cache", "umu")
+UMU_CACHE: Path = (
+    Path.home().joinpath(
+        ".var",
+        "app",
+        "org.openwinecomponents.umu.umu-launcher",
+        "cache",
+        "umu",
+    )
+    if os.environ.get("container") == "flatpak"  # noqa: SIM112
+    else Path.home().joinpath(".cache", "umu")
+)
 
 # Constant defined in prctl.h
 # See prctl(2) for more details
