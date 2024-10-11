@@ -2,3 +2,4 @@ usr/bin/umu-run
 usr/share/man/*
 usr/share/steam/compatibilitytools.d/umu-launcher/
 usr/lib/python3/dist-packages/umu*
+debian/apparmor/bwrap etc/apparmor.d/
