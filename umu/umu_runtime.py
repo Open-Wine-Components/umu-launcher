@@ -212,10 +212,18 @@ def setup_umu(
 
     # Force a runtime update
     if os.environ.get("UMU_RUNTIME_UPDATE") == "1":
+        lock: FileLock = FileLock(f"{local}/umu.lock")
         log.debug("Forcing update to Runtime Platform")
-        log.debug("Removing: %s", local)
-        rmtree(str(local))
-        local.mkdir(parents=True, exist_ok=True)
+        log.debug("Acquiring file lock '%s'...", lock.lock_file)
+        with lock:
+            log.debug("Acquired file lock '%s'", lock.lock_file)
+            for path in local.glob("*"):
+                if path.is_dir():
+                    log.debug("Removing: %s", path)
+                    rmtree(str(path))
+                if path.is_file() and not path.name.endswith(".lock"):
+                    log.debug("Removing: %s", path)
+                    path.unlink()
         with https_connection(host) as client_session:
             _restore_umu(
                 json,
