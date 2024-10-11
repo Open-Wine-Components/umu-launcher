@@ -6,13 +6,12 @@ from http.client import HTTPSConnection
 from pathlib import Path
 from re import Pattern
 from re import compile as re_compile
-from shutil import rmtree, which
+from shutil import which
 from ssl import SSLContext, create_default_context
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
 from Xlib import display
 
-from umu.umu_consts import STEAM_COMPAT, UMU_LOCAL
 from umu.umu_log import log
 
 ssl_context: SSLContext | None = None
@@ -171,45 +170,6 @@ def is_winetricks_verb(
             return False
 
     return True
-
-
-def find_obsolete() -> None:
-    """Find obsoleted launcher files and log them."""
-    home: Path = Path.home()
-    obsoleted: set[str] = {
-        "reaper",
-        "sniper_platform_0.20240125.75305",
-        "BUILD_ID.txt",
-        "umu_version.json",
-        "sniper_platform_0.20231211.70175",
-    }
-    obsolete: Path
-
-    # Obsoleted files in $HOME/.local/share/umu from RC4 and below
-    for file in UMU_LOCAL.glob("*"):
-        is_umu_file: bool = file.name.endswith(".py") and (
-            file.name.startswith(("umu", "ulwgl"))
-        )
-        if is_umu_file or file.name in obsoleted:
-            if file.is_file():
-                file.unlink()
-            if file.is_dir():
-                rmtree(str(file))
-
-    # $HOME/.local/share/Steam/compatibilitytool.d
-    obsolete = STEAM_COMPAT.joinpath("ULWGL-Launcher")
-    if obsolete.is_dir():
-        rmtree(str(obsolete))
-
-    # $HOME/.cache
-    obsolete = home.joinpath(".cache", "ULWGL")
-    if obsolete.is_dir():
-        rmtree(str(obsolete))
-
-    # $HOME/.local/share
-    obsolete = home.joinpath(".local", "share", "ULWGL")
-    if obsolete.is_dir():
-        rmtree(str(obsolete))
 
 
 @contextmanager
