@@ -10,6 +10,7 @@ from shutil import rmtree, which
 from ssl import SSLContext, create_default_context
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
+from filelock import FileLock
 from Xlib import display
 
 from umu.umu_consts import STEAM_COMPAT, UMU_LOCAL
@@ -184,32 +185,34 @@ def find_obsolete() -> None:
         "sniper_platform_0.20231211.70175",
     }
     launcher: Path
+    lock: FileLock = FileLock(f"{UMU_LOCAL}/umu.lock")
 
-    # Obsoleted files in $HOME/.local/share/umu from RC4 and below
-    for file in UMU_LOCAL.glob("*"):
-        is_umu_file: bool = file.name.endswith(".py") and (
-            file.name.startswith(("umu", "ulwgl"))
-        )
-        if is_umu_file or file.name in obsoleted:
-            if file.is_file():
-                file.unlink()
-            if file.is_dir():
-                rmtree(str(file))
+    with lock:
+        # Obsoleted files in $HOME/.local/share/umu from RC4 and below
+        for file in UMU_LOCAL.glob("*"):
+            is_umu_file: bool = file.name.endswith(".py") and (
+                file.name.startswith(("umu", "ulwgl"))
+            )
+            if is_umu_file or file.name in obsoleted:
+                if file.is_file():
+                    file.unlink()
+                if file.is_dir():
+                    rmtree(str(file))
 
-    # $HOME/.local/share/Steam/compatibilitytool.d
-    launcher = STEAM_COMPAT.joinpath("ULWGL-Launcher")
-    if launcher.is_dir():
-        rmtree(str(launcher))
+        # $HOME/.local/share/Steam/compatibilitytool.d
+        launcher = STEAM_COMPAT.joinpath("ULWGL-Launcher")
+        if launcher.is_dir():
+            rmtree(str(launcher))
 
-    # $HOME/.cache
-    launcher = home.joinpath(".cache", "ULWGL")
-    if launcher.is_dir():
-        rmtree(str(launcher))
+        # $HOME/.cache
+        launcher = home.joinpath(".cache", "ULWGL")
+        if launcher.is_dir():
+            rmtree(str(launcher))
 
-    # $HOME/.local/share
-    launcher = home.joinpath(".local", "share", "ULWGL")
-    if launcher.is_dir():
-        rmtree(str(launcher))
+        # $HOME/.local/share
+        launcher = home.joinpath(".local", "share", "ULWGL")
+        if launcher.is_dir():
+            rmtree(str(launcher))
 
 
 @contextmanager
