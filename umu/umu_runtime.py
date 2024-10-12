@@ -175,7 +175,7 @@ def _install_umu(
                 log.debug("Removing: %s", var)
                 # Remove the variable directory to avoid Steam Linux Runtime
                 # related errors when creating it. Supposedly, it only happens
-                # when going from umu-launcher 0.1-RC4 -> 1.1.1
+                # when going from umu-launcher 0.1-RC4 -> 1.1.1+
                 # See https://github.com/Open-Wine-Components/umu-launcher/issues/213#issue-2576708738
                 thread_pool.submit(rmtree, str(var))
 
