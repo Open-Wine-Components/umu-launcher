@@ -2,26 +2,30 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[lint.per-file-ignores]
+"umu_test.py" = ["ANN"]
+"umu_test_plugins.py" = ["ANN"]
+
 [project]
 name = "umu-launcher"
 dynamic = ["version"]
 description = "Unified Linux Wine Game Launcher."
 authors = [
-  { name = "GloriousEggroll", email = "gloriouseggroll@gmail.com" },
-  { name = "Mathieu Comandon", email = "strycore@gmail.com" },
-  { name = "Paweł Lidwin", email = "lidwinpawel@gmail.com" },
-  { name = "mirkobrombin", email = "send@mirko.pm" },
-  { name = "Flavio F Lima", email = "flavioislima@users.noreply.github.com" },
+  {name = "GloriousEggroll", email = "gloriouseggroll@gmail.com"},
+  {name = "Mathieu Comandon", email = "strycore@gmail.com"},
+  {name = "Paweł Lidwin", email = "lidwinpawel@gmail.com"},
+  {name = "mirkobrombin", email = "send@mirko.pm"},
+  {name = "Flavio F Lima", email = "flavioislima@users.noreply.github.com"}
 ]
 maintainers = [
-  { name = "GloriousEggroll", email = "gloriouseggroll@gmail.com" },
-  { name = "R1kaB3rN", email = "100738684+R1kaB3rN@users.noreply.github.com" },
+  {name = "GloriousEggroll", email = "gloriouseggroll@gmail.com"},
+  {name = "R1kaB3rN", email = "100738684+R1kaB3rN@users.noreply.github.com"}
 ]
 requires-python = ">=3.10"
 license = {file = "README.md"}
 keywords = [
-  "umu", 
-  "umu-launcher",
+  "umu",
+  "umu-launcher"
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -33,19 +37,16 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
-  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Software Development :: Libraries :: Python Modules"
 ]
-urls = { repository = "https://github.com/Open-Wine-Components/umu-launcher" }
+urls = {repository = "https://github.com/Open-Wine-Components/umu-launcher"}
 dependencies = [
   "python-xlib>=0.33",
-  "filelock>=3.9.0",
+  "filelock>=3.9.0"
 ]
 
 [project.scripts]
 umu-run = "umu.__main__:main"
-
-[tool.hatch.version]
-path = "umu/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -53,7 +54,7 @@ exclude = [
   "/.git",
   "/umu/__pycache__",
   "/.mypy_cache",
-  "/.ruff_cache",
+  "/.ruff_cache"
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -65,8 +66,15 @@ exclude = [
   "/umu/umu_version.json.in",
   "/umu/umu-run.in",
   "/umu/umu_test.py",
-  "/umu/umu_test_plugins.py",
+  "/umu/umu_test_plugins.py"
 ]
+
+[tool.hatch.version]
+path = "umu/__init__.py"
+
+[tool.isort]
+profile = "black"
+py_version = 312
 
 [tool.mypy]
 python_version = "3.10"
@@ -81,129 +89,74 @@ exclude = [
   'umu/umu_test_plugins.py',
   'subprojects',
   'builddir',
-  'dist',
+  'dist'
 ]
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+  "black>=24.4.2",
+  "GitPython>=3.1.40",
+  "isort>=5.13.2",
+  "mypy>=1.10.0",
+  "ruff>=0.4.2",
+  "toml-sort>=0.23.1",
+  "types-PyYAML>=6.0.12.20240311"
+]
+
+[tool.pdm.scripts]
+# static analysis
+format = {composite = [
+  "black umu/ tests/",
+  "isort --settings-path ./pyproject.toml umu/ tests/",
+  "toml-sort -i ./pyproject.toml"
+]}
+lint-fix = "ruff check --config ./pyproject.toml . --fix"
+type-check = "mypy --config-file ./pyproject.toml --enable-incomplete-feature=NewGenericSyntax umu/"
+
+[tool.pdm.version]
+fallback_version = "0.0.0"
+source = "scm"
+write_template = "__version__: str = \"{}\"\n"
+write_to = "code_review/_version.py"
 
 [tool.ruff]
 exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".ipynb_checkpoints",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pyenv",
-    ".pytest_cache",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    ".vscode",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "site-packages",
-    "venv",
-    "builddir",
-    "subprojects",
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".ipynb_checkpoints",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pyenv",
+  ".pytest_cache",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  ".vscode",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "site-packages",
+  "venv",
+  "builddir",
+  "subprojects"
 ]
 # Same as Black.
 line-length = 79
 indent-width = 4
 target-version = "py310"
-lint.select = [
-    # Ruff defaults
-    "E4", 
-    "E7", 
-    "E9", 
-    "F", 
-    # Ensure we're being smart when raising, returning or breaking
-    "RET", 
-    # Enforce pydocstyle
-    "W", 
-    # Enforce more formats
-    # See https://docs.astral.sh/ruff/rules/#warning-w
-    "D", 
-    # Enforce pathlib when working with paths
-    "PTH", 
-    # Ensure exceptions are not blindly caught
-    "BLE001", 
-    # Enforce flake8 error messages
-    "EM", 
-    # Ensure we're being smart when working with archives/executing shell commands
-    # Or when dealing with input returned from web services (e.g., Github)
-    "S",
-    # Ensure we do not exceed our line length
-    "E501",
-    # Enforce types for variables
-    "ANN",
-    # Ensure we're smart when accessing dicts
-    "RUF019",
-    # Enforce not concatenating collections
-    "RUF005",
-    # Flag unused qa directives
-    "RUF100",
-    # Enforce flake8 concat strings because the + operator can be unnecessary
-    "ISC",
-    # Ensure we're smart when using the logger
-    # Specific log statements should execute only when necessary
-    "G",
-    # Prefer collapsing nested if-elif in the else branch
-    "PLR5501",
-    # Simply and catch redundant logic
-    "SIM",
-    # Ensure no useless arguments/paramaters
-    "ARG",
-    # Ensure explicit check= for subprocess.run to avoid silent failures
-    "PLW1510",
-    "UP",
-    "FURB",
-    # Enforce the utf-8 encoding argument when opening files
-    "PLW1514",
-    # Sort imports
-    "I",
-    # Ensure we're smart when using list comprehensions
-    "C4",
-    # Ensure we do not shadow any Python built-in functionality
-    "A"
-]
-lint.ignore = [
-    # Format
-    "D100", 
-    "D203",
-    "D213",
-    # Ignore untrusted input for subprocess
-    # This raises false negatives and currently we shell out when:
-    # Using Zenity or executing the final command
-    # In the above cases, we *always* verify the existence of the command/files
-    "S603",
-    # We use a static location for the crash report dir: /tmp/umu_crashreports
-    "S108",
-    # Don't flag missing type for self
-    # This will be deprecated in Ruff soon
-    "ANN101",
-    # Single line implicit concat conflicts with the formatter
-    "ISC001",
-    "S404"
-]
-# Allow fix for all enabled rules (when `--fix`) is provided.
-lint.fixable = ["ALL"]
-lint.unfixable = []
-# Allow unused variables when underscore-prefixed.
-lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-lint.logger-objects = ["umu.umu_log.log"]
-
-[tool.ruff.lint.per-file-ignores]
-"umu_test.py" = ["ANN"]
-"umu_test_plugins.py" = ["ANN"]
 
 [tool.ruff.format]
 # Like Black, use double quotes for strings.
@@ -226,3 +179,86 @@ docstring-code-format = false
 # This only has an effect when the `docstring-code-format` setting is
 # enabled.
 docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint]
+select = [
+  # Ruff defaults
+  "E4",
+  "E7",
+  "E9",
+  "F",
+  # Ensure we're being smart when raising, returning or breaking
+  "RET",
+  # Enforce pydocstyle
+  "W",
+  # Enforce more formats
+  # See https://docs.astral.sh/ruff/rules/#warning-w
+  "D",
+  # Enforce pathlib when working with paths
+  "PTH",
+  # Ensure exceptions are not blindly caught
+  "BLE001",
+  # Enforce flake8 error messages
+  "EM",
+  # Ensure we're being smart when working with archives/executing shell commands
+  # Or when dealing with input returned from web services (e.g., Github)
+  "S",
+  # Ensure we do not exceed our line length
+  "E501",
+  # Enforce types for variables
+  "ANN",
+  # Ensure we're smart when accessing dicts
+  "RUF019",
+  # Enforce not concatenating collections
+  "RUF005",
+  # Flag unused qa directives
+  "RUF100",
+  # Enforce flake8 concat strings because the + operator can be unnecessary
+  "ISC",
+  # Ensure we're smart when using the logger
+  # Specific log statements should execute only when necessary
+  "G",
+  # Prefer collapsing nested if-elif in the else branch
+  "PLR5501",
+  # Simply and catch redundant logic
+  "SIM",
+  # Ensure no useless arguments/paramaters
+  "ARG",
+  # Ensure explicit check= for subprocess.run to avoid silent failures
+  "PLW1510",
+  "UP",
+  "FURB",
+  # Sort imports
+  "I",
+  # Ensure we're smart when using list comprehensions
+  "C4",
+  # Ensure we do not shadow any Python built-in functionality
+  "A"
+]
+ignore = [
+  # Format
+  "D100",
+  "D203",
+  "D213",
+  "E501",
+  # Ignore untrusted input for subprocess
+  # This raises false negatives and currently we shell out when:
+  # Using Zenity or executing the final command
+  # In the above cases, we *always* verify the existence of the command/files
+  "S603",
+  # We use a static location for the crash report dir: /tmp/umu_crashreports
+  "S108",
+  # Don't flag missing type for self
+  # This will be deprecated in Ruff soon
+  "ANN101",
+  "ANN201",
+  # Single line implicit concat conflicts with the formatter
+  "ISC001",
+  "S404"
+]
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+logger-objects = ["umu.umu_log.log"]

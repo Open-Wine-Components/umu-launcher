@@ -145,9 +145,7 @@ def is_installed_verb(verb: list[str], pfx: Path) -> bool:
             _: str = line.strip()
             if _ in verbs:
                 is_installed = True
-                err: str = (
-                    f"winetricks verb '{_}' is already installed in '{pfx}'"
-                )
+                err: str = f"winetricks verb '{_}' is already installed in '{pfx}'"
                 log.error(err)
                 break
 
@@ -216,7 +214,7 @@ def find_obsolete() -> None:
 
 
 @contextmanager
-def https_connection(host: str):  # noqa: ANN201
+def https_connection(host: str):
     """Create an HTTPSConnection."""
     global ssl_context
     conn: HTTPSConnection
@@ -236,7 +234,7 @@ def https_connection(host: str):  # noqa: ANN201
 
 
 @contextmanager
-def xdisplay(no: str):  # noqa: ANN201
+def xdisplay(no: str):
     """Create a Display."""
     d: display.Display = display.Display(no)
 
