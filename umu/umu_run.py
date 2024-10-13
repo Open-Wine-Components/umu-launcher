@@ -10,6 +10,7 @@ from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
+from platform import freedesktop_os_release
 
 try:
     from importlib.resources.abc import Traversable
@@ -265,6 +266,18 @@ def set_env(
 
     # Game drive
     enable_steam_game_drive(env)
+
+    os_release: dict[str, str] = freedesktop_os_release()
+
+    if os_release.get("id") == "ubuntu":
+        # Ubuntu seems to require special handling as pressure-vessel is unable locate Mesa DRI driver
+        # and expose them in the container
+        # See https://github.com/Open-Wine-Components/umu-launcher/issues/211
+        env["LIBGL_DRIVERS_PATH"] = (
+            f"/usr/lib/i386-linux-gnu/dri:/usr/lib/x86_64-linux-gnu/dri:{os.environ['LIGGL_DRIVERS_PATH']}"
+            if os.environ.get("LIGGL_DRIVERS_PATH")
+            else "/usr/lib/i386-linux-gnu/dri:/usr/lib/x86_64-linux-gnu/dri"
+        )
 
     # Winetricks
     if env.get("EXE", "").endswith("winetricks"):
