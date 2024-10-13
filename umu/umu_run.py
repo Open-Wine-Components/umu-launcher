@@ -269,7 +269,7 @@ def set_env(
 
     os_release: dict[str, str] = freedesktop_os_release()
 
-    if os_release.get("id") == "ubuntu":
+    if os_release.get("ID") == "ubuntu":
         # Ubuntu seems to require special handling as pressure-vessel is unable locate Mesa DRI drivers
         # and expose them in the container
         # See https://github.com/Open-Wine-Components/umu-launcher/issues/211

@@ -65,7 +65,7 @@ def get_library_paths() -> set[str]:
     # Workaround for Ubuntu not finding 32-bit paths.
     # Values align and are taken from our snap manifest
     # See https://github.com/Open-Wine-Components/umu-launcher/issues/211
-    if os_release.get("id") == "ubuntu":
+    if os_release.get("ID") == "ubuntu":
         library_paths |= {
             "/usr/lib/i386-linux-gnu/pulseaudio",
             "/usr/lib/i386-linux-gnu",
