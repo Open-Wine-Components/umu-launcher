@@ -1,4 +1,5 @@
 import os
+from platform import freedesktop_os_release
 from contextlib import contextmanager
 from ctypes.util import find_library
 from functools import lru_cache
@@ -58,6 +59,16 @@ def get_library_paths() -> set[str]:
             }
     except OSError as e:
         log.exception(e)
+
+    os_release: dict[str, str] = freedesktop_os_release()
+
+    # Workaround for Ubuntu not find 32-bit paths
+    # See https://github.com/Open-Wine-Components/umu-launcher/issues/211
+    if os_release.get("id") == "ubuntu":
+        library_paths |= {
+            "/usr/lib/i386-linux-gnu/pulseaudio",
+            "/usr/lib/i386-linux-gnu",
+        }
 
     return library_paths
 
