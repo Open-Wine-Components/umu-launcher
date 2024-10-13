@@ -168,6 +168,13 @@ _UMU_RUNTIME_UPDATE_
 
 	Set _0_ to disable updates.
 
+_UMU_RUNTIME_INTEGRITY_
+	Optional. Enables automatic integrity checking of runtime files in
+	_$HOME/.local/share/umu_.
+
+	Set _1_ to verify integrity of runtime contents on launch and to auto restore
+	them on corruption.
+
 # SEE ALSO
 
 _umu_(5), _winetricks_(1), _zenity_(1)
