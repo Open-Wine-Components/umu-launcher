@@ -259,105 +259,73 @@ def _update_umu(
         "/snapshots/latest-container-runtime-public-beta"
     )
     token: str = f"?version={token_urlsafe(16)}"
+    checksum: Path = local.joinpath("umu.hashsum")
+    enabled_integrity: bool = os.environ.get("UMU_RUNTIME_INTEGRITY") == "1"
     log.debug("Existing install detected")
     log.debug("Sending request to '%s'...", client_session.host)
 
-    # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
-    # Assume the directory begins with the alias
-    try:
-        runtime = max(
-            file for file in local.glob(f"{codename}*") if file.is_dir()
-        )
-    except ValueError:
-        log.debug("*_platform_* directory missing in '%s'", local)
-        log.warning("Runtime Platform not found")
+    # When integrity is enabled, restore our runtime if our digest is missing
+    if enabled_integrity and not checksum.is_file():
+        lock: FileLock = FileLock(f"{local}/umu.lock")
+        log.warning("File '%s' is missing", checksum)
         log.console("Restoring Runtime Platform...")
+        log.debug("Acquiring file lock '%s'...", lock.lock_file)
+        with lock:
+            log.debug("Acquired file lock '%s'", lock.lock_file)
+            for file in local.glob("*"):
+                if file.is_dir():
+                    rmtree(str(file))
+                if file.is_file() and not file.name.endswith(".lock"):
+                    file.unlink()
         _restore_umu(
             json,
             thread_pool,
-            lambda: len(
-                [file for file in local.glob(f"{codename}*") if file.is_dir()]
-            )
-            > 0,
+            lambda: local.joinpath("umu").is_file(),
             client_session,
         )
         return
 
-    log.debug("Runtime: %s", runtime.name)
-    log.debug("Codename: %s", codename)
-
-    if not local.joinpath("pressure-vessel").is_dir():
-        log.debug("pressure-vessel directory missing in '%s'", local)
-        log.warning("Runtime Platform not found")
-        log.console("Restoring Runtime Platform...")
-        _restore_umu(
-            json,
-            thread_pool,
-            lambda: local.joinpath("pressure-vessel").is_dir(),
-            client_session,
+    # Check if our runtime directory is intact and restore if not
+    if enabled_integrity:
+        digest_ret: str = get_runtime_digest(local, thread_pool)
+        digest_local_ret: str = local.joinpath("umu.hashsum").read_text(
+            encoding="utf-8"
         )
-        return
 
-    # Restore VERSIONS.txt
-    # When the file is missing, the request for the image will need to be made
-    # to the endpoint of the specific snapshot
-    if not local.joinpath("VERSIONS.txt").is_file():
-        url: str
-        release: Path = runtime.joinpath("files", "lib", "os-release")
-        versions: str = f"SteamLinuxRuntime_{codename}.VERSIONS.txt"
+        log.debug("Runtime Platform integrity enabled")
+        log.debug("Source: %s", local)
+        log.debug("Digest: %s", digest_ret)
+        log.debug("Source: %s", local / "umu.hashsum")
+        log.debug("Digest: %s", digest_local_ret)
 
-        log.debug("VERSIONS.txt file missing in '%s'", local)
-
-        # Restore the runtime if os-release is missing, otherwise pressure
-        # vessel will crash when creating the variable directory
-        if not release.is_file():
-            log.debug("os-release file missing in '%s'", local)
+        if digest_ret != digest_local_ret:
+            lock: FileLock = FileLock(f"{local}/umu.lock")
             log.warning("Runtime Platform corrupt")
             log.console("Restoring Runtime Platform...")
+            log.debug("Acquiring file lock '%s'...", lock.lock_file)
+            with lock:
+                log.debug("Acquired file lock '%s'", lock.lock_file)
+                for file in local.glob("*"):
+                    if file.is_dir():
+                        rmtree(str(file))
+                    if file.is_file() and not file.name.endswith(".lock"):
+                        file.unlink()
             _restore_umu(
                 json,
                 thread_pool,
-                lambda: local.joinpath("VERSIONS.txt").is_file(),
+                lambda: local.joinpath("umu").is_file(),
                 client_session,
             )
             return
 
-        # Get the BUILD_ID value in os-release
-        with release.open(mode="r", encoding="utf-8") as file:
-            for line in file:
-                if line.startswith("BUILD_ID"):
-                    # Get the value after 'BUILD_ID=' and strip the quotes
-                    build_id: str = (
-                        line.removeprefix("BUILD_ID=").rstrip().strip('"')
-                    )
-                    url = (
-                        f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
-                    )
-                    break
+    # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
+    # Assume the directory begins with the alias. At this point, our runtime
+    # may or may not be intact. The client is responsible for restoring it by
+    # force an update or enabling integrity
+    runtime = max(file for file in local.glob(f"{codename}*") if file.is_dir())
 
-        client_session.request("GET", f"{url}{token}")
-
-        with client_session.getresponse() as resp:
-            # Handle the redirect
-            if resp.status == 301:
-                location: str = resp.getheader("Location", "")
-                log.debug("Location: %s", resp.getheader("Location"))
-                # The stdlib requires reading the entire response body before
-                # making another request
-                resp.read()
-
-                # Make a request to the new location
-                client_session.request("GET", f"{location}/{versions}{token}")
-                with client_session.getresponse() as resp_redirect:
-                    if resp_redirect.status != 200:
-                        log.warning(
-                            "repo.steampowered.com returned the status: %s",
-                            resp_redirect.status,
-                        )
-                        return
-                    local.joinpath("VERSIONS.txt").write_text(
-                        resp.read().decode()
-                    )
+    log.debug("Runtime: %s", runtime.name)
+    log.debug("Codename: %s", codename)
 
     # Update the runtime if necessary by comparing VERSIONS.txt to the remote
     # repo.steampowered currently sits behind a Cloudflare proxy, which may
@@ -586,8 +554,10 @@ def _restore_umu(
     callback_fn: Callable[[], bool],
     client_session: HTTPSConnection,
 ) -> None:
-    with FileLock(f"{UMU_LOCAL}/umu.lock") as lock:
-        log.debug("Acquired file lock '%s'...", lock.lock_file)
+    lock: FileLock = FileLock(f"{UMU_LOCAL}/umu.lock")
+    log.debug("Acquiring file lock '%s'...", lock.lock_file)
+    with lock:
+        log.debug("Acquired file lock '%s'", lock.lock_file)
         if callback_fn():
             log.debug("Released file lock '%s'", lock.lock_file)
             log.console("steamrt was restored")
