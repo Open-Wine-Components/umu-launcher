@@ -189,7 +189,20 @@ def _install_umu(
     UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
 
     # Validate the runtime after moving the files
-    check_runtime(UMU_LOCAL, json)
+    ret = check_runtime(UMU_LOCAL, json)
+
+    # Compute a digest of the metadata for future attestation
+    if ret != 1:
+        # At this point, the runtime is authenticated. For subsequent launches,
+        # we'll check against our digest to ensure we're intact
+        thread_pool.submit(
+            UMU_LOCAL.joinpath("umu.hashsum").write_text,
+            get_runtime_digest(UMU_LOCAL, thread_pool),
+            "utf-8",
+        )
+        return
+
+    log.warning("steamrt validation failed, skipping metadata checksum")
 
 
 def setup_umu(
