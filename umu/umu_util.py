@@ -1,10 +1,10 @@
 import os
-from platform import freedesktop_os_release
 from contextlib import contextmanager
 from ctypes.util import find_library
 from functools import lru_cache
 from http.client import HTTPSConnection
 from pathlib import Path
+from platform import freedesktop_os_release
 from re import Pattern
 from re import compile as re_compile
 from shutil import rmtree, which
