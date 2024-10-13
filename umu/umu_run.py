@@ -291,6 +291,9 @@ def set_env(
     # Runtime
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
+    env["UMU_RUNTIME_INTEGRITY"] = (
+        os.environ.get("UMU_RUNTIME_INTEGRITY") or ""
+    )
 
     return env
 
@@ -723,6 +726,7 @@ def main() -> int:  # noqa: D103
         "UMU_ZENITY": "",
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
+        "UMU_RUNTIME_INTEGRITY": "",
     }
     opts: list[str] = []
     prereq: bool = False
