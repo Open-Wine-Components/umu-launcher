@@ -547,6 +547,26 @@ def get_runtime_digest(path: Path, thread_pool: ThreadPoolExecutor) -> str:
     return hashsum.hexdigest()
 
 
+def _compute_digest(stat: os.stat_result):  # noqa: ANN202
+    hashsum = sha256()
+    fmt: str = "fiiiif"
+
+    hashsum.update(
+        pack(
+            fmt,
+            stat.st_mtime,  # Modification time
+            stat.st_mode,  # Permissions
+            stat.st_size,  # Size
+            stat.st_uid,  # User
+            stat.st_gid,  # Group
+            stat.st_ctime,  # Creation time
+        )
+        + bytes(2048)  # Pad enough bytes to release the GIL
+    )
+
+    return hashsum
+
+
 def _restore_umu(
     json: dict[str, Any],
     thread_pool: ThreadPoolExecutor,
