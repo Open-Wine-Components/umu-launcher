@@ -4,6 +4,8 @@ from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha256
 from http.client import HTTPException, HTTPResponse, HTTPSConnection
+from stat import S_ISDIR, S_ISLNK, S_ISREG
+from struct import pack
 
 try:
     from importlib.resources.abc import Traversable
@@ -504,6 +506,45 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
     log.console(f"{runtime.name}: mtree is OK")
 
     return ret
+
+
+def get_runtime_digest(path: Path, thread_pool: ThreadPoolExecutor) -> str:
+    """Generate a digest for all runtime files within a directory."""
+    hashsum = sha256()
+    # Ignore any lock files, the variable dir and our checksum file
+    # when computing the digest
+    whitelist: tuple[str, ...] = (".lock", ".ref", "var", "umu.hashsum")
+    futures: list[Future] = []
+
+    # Find all runtime files and compute its hash in parallel
+    for file in (
+        file_toplvl
+        for file_toplvl in path.glob("*")
+        if not file_toplvl.name.endswith(whitelist)
+    ):
+        stat_ret: os.stat_result = file.stat()
+
+        # Get all normal files within directories
+        if S_ISDIR(stat_ret.st_mode):
+            for subfile in (
+                file_subdir
+                for file_subdir in file.glob("*")
+                if file_subdir.is_file() and not file_subdir.is_symlink()
+            ):
+                futures.append(
+                    thread_pool.submit(_compute_digest, subfile.stat())
+                )
+            continue
+
+        # File is in the top-level and is a normal file
+        if S_ISREG(stat_ret.st_mode) and not S_ISLNK(stat_ret.st_mode):
+            futures.append(thread_pool.submit(_compute_digest, stat_ret))
+
+    for future in futures:
+        future_ret = future.result()
+        hashsum.update(future_ret.digest())
+
+    return hashsum.hexdigest()
 
 
 def _restore_umu(
