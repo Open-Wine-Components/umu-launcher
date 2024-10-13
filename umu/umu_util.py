@@ -62,7 +62,8 @@ def get_library_paths() -> set[str]:
 
     os_release: dict[str, str] = freedesktop_os_release()
 
-    # Workaround for Ubuntu not find 32-bit paths
+    # Workaround for Ubuntu not finding 32-bit paths.
+    # Values align and are taken from our snap manifest
     # See https://github.com/Open-Wine-Components/umu-launcher/issues/211
     if os_release.get("id") == "ubuntu":
         library_paths |= {
