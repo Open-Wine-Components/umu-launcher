@@ -1,4 +1,4 @@
-name: UMU Deb Build - Noble (Ubuntu 24.04 LTS)
+name: UMU Deb Build - Debian 12
 on:
   push:
     branches: [ "main" ]
@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:noble
+      image: debian:bookworm
       volumes:
         - /proc:/proc
       options: --privileged -it
@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Copy debian packaging folder to the repository root
-      run: cp -rvf ./packaging/deb/ubuntu ./debian
+      run: cp -rvf ./packaging/deb/debian ./debian
 
     - name: Update APT Cache
       run: apt update -y
