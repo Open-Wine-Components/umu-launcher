@@ -35,5 +35,6 @@ Depends:
  ${misc:Depends},
  python3,
  python3-xlib (>= 0.33),
- python3-filelock (>= 3.9.0)
+ python3-filelock (>= 3.9.0),
+ apparmor-profiles
 Description: A tool for launching non-steam games with proton.
