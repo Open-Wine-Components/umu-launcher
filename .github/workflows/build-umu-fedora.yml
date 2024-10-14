@@ -2,9 +2,9 @@ name: UMU RPM Build - Fedora/Nobara
 
 on:
   push:
-    branches: [ "fedora-rpm-builder" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "fedora-rpm-builder" ]
+    branches: [ "main" ]
 
 jobs:
   build:
