@@ -37,8 +37,8 @@ XDG_CACHE_HOME: Path = (
 # See https://systemd.io/CONTAINER_INTERFACE
 # See https://specifications.freedesktop.org/basedir-spec/latest/index.html#basics
 # NOTE: For Flatpaks, the runtime will be installed in $HOST_XDG_DATA_HOME
-# then $XDG_DATA_HOME, and will be required to update their manifests by adding
-# the permission 'xdg-data/umu:create'.
+# then $XDG_DATA_HOME as fallback, and will be required to update their
+# manifests by adding the permission 'xdg-data/umu:create'.
 # See https://github.com/Open-Wine-Components/umu-launcher/pull/229#discussion_r1799289068
 UMU_LOCAL: Path = XDG_DATA_HOME.joinpath("umu")
 
