@@ -16,26 +16,14 @@ PROTON_VERBS = {
     "getnativepath",
 }
 
-# Installation path of the runtime files
+# Installation path of the runtime files.
 # Flatpak will be detected as outlined by systemd
 # See https://systemd.io/CONTAINER_INTERFACE
-UMU_LOCAL: Path = (
-    Path.home().joinpath(
-        ".var", "app", "org.openwinecomponents.umu.umu-launcher", "data", "umu"
-    )
-    if os.environ.get("container") == "flatpak"  # noqa: SIM112
-    else Path.home().joinpath(".local", "share", "umu")
-)
+UMU_LOCAL: Path = Path.home().joinpath(".local", "share", "umu")
 
 # Temporary directory for downloaded resources moved from tmpfs
 UMU_CACHE: Path = (
-    Path.home().joinpath(
-        ".var",
-        "app",
-        "org.openwinecomponents.umu.umu-launcher",
-        "cache",
-        "umu",
-    )
+    Path(os.environ["XDG_CACHE_HOME"], "umu")
     if os.environ.get("container") == "flatpak"  # noqa: SIM112
     else Path.home().joinpath(".cache", "umu")
 )
