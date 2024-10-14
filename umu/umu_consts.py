@@ -28,6 +28,10 @@ XDG_CACHE_HOME: Path = (
     else Path.home().joinpath(".cache")
 )
 
+_HOST_XDG_DATA_HOME: str = os.environ.get(
+    "HOST_XDG_DATA_HOME", os.environ["XDG_DATA_HOME"]
+)
+
 # Installation path of the runtime files that respects the XDG Base Directory
 # Specification and Systemd container interface.
 # See https://systemd.io/CONTAINER_INTERFACE
@@ -37,7 +41,7 @@ XDG_CACHE_HOME: Path = (
 # the permission 'xdg-data/umu:create'.
 # See https://github.com/Open-Wine-Components/umu-launcher/pull/229#discussion_r1799289068
 UMU_LOCAL: Path = (
-    Path(os.environ.get("HOST_XDG_DATA_HOME", "XDG_DATA_HOME")).joinpath("umu")
+    Path(_HOST_XDG_DATA_HOME).joinpath("umu")
     if os.environ.get("container") == "flatpak"  # noqa: SIM112
     else XDG_DATA_HOME.joinpath("umu")
 )
