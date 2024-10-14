@@ -22,6 +22,12 @@ XDG_DATA_HOME: Path = (
     else Path.home().joinpath(".local", "share")
 )
 
+XDG_CACHE_HOME: Path = (
+    Path(os.environ["XDG_CACHE_HOME"])
+    if os.environ.get("XDG_CACHE_HOME")
+    else Path.home().joinpath(".cache")
+)
+
 # Installation path of the runtime files that respects the XDG Base Directory
 # Specification and Systemd container interface.
 # See https://systemd.io/CONTAINER_INTERFACE
@@ -40,7 +46,7 @@ UMU_LOCAL: Path = (
 UMU_CACHE: Path = (
     Path(os.environ["XDG_CACHE_HOME"], "umu")
     if os.environ.get("container") == "flatpak"  # noqa: SIM112
-    else Path.home().joinpath(".cache", "umu")
+    else XDG_CACHE_HOME.joinpath("umu")
 )
 
 # Constant defined in prctl.h
