@@ -1,4 +1,4 @@
-name: Build RPM
+name: UMU RPM Build - Fedora/Nobara
 
 on:
   push:
