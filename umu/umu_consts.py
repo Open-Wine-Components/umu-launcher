@@ -16,10 +16,25 @@ PROTON_VERBS = {
     "getnativepath",
 }
 
-# Installation path of the runtime files.
-# Flatpak will be detected as outlined by systemd
+XDG_DATA_HOME: Path = (
+    Path(os.environ["XDG_DATA_HOME"])
+    if os.environ.get("XDG_DATA_HOME")
+    else Path.home().joinpath(".local", "share")
+)
+
+# Installation path of the runtime files that respects the XDG Base Directory
+# Specification and Systemd container interface.
 # See https://systemd.io/CONTAINER_INTERFACE
-UMU_LOCAL: Path = Path.home().joinpath(".local", "share", "umu")
+# See https://specifications.freedesktop.org/basedir-spec/latest/index.html#basics
+# NOTE: For Flatpaks, the runtime will be installed in $HOST_XDG_DATA_HOME
+# then $XDG_DATA_HOME, and will be required to update their manifests by adding
+# the permission 'xdg-data/umu:create'.
+# See https://github.com/Open-Wine-Components/umu-launcher/pull/229#discussion_r1799289068
+UMU_LOCAL: Path = (
+    Path(os.environ.get("HOST_XDG_DATA_HOME", "XDG_DATA_HOME")).joinpath("umu")
+    if os.environ.get("container") == "flatpak"  # noqa: SIM112
+    else XDG_DATA_HOME.joinpath("umu")
+)
 
 # Temporary directory for downloaded resources moved from tmpfs
 UMU_CACHE: Path = (
