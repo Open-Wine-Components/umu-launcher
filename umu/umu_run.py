@@ -789,11 +789,12 @@ def main() -> int:  # noqa: D103
             future.result()
         except gaierror as e:
             # Network address-related errors in the request to repo.steampowered.com
-            # At this point, the user's network was reachable on launch, but the network
-            # suddenly became unreliable so the request failed.
+            # At this point, the user's network was reachable on launch, but
+            # the network suddenly became unreliable so the request failed.
             log.exception(e)
         except OSError as e:
-            # Unreachable network error in the request to repo.steampowered.com.
+            # Similar situation as above, but the host was resolved yet the
+            # network suddenly became unreachable in the request to repo.steampowered.com.
             if e.errno != ENETUNREACH:
                 raise
             log.debug("Network is unreachable")
