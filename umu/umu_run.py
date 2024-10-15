@@ -20,7 +20,7 @@ from logging import DEBUG, INFO, WARNING
 from pathlib import Path
 from pwd import getpwuid
 from re import match
-from socket import AF_INET, SOCK_DGRAM, socket
+from socket import AF_INET, SOCK_DGRAM, gaierror, socket
 from subprocess import Popen
 from typing import Any
 
@@ -787,11 +787,14 @@ def main() -> int:  # noqa: D103
 
         try:
             future.result()
+        except gaierror as e:
+            # Network address-related errors in the request to repo.steampowered.com
+            # At this point, the user's network was reachable on launch, but the network
+            # suddenly became unreliable so the request failed.
+            log.exception(e)
         except OSError as e:
-            # Name resolution failed or unreachable network error in the
-            # request to repo.steampowered.com. At this point, umu was already
-            # setup and user is offline or has an unreliable network connection
-            if e.errno != -3 and e.errno != ENETUNREACH:
+            # Unreachable network error in the request to repo.steampowered.com.
+            if e.errno != ENETUNREACH:
                 raise
             log.debug("Network is unreachable")
 
