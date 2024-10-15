@@ -2,7 +2,7 @@
 %define manual_commit b34df64f3a7e85e2ac589f0f910e6873e7038635
 
 # Optionally define the tag
-%define tag 1.1.2
+%define tag 1.1.3
 # Check if tag is defined and get the commit hash for the tag, otherwise use manual commit
 %{!?tag: %global commit %{manual_commit}}
 %{?tag: %global commit %(git rev-list -n 1 %{tag} 2>/dev/null || echo %{manual_commit})}
@@ -14,7 +14,7 @@
 %global rel_build 1.%{build_timestamp}.%{shortcommit}%{?dist}
 
 Name:           umu-launcher
-Version:        1.1.2
+Version:        1.1.3
 Release:        %{rel_build}
 Summary:        A tool for launching non-steam games with proton
 
@@ -67,4 +67,3 @@ make DESTDIR=%{buildroot} PYTHONDIR=%{python3_sitelib} install
 %{python3_sitelib}/umu*
 
 %changelog
-

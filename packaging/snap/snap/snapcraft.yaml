@@ -1,11 +1,11 @@
 name: umu-launcher
-version: '1.1.2'  # You can set this to the appropriate version
+version: '1.1.3' # You can set this to the appropriate version
 summary: UMU Launcher
 description: |
   UMU Launcher is a tool for managing and launching applications.
 
-base: core22  # or core18, core22 depending on your needs
-confinement: devmode  # You can change this to 'classic' if needed
+base: core22 # or core18, core22 depending on your needs
+confinement: devmode # You can change this to 'classic' if needed
 architectures:
   - build-on: amd64
 grade: stable
@@ -171,7 +171,7 @@ parts:
   umu-run:
     plugin: dump
     source: https://github.com/Open-Wine-Components/umu-launcher.git
-    source-tag: 1.1.2
+    source-tag: 1.1.3
     build-packages:
       - git
       - make
@@ -240,7 +240,6 @@ parts:
       set -eux
       craftctl default
       cp -a /snap/core22/current/usr/lib/i386-linux-gnu usr/lib/
-
 
   py-deps:
     after: [umu-run]
