@@ -30,6 +30,7 @@ from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
 
+from umu import __version__
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
@@ -725,6 +726,7 @@ def main() -> int:  # noqa: D103
         console_handler.setFormatter(CustomFormatter(DEBUG))
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
+        log.debug("umu-launcher v%s", __version__)
 
     with ThreadPoolExecutor() as thread_pool:
         try:
