@@ -440,7 +440,7 @@ def rearrange_gamescope_baselayer_order(
 
     # FIXME: This is brittle. Implement a better rearrangement algorithm
     # because Steam has changed GAMESCOPECTRL_BASELAYER_APPID in the past so
-    # the values may be more than 3 elements
+    # the values may be more/less than 3 elements.
     rearranged = [sequence[0], steam_layer_id, 769]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
