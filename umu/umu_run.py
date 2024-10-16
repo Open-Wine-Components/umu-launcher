@@ -433,17 +433,19 @@ def rearrange_gamescope_baselayer_order(
 ) -> tuple[list[int], int] | None:
     """Rearrange a gamescope base layer sequence retrieved from a window."""
     rearranged: list[int]
+    steam_layer_id: int = get_steam_layer_id(sequence)
 
-    # Gamescope identifies Steam's window by the App ID 769 or by the atom
-    # STEAM_BIGPICTURE. This id must be the last element in the sequence
-    if sequence and sequence[-1] == 769:
+    if not steam_layer_id:
         return None
 
-    rearranged = [sequence[0], sequence[-1], *sequence[1:-1]]
+    # FIXME: This is brittle. Implement a better rearrangement algorithm
+    # because Steam has changed GAMESCOPECTRL_BASELAYER_APPID in the past so
+    # the values may be more than 3 elements
+    rearranged = [sequence[0], steam_layer_id, 769]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
-    return rearranged, rearranged[1]
+    return rearranged, steam_layer_id
 
 
 def set_gamescope_baselayer_order(d: display.Display, rearranged: list[int]) -> None:
@@ -461,6 +463,16 @@ def set_gamescope_baselayer_order(d: display.Display, rearranged: list[int]) -> 
     except Exception as e:
         log.error("Error setting GAMESCOPECTRL_BASELAYER_APPID property")
         log.exception(e)
+
+
+def get_steam_layer_id(sequence: list[int]) -> int:  # noqa: D103
+    steam_layer_id: int = 0
+
+    for val in sequence:
+        if val != sequence[0] and val != 769:
+            steam_layer_id = val
+
+    return steam_layer_id
 
 
 def window_setup(  # noqa
@@ -528,7 +540,9 @@ def monitor_windows(
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
     window_ids: set[str] = game_window_ids.copy()
-    steam_assigned_layer_id: int = gamescope_baselayer_sequence[-1]
+    steam_assigned_layer_id: int = get_steam_layer_id(
+        gamescope_baselayer_sequence
+    )
 
     log.debug("Monitoring windows")
 
