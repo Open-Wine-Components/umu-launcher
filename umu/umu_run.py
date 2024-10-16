@@ -644,7 +644,7 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
     # documented to be a legacy env var.
     is_steammode: bool = (
-        os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+        os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
         and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
     )
 
