@@ -726,7 +726,7 @@ def main() -> int:  # noqa: D103
         console_handler.setFormatter(CustomFormatter(DEBUG))
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
-        log.debug("umu-launcher v%s", __version__)
+        log.debug("umu-launcher version %s (%s)", __version__, sys.version)
         for key, val in os.environ.items():
             log.debug("%s=%s", key, val)
 
