@@ -26,7 +26,6 @@ finish-args:
   - --filesystem=~/Games:rw
   - --filesystem=~/.local/share/Steam:rw
   - --filesystem=~/.var/app/com.valvesoftware.Steam:rw
-  - --filesystem=xdg-documents
   - --filesystem=xdg-desktop
   - --filesystem=xdg-download
   - --env=TZ=
