@@ -1,5 +1,5 @@
 # Define the manual commit as a fallback
-%define manual_commit b34df64f3a7e85e2ac589f0f910e6873e7038635
+%define manual_commit 8bc37bba224cd59cf446bfd470720fb548ecde20
 
 # Optionally define the tag
 %define tag 1.1.3
