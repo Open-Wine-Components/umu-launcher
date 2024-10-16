@@ -27,7 +27,7 @@ jobs:
       run: apt install -y dh-make dpkg-dev
 
     - name: Setup dh_make quilt files
-      run: LOGNAME=root dh_make --createorig -y -l -p umu-launcher_1.1.2 || true
+      run: LOGNAME=root dh_make --createorig -y -l -p umu-launcher_1.1.3 || true
 
     - name: Install apt build dependencies
       run: apt build-dep -y ./ 
