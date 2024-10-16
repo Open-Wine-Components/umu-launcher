@@ -27,7 +27,6 @@ finish-args:
   - --filesystem=~/.local/share/Steam:rw
   - --filesystem=~/.var/app/com.valvesoftware.Steam:rw
   - --filesystem=~/.var/app/org.openwinecomponents.umu.umu-launcher:rw
-  - --filesystem=home
   - --filesystem=xdg-documents
   - --filesystem=xdg-desktop
   - --filesystem=xdg-download
