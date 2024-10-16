@@ -16,16 +16,6 @@ PROTON_VERBS = {
     "getnativepath",
 }
 
-XDG_DATA_HOME: Path = (
-    Path(os.environ["HOST_XDG_DATA_HOME"])
-    if os.environ.get("HOST_XDG_DATA_HOME")
-    else (
-        Path(os.environ["XDG_DATA_HOME"])
-        if os.environ.get("XDG_DATA_HOME")
-        else Path.home().joinpath(".local", "share")
-    )
-)
-
 XDG_CACHE_HOME: Path = (
     Path(os.environ["XDG_CACHE_HOME"])
     if os.environ.get("XDG_CACHE_HOME")
@@ -40,6 +30,20 @@ XDG_CACHE_HOME: Path = (
 # then $XDG_DATA_HOME as fallback, and will be required to update their
 # manifests by adding the permission 'xdg-data/umu:create'.
 # See https://github.com/Open-Wine-Components/umu-launcher/pull/229#discussion_r1799289068
+match os.environ.get("container") == "flatpak":  # noqa: SIM112
+    case True:
+        XDG_DATA_HOME: Path = (
+            Path(os.environ["HOST_XDG_DATA_HOME"])
+            if os.environ.get("HOST_XDG_DATA_HOME")
+            else Path.home().joinpath(".local", "share")
+        )
+    case False:
+        XDG_DATA_HOME: Path = (
+            Path(os.environ["XDG_DATA_HOME"])
+            if os.environ.get("XDG_DATA_HOME")
+            else Path.home().joinpath(".local", "share")
+        )
+
 UMU_LOCAL: Path = XDG_DATA_HOME.joinpath("umu")
 
 # Temporary directory for downloaded resources moved from tmpfs
