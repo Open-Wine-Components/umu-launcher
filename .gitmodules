@@ -1,3 +1,6 @@
 [submodule "subprojects/python-xlib"]
 	path = subprojects/python-xlib
 	url = https://github.com/python-xlib/python-xlib.git
+[submodule "subprojects/gamescope-dbus"]
+	path = subprojects/gamescope-dbus
+	url = https://github.com/ShadowBlip/gamescope-dbus.git
