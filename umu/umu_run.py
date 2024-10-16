@@ -727,6 +727,8 @@ def main() -> int:  # noqa: D103
         log.addHandler(console_handler)
         log.setLevel(level=DEBUG)
         log.debug("umu-launcher v%s", __version__)
+        for key, val in os.environ.items():
+            log.debug("%s=%s", key, val)
 
     with ThreadPoolExecutor() as thread_pool:
         try:
