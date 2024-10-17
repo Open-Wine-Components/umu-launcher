@@ -657,6 +657,9 @@ def run_command(command: tuple[Path | str, ...]) -> int:
         and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
     )
 
+    if is_gamescope_session and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope":
+        os.environ["XDG_CURRENT_DESKTOP"] = "gamescope"
+
     if not command:
         err: str = f"Command list is empty or None: {command}"
         raise ValueError(err)
