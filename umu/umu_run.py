@@ -35,6 +35,7 @@ from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
     STEAM_COMPAT,
+    STEAM_WINDOW_ID,
     UMU_LOCAL,
 )
 from umu.umu_log import CustomFormatter, console_handler, log
@@ -444,7 +445,7 @@ def rearrange_gamescope_baselayer_order(
     # that isolates the layer id while preserving the correct layer order
     # because Steam has changed GAMESCOPECTRL_BASELAYER_APPID in the past
     # so the values may be more/less than 3 elements.
-    rearranged = [sequence[0], steam_layer_id, 769]
+    rearranged = [sequence[0], steam_layer_id, STEAM_WINDOW_ID]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
@@ -472,7 +473,7 @@ def get_steam_layer_id(sequence: list[int]) -> int:  # noqa: D103
     steam_layer_id: int = 0
 
     for val in sequence:
-        if val != sequence[0] and val != 769:
+        if val != sequence[0] and val != STEAM_WINDOW_ID:
             steam_layer_id = val
 
     return steam_layer_id
