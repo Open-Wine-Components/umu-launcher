@@ -469,7 +469,8 @@ def set_gamescope_baselayer_order(d: display.Display, rearranged: list[int]) -> 
         log.exception(e)
 
 
-def get_steam_layer_id(sequence: list[int]) -> int:  # noqa: D103
+def get_steam_layer_id(sequence: list[int]) -> int:
+    """Get the Steam layer ID from a base layer seq."""
     steam_layer_id: int = 0
 
     for val in sequence:
