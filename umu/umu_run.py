@@ -35,6 +35,7 @@ from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
     STEAM_COMPAT,
+    STEAM_WINDOW_ID,
     UMU_LOCAL,
 )
 from umu.umu_log import CustomFormatter, console_handler, log
@@ -433,17 +434,22 @@ def rearrange_gamescope_baselayer_order(
 ) -> tuple[list[int], int] | None:
     """Rearrange a gamescope base layer sequence retrieved from a window."""
     rearranged: list[int]
+    steam_layer_id: int = get_steam_layer_id(sequence)
 
-    # Gamescope identifies Steam's window by the App ID 769 or by the atom
-    # STEAM_BIGPICTURE. This id must be the last element in the sequence
-    if sequence and sequence[-1] == 769:
+    log.debug("Base layer sequence: %s", sequence)
+
+    if not steam_layer_id:
         return None
 
-    rearranged = [sequence[0], sequence[-1], *sequence[1:-1]]
+    # FIXME: This is brittle. Implement a better rearrangement algorithm
+    # that isolates the layer id while preserving the correct layer order
+    # because Steam has changed GAMESCOPECTRL_BASELAYER_APPID in the past
+    # so the values may be more/less than 3 elements.
+    rearranged = [sequence[0], steam_layer_id, STEAM_WINDOW_ID]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
-    return rearranged, rearranged[1]
+    return rearranged, steam_layer_id
 
 
 def set_gamescope_baselayer_order(d: display.Display, rearranged: list[int]) -> None:
@@ -461,6 +467,17 @@ def set_gamescope_baselayer_order(d: display.Display, rearranged: list[int]) -> 
     except Exception as e:
         log.error("Error setting GAMESCOPECTRL_BASELAYER_APPID property")
         log.exception(e)
+
+
+def get_steam_layer_id(sequence: list[int]) -> int:
+    """Get the Steam layer ID from a base layer seq."""
+    steam_layer_id: int = 0
+
+    for val in sequence:
+        if val != sequence[0] and val != STEAM_WINDOW_ID:
+            steam_layer_id = val
+
+    return steam_layer_id
 
 
 def window_setup(  # noqa
@@ -528,7 +545,9 @@ def monitor_windows(
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
     window_ids: set[str] = game_window_ids.copy()
-    steam_assigned_layer_id: int = gamescope_baselayer_sequence[-1]
+    steam_assigned_layer_id: int = get_steam_layer_id(
+        gamescope_baselayer_sequence
+    )
 
     log.debug("Monitoring windows")
 
@@ -627,10 +646,14 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     ret: int = 0
     prctl_ret: int = 0
     libc: str = get_libc()
+    is_gamescope_session: bool = (
+        os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+        or os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
+    )
     # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
     # documented to be a legacy env var.
     is_steammode: bool = (
-        os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+        is_gamescope_session
         and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
     )
 

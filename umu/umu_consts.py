@@ -7,6 +7,8 @@ STEAM_COMPAT: Path = Path.home().joinpath(
     ".local", "share", "Steam", "compatibilitytools.d"
 )
 
+STEAM_WINDOW_ID: int = 769
+
 PROTON_VERBS = {
     "waitforexitandrun",
     "run",
