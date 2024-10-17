@@ -186,36 +186,50 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
 
-    def test_rearrange_gamescope_baselayer_none(self):
-        """Test rearrange_gamescope_baselayer_order when passed correct seq.
+    def test_rearrange_gamescope_baselayer_order_broken(self):
+        """Test rearrange_gamescope_baselayer_order when passed broken seq.
 
-        A rearranged sequence should only be returned when the last element
-        is 769. Otherwise, None should be returned
+        When the Steam client's window ID is not the last element in
+        the atom GAMESCOPECTRL_BASELAYER_APPID, then a rearranged sequence
+        should be returned where the last element is Steam's window ID and
+        the 2nd to last is the assigned layer ID.
         """
-        baselayer = [1, 2, 3, 769]
+        steam_window_id = 769
+        steam_layer_id = 2
+        baselayer = [1, steam_window_id, steam_layer_id]
+        expected = (
+            [baselayer[0], steam_layer_id, steam_window_id],
+            steam_layer_id,
+        )
         result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
 
-        self.assertTrue(
-            result is None,
-            f"Expected None to be returned for sequence {baselayer}",
+        self.assertEqual(
+            result,
+            expected,
+            f"Expected {expected}, received {result}",
         )
 
-    def test_rearrange_gamescope_baselayer_order_err(self):
-        """Test rearrange_gamescope_baselayer_order for unexpected seq."""
+    def test_rearrange_gamescope_baselayer_order_invalid(self):
+        """Test rearrange_gamescope_baselayer_order for invalid seq."""
         baselayer = []
 
-        with self.assertRaises(IndexError):
-            umu_run.rearrange_gamescope_baselayer_order(baselayer)
+        self.assertTrue(
+            umu_run.rearrange_gamescope_baselayer_order(baselayer) is None,
+            "Expected None",
+        )
 
     def test_rearrange_gamescope_baselayer_order(self):
         """Test rearrange_gamescope_baselayer_order when passed a sequence."""
-        baselayer = [1, 2, 3, 4]
+        steam_window_id = 769
+        steam_layer_id = 2
+        baselayer = [1, steam_layer_id, steam_window_id]
         expected = (
-            [baselayer[0], baselayer[-1], *baselayer[1:-1]],
-            baselayer[-1],
+            [baselayer[0], steam_layer_id, steam_window_id],
+            steam_layer_id,
         )
         result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
 
+        # Original sequence should be returned when Steam's window ID is last
         self.assertEqual(
             result,
             expected,
