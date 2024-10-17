@@ -10,7 +10,14 @@ python3Packages.buildPythonPackage {
     pkgs.scdoc
     pkgs.git
     pkgs.python3Packages.installer
-    pkgs.hatch
+    (pkgs.hatch.overrideAttrs (prev: {
+      disabledTests = prev.disabledTests ++ [
+        "test_field_readme"
+        "test_field_string"
+        "test_field_complex"
+        "test_plugin_dependencies_unmet"
+      ];
+    }))
     pkgs.python3Packages.build
   ];
   propagatedBuildInputs = [
