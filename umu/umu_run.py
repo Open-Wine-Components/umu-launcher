@@ -435,6 +435,8 @@ def rearrange_gamescope_baselayer_order(
     rearranged: list[int]
     steam_layer_id: int = get_steam_layer_id(sequence)
 
+    log.debug("Base layer sequence: %s", sequence)
+
     if not steam_layer_id:
         return None
 
