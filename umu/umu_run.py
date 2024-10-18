@@ -544,13 +544,15 @@ def monitor_baselayer(
 def monitor_windows(
     d_secondary: display.Display,
     gamescope_baselayer_sequence: list[int],
-    game_window_ids: set[str],
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
-    window_ids: set[str] = game_window_ids.copy()
+    window_ids: set[str] | None = None
     steam_assigned_layer_id: int = get_steam_layer_id(
         gamescope_baselayer_sequence
     )
+
+    while not window_ids:
+        window_ids = get_window_client_ids(d_secondary)
 
     log.debug("Monitoring windows")
 
@@ -580,8 +582,6 @@ def run_in_steammode(proc: Popen) -> int:
     """
     # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
     gamescope_baselayer_sequence: list[int] | None = None
-    # Windows that will be assigned Steam's layer ID
-    window_client_list: set[str] | None = None
 
     # Currently, steamos creates two xwayland servers at :0 and :1
     # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
@@ -609,25 +609,12 @@ def run_in_steammode(proc: Popen) -> int:
                     event_mask=X.SubstructureNotifyMask
                 )
 
-                # Get new windows under the client display's window
-                while not window_client_list:
-                    window_client_list = get_window_client_ids(d_secondary)
-
-                # Setup the windows
-                window_setup(
-                    d_primary,
-                    d_secondary,
-                    gamescope_baselayer_sequence,
-                    window_client_list,
-                )
-
                 # Monitor for new windows
                 window_thread = threading.Thread(
                     target=monitor_windows,
                     args=(
                         d_secondary,
                         gamescope_baselayer_sequence,
-                        window_client_list,
                     ),
                 )
                 window_thread.daemon = True
