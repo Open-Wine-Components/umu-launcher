@@ -209,8 +209,8 @@ def set_env(
     # empty string is the executable, Proton is expected to create the prefix
     # but will fail because the executable is not found
     is_createpfx: bool = (
-        is_cmd and not args[0] or is_cmd and args[0] == "createprefix"
-    )  # type: ignore
+        is_cmd and not args[0] or is_cmd and args[0] == "createprefix"  # type: ignore
+    )
     # Command execution usage, but client wants to run winetricks verbs
     is_winetricks: bool = is_cmd and args[0] == "winetricks"  # type: ignore
 
