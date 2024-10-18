@@ -505,32 +505,6 @@ def get_steam_layer_id(sequence: list[int]) -> int:
     return steam_layer_id
 
 
-def window_setup(  # noqa
-    d_primary: display.Display,
-    d_secondary: display.Display,
-    gamescope_baselayer_sequence: list[int],
-    game_window_ids: set[str],
-) -> None:
-    rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
-
-    if gamescope_baselayer_sequence:
-        rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
-            gamescope_baselayer_sequence
-        )
-
-    if rearranged_gamescope_baselayer:
-        rearranged_sequence, steam_assigned_layer_id = (
-            rearranged_gamescope_baselayer
-        )
-
-        # Assign our window a STEAM_GAME id
-        set_steam_game_property(
-            d_secondary, game_window_ids, steam_assigned_layer_id
-        )
-
-        set_gamescope_baselayer_order(d_primary, rearranged_sequence)
-
-
 def monitor_baselayer(
     d_primary: display.Display,
     gamescope_baselayer_sequence: list[int],
