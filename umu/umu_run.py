@@ -198,7 +198,9 @@ def set_env(
     # Command execution usage, but client wants to create a prefix. When an
     # empty string is the executable, Proton is expected to create the prefix
     # but will fail because the executable is not found
-    is_createpfx: bool = is_cmd and not args[0]  # type: ignore
+    is_createpfx: bool = (
+        is_cmd and not args[0] or (is_cmd and args[0] == "createprefix")  # type: ignore
+    )
     # Command execution usage, but client wants to run winetricks verbs
     is_winetricks: bool = is_cmd and args[0] == "winetricks"  # type: ignore
 
@@ -480,28 +482,6 @@ def get_steam_layer_id(sequence: list[int]) -> int:
     return steam_layer_id
 
 
-def window_setup(  # noqa
-    d_primary: display.Display,
-    d_secondary: display.Display,
-    gamescope_baselayer_sequence: list[int],
-    game_window_ids: set[str],
-) -> None:
-    rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
-
-    if gamescope_baselayer_sequence:
-        rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
-            gamescope_baselayer_sequence
-        )
-
-    if rearranged_gamescope_baselayer:
-        rearranged_sequence, steam_assigned_layer_id = rearranged_gamescope_baselayer
-
-        # Assign our window a STEAM_GAME id
-        set_steam_game_property(d_secondary, game_window_ids, steam_assigned_layer_id)
-
-        set_gamescope_baselayer_order(d_primary, rearranged_sequence)
-
-
 def monitor_baselayer(
     d_primary: display.Display,
     gamescope_baselayer_sequence: list[int],
@@ -541,13 +521,15 @@ def monitor_baselayer(
 def monitor_windows(
     d_secondary: display.Display,
     gamescope_baselayer_sequence: list[int],
-    game_window_ids: set[str],
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
-    window_ids: set[str] = game_window_ids.copy()
+    window_ids: set[str] | None = None
     steam_assigned_layer_id: int = get_steam_layer_id(
         gamescope_baselayer_sequence
     )
+
+    while not window_ids:
+        window_ids = get_window_client_ids(d_secondary)
 
     log.debug("Monitoring windows")
 
@@ -575,8 +557,6 @@ def run_in_steammode(proc: Popen) -> int:
     """
     # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
     gamescope_baselayer_sequence: list[int] | None = None
-    # Windows that will be assigned Steam's layer ID
-    window_client_list: set[str] | None = None
 
     # Currently, steamos creates two xwayland servers at :0 and :1
     # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
@@ -591,23 +571,12 @@ def run_in_steammode(proc: Popen) -> int:
             gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
 
             # Dont do window fuckery if we're not inside gamescope
-            if gamescope_baselayer_sequence and not os.environ.get("EXE", "").endswith(
-                "winetricks"
-            ):
+            # Note: If the executable is one that exists in the WINE prefix
+            # or container it is possible that umu wil hang when running a
+            # game within a gamescope session
+            if gamescope_baselayer_sequence:
                 d_secondary.screen().root.change_attributes(
                     event_mask=X.SubstructureNotifyMask
-                )
-
-                # Get new windows under the client display's window
-                while not window_client_list:
-                    window_client_list = get_window_client_ids(d_secondary)
-
-                # Setup the windows
-                window_setup(
-                    d_primary,
-                    d_secondary,
-                    gamescope_baselayer_sequence,
-                    window_client_list,
                 )
 
                 # Monitor for new windows
@@ -616,7 +585,6 @@ def run_in_steammode(proc: Popen) -> int:
                     args=(
                         d_secondary,
                         gamescope_baselayer_sequence,
-                        window_client_list,
                     ),
                 )
                 window_thread.daemon = True
@@ -656,9 +624,6 @@ def run_command(command: tuple[Path | str, ...]) -> int:
         is_gamescope_session
         and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
     )
-
-    if is_gamescope_session and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope":
-        os.environ["XDG_CURRENT_DESKTOP"] = "gamescope"
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
