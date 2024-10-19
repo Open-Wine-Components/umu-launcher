@@ -227,8 +227,8 @@ class TestGameLauncher(unittest.TestCase):
 
         # Original sequence should be returned when Steam's window ID is last
         self.assertTrue(
-            result is None,
-            f"Expected {None}, received {result}",
+            result == (baselayer, steam_layer_id),
+            f"Expected {baselayer}, received {result}",
         )
 
     def test_run_command(self):
