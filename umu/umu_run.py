@@ -469,6 +469,12 @@ def rearrange_gamescope_baselayer_order(
     # because Steam has changed GAMESCOPECTRL_BASELAYER_APPID in the past
     # so the values may be more/less than 3 elements.
     rearranged = [sequence[0], steam_layer_id, STEAM_WINDOW_ID]
+
+    # Don't rearrange if already correct
+    if rearranged == sequence:
+        log.debug("Correct base layer detected, skipping")
+        return None
+
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
@@ -514,6 +520,17 @@ def monitor_baselayer(
     rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
     atom = d_primary.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
     root_primary.change_attributes(event_mask=X.PropertyChangeMask)
+
+    # Get a rearranged sequence from GAMESCOPECTRL_BASELAYER_APPID.
+    rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
+        gamescope_baselayer_sequence
+    )
+
+    # Set the rearranged sequence from GAMESCOPECTRL_BASELAYER_APPID.
+    if rearranged_gamescope_baselayer:
+        rearranged, _ = rearranged_gamescope_baselayer
+        set_gamescope_baselayer_order(d_primary, rearranged)
+        rearranged_gamescope_baselayer = None
 
     log.debug("Monitoring base layers")
 
