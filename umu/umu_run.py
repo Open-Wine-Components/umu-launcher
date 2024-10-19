@@ -670,19 +670,6 @@ def run_command(command: tuple[Path | str, ...]) -> int:
         or os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
     )
 
-    # These are forced to KDE in Heroic due to an electron bug, let's set them back.
-    if (
-        is_gamescope_session
-        and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope"
-    ):
-        os.environ["XDG_CURRENT_DESKTOP"] = "gamescope"
-
-    if (
-        is_gamescope_session
-        and os.environ.get("XDG_CURRENT_SESSION") != "gamescope"
-    ):
-        os.environ["XDG_CURRENT_SESSION"] = "gamescope"
-
     # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
     # documented to be a legacy env var.
     is_steammode: bool = (
