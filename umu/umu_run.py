@@ -213,7 +213,7 @@ def set_env(
     if is_createpfx:
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
-        env["PROTON_VERB"] = "waitforexitandrun"
+        env["PROTON_VERB"] = "run"
     elif is_winetricks:
         # Make an absolute path to winetricks within GE-Proton or UMU-Proton.
         # The launcher will change to the winetricks parent directory before
@@ -222,6 +222,7 @@ def set_env(
         env["EXE"] = str(exe)
         args = (env["EXE"], args[1])  # type: ignore
         env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
+        env["PROTON_VERB"] = "run"
     elif is_cmd:
         try:
             # Ensure executable path is absolute, otherwise Proton will fail
@@ -591,9 +592,7 @@ def run_in_steammode(proc: Popen) -> int:
             gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
 
             # Dont do window fuckery if we're not inside gamescope
-            if gamescope_baselayer_sequence and not os.environ.get("EXE", "").endswith(
-                "winetricks"
-            ):
+            if gamescope_baselayer_sequence and os.environ.get("PROTON_VERB") == "waitforexitandrun":
                 d_secondary.screen().root.change_attributes(
                     event_mask=X.SubstructureNotifyMask
                 )
@@ -646,19 +645,25 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     ret: int = 0
     prctl_ret: int = 0
     libc: str = get_libc()
+
     is_gamescope_session: bool = (
         os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
         or os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
     )
+
+    # These are forced to KDE in Heroic due to an electron bug, let's set them back.
+    if is_gamescope_session and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope":
+            os.environ["XDG_CURRENT_DESKTOP"] = "gamescope"
+
+    if is_gamescope_session and os.environ.get("XDG_CURRENT_SESSION") != "gamescope":
+            os.environ["XDG_CURRENT_SESSION"] = "gamescope"
+
     # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
     # documented to be a legacy env var.
     is_steammode: bool = (
         is_gamescope_session
         and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
     )
-
-    if is_gamescope_session and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope":
-        os.environ["XDG_CURRENT_DESKTOP"] = "gamescope"
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
