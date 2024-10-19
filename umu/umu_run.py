@@ -583,6 +583,8 @@ def monitor_windows(
             continue
 
         if diff := window_ids.symmetric_difference(current_window_ids):
+            log.debug("Current windows: %s", window_ids)
+            log.debug("Difference: %s", diff)
             log.debug("New windows detected")
             window_ids |= diff
             set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
