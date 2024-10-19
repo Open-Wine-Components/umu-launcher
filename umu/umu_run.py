@@ -542,7 +542,7 @@ def monitor_baselayer(
             prop = root_primary.get_full_property(atom, Xatom.CARDINAL)
 
         # Check if the layer sequence has changed to the broken one
-        if prop and prop.value[-1] != STEAM_WINDOW_ID:
+        if prop and prop.value == gamescope_baselayer_sequence:
             log.debug("Broken base layer sequence detected")
             log.debug("Property value for atom '%s': %s", atom, prop.value)
             rearranged_gamescope_baselayer = (
