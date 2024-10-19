@@ -582,7 +582,7 @@ def monitor_windows(
         if not current_window_ids:
             continue
 
-        if diff := window_ids.symmetric_difference(current_window_ids):
+        if diff := current_window_ids.difference(window_ids):
             log.debug("Seen windows: %s", window_ids)
             log.debug("Current windows: %s", current_window_ids)
             log.debug("Difference: %s", diff)
