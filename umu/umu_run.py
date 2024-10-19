@@ -469,12 +469,6 @@ def rearrange_gamescope_baselayer_order(
     # because Steam has changed GAMESCOPECTRL_BASELAYER_APPID in the past
     # so the values may be more/less than 3 elements.
     rearranged = [sequence[0], steam_layer_id, STEAM_WINDOW_ID]
-
-    # Don't rearrange if already correct
-    if rearranged == sequence:
-        log.debug("Correct base layer detected, skipping")
-        return None
-
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
