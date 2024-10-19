@@ -15,31 +15,38 @@ jobs:
     - name: Download Debian 12 Artifact
       uses: actions/download-artifact@v4
       with:
-        name: debian-12-artifact
-        path: ./artifacts/debian-12
-
-    - name: Download Fedora Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: fedora-artifact
-        path: ./artifacts/fedora
+        name: Debian-12
+        path: ./artifacts/debian
 
     - name: Download Ubuntu Noble Artifact
       uses: actions/download-artifact@v4
       with:
-        name: ubuntu-noble-artifact
-        path: ./artifacts/ubuntu-noble
+        name: Ubuntu-24
+        path: ./artifacts/ubuntu
+
+    - name: Download Fedora Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: Fedora-40
+        path: ./artifacts/fedora
 
     - name: Download Zipapp Artifact
       uses: actions/download-artifact@v4
       with:
-        name: zipapp-artifact
+        name: Zipapp
         path: ./artifacts/zipapp
 
     - name: Upload Debian 12 Artifact to Release
       uses: softprops/action-gh-release@v1
       with:
-        files: ./artifacts/debian-12/*
+        files: ./artifacts/debian/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Ubuntu Noble Artifact to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./artifacts/ubuntu/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -47,13 +54,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: ./artifacts/fedora/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload Ubuntu Noble Artifact to Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ./artifacts/ubuntu-noble/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
