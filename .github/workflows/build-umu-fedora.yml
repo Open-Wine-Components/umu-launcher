@@ -17,7 +17,7 @@ jobs:
       run: dnf install -y git
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Configure Git safe directory
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"

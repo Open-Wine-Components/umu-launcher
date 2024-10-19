@@ -15,7 +15,7 @@ jobs:
       options: --privileged -it
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Update APT Cache
       run: apt update -y
