@@ -223,17 +223,12 @@ class TestGameLauncher(unittest.TestCase):
         steam_window_id = 769
         steam_layer_id = 2
         baselayer = [1, steam_layer_id, steam_window_id]
-        expected = (
-            [baselayer[0], steam_layer_id, steam_window_id],
-            steam_layer_id,
-        )
         result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
 
         # Original sequence should be returned when Steam's window ID is last
-        self.assertEqual(
-            result,
-            expected,
-            f"Expected {expected}, received {result}",
+        self.assertTrue(
+            result is None,
+            f"Expected {None}, received {result}",
         )
 
     def test_run_command(self):
@@ -1802,6 +1797,7 @@ class TestGameLauncher(unittest.TestCase):
         result = None
         test_str = "foo"
         verb = "foo"
+        proton_verb = "run"
         test_exe = "winetricks"
 
         # Mock a Proton directory that contains winetricks
@@ -1819,7 +1815,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = test_dir.as_posix()
             os.environ["GAMEID"] = test_str
             os.environ["STORE"] = test_str
-            os.environ["PROTON_VERB"] = self.test_verb
+            os.environ["PROTON_VERB"] = proton_verb
             # Args
             result = umu_run.parse_args()
             # Check
@@ -1878,7 +1874,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
             self.assertEqual(
                 self.env["PROTON_VERB"],
-                self.test_verb,
+                proton_verb,
                 "Expected PROTON_VERB to be set",
             )
             # umu
