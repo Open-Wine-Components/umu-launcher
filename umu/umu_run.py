@@ -61,7 +61,9 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         ),
         formatter_class=RawTextHelpFormatter,
     )
-    parser.add_argument("--config", help=("path to TOML file (requires Python 3.11+)"))
+    parser.add_argument(
+        "--config", help=("path to TOML file (requires Python 3.11+)")
+    )
     parser.add_argument(
         "winetricks",
         help=("run winetricks verbs (requires UMU-Proton or GE-Proton)"),
@@ -81,7 +83,9 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         sys.exit(1)
 
     # Exit if argument is not a verb
-    if sys.argv[1].endswith("winetricks") and not is_winetricks_verb(sys.argv[2:]):
+    if sys.argv[1].endswith("winetricks") and not is_winetricks_verb(
+        sys.argv[2:]
+    ):
         sys.exit(1)
 
     if sys.argv[1:][0] in opt_args:
@@ -98,7 +102,9 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
 def setup_pfx(path: str) -> None:
     """Prepare a Proton compatible WINE prefix."""
     pfx: Path = Path(path).joinpath("pfx").expanduser()
-    steam: Path = Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
+    steam: Path = (
+        Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
+    )
     # Login name of the user as determined by the password database (pwd)
     user: str = getpwuid(os.getuid()).pw_name
     wineuser: Path = Path(path).expanduser().joinpath("drive_c", "users", user)
@@ -163,7 +169,9 @@ def check_env(
         os.environ.get("PROTONPATH")
         and Path(STEAM_COMPAT, os.environ["PROTONPATH"]).is_dir()
     ):
-        os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
+        os.environ["PROTONPATH"] = str(
+            STEAM_COMPAT.joinpath(os.environ["PROTONPATH"])
+        )
 
     # GE-Proton
     if os.environ.get("PROTONPATH") == "GE-Proton":
@@ -192,13 +200,17 @@ def set_env(
 ) -> dict[str, str]:
     """Set various environment variables for the Steam Runtime."""
     pfx: Path = Path(env["WINEPREFIX"]).expanduser().resolve(strict=True)
-    protonpath: Path = Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
+    protonpath: Path = (
+        Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
+    )
     # Command execution usage
     is_cmd: bool = isinstance(args, tuple)
     # Command execution usage, but client wants to create a prefix. When an
     # empty string is the executable, Proton is expected to create the prefix
     # but will fail because the executable is not found
-    is_createpfx: bool = is_cmd and not args[0]  # type: ignore
+    is_createpfx: bool = (
+        is_cmd and not args[0] or (is_cmd and args[0] == "createprefix")  # type: ignore
+    )
     # Command execution usage, but client wants to run winetricks verbs
     is_winetricks: bool = is_cmd and args[0] == "winetricks"  # type: ignore
 
@@ -218,7 +230,9 @@ def set_env(
         # Make an absolute path to winetricks within GE-Proton or UMU-Proton.
         # The launcher will change to the winetricks parent directory before
         # creating the subprocess
-        exe: Path = Path(protonpath, "protonfixes", "winetricks").resolve(strict=True)
+        exe: Path = Path(protonpath, "protonfixes", "winetricks").resolve(
+            strict=True
+        )
         env["EXE"] = str(exe)
         args = (env["EXE"], args[1])  # type: ignore
         env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
@@ -251,7 +265,9 @@ def set_env(
     env["STEAM_COMPAT_APP_ID"] = "0"
 
     if match(r"^umu-[\d\w]+$", env["UMU_ID"]):
-        env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][env["UMU_ID"].find("-") + 1 :]
+        env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][
+            env["UMU_ID"].find("-") + 1 :
+        ]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
 
@@ -259,7 +275,9 @@ def set_env(
     env["WINEPREFIX"] = str(pfx)
     env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
-    env["STEAM_COMPAT_SHADER_PATH"] = f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
+    env["STEAM_COMPAT_SHADER_PATH"] = (
+        f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
+    )
     env["STEAM_COMPAT_TOOL_PATHS"] = f"{env['PROTONPATH']}:{UMU_LOCAL}"
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
@@ -370,7 +388,9 @@ def get_window_client_ids(d: display.Display) -> set[str] | None:
         event: Event = d.next_event()
 
         if event.type == X.CreateNotify:
-            return {child.id for child in d.screen().root.query_tree().children}
+            return {
+                child.id for child in d.screen().root.query_tree().children
+            }
     except Exception as e:
         log.exception(e)
 
@@ -417,7 +437,9 @@ def get_gamescope_baselayer_order(
         atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
 
         # Get the property value
-        prop: GetProperty | None = root_primary.get_full_property(atom, Xatom.CARDINAL)
+        prop: GetProperty | None = root_primary.get_full_property(
+            atom, Xatom.CARDINAL
+        )
 
         if prop:
             # Extract and return the value
@@ -447,13 +469,21 @@ def rearrange_gamescope_baselayer_order(
     # because Steam has changed GAMESCOPECTRL_BASELAYER_APPID in the past
     # so the values may be more/less than 3 elements.
     rearranged = [sequence[0], steam_layer_id, STEAM_WINDOW_ID]
+
+    # Don't rearrange if already correct
+    if rearranged == sequence:
+        log.debug("Correct base layer detected, skipping")
+        return None
+
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
     return rearranged, steam_layer_id
 
 
-def set_gamescope_baselayer_order(d: display.Display, rearranged: list[int]) -> None:
+def set_gamescope_baselayer_order(
+    d: display.Display, rearranged: list[int]
+) -> None:
     """Set a new gamescope base layer seq on the primary root window."""
     try:
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
@@ -481,28 +511,6 @@ def get_steam_layer_id(sequence: list[int]) -> int:
     return steam_layer_id
 
 
-def window_setup(  # noqa
-    d_primary: display.Display,
-    d_secondary: display.Display,
-    gamescope_baselayer_sequence: list[int],
-    game_window_ids: set[str],
-) -> None:
-    rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
-
-    if gamescope_baselayer_sequence:
-        rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
-            gamescope_baselayer_sequence
-        )
-
-    if rearranged_gamescope_baselayer:
-        rearranged_sequence, steam_assigned_layer_id = rearranged_gamescope_baselayer
-
-        # Assign our window a STEAM_GAME id
-        set_steam_game_property(d_secondary, game_window_ids, steam_assigned_layer_id)
-
-        set_gamescope_baselayer_order(d_primary, rearranged_sequence)
-
-
 def monitor_baselayer(
     d_primary: display.Display,
     gamescope_baselayer_sequence: list[int],
@@ -512,6 +520,17 @@ def monitor_baselayer(
     rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
     atom = d_primary.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
     root_primary.change_attributes(event_mask=X.PropertyChangeMask)
+
+    # Get a rearranged sequence from GAMESCOPECTRL_BASELAYER_APPID.
+    rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
+        gamescope_baselayer_sequence
+    )
+
+    # Set the rearranged sequence from GAMESCOPECTRL_BASELAYER_APPID.
+    if rearranged_gamescope_baselayer:
+        rearranged, _ = rearranged_gamescope_baselayer
+        set_gamescope_baselayer_order(d_primary, rearranged)
+        rearranged_gamescope_baselayer = None
 
     log.debug("Monitoring base layers")
 
@@ -523,11 +542,11 @@ def monitor_baselayer(
             prop = root_primary.get_full_property(atom, Xatom.CARDINAL)
 
         # Check if the layer sequence has changed to the broken one
-        if prop and prop.value == gamescope_baselayer_sequence:
+        if prop and prop.value[-1] != STEAM_WINDOW_ID:
             log.debug("Broken base layer sequence detected")
             log.debug("Property value for atom '%s': %s", atom, prop.value)
-            rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
-                prop.value
+            rearranged_gamescope_baselayer = (
+                rearrange_gamescope_baselayer_order(prop.value)
             )
 
         if rearranged_gamescope_baselayer:
@@ -542,24 +561,31 @@ def monitor_baselayer(
 def monitor_windows(
     d_secondary: display.Display,
     gamescope_baselayer_sequence: list[int],
-    game_window_ids: set[str],
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
-    window_ids: set[str] = game_window_ids.copy()
+    window_ids: set[str] | None = None
     steam_assigned_layer_id: int = get_steam_layer_id(
         gamescope_baselayer_sequence
     )
+
+    while not window_ids:
+        window_ids = get_window_client_ids(d_secondary)
 
     log.debug("Monitoring windows")
 
     # Check if the window sequence has changed
     while True:
-        current_window_ids: set[str] | None = get_window_client_ids(d_secondary)
+        current_window_ids: set[str] | None = get_window_client_ids(
+            d_secondary
+        )
 
         if not current_window_ids:
             continue
 
-        if diff := window_ids.symmetric_difference(current_window_ids):
+        if diff := current_window_ids.difference(window_ids):
+            log.debug("Seen windows: %s", window_ids)
+            log.debug("Current windows: %s", current_window_ids)
+            log.debug("Difference: %s", diff)
             log.debug("New windows detected")
             window_ids |= diff
             set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
@@ -576,8 +602,6 @@ def run_in_steammode(proc: Popen) -> int:
     """
     # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
     gamescope_baselayer_sequence: list[int] | None = None
-    # Windows that will be assigned Steam's layer ID
-    window_client_list: set[str] | None = None
 
     # Currently, steamos creates two xwayland servers at :0 and :1
     # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
@@ -589,24 +613,20 @@ def run_in_steammode(proc: Popen) -> int:
             xdisplay(":0") as d_primary,
             xdisplay(":1") as d_secondary,
         ):
-            gamescope_baselayer_sequence = get_gamescope_baselayer_order(d_primary)
+            gamescope_baselayer_sequence = get_gamescope_baselayer_order(
+                d_primary
+            )
 
             # Dont do window fuckery if we're not inside gamescope
-            if gamescope_baselayer_sequence and os.environ.get("PROTON_VERB") == "waitforexitandrun":
+            if (
+                gamescope_baselayer_sequence
+                and os.environ.get("PROTON_VERB") == "waitforexitandrun"
+            ):
+                # Note: If the executable is one that exists in the WINE prefix
+                # or container it is possible that umu wil hang when running a
+                # game within a gamescope session
                 d_secondary.screen().root.change_attributes(
                     event_mask=X.SubstructureNotifyMask
-                )
-
-                # Get new windows under the client display's window
-                while not window_client_list:
-                    window_client_list = get_window_client_ids(d_secondary)
-
-                # Setup the windows
-                window_setup(
-                    d_primary,
-                    d_secondary,
-                    gamescope_baselayer_sequence,
-                    window_client_list,
                 )
 
                 # Monitor for new windows
@@ -615,7 +635,6 @@ def run_in_steammode(proc: Popen) -> int:
                     args=(
                         d_secondary,
                         gamescope_baselayer_sequence,
-                        window_client_list,
                     ),
                 )
                 window_thread.daemon = True
@@ -652,11 +671,17 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     )
 
     # These are forced to KDE in Heroic due to an electron bug, let's set them back.
-    if is_gamescope_session and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope":
-            os.environ["XDG_CURRENT_DESKTOP"] = "gamescope"
+    if (
+        is_gamescope_session
+        and os.environ.get("XDG_CURRENT_DESKTOP") != "gamescope"
+    ):
+        os.environ["XDG_CURRENT_DESKTOP"] = "gamescope"
 
-    if is_gamescope_session and os.environ.get("XDG_CURRENT_SESSION") != "gamescope":
-            os.environ["XDG_CURRENT_SESSION"] = "gamescope"
+    if (
+        is_gamescope_session
+        and os.environ.get("XDG_CURRENT_SESSION") != "gamescope"
+    ):
+        os.environ["XDG_CURRENT_SESSION"] = "gamescope"
 
     # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
     # documented to be a legacy env var.
@@ -801,7 +826,9 @@ def main() -> int:  # noqa: D103
             raise RuntimeError(err)
 
         # Setup the launcher and runtime files
-        future: Future = thread_pool.submit(setup_umu, root, UMU_LOCAL, thread_pool)
+        future: Future = thread_pool.submit(
+            setup_umu, root, UMU_LOCAL, thread_pool
+        )
 
         if isinstance(args, Namespace):
             env, opts = set_env_toml(env, args)
