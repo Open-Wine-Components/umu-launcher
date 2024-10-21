@@ -25,7 +25,7 @@ from subprocess import Popen
 from typing import Any
 
 from Xlib import X, Xatom, display
-from Xlib.error import DisplayConnectionError
+from Xlib.error import BadAtom, DisplayConnectionError
 from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
@@ -406,12 +406,40 @@ def set_steam_game_property(
     for window_id in window_ids:
         try:
             window: Window = d.create_resource_object("window", int(window_id))
+            net_wm_pid: GetProperty | None
+
             window.change_property(
                 d.get_atom("STEAM_GAME"),
                 Xatom.CARDINAL,
                 32,
                 [steam_assigned_layer_id],
             )
+
+            log.debug("Window Name: '%s'", window.get_wm_name())
+
+            # Log the current window's atoms and their current values
+            for w_prop in window.list_properties():
+                atom_name: str = d.get_atom_name(w_prop)
+                w_full_prop: GetProperty | None = None
+
+                try:
+                    w_full_prop = window.get_full_property(
+                        d.get_atom(atom_name), Xatom.CARDINAL
+                    )
+                    log.debug(
+                        "Window %s has atom: %s",
+                        window_id,
+                        atom_name,
+                    )
+                    if w_full_prop and w_full_prop.value:
+                        log.debug(
+                            "Atom %s has value: %s",
+                            atom_name,
+                            w_full_prop.value,
+                        )
+                except BadAtom as e:
+                    log.exception(e)
+
             log.debug(
                 "Successfully set STEAM_GAME property for window ID: %s",
                 window_id,
