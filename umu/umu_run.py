@@ -406,7 +406,6 @@ def set_steam_game_property(
     for window_id in window_ids:
         try:
             window: Window = d.create_resource_object("window", int(window_id))
-            net_wm_pid: GetProperty | None
 
             window.change_property(
                 d.get_atom("STEAM_GAME"),
