@@ -225,7 +225,6 @@ def set_env(
     if is_createpfx:
         env["EXE"] = ""
         env["STEAM_COMPAT_INSTALL_PATH"] = ""
-        env["PROTON_VERB"] = "run"
     elif is_winetricks:
         # Make an absolute path to winetricks within GE-Proton or UMU-Proton.
         # The launcher will change to the winetricks parent directory before
@@ -236,7 +235,6 @@ def set_env(
         env["EXE"] = str(exe)
         args = (env["EXE"], args[1])  # type: ignore
         env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
-        env["PROTON_VERB"] = "run"
     elif is_cmd:
         try:
             # Ensure executable path is absolute, otherwise Proton will fail
