@@ -1,7 +1,7 @@
-{pyth1 ,python3Packages , umu-launcher, pkgs, ...}:
+{pyth1 ,python3Packages , umu-launcher, pkgs,version, ...}:
 python3Packages.buildPythonPackage {
-  name = "umu-launcher";
-  version = "1.1.3";
+  pname = "umu-launcher";
+  version = "${version}";
   src = umu-launcher;
   pyproject = false;
   depsBuildBuild = [
@@ -22,6 +22,7 @@ python3Packages.buildPythonPackage {
   ];
   propagatedBuildInputs = [
     pyth1
+    pkgs.bubblewrap
     pkgs.python3Packages.xlib
     pkgs.python3Packages.filelock
   ];
