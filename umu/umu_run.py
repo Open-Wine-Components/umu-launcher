@@ -458,6 +458,7 @@ def rearrange_gamescope_baselayer_order(
     sequence: list[int],
 ) -> tuple[list[int], int] | None:
     """Rearrange a gamescope base layer sequence retrieved from a window."""
+    # Note: 'sequence' is actually an array type with unsigned integers
     rearranged: list[int] = list(sequence)
     steam_layer_id: int = get_steam_layer_id()
 
@@ -468,6 +469,7 @@ def rearrange_gamescope_baselayer_order(
 
     rearranged.remove(steam_layer_id)
 
+    # Steam's window should last, while assigned layer 2nd to last
     rearranged = [*rearranged[:-1], steam_layer_id, STEAM_WINDOW_ID]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
