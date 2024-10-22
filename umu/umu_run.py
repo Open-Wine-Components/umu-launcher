@@ -8,6 +8,7 @@ import zipfile
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
+from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
 
@@ -457,19 +458,19 @@ def rearrange_gamescope_baselayer_order(
     sequence: list[int],
 ) -> tuple[list[int], int] | None:
     """Rearrange a gamescope base layer sequence retrieved from a window."""
-    rearranged: list[int]
-    steam_layer_id: int = get_steam_layer_id(sequence)
+    # Note: 'sequence' is actually an array type with unsigned integers
+    rearranged: list[int] = list(sequence)
+    steam_layer_id: int = get_steam_layer_id()
 
     log.debug("Base layer sequence: %s", sequence)
 
     if not steam_layer_id:
         return None
 
-    # FIXME: This is brittle. Implement a better rearrangement algorithm
-    # that isolates the layer id while preserving the correct layer order
-    # because Steam has changed GAMESCOPECTRL_BASELAYER_APPID in the past
-    # so the values may be more/less than 3 elements.
-    rearranged = [sequence[0], steam_layer_id, STEAM_WINDOW_ID]
+    rearranged.remove(steam_layer_id)
+
+    # Steam's window should last, while assigned layer 2nd to last
+    rearranged = [*rearranged[:-1], steam_layer_id, STEAM_WINDOW_ID]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
@@ -495,13 +496,26 @@ def set_gamescope_baselayer_order(
         log.exception(e)
 
 
-def get_steam_layer_id(sequence: list[int]) -> int:
-    """Get the Steam layer ID from a base layer seq."""
+def get_steam_layer_id() -> int:
+    """Get the Steam layer ID from the host environment variables."""
     steam_layer_id: int = 0
 
-    for val in sequence:
-        if val != sequence[0] and val != STEAM_WINDOW_ID:
-            steam_layer_id = val
+    if path := os.environ.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
+        # Suppress cases when value is not a number or empty tuple
+        with suppress(ValueError, IndexError):
+            return int(Path(path).parts[-1])
+
+    if path := os.environ.get("STEAM_COMPAT_MEDIA_PATH"):
+        with suppress(ValueError, IndexError):
+            return int(Path(path).parts[-2])
+
+    if path := os.environ.get("STEAM_FOSSILIZE_DUMP_PATH"):
+        with suppress(ValueError, IndexError):
+            return int(Path(path).parts[-3])
+
+    if path := os.environ.get("DXVK_STATE_CACHE_PATH"):
+        with suppress(ValueError, IndexError):
+            return int(Path(path).parts[-2])
 
     return steam_layer_id
 
@@ -516,6 +530,11 @@ def monitor_baselayer(
     atom = d_primary.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
     root_primary.change_attributes(event_mask=X.PropertyChangeMask)
 
+    log.debug(
+        "Monitoring base layers under display '%s'...",
+        d_primary.get_display_name(),
+    )
+
     # Get a rearranged sequence from GAMESCOPECTRL_BASELAYER_APPID.
     rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
         gamescope_baselayer_sequence
@@ -527,8 +546,6 @@ def monitor_baselayer(
         set_gamescope_baselayer_order(d_primary, rearranged)
         rearranged_gamescope_baselayer = None
 
-    log.debug("Monitoring base layers")
-
     while True:
         event: Event = d_primary.next_event()
         prop: GetProperty | None = None
@@ -537,7 +554,7 @@ def monitor_baselayer(
             prop = root_primary.get_full_property(atom, Xatom.CARDINAL)
 
         # Check if the layer sequence has changed to the broken one
-        if prop and prop.value == gamescope_baselayer_sequence:
+        if prop and prop.value[-1] != STEAM_WINDOW_ID:
             log.debug("Broken base layer sequence detected")
             log.debug("Property value for atom '%s': %s", atom, prop.value)
             rearranged_gamescope_baselayer = (
@@ -555,18 +572,26 @@ def monitor_baselayer(
 
 def monitor_windows(
     d_secondary: display.Display,
-    gamescope_baselayer_sequence: list[int],
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
     window_ids: set[str] | None = None
-    steam_assigned_layer_id: int = get_steam_layer_id(
-        gamescope_baselayer_sequence
+    steam_assigned_layer_id: int = get_steam_layer_id()
+
+    log.debug(
+        "Waiting for windows under display '%s'...",
+        d_secondary.get_display_name(),
     )
 
     while not window_ids:
         window_ids = get_window_client_ids(d_secondary)
 
-    log.debug("Monitoring windows")
+    log.debug("Initial windows: %s", window_ids)
+    set_steam_game_property(d_secondary, window_ids, steam_assigned_layer_id)
+
+    log.debug(
+        "Monitoring for new windows under display '%s'...",
+        d_secondary.get_display_name(),
+    )
 
     # Check if the window sequence has changed
     while True:
@@ -627,10 +652,7 @@ def run_in_steammode(proc: Popen) -> int:
                 # Monitor for new windows
                 window_thread = threading.Thread(
                     target=monitor_windows,
-                    args=(
-                        d_secondary,
-                        gamescope_baselayer_sequence,
-                    ),
+                    args=(d_secondary,),
                 )
                 window_thread.daemon = True
                 window_thread.start()
