@@ -1,9 +1,9 @@
-{ env, package, symlinkJoin }:
+{ env, package, symlinkJoin,version }:
 symlinkJoin {
   name = "umu-run-bwrap";
   paths = [
-    env
-    package
+    (package.override {version = "${version}";})
+    (env.override {version = "${version}";})
   ];
   postBuild = ''
     rm $out/bin/umu

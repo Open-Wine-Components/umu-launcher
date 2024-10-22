@@ -153,7 +153,7 @@ and in your `configuration.nix`
 ```nix
 {inputs, pkgs, ... }:
 {
-  environment.systemPackages = [  inputs.umu.packages.${pkgs.system}.umu  ];
+  environment.systemPackages = [  (inputs.umu.packages.${pkgs.system}.umu.override {version = "${inputs.umu.shortRev}";})  ];
 }
 ```
 
