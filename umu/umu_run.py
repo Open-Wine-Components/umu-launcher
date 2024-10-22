@@ -8,6 +8,7 @@ import zipfile
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from concurrent.futures import Future, ThreadPoolExecutor
+from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
 
@@ -498,28 +499,21 @@ def get_steam_layer_id() -> int:
     steam_layer_id: int = 0
 
     if path := os.environ.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
-        try:
+        # Suppress cases when value is not a number or empty tuple
+        with suppress(ValueError, IndexError):
             return int(Path(path).parts[-1])
-        except (ValueError, IndexError):  # Value isn't a number or empty tuple
-            pass
 
     if path := os.environ.get("STEAM_COMPAT_MEDIA_PATH"):
-        try:
+        with suppress(ValueError, IndexError):
             return int(Path(path).parts[-2])
-        except (ValueError, IndexError):
-            pass
 
     if path := os.environ.get("STEAM_FOSSILIZE_DUMP_PATH"):
-        try:
+        with suppress(ValueError, IndexError):
             return int(Path(path).parts[-3])
-        except (ValueError, IndexError):
-            pass
 
     if path := os.environ.get("DXVK_STATE_CACHE_PATH"):
-        try:
+        with suppress(ValueError, IndexError):
             return int(Path(path).parts[-2])
-        except (ValueError, IndexError):
-            pass
 
     return steam_layer_id
 
