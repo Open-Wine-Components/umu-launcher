@@ -1299,10 +1299,6 @@ class TestGameLauncher(unittest.TestCase):
         # Mock the proton file
         Path(self.test_file, "proton").touch()
 
-        # Mock the shim file
-        shim_path = Path(self.test_local_share, "umu-shim")
-        shim_path.touch()
-
         with (
             patch("sys.argv", ["", self.test_exe]),
             ThreadPoolExecutor() as thread_pool,
@@ -1354,10 +1350,10 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertEqual(
             len(test_command),
-            8,
-            f"Expected 8 elements, received {len(test_command)}",
+            7,
+            f"Expected 7 elements, received {len(test_command)}",
         )
-        entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [*test_command]
+        entry_point, opt1, verb, opt2, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertIsInstance(
@@ -1366,8 +1362,6 @@ class TestGameLauncher(unittest.TestCase):
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")
         self.assertEqual(opt2, "--", "Expected --")
-        self.assertIsInstance(shim, os.PathLike, "Expected shim to be PathLike")
-        self.assertEqual(shim, shim_path, "Expected the shim file")
         self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
         self.assertEqual(
             proton,
