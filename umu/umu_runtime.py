@@ -33,6 +33,44 @@ except ImportError:
     has_data_filter: bool = False
 
 
+def create_shim(file_path: Path | None = None):
+    """Create a shell script shim at the specified file path.
+
+    This script sets the DISPLAY environment variable if certain conditions
+    are met and executes the passed command.
+
+    Args:
+        file_path (Path, optional): The path where the shim script will be created.
+            Defaults to UMU_LOCAL.joinpath("umu-shim").
+
+    """
+    # Set the default path if none is provided
+    if file_path is None:
+        file_path = UMU_LOCAL.joinpath("umu-shim")
+    # Define the content of the shell script
+    script_content = """#!/bin/sh
+
+    if [ "${XDG_CURRENT_DESKTOP}" = "gamescope" ] || [ "${XDG_SESSION_DESKTOP}" = "gamescope" ]; then
+        # Check if STEAM_MULTIPLE_XWAYLANDS is set to 1
+        if [ "${STEAM_MULTIPLE_XWAYLANDS}" = "1" ]; then
+            # Check if DISPLAY is set, if not, set it to ":1"
+            if [ -z "${DISPLAY}" ]; then
+                export DISPLAY=":1"
+            fi
+        fi
+    fi
+
+    # Execute the passed command
+    "$@"
+    """
+
+    # Write the script content to the specified file path
+    with file_path.open('w') as file:
+        file.write(script_content)
+
+    # Make the script executable
+    file_path.chmod(0o700)
+
 def _install_umu(
     json: dict[str, Any],
     thread_pool: ThreadPoolExecutor,
@@ -177,6 +215,7 @@ def _install_umu(
     # Rename _v2-entry-point
     log.debug("Renaming: _v2-entry-point -> umu")
     UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
+    create_shim()
 
     # Validate the runtime after moving the files
     check_runtime(UMU_LOCAL, json)
@@ -368,6 +407,10 @@ def _update_umu(
                 rmtree(str(runtime))
                 log.debug("Released file lock '%s'", lock.lock_file)
 
+    # Restore shim
+    if not local.joinpath("umu-shim").exists():
+        create_shim()
+
     log.console("steamrt is up to date")
 
 
@@ -474,6 +517,9 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
         return ret
     log.console(f"{runtime.name}: mtree is OK")
 
+    if not UMU_LOCAL.joinpath("umu-shim").exists():
+        create_shim()
+
     return ret
 
 
@@ -491,3 +537,6 @@ def _restore_umu(
             return
         _install_umu(json, thread_pool, client_session)
         log.debug("Released file lock '%s'", lock.lock_file)
+
+    if not UMU_LOCAL.joinpath("umu-shim").exists():
+        create_shim()

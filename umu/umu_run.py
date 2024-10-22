@@ -335,6 +335,7 @@ def build_command(
     opts: list[str] = [],
 ) -> tuple[Path | str, ...]:
     """Build the command to be executed."""
+    shim: Path = local.joinpath("umu-shim")
     proton: Path = Path(env["PROTONPATH"], "proton")
     entry_point: Path = local.joinpath("umu")
 
@@ -373,6 +374,7 @@ def build_command(
         "--verb",
         env["PROTON_VERB"],
         "--",
+        shim,
         proton,
         env["PROTON_VERB"],
         env["EXE"],
