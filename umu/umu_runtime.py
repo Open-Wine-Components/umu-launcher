@@ -62,6 +62,11 @@ def create_shim(file_path: Path | None = None):
 
     # Execute the passed command
     "$@"
+
+    # Capture the exit status
+    status=$?
+    echo "Command exited with status: $status"
+    exit $status
     """
 
     # Write the script content to the specified file path
