@@ -592,7 +592,6 @@ def monitor_windows(
     while not window_ids:
         window_ids = get_window_client_ids(d_secondary)
 
-    log.debug("Initial windows: %s", window_ids)
     set_steam_game_property(d_secondary, window_ids, steam_assigned_layer_id)
 
     log.debug(
