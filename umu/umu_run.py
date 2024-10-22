@@ -24,6 +24,7 @@ from socket import AF_INET, SOCK_DGRAM, gaierror, socket
 from subprocess import Popen
 from typing import Any
 
+from filelock import FileLock
 from Xlib import X, Xatom, display
 from Xlib.error import DisplayConnectionError
 from Xlib.protocol.request import GetProperty
@@ -817,8 +818,11 @@ def main() -> int:  # noqa: D103
             opts = args[1]  # Reference the executable options
             check_env(env, thread_pool)
 
+        UMU_LOCAL.mkdir(parents=True, exist_ok=True)
+
         # Prepare the prefix
-        setup_pfx(env["WINEPREFIX"])
+        with FileLock(f"{UMU_LOCAL}/pfx.lock"):
+            setup_pfx(env["WINEPREFIX"])
 
         # Configure the environment
         set_env(env, args)
