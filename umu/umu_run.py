@@ -558,7 +558,6 @@ def monitor_baselayer(
 
 def monitor_windows(
     d_secondary: display.Display,
-    gamescope_baselayer_sequence: list[int],
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
     window_ids: set[str] | None = None
@@ -628,10 +627,7 @@ def run_in_steammode(proc: Popen) -> int:
                 # Monitor for new windows
                 window_thread = threading.Thread(
                     target=monitor_windows,
-                    args=(
-                        d_secondary,
-                        gamescope_baselayer_sequence,
-                    ),
+                    args=(d_secondary,),
                 )
                 window_thread.daemon = True
                 window_thread.start()
