@@ -476,7 +476,7 @@ def rearrange_gamescope_baselayer_order(
         log.exception(e)
         return None
 
-    # Steam's window should last, while assigned layer 2nd to last
+    # Steam's window should be last, while assigned layer 2nd to last
     rearranged = [*rearranged[:-1], steam_layer_id, STEAM_WINDOW_ID]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
