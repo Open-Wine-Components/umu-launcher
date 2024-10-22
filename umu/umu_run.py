@@ -497,31 +497,27 @@ def get_steam_layer_id() -> int:
     """Get the Steam layer ID from the host environment variables."""
     steam_layer_id: int = 0
 
-    if os.environ.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
+    if path := os.environ.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
         try:
-            return int(
-                Path(os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"]).parts[
-                    -1
-                ]
-            )
+            return int(Path(path).parts[-1])
         except (ValueError, IndexError):  # Value isn't a number or empty tuple
             pass
 
-    if os.environ.get("STEAM_COMPAT_MEDIA_PATH"):
+    if path := os.environ.get("STEAM_COMPAT_MEDIA_PATH"):
         try:
-            return int(Path(os.environ["STEAM_COMPAT_MEDIA_PATH"]).parts[-2])
+            return int(Path(path).parts[-2])
         except (ValueError, IndexError):
             pass
 
-    if os.environ.get("STEAM_FOSSILIZE_DUMP_PATH"):
+    if path := os.environ.get("STEAM_FOSSILIZE_DUMP_PATH"):
         try:
-            return int(Path(os.environ["STEAM_FOSSILIZE_DUMP_PATH"]).parts[-3])
+            return int(Path(path).parts[-3])
         except (ValueError, IndexError):
             pass
 
-    if os.environ.get("DXVK_STATE_CACHE_PATH"):
+    if path := os.environ.get("DXVK_STATE_CACHE_PATH"):
         try:
-            return int(Path(os.environ["DXVK_STATE_CACHE_PATH"]).parts[-2])
+            return int(Path(path).parts[-2])
         except (ValueError, IndexError):
             pass
 
