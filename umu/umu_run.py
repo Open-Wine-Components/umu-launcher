@@ -467,9 +467,16 @@ def rearrange_gamescope_baselayer_order(
     if not steam_layer_id:
         return None
 
-    rearranged.remove(steam_layer_id)
+    try:
+        rearranged.remove(steam_layer_id)
+    except ValueError as e:
+        # Case when the layer ID isn't in GAMESCOPECTRL_BASELAYER_APPID
+        # One case this can occur is if the client overrides Steam's env vars
+        # that we get the layer ID from
+        log.exception(e)
+        return None
 
-    # Steam's window should last, while assigned layer 2nd to last
+    # Steam's window should be last, while assigned layer 2nd to last
     rearranged = [*rearranged[:-1], steam_layer_id, STEAM_WINDOW_ID]
     log.debug("Rearranging base layer sequence")
     log.debug("'%s' -> '%s'", sequence, rearranged)
