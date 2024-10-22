@@ -495,18 +495,31 @@ def set_gamescope_baselayer_order(
 
 def get_steam_layer_id() -> int:
     """Get the Steam layer ID from the host environment variables."""
-    if os.environ.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
-        return int(
-            Path(os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"]).parts[-1]
-        )
-    if os.environ.get("STEAM_COMPAT_MEDIA_PATH"):
-        return int(Path(os.environ["STEAM_COMPAT_MEDIA_PATH"]).parts[-2])
-    if os.environ.get("STEAM_FOSSILIZE_DUMP_PATH"):
-        return int(Path(os.environ["STEAM_FOSSILIZE_DUMP_PATH"]).parts[-3])
-    if os.environ.get("DXVK_STATE_CACHE_PATH"):
-        return int(Path(os.environ["DXVK_STATE_CACHE_PATH"]).parts[-2])
+    steam_layer_id: int = 0
 
-    return 0
+    try:
+        if os.environ.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
+            steam_layer_id = int(
+                Path(os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"]).parts[
+                    -1
+                ]
+            )
+        elif os.environ.get("STEAM_COMPAT_MEDIA_PATH"):
+            steam_layer_id = int(
+                Path(os.environ["STEAM_COMPAT_MEDIA_PATH"]).parts[-2]
+            )
+        elif os.environ.get("STEAM_FOSSILIZE_DUMP_PATH"):
+            steam_layer_id = int(
+                Path(os.environ["STEAM_FOSSILIZE_DUMP_PATH"]).parts[-3]
+            )
+        elif os.environ.get("DXVK_STATE_CACHE_PATH"):
+            steam_layer_id = int(
+                Path(os.environ["DXVK_STATE_CACHE_PATH"]).parts[-2]
+            )
+    except (ValueError, IndexError) as e:
+        log.exception(e)
+
+    return steam_layer_id
 
 
 def monitor_baselayer(
