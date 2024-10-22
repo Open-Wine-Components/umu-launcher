@@ -519,7 +519,10 @@ def monitor_baselayer(
     atom = d_primary.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
     root_primary.change_attributes(event_mask=X.PropertyChangeMask)
 
-    log.debug("Monitoring base layers")
+    log.debug(
+        "Monitoring base layers under display '%s'...",
+        d_primary.get_display_name(),
+    )
 
     # Get a rearranged sequence from GAMESCOPECTRL_BASELAYER_APPID.
     rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
@@ -563,13 +566,19 @@ def monitor_windows(
     window_ids: set[str] | None = None
     steam_assigned_layer_id: int = get_steam_layer_id()
 
-    log.debug("Waiting for new windows...")
+    log.debug(
+        "Waiting for windows under display '%s'...",
+        d_secondary.get_display_name(),
+    )
 
     while not window_ids:
         window_ids = get_window_client_ids(d_secondary)
 
-    log.debug("Initial window ids: %s", window_ids)
-    log.debug("Monitoring windows")
+    log.debug("Initial windows: %s", window_ids)
+    log.debug(
+        "Monitoring for new windows under display '%s'...",
+        d_secondary.get_display_name(),
+    )
 
     # Check if the window sequence has changed
     while True:
