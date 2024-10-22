@@ -459,6 +459,7 @@ def rearrange_gamescope_baselayer_order(
     """Rearrange a gamescope base layer sequence retrieved from a window."""
     rearranged: list[int]
     steam_layer_id: int = get_steam_layer_id(sequence)
+    steam_layer_id: int = get_steam_layer_id()
 
     log.debug("Base layer sequence: %s", sequence)
 
@@ -495,15 +496,20 @@ def set_gamescope_baselayer_order(
         log.exception(e)
 
 
-def get_steam_layer_id(sequence: list[int]) -> int:
-    """Get the Steam layer ID from a base layer seq."""
-    steam_layer_id: int = 0
+def get_steam_layer_id() -> int:
+    """Get the Steam layer ID from the host environment variables."""
+    if os.environ.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
+        return int(
+            Path(os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"]).parts[-1]
+        )
+    if os.environ.get("STEAM_COMPAT_MEDIA_PATH"):
+        return int(Path(os.environ["STEAM_COMPAT_MEDIA_PATH"]).parts[-2])
+    if os.environ.get("STEAM_FOSSILIZE_DUMP_PATH"):
+        return int(Path(os.environ["STEAM_FOSSILIZE_DUMP_PATH"]).parts[-3])
+    if os.environ.get("DXVK_STATE_CACHE_PATH"):
+        return int(Path(os.environ["DXVK_STATE_CACHE_PATH"]).parts[-2])
 
-    for val in sequence:
-        if val != sequence[0] and val != STEAM_WINDOW_ID:
-            steam_layer_id = val
-
-    return steam_layer_id
+    return 0
 
 
 def monitor_baselayer(
@@ -559,9 +565,7 @@ def monitor_windows(
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
     window_ids: set[str] | None = None
-    steam_assigned_layer_id: int = get_steam_layer_id(
-        gamescope_baselayer_sequence
-    )
+    steam_assigned_layer_id: int = get_steam_layer_id()
 
     while not window_ids:
         window_ids = get_window_client_ids(d_secondary)
