@@ -615,6 +615,12 @@ def run_in_steammode(proc: Popen) -> int:
                 gamescope_baselayer_sequence
                 and os.environ.get("PROTON_VERB") == "waitforexitandrun"
             ):
+                # Ensure DISPLAY=:1 is set. At this point, the socket and X
+                # server exists and we're in a gamescope session, but for
+                # some reason, there will be cases when DISPLAY isn't passed.
+                if os.environ.get("DISPLAY") != ":1":
+                    os.environ["DISPLAY"] = ":1"
+
                 # Note: If the executable is one that exists in the WINE prefix
                 # or container it is possible that umu wil hang when running a
                 # game within a gamescope session
