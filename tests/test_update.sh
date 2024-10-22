@@ -6,6 +6,7 @@ curl -LJO "https://repo.steampowered.com/steamrt3/images/0.20240916.101795/Steam
 tar xaf SteamLinuxRuntime_sniper.tar.xz
 mv SteamLinuxRuntime_sniper/* "$HOME/.local/share/umu"
 mv "$HOME/.local/share/umu/_v2-entry-point" "$HOME/.local/share/umu/umu"
+echo "$@" > "$HOME/.local/share/umu/umu-shim" && chmod 700 "$HOME/.local/share/umu/umu-shim"
 
 # Perform a preflight step, where we ensure everything is in order and create '$HOME/.local/share/umu/var'
 # Afterwards, run a 2nd time to perform the runtime update and ensure '$HOME/.local/share/umu/var' is removed
