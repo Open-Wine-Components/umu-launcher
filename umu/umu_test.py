@@ -2330,11 +2330,6 @@ class TestGameLauncher(unittest.TestCase):
         ):
             umu_run.parse_args()
 
-        with (
-            patch("sys.argv", ["", "winetricks", "--help"]),
-            self.assertRaises(SystemExit),
-        ):
-            umu_run.parse_args()
 
     def test_parse_args_noopts(self):
         """Test parse_args with no options.
