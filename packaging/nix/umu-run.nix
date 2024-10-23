@@ -5,6 +5,7 @@ buildFHSEnv{
   targetPkgs = pkgs: ([
     package
   ]);
+  multiArch = true;
   runScript = writeShellScript "umu-run-shell" ''
     ${package}/bin/umu "$@"
   '';
