@@ -1,0 +1,59 @@
+[Unit]
+Description=Daemon for interacting with Gamescope over DBus
+
+[Service]
+Type=simple
+ExecStart=gamescope-dbus
+Restart=always
+RestartSec=1
+
+# Filesystem lockdown
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectControlGroups=true
+PrivateTmp=true
+ProtectProc=invisible
+ProcSubset=pid
+UMask=0077
+
+# Privilege escalation
+NoNewPrivileges=true
+RestrictSUIDSGID=true
+
+# Network
+PrivateNetwork=true
+IPAddressDeny=any
+
+# System call interfaces
+SystemCallFilter=@system-service
+SystemCallFilter=~@resources
+SystemCallErrorNumber=EPERM
+SystemCallArchitectures=native
+
+# Kernel
+ProtectKernelLogs=true
+ProtectKernelModules=true
+LockPersonality=true
+
+# Namespaces
+RestrictNamespaces=true
+
+# Service capabilities
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_CHOWN CAP_SYS_TTY_CONFIG CAP_DAC_OVERRIDE
+RestrictAddressFamilies=AF_UNIX
+RestrictRealtime=true
+MemoryDenyWriteExecute=true
+ProtectClock=true
+ProtectHostname=true
+
+# Devices
+DevicePolicy=strict
+DeviceAllow=char-/dev/console rw
+DeviceAllow=char-drm rw
+DeviceAllow=char-input rw
+DeviceAllow=char-tty rw
+DeviceAllow=/dev/null rw
+
+[Install]
+WantedBy=multi-user.target
