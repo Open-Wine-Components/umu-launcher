@@ -365,12 +365,6 @@ def build_command(
         )
         raise FileNotFoundError(err)
 
-    # Configure winetricks to not be prompted for any windows
-    if env.get("EXE", "").endswith("winetricks") and opts:
-        # The position of arguments matter for winetricks
-        # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
-        opts = ["-q", *opts]
-
     return (
         entry_point,
         "--verb",
