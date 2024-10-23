@@ -1200,13 +1200,11 @@ class TestGameLauncher(unittest.TestCase):
             self.env["EXE"], "Expected EXE to be empty on empty string"
         )
 
-    def test_build_command_noruntime(self):
-        """Test build_command when disabling the Steam Runtime.
+    def test_build_command_linux_exe(self):
+        """Test build_command when running a Linux executable.
 
-        UMU_NO_RUNTIME=1 disables the Steam Runtime, which is no different than
-        running the executable directly.
-
-        Expects the list to contain one string element.
+        UMU_NO_PROTON=1 disables Proton, running the executable directly in the
+        Steam Linux Runtime.
         """
         result_args = None
         test_command = []
@@ -1222,9 +1220,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
-            # Setting this mocks a Flatpak environment and UMU_NO_RUNTIME is
-            # only valid for Flatpak apps
-            os.environ["UMU_NO_RUNTIME"] = "1"
+            os.environ["UMU_NO_PROTON"] = "1"
             # Args
             result_args = umu_run.parse_args()
             # Config
@@ -1233,13 +1229,38 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
             umu_run.set_env(self.env, result_args)
-            # Mock setting UMU_NO_RUNTIME. This will not be set in the function
-            # because the FLATPAK_PATH constant will evaluate to None
-            self.env["UMU_NO_RUNTIME"] = os.environ["UMU_NO_RUNTIME"]
             # Game drive
             umu_run.enable_steam_game_drive(self.env)
 
         os.environ |= self.env
+
+        # Mock setting up the runtime
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
+            umu_runtime.setup_umu(
+                self.test_user_share, self.test_local_share, None
+            )
+            copytree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(
+                    self.test_local_share, "sniper_platform_0.20240125.75305"
+                ),
+                dirs_exist_ok=True,
+                symlinks=True,
+            )
+            copy(
+                Path(self.test_user_share, "run"),
+                Path(self.test_local_share, "run"),
+            )
+            copy(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            copy(
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
+            )
 
         # Build
         test_command = umu_run.build_command(self.env, self.test_local_share)
@@ -1248,16 +1269,25 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertEqual(
             len(test_command),
-            1,
-            f"Expected 1 element, received {len(test_command)}",
+            5,
+            f"Expected 5 element, received {len(test_command)}",
         )
-        exe, *_ = [*test_command]
+
+        entry_point, opt, verb, sep, exe = [*test_command]
+        self.assertEqual(
+            entry_point,
+            self.test_local_share / "umu",
+            "Expected an entry point",
+        )
+        self.assertEqual(opt, "--verb", "Expected --verb")
+        self.assertEqual(verb, "waitforexitandrun", "Expected PROTON_VERB")
+        self.assertEqual(sep, "--", "Expected --")
         self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
 
     def test_build_command_nopv(self):
         """Test build_command when disabling Pressure Vessel.
 
-        UMU_NO_RUNTIME=pressure-vessel disables Pressure Vessel, allowing
+        UMU_NO_RUNTIME=1 disables Pressure Vessel, allowing
         the launcher to run Proton on the host -- Flatpak environment.
 
         Expects the list to contain 3 string elements.
@@ -1276,9 +1306,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
-            # Setting this mocks a Flatpak environment and UMU_NO_RUNTIME is
-            # only valid for Flatpak apps
-            os.environ["UMU_NO_RUNTIME"] = "pressure-vessel"
+            os.environ["UMU_NO_RUNTIME"] = "1"
             # Args
             result_args = umu_run.parse_args()
             # Config
@@ -1287,11 +1315,36 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
             umu_run.set_env(self.env, result_args)
-            # Mock setting UMU_NO_RUNTIME. This will not be set in the function
-            # because the FLATPAK_PATH constant will evaluate to None
-            self.env["UMU_NO_RUNTIME"] = os.environ["UMU_NO_RUNTIME"]
             # Game drive
             umu_run.enable_steam_game_drive(self.env)
+
+        # Mock setting up the runtime
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
+            umu_runtime.setup_umu(
+                self.test_user_share, self.test_local_share, None
+            )
+            copytree(
+                Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
+                Path(
+                    self.test_local_share, "sniper_platform_0.20240125.75305"
+                ),
+                dirs_exist_ok=True,
+                symlinks=True,
+            )
+            copy(
+                Path(self.test_user_share, "run"),
+                Path(self.test_local_share, "run"),
+            )
+            copy(
+                Path(self.test_user_share, "run-in-sniper"),
+                Path(self.test_local_share, "run-in-sniper"),
+            )
+            copy(
+                Path(self.test_user_share, "umu"),
+                Path(self.test_local_share, "umu"),
+            )
 
         os.environ |= self.env
 

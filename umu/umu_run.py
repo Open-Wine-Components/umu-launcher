@@ -166,6 +166,10 @@ def check_env(
 
     env["WINEPREFIX"] = os.environ["WINEPREFIX"]
 
+    # Skip Proton if running a native Linux executable
+    if os.environ.get("UMU_NO_PROTON") == "1":
+        return env
+
     # Proton Version
     if (
         os.environ.get("PROTONPATH")
@@ -296,6 +300,7 @@ def set_env(
     # Runtime
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
+    env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
 
     return env
 
@@ -341,19 +346,9 @@ def build_command(
     proton: Path = Path(env["PROTONPATH"], "proton")
     entry_point: Path = local.joinpath("umu")
 
-    # Will run the game w/o Proton, effectively running the game as is. This
-    # option is intended for debugging purposes, and is otherwise useless
-    if env.get("UMU_NO_RUNTIME") == "1":
-        log.warning("Runtime Platform disabled")
-        return env["EXE"], *opts
-
-    if not proton.is_file():
+    if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
         raise FileNotFoundError(err)
-
-    if env.get("UMU_NO_RUNTIME") == "pressure-vessel":
-        log.warning("Using Proton without Runtime Platform")
-        return proton, env["PROTON_VERB"], env["EXE"], *opts
 
     # Exit if the entry point is missing
     # The _v2-entry-point script and container framework tools are included in
@@ -365,11 +360,39 @@ def build_command(
         )
         raise FileNotFoundError(err)
 
-    # Configure winetricks to not be prompted for any windows
+    # Winetricks
     if env.get("EXE", "").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
-        opts = ["-q", *opts]
+        return (
+            entry_point,
+            "--verb",
+            env["PROTON_VERB"],
+            "--",
+            proton,
+            env["PROTON_VERB"],
+            env["EXE"],
+            "-q",
+            *opts,
+        )
+
+    # Will run the game within the Steam Runtime w/o Proton
+    # Ideally, for reliability, executables should be compiled within
+    # the Steam Runtime
+    if env.get("UMU_NO_PROTON") == "1":
+        return (
+            entry_point,
+            "--verb",
+            env["PROTON_VERB"],
+            "--",
+            env["EXE"],
+            *opts,
+        )
+
+    # Will run the game outside the Steam Runtime w/ Proton
+    if env.get("UMU_NO_RUNTIME") == "1":
+        log.warning("Runtime Platform disabled")
+        return proton, env["PROTON_VERB"], env["EXE"], *opts
 
     return (
         entry_point,
@@ -760,6 +783,7 @@ def main() -> int:  # noqa: D103
         "UMU_ZENITY": "",
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
+        "UMU_NO_PROTON": "",
     }
     opts: list[str] = []
     prereq: bool = False
