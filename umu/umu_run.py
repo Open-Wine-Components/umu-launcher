@@ -252,12 +252,12 @@ def set_env(
             env["EXE"] = args[0]  # type: ignore
             env["STEAM_COMPAT_INSTALL_PATH"] = ""
             log.warning("Executable not found: %s", env["EXE"])
+        env["STORE"] = os.environ.get("STORE", "")
     else:  # Configuration file usage
         exe: Path = Path(env["EXE"]).expanduser()
         env["EXE"] = str(exe)
         env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
-
-    env["STORE"] = os.environ.get("STORE") or ""
+        env["STORE"] = env.get("STORE", "")
 
     # UMU_ID
     env["UMU_ID"] = env["GAMEID"]
