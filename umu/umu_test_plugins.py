@@ -641,6 +641,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
     def test_set_env_toml_opts(self):
         """Test set_env_toml when passed a string as a launch argument."""
         test_toml = "foo.toml"
+        test_store = "gog"
         toml_str = f"""
         [umu]
         prefix = "{self.test_file}"
@@ -648,6 +649,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         game_id = "{self.test_file}"
         launch_args = "{self.test_file} {self.test_file}"
         exe = "{self.test_exe}"
+        store = "{test_store}"
         """
         toml_path = self.test_file + "/" + test_toml
         result = None
@@ -707,6 +709,11 @@ class TestGameLauncherPlugins(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["GAMEID"], self.test_file, "Expected GAMEID to be set"
+            )
+            self.assertEqual(
+                self.env["STORE"],
+                "gog",
+                f"Expected STORE to be '{test_store}'",
             )
 
     def test_set_env_toml(self):

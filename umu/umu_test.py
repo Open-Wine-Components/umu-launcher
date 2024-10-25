@@ -1917,7 +1917,6 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = test_dir.as_posix()
             os.environ["GAMEID"] = test_str
-            os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = proton_verb
             # Args
             result = umu_run.parse_args()
@@ -1962,9 +1961,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_INSTALL_PATH"],
                 Path(path_exe).parent.as_posix(),
                 "Expected STEAM_COMPAT_INSTALL_PATH to be set",
-            )
-            self.assertEqual(
-                self.env["STORE"], test_str, "Expected STORE to be set"
             )
             self.assertEqual(
                 self.env["PROTONPATH"],
