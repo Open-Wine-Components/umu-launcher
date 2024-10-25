@@ -5,7 +5,7 @@ python --version
 tmp=$(mktemp)
 mkdir -p "$HOME/.local/share/Steam/compatibilitytools.d"
 mkdir -p "$HOME/Games/umu/umu-0"
-curl -LJO "https://github.com/Open-Wine-Components/umu-proton/releases/download/UMU-Proton-9.0-3/UMU-Proton-9.0-3.2.tar.gz"
+curl -LJO "https://github.com/Open-Wine-Components/umu-proton/releases/download/UMU-Proton-9.0-3.2/UMU-Proton-9.0-3.2.tar.gz"
 tar xaf UMU-Proton-9.0-3.2.tar.gz
 mv UMU-Proton-9.0-3.2 "$HOME/.local/share/Steam/compatibilitytools.d"
 
