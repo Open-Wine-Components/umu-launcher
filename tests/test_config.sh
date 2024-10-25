@@ -15,6 +15,7 @@ game_id = 'umu-1141086411'
 prefix = '~/Games/umu/umu-0'
 exe = '~/Games/umu/umu-0/drive_c/windows/syswow64/wineboot.exe'
 launch_args = ['-u']
+store = 'gog'
 " >> "$tmp"
 
 
