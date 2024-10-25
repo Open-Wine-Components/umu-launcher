@@ -20,4 +20,4 @@ store = 'gog'
 
 
 # Run the 'game' and ensure the protonfixes module finds its fix in umu-database.csv
-UMU_LOG=debug GAMEID=umu-1141086411 STORE=gog "$PWD/.venv/bin/python" "$HOME/.local/bin/umu-run" --config "$tmp" >> /tmp/umu-log.txt && grep -E "INFO: Non-steam game Silent Hill 4: The Room \(umu-1141086411\)" /tmp/umu-log.txt
+UMU_LOG=debug GAMEID=umu-1141086411 STORE=gog "$PWD/.venv/bin/python" "$HOME/.local/bin/umu-run" --config "$tmp" 2> /tmp/umu-log.txt && grep -E "INFO: Non-steam game Silent Hill 4: The Room \(umu-1141086411\)" /tmp/umu-log.txt
