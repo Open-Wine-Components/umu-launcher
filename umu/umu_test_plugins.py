@@ -712,7 +712,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STORE"],
-                "foo",
+                "gog",
                 f"Expected STORE to be '{test_store}'",
             )
 
