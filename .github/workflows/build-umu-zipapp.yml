@@ -35,10 +35,12 @@ jobs:
       run: mkdir -p results && cp -rvf builddir/umu-run results/
 
     - name: Create symlink for launchers
-      run: cd results && ln -s umu-run umu_run.py && cd ..
+      # To preserve file mode bits and link file, use a tar archive.
+      # See https://github.com/actions/upload-artifact?tab=readme-ov-file#permission-loss
+      run: cd results && ln -s umu-run umu_run.py && tar cvf Zipapp.tar umu-run umu_run.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4.0.0
       with:
         name: Zipapp
-        path: results/
+        path: results/Zipapp.tar
