@@ -288,7 +288,7 @@ parts:
 apps:
   umu-run:
     command-chain: [snap/command-chain/alsa-launch, bin/desktop-launch]
-    command: /usr/bin/umu-run
+    command: usr/bin/umu-run
     plugs:
       - shmem
       - desktop
