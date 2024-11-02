@@ -65,7 +65,7 @@ def create_shim(file_path: Path | None = None):
 
     # Capture the exit status
     status=$?
-    echo "Command exited with status: $status"
+    echo "Command exited with status: $status" >&2
     exit $status
     """
 
