@@ -130,11 +130,13 @@ export PATH="$HOME/.local/bin:$PATH"
 
 ### Nobara
 ```shell
-dnf install -y umu-launcher*.rpm
+dnf install umu-launcher
 ```
 
-### Arch Linux (AUR)
-[![Stable version badge](https://img.shields.io/aur/version/umu-launcher?style=flat&label=umu-launcher)](https://aur.archlinux.org/packages/umu-launcher)
+### Arch Linux
+```shell
+pacman -S umu-launcher
+```
 
 ### NixOS
 If there is any problem with the flake feel free to open a bug report and tag any of the maintainers
