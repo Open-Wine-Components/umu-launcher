@@ -130,7 +130,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 ### Nobara
 ```shell
-dnf install -y umu-launcher*.rpm
+dnf install umu-launcher
 ```
 
 ### Arch Linux
