@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: fedora:latest
+      image: fedora:41
 
     steps:
     - name: Install Git
@@ -35,7 +35,7 @@ jobs:
         cp -r . ~/rpmbuild/SOURCES/umu-launcher
         rpmbuild -ba packaging/rpm/umu-launcher.spec
 
-    - name: Fedora-40
+    - name: Fedora-41
       uses: actions/upload-artifact@v4.0.0
       with:
         name: umu-launcher-rpm
