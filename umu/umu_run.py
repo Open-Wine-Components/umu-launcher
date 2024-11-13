@@ -64,7 +64,7 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         formatter_class=RawTextHelpFormatter,
     )
     parser.add_argument("-v", "--version", action='store_true',
-                        help="show the version and exit"
+                        help="show this version and exit"
     )
     parser.add_argument(
         "--config", help=("path to TOML file (requires Python 3.11+)")
@@ -85,9 +85,12 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     #   but parse_args scans the whole command line.
     # So look at the first argument and see if we have -v or --version
     #   in sort of the same way parse_args would.
-    if sys.argv[1].lower() == "-v" or sys.argv[1].lower().startswith("--v"):
-        print(f"umu-launcher version {__version__} ({sys.version})", file=sys.stderr)
-        sys.exit(1)
+    if sys.argv[1].lower().endswith(("--version", "-v")):
+        print(
+            f"umu-launcher version {__version__} ({sys.version})", 
+            file=sys.stderr
+        )
+        sys.exit(0)
 
     # Winetricks
     # Exit if no winetricks verbs were passed
