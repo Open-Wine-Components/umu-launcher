@@ -63,6 +63,9 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         ),
         formatter_class=RawTextHelpFormatter,
     )
+    parser.add_argument("-v", "--version", action='store_true',
+                        help="show the version and exit"
+    )
     parser.add_argument(
         "--config", help=("path to TOML file (requires Python 3.11+)")
     )
@@ -75,6 +78,11 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
 
     if not sys.argv[1:]:
         parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    c_args = parser.parse_args()
+    if c_args.version:
+        print(f"umu-launcher version {__version__} ({sys.version})", file=sys.stderr)
         sys.exit(1)
 
     # Winetricks
