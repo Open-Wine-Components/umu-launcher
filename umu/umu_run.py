@@ -63,8 +63,11 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         ),
         formatter_class=RawTextHelpFormatter,
     )
-    parser.add_argument("-v", "--version", action='store_true',
-                        help="show this version and exit"
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="store_true",
+        help="show this version and exit",
     )
     parser.add_argument(
         "--config", help=("path to TOML file (requires Python 3.11+)")
@@ -87,8 +90,8 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     #   in sort of the same way parse_args would.
     if sys.argv[1].lower().endswith(("--version", "-v")):
         print(
-            f"umu-launcher version {__version__} ({sys.version})", 
-            file=sys.stderr
+            f"umu-launcher version {__version__} ({sys.version})",
+            file=sys.stderr,
         )
         sys.exit(0)
 
