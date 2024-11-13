@@ -15,7 +15,7 @@
   in
   let
   pyth = nixpk.pkgs.python3;
-  version = "1.1.3";
+  version = "1.1.4";
   in
   let
     umu-launcher = nixpk.callPackage ./umu-launcher.nix { umu-launcher=umu-launcher-src; pyth1=pyth; version = "${version}"; };
