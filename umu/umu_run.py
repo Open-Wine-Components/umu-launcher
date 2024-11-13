@@ -80,8 +80,12 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    c_args = parser.parse_args()
-    if c_args.version:
+    # Show version
+    # Need to avoid clashes with later options (for example: wineboot -u)
+    #   but parse_args scans the whole command line.
+    # So look at the first argument and see if we have -v or --version
+    #   in sort of the same way parse_args would.
+    if sys.argv[1].lower() == "-v" or sys.argv[1].lower().startswith("--v"):
         print(f"umu-launcher version {__version__} ({sys.version})", file=sys.stderr)
         sys.exit(1)
 
