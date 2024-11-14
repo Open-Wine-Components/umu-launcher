@@ -224,6 +224,26 @@ class TestGameLauncher(unittest.TestCase):
                 os.access(shim, os.X_OK), f"Expected '{shim}' to be executable"
             )
 
+    def test_create_shim_none(self):
+        """Test create_shim when not passed a Path."""
+        shim = None
+
+        # When not passed a Path, the function should default to creating $HOME/.local/share/umu/umu-shim
+        with (
+            TemporaryDirectory() as tmp,
+            patch.object(Path, "joinpath", return_value=Path(tmp, "umu-shim")),
+        ):
+            umu_runtime.create_shim()
+            self.assertTrue(
+                Path(tmp, "umu-shim").is_file(),
+                f"Expected '{shim}' to be a file",
+            )
+            # Ensure there's data
+            self.assertTrue(
+                Path(tmp, "umu-shim").stat().st_size > 0,
+                f"Expected '{shim}' to have data",
+            )
+
     def test_create_shim(self):
         """Test create_shim."""
         shim = None
