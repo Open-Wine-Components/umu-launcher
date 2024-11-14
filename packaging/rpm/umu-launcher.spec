@@ -48,7 +48,7 @@ Requires:	python3-filelock
 %prep
 git clone --single-branch --branch main https://github.com/Open-Wine-Components/umu-launcher.git
 cd umu-launcher
-git checkout %{tag}
+git checkout %{tag} || git checkout %{manual_commit}
 git submodule update --init --recursive
 
 %build
