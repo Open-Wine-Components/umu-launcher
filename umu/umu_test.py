@@ -11,6 +11,7 @@ from pathlib import Path
 from pwd import getpwuid
 from shutil import copy, copytree, move, rmtree
 from subprocess import CompletedProcess
+from tempfile import TemporaryDirectory, mkdtemp
 from unittest.mock import MagicMock, patch
 
 sys.path.append(str(Path(__file__).parent.parent))
@@ -211,6 +212,30 @@ class TestGameLauncher(unittest.TestCase):
         self.assertEqual(
             result, 0, "Expected 0 when Steam environment variables are empty"
         )
+
+    def test_create_shim_exe(self):
+        """Test create_shim and ensure it's executable."""
+        shim = None
+
+        with TemporaryDirectory() as tmp:
+            shim = Path(tmp, "umu-shim")
+            umu_runtime.create_shim(shim)
+            self.assertTrue(
+                os.access(shim, os.X_OK), f"Expected '{shim}' to be executable"
+            )
+
+    def test_create_shim(self):
+        """Test create_shim."""
+        shim = None
+
+        with TemporaryDirectory() as tmp:
+            shim = Path(tmp, "umu-shim")
+            umu_runtime.create_shim(shim)
+            self.assertTrue(shim.is_file(), f"Expected '{shim}' to be a file")
+            # Ensure there's data
+            self.assertTrue(
+                shim.stat().st_size > 0, f"Expected '{shim}' to have data"
+            )
     def test_rearrange_gamescope_baselayer_order_broken(self):
         """Test rearrange_gamescope_baselayer_order when passed broken seq.
 
