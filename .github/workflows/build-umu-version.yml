@@ -1,0 +1,35 @@
+name: job_version
+
+on:
+  workflow_call:
+    outputs:
+      version:
+        value: "${{ jobs.version.outputs.tag_abbrev }}.${{ jobs.version.outputs.tag_offset }}"
+      branch:
+        value: "${{ jobs.version.outputs.branch }}"
+
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      tag_abbrev: ${{ steps.describe.outputs.tag_abbrev }}
+      tag_offset: ${{ steps.describe.outputs.tag_offset }}
+      sha_short: ${{ steps.describe.outputs.sha_short }}
+      full_desc: ${{ steps.describe.outputs.full_desc }}
+      branch: ${{ steps.describe.outputs.branch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Describe
+        id: describe
+        shell: bash
+        run: |
+          tag_abbrev=$(git tag --sort=v:refname | grep -oE "(^[0-9]+\.[0-9]+(.[0-9]+)?)$" | tail -1)
+          echo "tag_abbrev=$tag_abbrev" >> $GITHUB_OUTPUT
+          echo "tag_offset=$(git rev-list $tag_abbrev..HEAD --count)" >> $GITHUB_OUTPUT
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "full_desc=$(git describe --long --tags)" >> $GITHUB_OUTPUT
+          echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT

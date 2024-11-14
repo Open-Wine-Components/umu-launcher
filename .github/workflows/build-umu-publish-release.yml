@@ -1,0 +1,48 @@
+name: UMU Publish Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      file1:
+        required: true
+        type: string
+      name1:
+        required: true
+        type: string
+      name2:
+        type: string
+        default: ""
+      file2:
+        type: string
+        default: ""
+
+
+jobs:
+  release:
+    name: Publish
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: ${{ inputs.name1 }}
+            file: ${{ inputs.file1 }}
+          - name: ${{ inputs.name2 }}
+            file: ${{ inputs.file2 }}
+    steps:
+    - name: Download ${{ matrix.name }} from artifact
+      uses: actions/download-artifact@v4
+      if: ${{ matrix.name != '' }}
+      with:
+        name: ${{ matrix.name }}
+    - name: Upload ${{ matrix.name }} to release
+      uses: svenstaro/upload-release-action@v2
+      if: ${{ matrix.name != '' }}
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ matrix.file }}
+        asset_name: ${{ matrix.name }}
+        tag: ${{ inputs.version }}
+        overwrite: true
