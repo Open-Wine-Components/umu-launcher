@@ -210,7 +210,9 @@ class TestGameLauncher(unittest.TestCase):
         result = umu_run.get_steam_layer_id(os.environ)
 
         self.assertEqual(
-            result, 0, "Expected 0 when Steam environment variables are empty"
+            result,
+            0,
+            "Expected 0 when Steam environment variables are empty or non-int",
         )
 
     def test_create_shim_exe(self):
