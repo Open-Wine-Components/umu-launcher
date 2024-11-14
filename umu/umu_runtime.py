@@ -539,6 +539,3 @@ def _restore_umu(
             return
         _install_umu(json, thread_pool, client_session)
         log.debug("Released file lock '%s'", lock.lock_file)
-
-    if not UMU_LOCAL.joinpath("umu-shim").exists():
-        create_shim()
