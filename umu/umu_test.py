@@ -204,9 +204,9 @@ class TestGameLauncher(unittest.TestCase):
         Steam environment variables are empty values or non-integers.
         """
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = ""
-        os.environ["STEAM_COMPAT_MEDIA_PATH"] = ""
-        os.environ["STEAM_FOSSILIZE_DUMP_PATH"] = ""
-        os.environ["DXVK_STATE_CACHE_PATH"] = ""
+        os.environ["STEAM_COMPAT_MEDIA_PATH"] = "foo"
+        os.environ["STEAM_FOSSILIZE_DUMP_PATH"] = "bar"
+        os.environ["DXVK_STATE_CACHE_PATH"] = "baz"
         result = umu_run.get_steam_layer_id(os.environ)
 
         self.assertEqual(
