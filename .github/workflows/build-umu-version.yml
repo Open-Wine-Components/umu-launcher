@@ -1,4 +1,4 @@
-name: job_version
+name: UMU Describe Version
 
 on:
   workflow_call:
