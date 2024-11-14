@@ -76,6 +76,7 @@ def create_shim(file_path: Path | None = None):
     # Make the script executable
     file_path.chmod(0o700)
 
+
 def _install_umu(
     json: dict[str, Any],
     thread_pool: ThreadPoolExecutor,
@@ -220,6 +221,7 @@ def _install_umu(
     # Rename _v2-entry-point
     log.debug("Renaming: _v2-entry-point -> umu")
     UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
+
     create_shim()
 
     # Validate the runtime after moving the files
