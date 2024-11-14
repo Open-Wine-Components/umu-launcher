@@ -47,27 +47,29 @@ def create_shim(file_path: Path | None = None):
     # Set the default path if none is provided
     if file_path is None:
         file_path = UMU_LOCAL.joinpath("umu-shim")
+
     # Define the content of the shell script
-    script_content = """#!/bin/sh
-
-    if [ "${XDG_CURRENT_DESKTOP}" = "gamescope" ] || [ "${XDG_SESSION_DESKTOP}" = "gamescope" ]; then
-        # Check if STEAM_MULTIPLE_XWAYLANDS is set to 1
-        if [ "${STEAM_MULTIPLE_XWAYLANDS}" = "1" ]; then
-            # Check if DISPLAY is set, if not, set it to ":1"
-            if [ -z "${DISPLAY}" ]; then
-                export DISPLAY=":1"
-            fi
-        fi
-    fi
-
-    # Execute the passed command
-    "$@"
-
-    # Capture the exit status
-    status=$?
-    echo "Command exited with status: $status" >&2
-    exit $status
-    """
+    script_content = (
+        "#!/bin/sh\n"
+        "\n"
+        'if [ "${XDG_CURRENT_DESKTOP}" = "gamescope" ] || [ "${XDG_SESSION_DESKTOP}" = "gamescope" ]; then\n'
+        "    # Check if STEAM_MULTIPLE_XWAYLANDS is set to 1\n"
+        '    if [ "${STEAM_MULTIPLE_XWAYLANDS}" = "1" ]; then\n'
+        '        # Check if DISPLAY is set, if not, set it to ":1"\n'
+        '        if [ -z "${DISPLAY}" ]; then\n'
+        '            export DISPLAY=":1"\n'
+        "        fi\n"
+        "    fi\n"
+        "fi\n"
+        "\n"
+        "# Execute the passed command\n"
+        '"$@"\n'
+        "\n"
+        "# Capture the exit status\n"
+        "status=$?\n"
+        'echo "Command exited with status: $status" >&2\n'
+        "exit $status\n"
+    )
 
     # Write the script content to the specified file path
     with file_path.open('w') as file:
