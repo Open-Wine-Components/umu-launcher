@@ -203,7 +203,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         steam_window_id = 769
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_layer_id()
+        steam_layer_id = umu_run.get_steam_layer_id(os.environ)
         baselayer = [1, steam_window_id, steam_layer_id]
         expected = (
             [baselayer[0], steam_layer_id, steam_window_id],
@@ -230,7 +230,7 @@ class TestGameLauncher(unittest.TestCase):
         """Test rearrange_gamescope_baselayer_order when passed a sequence."""
         steam_window_id = 769
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_layer_id()
+        steam_layer_id = umu_run.get_steam_layer_id(os.environ)
         baselayer = [1, steam_layer_id, steam_window_id]
         result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
 
