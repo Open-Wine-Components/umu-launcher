@@ -200,8 +200,8 @@ class TestGameLauncher(unittest.TestCase):
     def test_get_steam_layer_id(self):
         """Test get_steam_layer_id.
 
-        Neither an IndexError or ValueError should be raised when
-        Steam environment variables are empty values.
+        An IndexError and a ValueError should be handled when
+        Steam environment variables are empty values or non-integers.
         """
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = ""
         os.environ["STEAM_COMPAT_MEDIA_PATH"] = ""
