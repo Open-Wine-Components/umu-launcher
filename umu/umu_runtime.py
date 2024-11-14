@@ -51,6 +51,7 @@ def create_shim(file_path: Path | None = None):
     # Define the content of the shell script
     script_content = (
         "#!/bin/sh\n"
+        "\n"
         'if [ "${XDG_CURRENT_DESKTOP}" = "gamescope" ] || [ "${XDG_SESSION_DESKTOP}" = "gamescope" ]; then\n'
         "    # Check if STEAM_MULTIPLE_XWAYLANDS is set to 1\n"
         '    if [ "${STEAM_MULTIPLE_XWAYLANDS}" = "1" ]; then\n'
