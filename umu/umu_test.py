@@ -532,6 +532,35 @@ class TestGameLauncher(unittest.TestCase):
             "qux did not move to dst",
         )
 
+    def test_update_proton(self):
+        """Test _update_proton."""
+        mock_protons = [Path(mkdtemp()), Path(mkdtemp())]
+        thread_pool = ThreadPoolExecutor()
+        result = []
+
+        for mock in mock_protons:
+            self.assertTrue(
+                mock.is_dir(), f"Directory '{mock}' does not exist"
+            )
+
+        result = umu_proton._update_proton(mock_protons, thread_pool)
+
+        self.assertTrue(result is None, f"Expected None, received '{result}'")
+
+        # The directories should be removed after the update
+        for mock in mock_protons:
+            self.assertFalse(mock.is_dir(), f"Directory '{mock}' still exist")
+
+    def test_update_proton_empty(self):
+        """Test _update_proton when passed an empty list."""
+        # In the real usage, an empty list means that there were no
+        # UMU/ULWGL-Proton found in compatibilitytools.d
+        result = umu_proton._update_proton([], None)
+
+        self.assertTrue(
+            result is None, "Expected None when passed an empty list"
+        )
+
     def test_ge_proton(self):
         """Test check_env when the code name GE-Proton is set for PROTONPATH.
 
@@ -2437,7 +2466,6 @@ class TestGameLauncher(unittest.TestCase):
             self.assertRaises(SystemExit),
         ):
             umu_run.parse_args()
-
 
     def test_parse_args_noopts(self):
         """Test parse_args with no options.
