@@ -522,9 +522,6 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
         return ret
     log.console(f"{runtime.name}: mtree is OK")
 
-    if not UMU_LOCAL.joinpath("umu-shim").exists():
-        create_shim()
-
     return ret
 
 
