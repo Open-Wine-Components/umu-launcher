@@ -1,4 +1,4 @@
-name: Build and upload artifacts to Release
+name: Build and upload release
 
 on:
   release:
