@@ -76,6 +76,7 @@ def create_shim(file_path: Path | None = None):
     # Make the script executable
     file_path.chmod(0o700)
 
+
 def _install_umu(
     json: dict[str, Any],
     thread_pool: ThreadPoolExecutor,
@@ -220,6 +221,7 @@ def _install_umu(
     # Rename _v2-entry-point
     log.debug("Renaming: _v2-entry-point -> umu")
     UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
+
     create_shim()
 
     # Validate the runtime after moving the files
@@ -522,9 +524,6 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
         return ret
     log.console(f"{runtime.name}: mtree is OK")
 
-    if not UMU_LOCAL.joinpath("umu-shim").exists():
-        create_shim()
-
     return ret
 
 
@@ -542,6 +541,3 @@ def _restore_umu(
             return
         _install_umu(json, thread_pool, client_session)
         log.debug("Released file lock '%s'", lock.lock_file)
-
-    if not UMU_LOCAL.joinpath("umu-shim").exists():
-        create_shim()

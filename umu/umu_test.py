@@ -11,6 +11,7 @@ from pathlib import Path
 from pwd import getpwuid
 from shutil import copy, copytree, move, rmtree
 from subprocess import CompletedProcess
+from tempfile import TemporaryDirectory, mkdtemp
 from unittest.mock import MagicMock, patch
 
 sys.path.append(str(Path(__file__).parent.parent))
@@ -53,6 +54,9 @@ class TestGameLauncher(unittest.TestCase):
             "UMU_NO_RUNTIME": "",
             "UMU_RUNTIME_UPDATE": "",
             "STEAM_COMPAT_TRANSCODED_MEDIA_PATH": "",
+            "STEAM_COMPAT_MEDIA_PATH": "",
+            "STEAM_FOSSILIZE_DUMP_PATH": "",
+            "DXVK_STATE_CACHE_PATH": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -193,6 +197,83 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
 
+    def test_get_steam_layer_id(self):
+        """Test get_steam_layer_id.
+
+        An IndexError and a ValueError should be handled when
+        Steam environment variables are empty values or non-integers.
+        """
+        os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = ""
+        os.environ["STEAM_COMPAT_MEDIA_PATH"] = "foo"
+        os.environ["STEAM_FOSSILIZE_DUMP_PATH"] = "bar"
+        os.environ["DXVK_STATE_CACHE_PATH"] = "baz"
+        result = umu_run.get_steam_layer_id(os.environ)
+
+        self.assertEqual(
+            result,
+            0,
+            "Expected 0 when Steam environment variables are empty or non-int",
+        )
+
+    def test_create_shim_exe(self):
+        """Test create_shim and ensure it's executable."""
+        shim = None
+
+        with TemporaryDirectory() as tmp:
+            shim = Path(tmp, "umu-shim")
+            umu_runtime.create_shim(shim)
+            self.assertTrue(
+                os.access(shim, os.X_OK), f"Expected '{shim}' to be executable"
+            )
+
+    def test_create_shim_none(self):
+        """Test create_shim when not passed a Path."""
+        shim = None
+
+        # When not passed a Path, the function should default to creating $HOME/.local/share/umu/umu-shim
+        with (
+            TemporaryDirectory() as tmp,
+            patch.object(Path, "joinpath", return_value=Path(tmp, "umu-shim")),
+        ):
+            umu_runtime.create_shim()
+            self.assertTrue(
+                Path(tmp, "umu-shim").is_file(),
+                f"Expected '{shim}' to be a file",
+            )
+            # Ensure there's data
+            self.assertTrue(
+                Path(tmp, "umu-shim").stat().st_size > 0,
+                f"Expected '{shim}' to have data",
+            )
+
+    def test_create_shim(self):
+        """Test create_shim."""
+        shim = None
+
+        with TemporaryDirectory() as tmp:
+            shim = Path(tmp, "umu-shim")
+            umu_runtime.create_shim(shim)
+            self.assertTrue(shim.is_file(), f"Expected '{shim}' to be a file")
+            # Ensure there's data
+            self.assertTrue(
+                shim.stat().st_size > 0, f"Expected '{shim}' to have data"
+            )
+
+    def test_rearrange_gamescope_baselayer_order_none(self):
+        """Test rearrange_gamescope_baselayer_order for layer ID mismatches."""
+        steam_window_id = 769
+        # Mock a real assigned non-Steam app ID
+        steam_layer_id = 1234
+        # Mock an overridden value STEAM_COMPAT_TRANSCODED_MEDIA_PATH.
+        # The app ID for this env var is the last segment and should be found
+        # in GAMESCOPECTRL_BASELAYER_APPID. When it's not, then that indicates
+        # it has been tampered by the client or by some middleware.
+        os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
+        baselayer = [1, steam_window_id, steam_layer_id]
+        result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
+
+        self.assertTrue(result is None, f"Expected None, received '{result}'")
+
     def test_rearrange_gamescope_baselayer_order_broken(self):
         """Test rearrange_gamescope_baselayer_order when passed broken seq.
 
@@ -203,7 +284,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         steam_window_id = 769
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_layer_id()
+        steam_layer_id = umu_run.get_steam_layer_id(os.environ)
         baselayer = [1, steam_window_id, steam_layer_id]
         expected = (
             [baselayer[0], steam_layer_id, steam_window_id],
@@ -230,7 +311,7 @@ class TestGameLauncher(unittest.TestCase):
         """Test rearrange_gamescope_baselayer_order when passed a sequence."""
         steam_window_id = 769
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_layer_id()
+        steam_layer_id = umu_run.get_steam_layer_id(os.environ)
         baselayer = [1, steam_layer_id, steam_window_id]
         result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
 
@@ -471,6 +552,35 @@ class TestGameLauncher(unittest.TestCase):
         self.assertTrue(
             self.test_local_share.joinpath("qux").is_symlink(),
             "qux did not move to dst",
+        )
+
+    def test_update_proton(self):
+        """Test _update_proton."""
+        mock_protons = [Path(mkdtemp()), Path(mkdtemp())]
+        thread_pool = ThreadPoolExecutor()
+        result = []
+
+        for mock in mock_protons:
+            self.assertTrue(
+                mock.is_dir(), f"Directory '{mock}' does not exist"
+            )
+
+        result = umu_proton._update_proton(mock_protons, thread_pool)
+
+        self.assertTrue(result is None, f"Expected None, received '{result}'")
+
+        # The directories should be removed after the update
+        for mock in mock_protons:
+            self.assertFalse(mock.is_dir(), f"Directory '{mock}' still exist")
+
+    def test_update_proton_empty(self):
+        """Test _update_proton when passed an empty list."""
+        # In the real usage, an empty list means that there were no
+        # UMU/ULWGL-Proton found in compatibilitytools.d
+        result = umu_proton._update_proton([], None)
+
+        self.assertTrue(
+            result is None, "Expected None when passed an empty list"
         )
 
     def test_ge_proton(self):
@@ -2378,7 +2488,6 @@ class TestGameLauncher(unittest.TestCase):
             self.assertRaises(SystemExit),
         ):
             umu_run.parse_args()
-
 
     def test_parse_args_noopts(self):
         """Test parse_args with no options.

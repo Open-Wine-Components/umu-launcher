@@ -7,6 +7,7 @@ import time
 import zipfile
 from _ctypes import CFuncPtr
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
+from collections.abc import MutableMapping
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
@@ -501,7 +502,7 @@ def rearrange_gamescope_baselayer_order(
     """Rearrange a gamescope base layer sequence retrieved from a window."""
     # Note: 'sequence' is actually an array type with unsigned integers
     rearranged: list[int] = list(sequence)
-    steam_layer_id: int = get_steam_layer_id()
+    steam_layer_id: int = get_steam_layer_id(os.environ)
 
     log.debug("Base layer sequence: %s", sequence)
 
@@ -544,24 +545,24 @@ def set_gamescope_baselayer_order(
         log.exception(e)
 
 
-def get_steam_layer_id() -> int:
+def get_steam_layer_id(env: MutableMapping) -> int:
     """Get the Steam layer ID from the host environment variables."""
     steam_layer_id: int = 0
 
-    if path := os.environ.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
+    if path := env.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
         # Suppress cases when value is not a number or empty tuple
         with suppress(ValueError, IndexError):
             return int(Path(path).parts[-1])
 
-    if path := os.environ.get("STEAM_COMPAT_MEDIA_PATH"):
+    if path := env.get("STEAM_COMPAT_MEDIA_PATH"):
         with suppress(ValueError, IndexError):
             return int(Path(path).parts[-2])
 
-    if path := os.environ.get("STEAM_FOSSILIZE_DUMP_PATH"):
+    if path := env.get("STEAM_FOSSILIZE_DUMP_PATH"):
         with suppress(ValueError, IndexError):
             return int(Path(path).parts[-3])
 
-    if path := os.environ.get("DXVK_STATE_CACHE_PATH"):
+    if path := env.get("DXVK_STATE_CACHE_PATH"):
         with suppress(ValueError, IndexError):
             return int(Path(path).parts[-2])
 
@@ -623,7 +624,7 @@ def monitor_windows(
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
     window_ids: set[str] | None = None
-    steam_assigned_layer_id: int = get_steam_layer_id()
+    steam_assigned_layer_id: int = get_steam_layer_id(os.environ)
 
     log.debug(
         "Waiting for windows under display '%s'...",

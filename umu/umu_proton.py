@@ -340,11 +340,7 @@ def _update_proton(
     protons: list[Path],
     thread_pool: ThreadPoolExecutor,
 ) -> None:
-    """Create a symbolic link and remove the previous UMU-Proton.
-
-    The symbolic link will be used by clients to reference the PROTONPATH which
-    can be used for tasks such as killing the running wineserver in the prefix.
-    The link will be recreated each run.
+    """Remove previous stable UMU-Proton builds.
 
     Assumes that the directories that are named ULWGL/UMU-Proton are ours and
     will be removed, so users should not be storing important files there.
