@@ -53,6 +53,9 @@ class TestGameLauncher(unittest.TestCase):
             "UMU_NO_RUNTIME": "",
             "UMU_RUNTIME_UPDATE": "",
             "STEAM_COMPAT_TRANSCODED_MEDIA_PATH": "",
+            "STEAM_COMPAT_MEDIA_PATH": "",
+            "STEAM_FOSSILIZE_DUMP_PATH": "",
+            "DXVK_STATE_CACHE_PATH": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -193,6 +196,21 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
 
+    def test_get_steam_layer_id(self):
+        """Test get_steam_layer_id.
+
+        Neither an IndexError or ValueError should be raised when
+        Steam environment variables are empty values.
+        """
+        os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = ""
+        os.environ["STEAM_COMPAT_MEDIA_PATH"] = ""
+        os.environ["STEAM_FOSSILIZE_DUMP_PATH"] = ""
+        os.environ["DXVK_STATE_CACHE_PATH"] = ""
+        result = umu_run.get_steam_layer_id(os.environ)
+
+        self.assertEqual(
+            result, 0, "Expected 0 when Steam environment variables are empty"
+        )
     def test_rearrange_gamescope_baselayer_order_broken(self):
         """Test rearrange_gamescope_baselayer_order when passed broken seq.
 
