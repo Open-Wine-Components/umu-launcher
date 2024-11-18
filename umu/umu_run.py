@@ -18,7 +18,6 @@ try:
 except ModuleNotFoundError:
     from importlib.abc import Traversable
 
-from logging import DEBUG, INFO, WARNING
 from pathlib import Path
 from pwd import getpwuid
 from re import match
@@ -41,7 +40,7 @@ from umu.umu_consts import (
     STEAM_WINDOW_ID,
     UMU_LOCAL,
 )
-from umu.umu_log import CustomFormatter, console_handler, log
+from umu.umu_log import log
 from umu.umu_plugins import set_env_toml
 from umu.umu_proton import get_umu_proton
 from umu.umu_runtime import setup_umu
@@ -845,7 +844,7 @@ def main() -> int:  # noqa: D103
         for key, val in os.environ.items():
             log.debug("%s=%s", key, val)
 
-    log.console(f"umu-launcher version {__version__} ({sys.version})")
+    log.info("umu-launcher version %s (%s)", __version__, sys.version)
 
     with ThreadPoolExecutor() as thread_pool:
         try:
