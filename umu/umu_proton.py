@@ -182,7 +182,7 @@ def _fetch_proton(
     if ret:
         tmp.joinpath(tarball).unlink(missing_ok=True)
         log.warning("zenity exited with the status code: %s", ret)
-        log.console("Retrying from Python...")
+        log.info("Retrying from Python...")
 
     if not os.environ.get("UMU_ZENITY") or ret:
         log.console(f"Downloading {tarball}...")
@@ -211,7 +211,7 @@ def _fetch_proton(
                 err: str = f"Digest mismatched: {tarball}"
                 raise ValueError(err)
 
-            log.console(f"{tarball}: SHA512 is OK")
+            log.info("%s: SHA512 is OK", tarball)
 
     return env
 
@@ -226,7 +226,7 @@ def _extract_dir(file: Path) -> None:
             log.warning("Python: %s", sys.version)
             log.warning("Using no data filter for archive")
             log.warning("Archive will be extracted insecurely")
-        log.console(f"Extracting {file.name}...")
+        log.info("Extracting %s...", file.name)
         log.debug("Source: %s", str(file).removesuffix(".tar.gz"))
         tar.extractall(path=file.parent)  # noqa: S202
 
@@ -258,8 +258,8 @@ def _get_from_steamcompat(
                 for text in resplit(r"(\d+)", proton.name)
             ],
         )
-        log.console(f"{latest.name} found in '{steam_compat}'")
-        log.console(f"Using {latest.name}")
+        log.info("%s found in '%s'", latest.name, steam_compat)
+        log.info("Using %s", latest.name)
         os.environ["PROTONPATH"] = str(latest)
         env["PROTONPATH"] = os.environ["PROTONPATH"]
     except ValueError:
@@ -306,7 +306,7 @@ def _get_latest(
 
     # Return if the latest Proton is already installed
     if steam_compat.joinpath(proton).is_dir():
-        log.console(f"{version} is up to date")
+        log.info("%s is up to date", version)
         steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
         steam_compat.joinpath("UMU-Latest").symlink_to(proton)
         os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
@@ -344,7 +344,7 @@ def _get_latest(
     os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     log.debug("Removing: %s", tarball)
-    log.console(f"Using {proton}")
+    log.info("Using %s", proton)
 
     return env
 
@@ -416,7 +416,7 @@ def _install_proton(
     _extract_dir(tmpdirs[1] / tarball)
 
     # Move decompressed archive to compatibilitytools.d
-    log.console(f"'{proton_path}' -> '{steam_compat}'")
+    log.info("'%s' -> '%s'", proton_path, steam_compat)
     move(proton_path, steam_compat)
 
     steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
