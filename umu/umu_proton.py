@@ -150,7 +150,7 @@ def _fetch_proton(
     # Digest file
     # Since the URLs are not hardcoded links, Ruff will flag the urlopen call
     # See https://github.com/astral-sh/ruff/issues/7918
-    log.console(f"Downloading {proton_hash}...")
+    log.info(f"Downloading {proton_hash}...")
     with (
         urlopen(proton_hash_url, context=ssl_default_context) as resp,  # noqa: S310
     ):
@@ -185,7 +185,7 @@ def _fetch_proton(
         log.info("Retrying from Python...")
 
     if not os.environ.get("UMU_ZENITY") or ret:
-        log.console(f"Downloading {tarball}...")
+        log.info("Downloading %s...", tarball)
         with (
             urlopen(tar_url, context=ssl_default_context) as resp,  # noqa: S310
         ):
