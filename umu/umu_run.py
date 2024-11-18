@@ -6,7 +6,7 @@ import threading
 import time
 import zipfile
 from _ctypes import CFuncPtr
-from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
+from argparse import Namespace
 from collections.abc import MutableMapping
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
@@ -48,75 +48,8 @@ from umu.umu_util import (
     get_libc,
     get_library_paths,
     is_installed_verb,
-    is_winetricks_verb,
     xdisplay,
 )
-
-
-def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
-    opt_args: set[str] = {"--help", "-h", "--config"}
-    parser: ArgumentParser = ArgumentParser(
-        description="Unified Linux Wine Game Launcher",
-        epilog=(
-            "See umu(1) for more info and examples, or visit\n"
-            "https://github.com/Open-Wine-Components/umu-launcher"
-        ),
-        formatter_class=RawTextHelpFormatter,
-    )
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="store_true",
-        help="show this version and exit",
-    )
-    parser.add_argument(
-        "--config", help=("path to TOML file (requires Python 3.11+)")
-    )
-    parser.add_argument(
-        "winetricks",
-        help=("run winetricks verbs (requires UMU-Proton or GE-Proton)"),
-        nargs="?",
-        default=None,
-    )
-
-    if not sys.argv[1:]:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
-
-    # Show version
-    # Need to avoid clashes with later options (for example: wineboot -u)
-    #   but parse_args scans the whole command line.
-    # So look at the first argument and see if we have -v or --version
-    #   in sort of the same way parse_args would.
-    if sys.argv[1].lower().endswith(("--version", "-v")):
-        print(
-            f"umu-launcher version {__version__} ({sys.version})",
-            file=sys.stderr,
-        )
-        sys.exit(0)
-
-    # Winetricks
-    # Exit if no winetricks verbs were passed
-    if sys.argv[1].endswith("winetricks") and not sys.argv[2:]:
-        err: str = "No winetricks verb specified"
-        log.error(err)
-        sys.exit(1)
-
-    # Exit if argument is not a verb
-    if sys.argv[1].endswith("winetricks") and not is_winetricks_verb(
-        sys.argv[2:]
-    ):
-        sys.exit(1)
-
-    if sys.argv[1:][0] in opt_args:
-        return parser.parse_args(sys.argv[1:])
-
-    if sys.argv[1] in PROTON_VERBS:
-        if "PROTON_VERB" not in os.environ:
-            os.environ["PROTON_VERB"] = sys.argv[1]
-        sys.argv.pop(1)
-
-    return sys.argv[1], sys.argv[2:]
 
 
 def setup_pfx(path: str) -> None:
@@ -735,7 +668,6 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     ret: int = 0
     prctl_ret: int = 0
     libc: str = get_libc()
-
     is_gamescope_session: bool = (
         os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
         or os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
@@ -781,8 +713,16 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     return ret
 
 
-def main() -> int:  # noqa: D103
-    args: Namespace | tuple[str, list[str]] = parse_args()
+def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
+    """Prepare and run an executable within the Steam Runtime.
+
+    The executable will typically be run through Proton, unless configured
+    otherwise. Will additionally download or auto update an existing Steam
+    Runtime version 2 (e.g., soldier, sniper) to be installed in
+    $XDG_DATA_HOME/umu or $HOME/.local/share/umu when invoked.
+
+    See umu(1) for details on other configuration options.
+    """
     env: dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
