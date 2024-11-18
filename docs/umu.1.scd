@@ -153,7 +153,7 @@ _UMU_LOG_
 	Optional. Enables debug logs for the launcher.
 	
 
-	Set _1_ to log environment variables, _warning_ for warning messages, or _debug_ to enable all logs.
+	Set _1_ to enable all logs.
 
 _STORE_
 	Optional. Can be an arbitrary value or a valid store id in the umu-database.
