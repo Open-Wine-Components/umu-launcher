@@ -1,68 +1,54 @@
 import sys
-from enum import Enum
 from logging import (
-    DEBUG,
-    ERROR,
-    INFO,
-    WARNING,
     Formatter,
     Logger,
     LogRecord,
     StreamHandler,
-    getLogger,
 )
 
+LogColor = {
+    "RESET": "\u001b[0m",
+    "INFO": "\u001b[34m",  # Blue
+    "WARNING": "\033[33m",  # Yellow
+    "ERROR": "\033[31m",  # Red
+    "DEBUG": "\u001b[35m",  # Purple
+    "BOLD": "\033[1m",
+    "GREY": "\033[90m",
+}
 
-class Color(Enum):
-    """Represent the color to be applied to a string."""
+SIMPLE_FORMAT = f"[{__package__}] %(levelname)s: %(message)s"
 
-    RESET = "\u001b[0m"
-    INFO = "\u001b[34m"
-    WARNING = "\033[33m"
-    ERROR = "\033[31m"
-    BOLD = "\033[1m"
-    DEBUG = "\u001b[35m"
-
-
-SIMPLE_FORMAT = (
-    f"%(levelname)s: {Color.BOLD.value}%(message)s{Color.RESET.value}"
+DEBUG_FORMAT = (
+    f"[{__package__}.%(module)s:%(lineno)d] %(levelname)s: %(message)s"
 )
-
-DEBUG_FORMAT = f"[%(module)s] %(levelname)s: {Color.BOLD.value}%(message)s{Color.RESET.value}"
 
 
 class CustomLogger(Logger):  # noqa: D101
-    def __init__(self, log: Logger) -> None:  # noqa: D107
-        super().__init__(log.name, log.getEffectiveLevel())
+    def __init__(self, name: str) -> None:  # noqa: D107
+        self._custom_fmt = SIMPLE_FORMAT
+        super().__init__(name)
 
-    def console(self, msg: str) -> None:
-        """Display non-debug-related statements to the console.
-
-        Intended to be used to notify umu setup progress state for command
-        line usage
-        """
-        print(f"{Color.BOLD.value}{msg}{Color.RESET.value}", file=sys.stderr)
+    def set_formatter(self, level: str) -> None:  # noqa: D102
+        console_handler: StreamHandler
+        if level in ("1", "debug"):  # Values for UMU_LOG
+            self._custom_fmt = DEBUG_FORMAT
+            self.setLevel("DEBUG")
+        console_handler = StreamHandler(stream=sys.stderr)
+        console_handler.setFormatter(CustomFormatter(self._custom_fmt))
+        for handler in self.handlers:
+            self.removeHandler(handler)
+        log.addHandler(console_handler)
 
 
 class CustomFormatter(Formatter):  # noqa: D101
-    def __init__(self, level: int = INFO) -> None:
-        """Apply colors to the record style for each level."""
-        self._fmt = DEBUG_FORMAT if level == DEBUG else SIMPLE_FORMAT
-        self._formats = {
-            DEBUG: f"{Color.DEBUG.value}{self._fmt}",
-            INFO: f"{Color.INFO.value}{self._fmt}",
-            WARNING: f"{Color.WARNING.value}{self._fmt}",
-            ERROR: f"{Color.ERROR.value}{self._fmt}",
-        }
-
     def format(self, record: LogRecord) -> str:  # noqa: D102
-        formatter: Formatter = Formatter(self._formats.get(record.levelno))
+        record.levelname = f"{LogColor.get(record.levelname)}{LogColor.get('BOLD')}{record.levelname}{LogColor.get('RESET')}"
+        return super().format(record)
 
-        return formatter.format(record)
 
-
-log: CustomLogger = CustomLogger(getLogger(__name__))
+log: CustomLogger = CustomLogger(__package__ or "umu")
 
 console_handler: StreamHandler = StreamHandler(stream=sys.stderr)
-console_handler.setFormatter(CustomFormatter())
+console_handler.setFormatter(CustomFormatter(SIMPLE_FORMAT))
 log.addHandler(console_handler)
+log.setLevel("INFO")
