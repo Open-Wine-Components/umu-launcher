@@ -762,28 +762,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             Path(__file__).resolve().parent.parent, Path(__file__).parent.name
         )
 
-    if os.geteuid() == 0:
-        err: str = "This script should never be run as the root user"
-        log.error(err)
-        sys.exit(1)
-
-    if "musl" in os.environ.get("LD_LIBRARY_PATH", ""):
-        err: str = "This script is not designed to run on musl-based systems"
-        log.error(err)
-        sys.exit(1)
-
-    # Adjust the log level for the logger
-    if os.environ.get("UMU_LOG") == "1":
-        log.setLevel(level=INFO)
-    elif os.environ.get("UMU_LOG") == "warn":
-        log.setLevel(level=WARNING)
-    elif os.environ.get("UMU_LOG") == "debug":
-        console_handler.setFormatter(CustomFormatter(DEBUG))
-        log.addHandler(console_handler)
-        log.setLevel(level=DEBUG)
-        for key, val in os.environ.items():
-            log.debug("%s=%s", key, val)
-
     log.info("umu-launcher version %s (%s)", __version__, sys.version)
 
     with ThreadPoolExecutor() as thread_pool:
