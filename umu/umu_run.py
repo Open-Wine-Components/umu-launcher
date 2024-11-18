@@ -825,7 +825,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         # Set all environment variables
         # NOTE: `env` after this block should be read only
         for key, val in env.items():
-            log.info("%s=%s", key, val)
+            log.debug("%s=%s", key, val)
             os.environ[key] = val
 
         try:
