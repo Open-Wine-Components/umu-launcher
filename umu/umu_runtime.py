@@ -118,7 +118,7 @@ def _install_umu(
     # Handle the exit code from zenity
     if ret:
         tmp.joinpath(archive).unlink(missing_ok=True)
-        log.console("Retrying from Python...")
+        log.info("Retrying from Python...")
 
     if not os.environ.get("UMU_ZENITY") or ret:
         digest: str = ""
@@ -145,7 +145,7 @@ def _install_umu(
                     break
 
         # Download the runtime
-        log.console(f"Downloading latest steamrt {codename}, please wait...")
+        log.info("Downloading latest steamrt %s, please wait...", codename)
         client_session.request("GET", f"{endpoint}/{archive}{token}")
 
         with (
@@ -170,7 +170,7 @@ def _install_umu(
                 err: str = f"Digest mismatched: {archive}"
                 raise ValueError(err)
 
-        log.console(f"{archive}: SHA256 is OK")
+        log.info("%s: SHA256 is OK", archive)
 
     # Open the tar file and move the files
     log.debug("Opening: %s", tmp.joinpath(archive))
@@ -251,9 +251,7 @@ def setup_umu(
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
         log.debug("New install detected")
-        log.console(
-            "Setting up Unified Launcher for Windows Games on Linux..."
-        )
+        log.info("Setting up Unified Launcher for Windows Games on Linux...")
         local.mkdir(parents=True, exist_ok=True)
         with https_connection(host) as client_session:
             _restore_umu(
@@ -305,7 +303,7 @@ def _update_umu(
     except ValueError:
         log.debug("*_platform_* directory missing in '%s'", local)
         log.warning("Runtime Platform not found")
-        log.console("Restoring Runtime Platform...")
+        log.info("Restoring Runtime Platform...")
         _restore_umu(
             json,
             thread_pool,
@@ -323,7 +321,7 @@ def _update_umu(
     if not local.joinpath("pressure-vessel").is_dir():
         log.debug("pressure-vessel directory missing in '%s'", local)
         log.warning("Runtime Platform not found")
-        log.console("Restoring Runtime Platform...")
+        log.info("Restoring Runtime Platform...")
         _restore_umu(
             json,
             thread_pool,
@@ -347,7 +345,7 @@ def _update_umu(
         if not release.is_file():
             log.debug("os-release file missing in '%s'", local)
             log.warning("Runtime Platform corrupt")
-            log.console("Restoring Runtime Platform...")
+            log.info("Restoring Runtime Platform...")
             _restore_umu(
                 json,
                 thread_pool,
@@ -424,7 +422,7 @@ def _update_umu(
 
         if steamrt_latest_digest != steamrt_local_digest:
             lock: FileLock = FileLock(f"{local}/umu.lock")
-            log.console("Updating steamrt to latest...")
+            log.info("Updating steamrt to latest...")
             log.debug("Acquiring file lock '%s'...", lock.lock_file)
 
             with lock:
@@ -446,7 +444,7 @@ def _update_umu(
     if not local.joinpath("umu-shim").exists():
         create_shim()
 
-    log.console("steamrt is up to date")
+    log.info("steamrt is up to date")
 
 
 def _get_json(path: Traversable, config: str) -> dict[str, Any]:
@@ -539,7 +537,7 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
         log.warning("File does not exist: '%s'", pv_verify)
         return ret
 
-    log.console(f"Verifying integrity of {runtime.name}...")
+    log.info("Verifying integrity of %s...", runtime.name)
     ret = run(
         [
             pv_verify,
@@ -554,7 +552,7 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
         log.warning("steamrt validation failed")
         log.debug("%s exited with the status code: %s", pv_verify.name, ret)
         return ret
-    log.console(f"{runtime.name}: mtree is OK")
+    log.info("%s: mtree is OK", runtime.name)
 
     return ret
 
@@ -569,7 +567,7 @@ def _restore_umu(
         log.debug("Acquired file lock '%s'...", lock.lock_file)
         if callback_fn():
             log.debug("Released file lock '%s'", lock.lock_file)
-            log.console("steamrt was restored")
+            log.info("steamrt was restored")
             return
         _install_umu(json, thread_pool, client_session)
         log.debug("Released file lock '%s'", lock.lock_file)
