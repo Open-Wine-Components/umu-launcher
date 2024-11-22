@@ -227,6 +227,8 @@ select = [
     "A",
     # Ensure there's no empty comments
     "PLR2044",
+    # Prefer refactoring nested if-else to elif
+    "PLR5501",
 ]
 ignore = [
     # Format
