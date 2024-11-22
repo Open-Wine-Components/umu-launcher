@@ -233,6 +233,13 @@ select = [
     "PLR6201",
     # Prefer creating constants instead of magic values
     "PLR2004",
+    # Refactor long equality expressions to membership tests
+    # Example:
+    # i == 'foo' or i == 'bar' or i == 'baz'
+    #
+    # Use instead:
+    # i in {'foo', 'bar', 'baz'}
+    "PLR1714",
 ]
 ignore = [
     # Format
