@@ -10,6 +10,7 @@ try:
 except ModuleNotFoundError:
     from importlib.abc import Traversable
 
+from http import HTTPStatus
 from json import load
 from pathlib import Path
 from secrets import token_urlsafe
@@ -131,8 +132,10 @@ def _install_umu(
         client_session.request("GET", f"{endpoint}/SHA256SUMS{token}")
 
         with client_session.getresponse() as resp:
-            if resp.status != 200:
-                err: str = f"repo.steampowered.com returned the status: {resp.status}"
+            if resp.status != HTTPStatus.OK:
+                err: str = (
+                    f"repo.steampowered.com returned the status: {resp.status}"
+                )
                 raise HTTPException(err)
 
             # Parse SHA256SUMS
@@ -149,8 +152,10 @@ def _install_umu(
             client_session.getresponse() as resp,
             tmp.joinpath(archive).open(mode="ab+", buffering=0) as file,
         ):
-            if resp.status != 200:
-                err: str = f"repo.steampowered.com returned the status: {resp.status}"
+            if resp.status != HTTPStatus.OK:
+                err: str = (
+                    f"repo.steampowered.com returned the status: {resp.status}"
+                )
                 raise HTTPException(err)
 
             chunk_size: int = 64 * 1024  # 64 KB
@@ -351,7 +356,7 @@ def _update_umu(
 
         with client_session.getresponse() as resp:
             # Handle the redirect
-            if resp.status == 301:
+            if resp.status == HTTPStatus.MOVED_PERMANENTLY:
                 location: str = resp.getheader("Location", "")
                 log.debug("Location: %s", resp.getheader("Location"))
                 # The stdlib requires reading the entire response body before
@@ -361,7 +366,7 @@ def _update_umu(
                 # Make a request to the new location
                 client_session.request("GET", f"{location}/{versions}{token}")
                 with client_session.getresponse() as resp_redirect:
-                    if resp_redirect.status != 200:
+                    if resp_redirect.status != HTTPStatus.OK:
                         log.warning(
                             "repo.steampowered.com returned the status: %s",
                             resp_redirect.status,
@@ -381,8 +386,10 @@ def _update_umu(
 
     # Attempt to compare the digests
     with client_session.getresponse() as resp:
-        if resp.status != 200:
-            log.warning("repo.steampowered.com returned the status: %s", resp.status)
+        if resp.status != HTTPStatus.OK:
+            log.warning(
+                "repo.steampowered.com returned the status: %s", resp.status
+            )
             return
 
         steamrt_latest_digest: bytes = sha256(resp.read()).digest()

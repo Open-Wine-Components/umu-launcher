@@ -2,6 +2,7 @@ import os
 import sys
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha512
+from http import HTTPStatus
 from http.client import HTTPException
 from json import loads
 from pathlib import Path
@@ -94,7 +95,7 @@ def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
         Request(f"{url}{repo}", headers=headers),  # noqa: S310
         context=ssl_default_context,
     ) as resp:
-        if resp.status != 200:
+        if resp.status != HTTPStatus.OK:
             return ()
         releases = loads(resp.read().decode("utf-8")).get("assets", [])
 
@@ -115,10 +116,10 @@ def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
             )
             asset_count += 1
             continue
-        if asset_count == 2:
+        if asset_count == 2:  # noqa: PLR2004
             break
 
-    if asset_count != 2:
+    if asset_count != 2:  # noqa: PLR2004
         err: str = "Failed to acquire all assets from api.github.com"
         raise RuntimeError(err)
 
@@ -147,7 +148,7 @@ def _fetch_proton(
     # See https://github.com/astral-sh/ruff/issues/7918
     log.console(f"Downloading {proton_hash}...")
     with (urlopen(proton_hash_url, context=ssl_default_context) as resp,):  # noqa: S310
-        if resp.status != 200:
+        if resp.status != HTTPStatus.OK:
             err: str = (
                 f"Unable to download {proton_hash}\n"
                 f"github.com returned the status: {resp.status}"
@@ -183,7 +184,7 @@ def _fetch_proton(
             hashsum = sha512()
 
             # Crash here because without Proton, the launcher will not work
-            if resp.status != 200:
+            if resp.status != HTTPStatus.OK:
                 err: str = (
                     f"Unable to download {tarball}\n"
                     f"github.com returned the status: {resp.status}"
