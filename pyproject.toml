@@ -225,6 +225,8 @@ select = [
     "C4",
     # Ensure we do not shadow any Python built-in functionality
     "A",
+    # Ensure there's no empty comments
+    "PLR2044",
 ]
 ignore = [
     # Format
