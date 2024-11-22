@@ -145,7 +145,9 @@ def is_installed_verb(verb: list[str], pfx: Path) -> bool:
             _: str = line.strip()
             if _ in verbs:
                 is_installed = True
-                err: str = f"winetricks verb '{_}' is already installed in '{pfx}'"
+                err: str = (
+                    f"winetricks verb '{_}' is already installed in '{pfx}'"
+                )
                 log.error(err)
                 break
 

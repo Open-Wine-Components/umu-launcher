@@ -24,7 +24,9 @@ class Color(Enum):
     DEBUG = "\u001b[35m"
 
 
-SIMPLE_FORMAT = f"%(levelname)s: {Color.BOLD.value}%(message)s{Color.RESET.value}"
+SIMPLE_FORMAT = (
+    f"%(levelname)s: {Color.BOLD.value}%(message)s{Color.RESET.value}"
+)
 
 DEBUG_FORMAT = f"[%(module)s] %(levelname)s: {Color.BOLD.value}%(message)s{Color.RESET.value}"
 
