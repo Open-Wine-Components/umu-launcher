@@ -231,6 +231,8 @@ select = [
     "PLR5501",
     # Enforce using set literal membership than other data structures
     "PLR6201",
+    # Prefer creating constants instead of magic values
+    "PLR2004",
 ]
 ignore = [
     # Format
