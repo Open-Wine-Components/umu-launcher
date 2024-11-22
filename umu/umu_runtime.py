@@ -10,6 +10,7 @@ try:
 except ModuleNotFoundError:
     from importlib.abc import Traversable
 
+from http import HTTPStatus
 from json import load
 from pathlib import Path
 from secrets import token_urlsafe
@@ -72,7 +73,7 @@ def create_shim(file_path: Path | None = None):
     )
 
     # Write the script content to the specified file path
-    with file_path.open('w') as file:
+    with file_path.open("w") as file:
         file.write(script_content)
 
     # Make the script executable
@@ -131,8 +132,10 @@ def _install_umu(
         client_session.request("GET", f"{endpoint}/SHA256SUMS{token}")
 
         with client_session.getresponse() as resp:
-            if resp.status != 200:
-                err: str = f"repo.steampowered.com returned the status: {resp.status}"
+            if resp.status != HTTPStatus.OK:
+                err: str = (
+                    f"repo.steampowered.com returned the status: {resp.status}"
+                )
                 raise HTTPException(err)
 
             # Parse SHA256SUMS
@@ -149,8 +152,10 @@ def _install_umu(
             client_session.getresponse() as resp,
             tmp.joinpath(archive).open(mode="ab+", buffering=0) as file,
         ):
-            if resp.status != 200:
-                err: str = f"repo.steampowered.com returned the status: {resp.status}"
+            if resp.status != HTTPStatus.OK:
+                err: str = (
+                    f"repo.steampowered.com returned the status: {resp.status}"
+                )
                 raise HTTPException(err)
 
             chunk_size: int = 64 * 1024  # 64 KB
@@ -177,7 +182,9 @@ def _install_umu(
         log.debug("Moving: %s -> %s", tmp.joinpath(archive), tmpcache)
         move(tmp.joinpath(archive), tmpcache)
 
-        with (taropen(f"{tmpcache}/{archive}", "r:xz") as tar,):
+        with (
+            taropen(f"{tmpcache}/{archive}", "r:xz") as tar,
+        ):
             futures: list[Future] = []
 
             if has_data_filter:
@@ -192,7 +199,9 @@ def _install_umu(
             UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
             # Extract the entirety of the archive w/ or w/o the data filter
-            log.debug("Extracting: %s -> %s", f"{tmpcache}/{archive}", tmpcache)
+            log.debug(
+                "Extracting: %s -> %s", f"{tmpcache}/{archive}", tmpcache
+            )
             tar.extractall(path=tmpcache)  # noqa: S202
 
             # Move the files to the correct location
@@ -230,7 +239,9 @@ def _install_umu(
     check_runtime(UMU_LOCAL, json)
 
 
-def setup_umu(root: Traversable, local: Path, thread_pool: ThreadPoolExecutor) -> None:
+def setup_umu(
+    root: Traversable, local: Path, thread_pool: ThreadPoolExecutor
+) -> None:
     """Install or update the runtime for the current user."""
     log.debug("Root: %s", root)
     log.debug("Local: %s", local)
@@ -240,7 +251,9 @@ def setup_umu(root: Traversable, local: Path, thread_pool: ThreadPoolExecutor) -
     # New install or umu dir is empty
     if not local.exists() or not any(local.iterdir()):
         log.debug("New install detected")
-        log.console("Setting up Unified Launcher for Windows Games on Linux...")
+        log.console(
+            "Setting up Unified Launcher for Windows Games on Linux..."
+        )
         local.mkdir(parents=True, exist_ok=True)
         with https_connection(host) as client_session:
             _restore_umu(
@@ -276,7 +289,8 @@ def _update_umu(
     resp: HTTPResponse
     codename: str = json["umu"]["versions"]["runtime_platform"]
     endpoint: str = (
-        f"/steamrt-images-{codename}" "/snapshots/latest-container-runtime-public-beta"
+        f"/steamrt-images-{codename}"
+        "/snapshots/latest-container-runtime-public-beta"
     )
     token: str = f"?version={token_urlsafe(16)}"
     log.debug("Existing install detected")
@@ -285,7 +299,9 @@ def _update_umu(
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the alias
     try:
-        runtime = max(file for file in local.glob(f"{codename}*") if file.is_dir())
+        runtime = max(
+            file for file in local.glob(f"{codename}*") if file.is_dir()
+        )
     except ValueError:
         log.debug("*_platform_* directory missing in '%s'", local)
         log.warning("Runtime Platform not found")
@@ -293,7 +309,9 @@ def _update_umu(
         _restore_umu(
             json,
             thread_pool,
-            lambda: len([file for file in local.glob(f"{codename}*") if file.is_dir()])
+            lambda: len(
+                [file for file in local.glob(f"{codename}*") if file.is_dir()]
+            )
             > 0,
             client_session,
         )
@@ -343,15 +361,19 @@ def _update_umu(
             for line in file:
                 if line.startswith("BUILD_ID"):
                     # Get the value after 'BUILD_ID=' and strip the quotes
-                    build_id: str = line.removeprefix("BUILD_ID=").rstrip().strip('"')
-                    url = f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
+                    build_id: str = (
+                        line.removeprefix("BUILD_ID=").rstrip().strip('"')
+                    )
+                    url = (
+                        f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
+                    )
                     break
 
         client_session.request("GET", f"{url}{token}")
 
         with client_session.getresponse() as resp:
             # Handle the redirect
-            if resp.status == 301:
+            if resp.status == HTTPStatus.MOVED_PERMANENTLY:
                 location: str = resp.getheader("Location", "")
                 log.debug("Location: %s", resp.getheader("Location"))
                 # The stdlib requires reading the entire response body before
@@ -361,13 +383,15 @@ def _update_umu(
                 # Make a request to the new location
                 client_session.request("GET", f"{location}/{versions}{token}")
                 with client_session.getresponse() as resp_redirect:
-                    if resp_redirect.status != 200:
+                    if resp_redirect.status != HTTPStatus.OK:
                         log.warning(
                             "repo.steampowered.com returned the status: %s",
                             resp_redirect.status,
                         )
                         return
-                    local.joinpath("VERSIONS.txt").write_text(resp.read().decode())
+                    local.joinpath("VERSIONS.txt").write_text(
+                        resp.read().decode()
+                    )
 
     # Update the runtime if necessary by comparing VERSIONS.txt to the remote
     # repo.steampowered currently sits behind a Cloudflare proxy, which may
@@ -381,8 +405,10 @@ def _update_umu(
 
     # Attempt to compare the digests
     with client_session.getresponse() as resp:
-        if resp.status != 200:
-            log.warning("repo.steampowered.com returned the status: %s", resp.status)
+        if resp.status != HTTPStatus.OK:
+            log.warning(
+                "repo.steampowered.com returned the status: %s", resp.status
+            )
             return
 
         steamrt_latest_digest: bytes = sha256(resp.read()).digest()
@@ -453,7 +479,9 @@ def _get_json(path: Traversable, config: str) -> dict[str, Any]:
 
     # Raise an error if "umu" and "versions" doesn't exist
     if not json or "umu" not in json or "versions" not in json["umu"]:
-        err: str = f"Failed to load {config} or 'umu' or 'versions' not in: {config}"
+        err: str = (
+            f"Failed to load {config} or 'umu' or 'versions' not in: {config}"
+        )
         raise ValueError(err)
 
     # The launcher will use the value runtime_platform to glob files. Attempt
@@ -498,7 +526,9 @@ def check_runtime(src: Path, json: dict[str, Any]) -> int:
 
     # Find the runtime directory
     try:
-        runtime = max(file for file in src.glob(f"{codename}*") if file.is_dir())
+        runtime = max(
+            file for file in src.glob(f"{codename}*") if file.is_dir()
+        )
     except ValueError:
         log.warning("steamrt validation failed")
         log.warning("Could not find runtime in '%s'", src)

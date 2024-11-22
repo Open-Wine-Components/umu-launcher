@@ -2,6 +2,7 @@ import os
 import sys
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha512
+from http import HTTPStatus
 from http.client import HTTPException
 from json import loads
 from pathlib import Path
@@ -94,7 +95,7 @@ def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
         Request(f"{url}{repo}", headers=headers),  # noqa: S310
         context=ssl_default_context,
     ) as resp:
-        if resp.status != 200:
+        if resp.status != HTTPStatus.OK:
             return ()
         releases = loads(resp.read().decode("utf-8")).get("assets", [])
 
@@ -115,10 +116,10 @@ def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
             )
             asset_count += 1
             continue
-        if asset_count == 2:
+        if asset_count == 2:  # noqa: PLR2004
             break
 
-    if asset_count != 2:
+    if asset_count != 2:  # noqa: PLR2004
         err: str = "Failed to acquire all assets from api.github.com"
         raise RuntimeError(err)
 
@@ -138,16 +139,22 @@ def _fetch_proton(
     digest: str = ""  # Digest of the Proton archive
 
     # Verify the scheme from Github for resources
-    if not tar_url.startswith("https:") or not proton_hash_url.startswith("https:"):
-        err: str = f"Scheme in URLs is not 'https:': {(tar_url, proton_hash_url)}"
+    if not tar_url.startswith("https:") or not proton_hash_url.startswith(
+        "https:"
+    ):
+        err: str = (
+            f"Scheme in URLs is not 'https:': {(tar_url, proton_hash_url)}"
+        )
         raise ValueError(err)
 
     # Digest file
     # Since the URLs are not hardcoded links, Ruff will flag the urlopen call
     # See https://github.com/astral-sh/ruff/issues/7918
     log.console(f"Downloading {proton_hash}...")
-    with (urlopen(proton_hash_url, context=ssl_default_context) as resp,):  # noqa: S310
-        if resp.status != 200:
+    with (
+        urlopen(proton_hash_url, context=ssl_default_context) as resp,  # noqa: S310
+    ):
+        if resp.status != HTTPStatus.OK:
             err: str = (
                 f"Unable to download {proton_hash}\n"
                 f"github.com returned the status: {resp.status}"
@@ -179,11 +186,13 @@ def _fetch_proton(
 
     if not os.environ.get("UMU_ZENITY") or ret:
         log.console(f"Downloading {tarball}...")
-        with (urlopen(tar_url, context=ssl_default_context) as resp,):  # noqa: S310
+        with (
+            urlopen(tar_url, context=ssl_default_context) as resp,  # noqa: S310
+        ):
             hashsum = sha512()
 
             # Crash here because without Proton, the launcher will not work
-            if resp.status != 200:
+            if resp.status != HTTPStatus.OK:
                 err: str = (
                     f"Unable to download {tarball}\n"
                     f"github.com returned the status: {resp.status}"
@@ -232,7 +241,9 @@ def _get_from_steamcompat(
     existing Proton build of that same version will be used
     """
     version: str = (
-        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
+        "GE-Proton"
+        if os.environ.get("PROTONPATH") == "GE-Proton"
+        else "UMU-Proton"
     )
 
     try:
@@ -288,7 +299,9 @@ def _get_latest(
     tarball = assets[1][0]
     proton = tarball.removesuffix(".tar.gz")
     version = (
-        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
+        "GE-Proton"
+        if os.environ.get("PROTONPATH") == "GE-Proton"
+        else "UMU-Proton"
     )
 
     # Return if the latest Proton is already installed
@@ -378,7 +391,9 @@ def _install_proton(
     """
     future: Future | None = None
     version: str = (
-        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
+        "GE-Proton"
+        if os.environ.get("PROTONPATH") == "GE-Proton"
+        else "UMU-Proton"
     )
     proton: str = tarball.removesuffix(".tar.gz")
     archive_path: str = f"{tmpdirs[0]}/{tarball}"
