@@ -242,6 +242,15 @@ select = [
     "PLR1714",
     # Ensure our pyproject.toml follows relevant PEPs whenever we make changes to it
     "RUF200",
+    # Parenthesize chained operations in expressions.
+    # Example:
+    # a, b, c = 1, 0, 2
+    # x = a or b and c
+    #
+    # Use instead:
+    # a, b, c = 1, 0, 2
+    # x = a or (b and c)
+    "RUF021",
 ]
 ignore = [
     # Format
