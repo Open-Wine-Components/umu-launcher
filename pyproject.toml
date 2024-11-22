@@ -2,10 +2,6 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[lint.per-file-ignores]
-"umu_test.py" = ["ANN"]
-"umu_test_plugins.py" = ["ANN"]
-
 [project]
 name = "umu-launcher"
 dynamic = ["version"]
@@ -262,3 +258,7 @@ unfixable = []
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 logger-objects = ["umu.umu_log.log"]
+
+[tool.ruff.lint.per-file-ignores]
+"umu_test.py" = ["ANN"]
+"umu_test_plugins.py" = ["ANN"]
