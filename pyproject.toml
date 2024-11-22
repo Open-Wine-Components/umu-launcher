@@ -229,6 +229,8 @@ select = [
     "PLR2044",
     # Prefer refactoring nested if-else to elif
     "PLR5501",
+    # Enforce using set literal membership than other data structures
+    "PLR6201",
 ]
 ignore = [
     # Format
