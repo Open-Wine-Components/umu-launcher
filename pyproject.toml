@@ -251,6 +251,8 @@ select = [
     # a, b, c = 1, 0, 2
     # x = a or (b and c)
     "RUF021",
+    # When importing modules, ensure we do not shadow built-ins
+    "A004",
 ]
 ignore = [
     # Format
