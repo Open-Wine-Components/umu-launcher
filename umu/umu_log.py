@@ -19,7 +19,7 @@ class Color:  # noqa: D101
     RESET = "\u001b[0m"
 
 
-SIMPLE_FORMAT = "[%(name)s] %(levelname)s: %(message)s"
+SIMPLE_FORMAT = "%(levelname)s: %(message)s"
 
 DEBUG_FORMAT = "[%(name)s.%(module)s:%(lineno)d] %(levelname)s: %(message)s"
 
