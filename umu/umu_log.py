@@ -12,7 +12,6 @@ class Color:  # noqa: D101
     DEBUG = "\u001b[35m"  # Purple
     INFO = "\u001b[34m"  # Blue
     WARNING = "\033[33m"  # Yellow
-    FATAL = "\033[33m"
     CRITICAL = "\033[33m"
     BOLD = "\033[1m"
     GREY = "\033[90m"
