@@ -108,7 +108,3 @@ if __name__ == "__main__":
             sys.exit(e.code)
     except BaseException as e:
         log.exception(e)
-    finally:
-        UMU_LOCAL.joinpath(".ref").unlink(
-            missing_ok=True
-        )  # Cleanup .ref file on every exit
