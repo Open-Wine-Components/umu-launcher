@@ -44,7 +44,27 @@ class CustomLogger(Logger):  # noqa: D101
 
 class CustomFormatter(Formatter):  # noqa: D101
     def format(self, record: LogRecord) -> str:  # noqa: D102
-        record.levelname = f"{LogColor.get(record.levelname)}{LogColor.get('BOLD')}{record.levelname}{LogColor.get('RESET')}"
+        color: Color
+        match record.levelname:
+            case "INFO":
+                color = Color.INFO
+            case "DEBUG":
+                color = Color.DEBUG
+            case "CRITICAL":
+                color = Color.CRITICAL
+            case "ERROR":
+                color = Color.ERROR
+            case "WARNING":
+                color = Color.WARNING
+            case "WARN":
+                color = Color.WARNING
+            case "FATAL":
+                color = Color.WARNING
+            case _:
+                color = Color.BOLD
+        record.levelname = (
+            f"{color}{Color.BOLD}{record.levelname}{Color.RESET}"
+        )
         return super().format(record)
 
 
