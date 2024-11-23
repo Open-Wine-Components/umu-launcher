@@ -30,7 +30,7 @@ class CustomLogger(Logger):  # noqa: D101
 
     def set_formatter(self, level: str) -> None:  # noqa: D102
         console_handler: StreamHandler
-        if level in ("1", "debug"):  # Values for UMU_LOG
+        if level in {"1", "debug"}:  # Values for UMU_LOG
             self._custom_fmt = DEBUG_FORMAT
             self.setLevel("DEBUG")
         console_handler = StreamHandler(stream=sys.stderr)
