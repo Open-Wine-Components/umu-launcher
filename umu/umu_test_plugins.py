@@ -14,7 +14,7 @@ from tomllib import TOMLDecodeError
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from umu import umu_plugins, umu_run, umu_runtime
+from umu import __main__, umu_plugins, umu_run, umu_runtime
 
 
 class TestGameLauncherPlugins(unittest.TestCase):
@@ -202,12 +202,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             # Config
             umu_plugins.set_env_toml(self.env, result)
             # Prefix
@@ -278,12 +278,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             # Config
             umu_plugins.set_env_toml(self.env, result)
             # Prefix
@@ -360,12 +360,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             # Config
             umu_plugins.set_env_toml(self.env, result)
             # Prefix
@@ -459,12 +459,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -497,12 +497,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -533,12 +533,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -571,12 +571,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -637,12 +637,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -703,12 +703,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
@@ -783,12 +783,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             file.write(toml_str)
 
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )

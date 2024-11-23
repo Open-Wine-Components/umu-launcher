@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, patch
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from umu import umu_proton, umu_run, umu_runtime, umu_util
+from umu import __main__, umu_proton, umu_run, umu_runtime, umu_util
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -1086,7 +1086,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
-            args = umu_run.parse_args()
+            args = __main__.parse_args()
             # Config
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1153,7 +1153,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
-            args = umu_run.parse_args()
+            args = __main__.parse_args()
             # Config
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1253,7 +1253,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
-            args = umu_run.parse_args()
+            args = __main__.parse_args()
             # Config
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1332,7 +1332,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_PROTON"] = "1"
             # Args
-            result_args = umu_run.parse_args()
+            result_args = __main__.parse_args()
             # Config
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1418,7 +1418,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
             # Args
-            result_args = umu_run.parse_args()
+            result_args = __main__.parse_args()
             # Config
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1497,7 +1497,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "pressure-vessel"
             # Args
-            result_args = umu_run.parse_args()
+            result_args = __main__.parse_args()
             # Config
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1544,7 +1544,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
-            result_args = umu_run.parse_args()
+            result_args = __main__.parse_args()
             # Config
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1641,7 +1641,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             # Check
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1725,7 +1725,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             # Check
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1834,7 +1834,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             # Check
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -1951,7 +1951,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTON_VERB"] = self.test_verb
             os.environ["UMU_RUNTIME_UPDATE"] = "0"
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             # Check
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -2082,7 +2082,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = test_str
             os.environ["PROTON_VERB"] = proton_verb
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             # Check
             umu_run.check_env(self.env, thread_pool)
             # Prefix
@@ -2487,7 +2487,7 @@ class TestGameLauncher(unittest.TestCase):
             patch("sys.argv", ["", "winetricks"]),
             self.assertRaises(SystemExit),
         ):
-            umu_run.parse_args()
+            __main__.parse_args()
 
     def test_parse_args_noopts(self):
         """Test parse_args with no options.
@@ -2495,7 +2495,7 @@ class TestGameLauncher(unittest.TestCase):
         A SystemExit should be raised in this usage: ./umu_run.py
         """
         with self.assertRaises(SystemExit):
-            umu_run.parse_args()
+            __main__.parse_args()
 
     def test_parse_args(self):
         """Test parse_args."""
@@ -2508,7 +2508,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = self.test_file
 
             # Args
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             self.assertIsInstance(result, tuple, "Expected a tuple")
             self.assertIsInstance(result[0], str, "Expected a string")
             self.assertIsInstance(
@@ -2523,11 +2523,11 @@ class TestGameLauncher(unittest.TestCase):
     def test_parse_args_config(self):
         """Test parse_args --config."""
         with patch.object(
-            umu_run,
+            __main__,
             "parse_args",
             return_value=argparse.Namespace(config=self.test_file),
         ):
-            result = umu_run.parse_args()
+            result = __main__.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
             )
