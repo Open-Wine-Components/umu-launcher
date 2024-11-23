@@ -79,7 +79,7 @@ def main() -> int:  # noqa: D103
     args: Namespace | tuple[str, list[str]]
 
     # Adjust logger for debugging when configured
-    if os.environ.get("UMU_LOG") in ("1", "debug"):
+    if os.environ.get("UMU_LOG") in {"1", "debug"}:
         log.setLevel(level="DEBUG")
         log.set_formatter(os.environ["UMU_LOG"])
         for key, val in os.environ.items():
