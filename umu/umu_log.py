@@ -19,9 +19,10 @@ class Color(StrEnum):  # noqa: D101
     GREY = "\033[90m"
     RESET = "\u001b[0m"
 
-DEBUG_FORMAT = (
-    f"[{__package__}.%(module)s:%(lineno)d] %(levelname)s: %(message)s"
-)
+
+SIMPLE_FORMAT = "[%(name)s] %(levelname)s: %(message)s"
+
+DEBUG_FORMAT = "[%(name)s.%(module)s:%(lineno)d] %(levelname)s: %(message)s"
 
 
 class CustomLogger(Logger):  # noqa: D101
