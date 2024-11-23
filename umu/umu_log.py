@@ -1,5 +1,4 @@
 import sys
-from enum import StrEnum
 from logging import (
     Formatter,
     Logger,
@@ -8,7 +7,7 @@ from logging import (
 )
 
 
-class Color(StrEnum):  # noqa: D101
+class Color:  # noqa: D101
     ERROR = "\033[31m"  # Red
     DEBUG = "\u001b[35m"  # Purple
     INFO = "\u001b[34m"  # Blue
@@ -44,7 +43,7 @@ class CustomLogger(Logger):  # noqa: D101
 
 class CustomFormatter(Formatter):  # noqa: D101
     def format(self, record: LogRecord) -> str:  # noqa: D102
-        color: Color
+        color: str
         match record.levelname:
             case "INFO":
                 color = Color.INFO
