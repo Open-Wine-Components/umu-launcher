@@ -1,4 +1,5 @@
 import sys
+from enum import StrEnum
 from logging import (
     Formatter,
     Logger,
@@ -6,17 +7,17 @@ from logging import (
     StreamHandler,
 )
 
-LogColor = {
-    "RESET": "\u001b[0m",
-    "INFO": "\u001b[34m",  # Blue
-    "WARNING": "\033[33m",  # Yellow
-    "ERROR": "\033[31m",  # Red
-    "DEBUG": "\u001b[35m",  # Purple
-    "BOLD": "\033[1m",
-    "GREY": "\033[90m",
-}
 
-SIMPLE_FORMAT = f"[{__package__}] %(levelname)s: %(message)s"
+class Color(StrEnum):  # noqa: D101
+    ERROR = "\033[31m"  # Red
+    DEBUG = "\u001b[35m"  # Purple
+    INFO = "\u001b[34m"  # Blue
+    WARNING = "\033[33m"  # Yellow
+    FATAL = "\033[33m"
+    CRITICAL = "\033[33m"
+    BOLD = "\033[1m"
+    GREY = "\033[90m"
+    RESET = "\u001b[0m"
 
 DEBUG_FORMAT = (
     f"[{__package__}.%(module)s:%(lineno)d] %(levelname)s: %(message)s"
