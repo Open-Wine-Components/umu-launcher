@@ -76,7 +76,7 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
 
 
 def main() -> int:  # noqa: D103
-    args: Namespace | tuple[str, list[str]]
+    args: Namespace | tuple[str, list[str]] = parse_args()
 
     # Adjust logger for debugging when configured
     if os.environ.get("UMU_LOG") in {"1", "debug"}:
@@ -84,8 +84,6 @@ def main() -> int:  # noqa: D103
         log.set_formatter(os.environ["UMU_LOG"])
         for key, val in os.environ.items():
             log.debug("%s=%s", key, val)
-
-    args = parse_args()
 
     if os.geteuid() == 0:
         err: str = "This script should never be run as the root user"
