@@ -24,7 +24,7 @@ from filelock import FileLock
 
 from umu.umu_consts import CONFIG, UMU_CACHE, UMU_LOCAL
 from umu.umu_log import log
-from umu.umu_util import find_obsolete, https_connection, run_zenity
+from umu.umu_util import https_connection, run_zenity
 
 try:
     from tarfile import tar_filter
@@ -265,8 +265,6 @@ def setup_umu(
     if os.environ.get("UMU_RUNTIME_UPDATE") == "0":
         log.debug("Runtime Platform updates disabled")
         return
-
-    find_obsolete()
 
     with https_connection(host) as client_session:
         _update_umu(local, json, thread_pool, client_session)
