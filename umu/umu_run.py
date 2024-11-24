@@ -409,7 +409,7 @@ def set_steam_game_property(
             log.exception(e)
 
 
-def get_gamescope_baselayer_order(
+def get_gamescope_baselayer_appid(
     d: display.Display,
 ) -> list[int] | None:
     """Get the gamescope base layer seq on the primary root window."""
@@ -631,10 +631,9 @@ def run_in_steammode(proc: Popen) -> int:
             xdisplay(":0") as d_primary,
             xdisplay(":1") as d_secondary,
         ):
-            gamescope_baselayer_sequence = get_gamescope_baselayer_order(
+            gamescope_baselayer_sequence = get_gamescope_baselayer_appid(
                 d_primary
             )
-
             # Dont do window fuckery if we're not inside gamescope
             if (
                 gamescope_baselayer_sequence
