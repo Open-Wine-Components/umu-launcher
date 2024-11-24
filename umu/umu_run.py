@@ -32,13 +32,14 @@ from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
 
-from umu import __version__
+from umu import __container_runtime__, __version__
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
     STEAM_COMPAT,
     STEAM_WINDOW_ID,
     UMU_LOCAL,
+    GamescopeAtom,
 )
 from umu.umu_log import log
 from umu.umu_plugins import set_env_toml
@@ -388,18 +389,20 @@ def set_steam_game_property(
         try:
             window: Window = d.create_resource_object("window", int(window_id))
             window.change_property(
-                d.get_atom("STEAM_GAME"),
+                d.get_atom(GamescopeAtom.SteamGame.value),
                 Xatom.CARDINAL,
                 32,
                 [steam_assigned_layer_id],
             )
             log.debug(
-                "Successfully set STEAM_GAME property for window ID: %s",
+                "Successfully set %s property for window ID: %s",
+                GamescopeAtom.SteamGame.value,
                 window_id,
             )
         except Exception as e:
             log.error(
-                "Error setting STEAM_GAME property for window ID: %s",
+                "Error setting %s property for window ID: %s",
+                GamescopeAtom.SteamGame.value,
                 window_id,
             )
             log.exception(e)
@@ -411,21 +414,20 @@ def get_gamescope_baselayer_order(
     """Get the gamescope base layer seq on the primary root window."""
     try:
         root_primary: Window = d.screen().root
-
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
-
+        atom = d.get_atom(GamescopeAtom.BaselayerAppId.value)
         # Get the property value
         prop: GetProperty | None = root_primary.get_full_property(
             atom, Xatom.CARDINAL
         )
-
         if prop:
             # Extract and return the value
             return prop.value  # type: ignore
-        log.debug("GAMESCOPECTRL_BASELAYER_APPID property not found")
+        log.debug("%s property not found", GamescopeAtom.BaselayerAppId.value)
     except Exception as e:
-        log.error("Error getting GAMESCOPECTRL_BASELAYER_APPID property")
+        log.error(
+            "Error getting %s property", GamescopeAtom.BaselayerAppId.value
+        )
         log.exception(e)
 
     return None
@@ -439,7 +441,7 @@ def rearrange_gamescope_baselayer_order(
     rearranged: list[int] = list(sequence)
     steam_layer_id: int = get_steam_layer_id(os.environ)
 
-    log.debug("Base layer sequence: %s", sequence)
+    log.debug("%s: %s", GamescopeAtom.BaselayerAppId.value, sequence)
 
     if not steam_layer_id:
         return None
@@ -453,9 +455,9 @@ def rearrange_gamescope_baselayer_order(
         log.exception(e)
         return None
 
-    # Steam's window should be last, while assigned layer 2nd to last
-    rearranged = [*rearranged[:-1], steam_layer_id, STEAM_WINDOW_ID]
-    log.debug("Rearranging base layer sequence")
+    # Steam's window should be last, while assigned app id 2nd to last
+    rearranged = [*rearranged[:-1], steam_appid, STEAM_WINDOW_ID]
+    log.debug("Rearranging %s", GamescopeAtom.BaselayerAppId.value)
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
     return rearranged, steam_layer_id
@@ -467,16 +469,18 @@ def set_gamescope_baselayer_order(
     """Set a new gamescope base layer seq on the primary root window."""
     try:
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
-
+        atom = d.get_atom(GamescopeAtom.BaselayerAppId.value)
         # Set the property value
         d.screen().root.change_property(atom, Xatom.CARDINAL, 32, rearranged)
         log.debug(
-            "Successfully set GAMESCOPECTRL_BASELAYER_APPID property: %s",
+            "Successfully set %s property: %s",
+            GamescopeAtom.BaselayerAppId.value,
             ", ".join(map(str, rearranged)),
         )
     except Exception as e:
-        log.error("Error setting GAMESCOPECTRL_BASELAYER_APPID property")
+        log.error(
+            "Error setting %s property", GamescopeAtom.BaselayerAppId.value
+        )
         log.exception(e)
 
 
@@ -511,11 +515,12 @@ def monitor_baselayer(
     """Monitor for broken gamescope baselayer sequences."""
     root_primary: Window = d_primary.screen().root
     rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
-    atom = d_primary.get_atom("GAMESCOPECTRL_BASELAYER_APPID")
+    atom = d_primary.get_atom(GamescopeAtom.BaselayerAppId.value)
     root_primary.change_attributes(event_mask=X.PropertyChangeMask)
 
     log.debug(
-        "Monitoring base layers under display '%s'...",
+        "Monitoring %s property for DISPLAY=%s...",
+        GamescopeAtom.BaselayerAppId.value,
         d_primary.get_display_name(),
     )
 
@@ -539,8 +544,16 @@ def monitor_baselayer(
 
         # Check if the layer sequence has changed to the broken one
         if prop and prop.value[-1] != STEAM_WINDOW_ID:
-            log.debug("Broken base layer sequence detected")
-            log.debug("Property value for atom '%s': %s", atom, prop.value)
+            log.debug(
+                "Broken %s property detected, will rearrange...",
+                GamescopeAtom.BaselayerAppId.value,
+            )
+            log.debug(
+                "%s has atom %s: %s",
+                GamescopeAtom.BaselayerAppId.value,
+                atom,
+                prop.value,
+            )
             rearranged_gamescope_baselayer = (
                 rearrange_gamescope_baselayer_order(prop.value)
             )
