@@ -1,8 +1,8 @@
 PROJECT := umu-launcher
 
 # Define the interpreters to use to prevent shebang complaints
-PYTHON_INTERPRETER = /usr/bin/python3
-SHELL_INTERPRETER = /usr/bin/sh
+PYTHON_INTERPRETER = /usr/bin/env python3
+SHELL_INTERPRETER = /usr/bin/env sh
 
 # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
 INSTALLDIR ?= umu
