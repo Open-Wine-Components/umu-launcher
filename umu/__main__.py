@@ -10,7 +10,7 @@ from umu.umu_util import is_winetricks_verb
 
 
 def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
-    opt_args: set[str] = {"--help", "-h", "--config"}
+    opt_args: set[str] = {"--help", "-h", "--config", "--version", "-v"}
     parser: ArgumentParser = ArgumentParser(
         description="Unified Linux Wine Game Launcher",
         epilog=(
@@ -22,7 +22,8 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     parser.add_argument(
         "-v",
         "--version",
-        action="store_true",
+        action="version",
+        version=f"umu-launcher version {__version__} ({sys.version})",
         help="show this version and exit",
     )
     parser.add_argument(
@@ -38,18 +39,6 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
     if not sys.argv[1:]:
         parser.print_help(sys.stderr)
         sys.exit(1)
-
-    # Show version
-    # Need to avoid clashes with later options (for example: wineboot -u)
-    #   but parse_args scans the whole command line.
-    # So look at the first argument and see if we have -v or --version
-    #   in sort of the same way parse_args would.
-    if sys.argv[1].lower().endswith(("--version", "-v")):
-        print(
-            f"umu-launcher version {__version__} ({sys.version})",
-            file=sys.stderr,
-        )
-        sys.exit(0)
 
     # Winetricks
     # Exit if no winetricks verbs were passed

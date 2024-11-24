@@ -2520,6 +2520,29 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected the test string when passed as an option",
             )
 
+    def test_parse_args_version(self):
+        """Test parse_args --version."""
+        mock_val = "foo"
+        opt = "version"
+        with patch.object(
+            __main__,
+            "parse_args",
+            return_value=argparse.Namespace(version=mock_val),
+        ):
+            result = __main__.parse_args()
+            self.assertIsInstance(
+                result, Namespace, "Expected a Namespace from parse_arg"
+            )
+            self.assertTrue(
+                hasattr(result, opt),
+                f"Expected {result} to have attr {opt}",
+            )
+            self.assertEqual(
+                getattr(result, opt),
+                mock_val,
+                f"Expected {mock_val}, received {getattr(result, opt)}",
+            )
+
     def test_parse_args_config(self):
         """Test parse_args --config."""
         with patch.object(
