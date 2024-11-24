@@ -226,7 +226,7 @@ def https_connection(host: str):
 
     conn = HTTPSConnection(host, context=ssl_context)
 
-    if os.environ.get("UMU_LOG") == "debug":
+    if os.environ.get("UMU_LOG") in {"1", "debug"}:
         conn.set_debuglevel(1)
 
     try:
