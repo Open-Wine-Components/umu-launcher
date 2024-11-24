@@ -11,14 +11,12 @@ except ModuleNotFoundError:
     from importlib.abc import Traversable
 
 from http import HTTPStatus
-from json import load
 from pathlib import Path
 from secrets import token_urlsafe
 from shutil import move, rmtree
 from subprocess import run
 from tarfile import open as taropen
 from tempfile import TemporaryDirectory, mkdtemp
-from typing import Any
 
 from filelock import FileLock
 
@@ -443,50 +441,6 @@ def _update_umu(
         create_shim()
 
     log.info("steamrt is up to date")
-
-
-def _get_json(path: Traversable, config: str) -> dict[str, Any]:
-    """Validate the state of the configuration file umu_version.json in a path.
-
-    The configuration file will be used to update the runtime and it reflects
-    the tools currently used by launcher. The key/value pairs umu and versions
-    must exist.
-    """
-    json: dict[str, Any]
-    # Steam Runtime platform values
-    # See https://gitlab.steamos.cloud/steamrt/steamrt/-/wikis/home
-    steamrts: set[str] = {
-        "soldier",
-        "sniper",
-        "medic",
-        "steamrt5",
-    }
-
-    # umu_version.json in the system path should always exist
-    if not path.joinpath(config).is_file():
-        err: str = (
-            f"File not found: {config}\n"
-            "Please reinstall the package to recover configuration file"
-        )
-        raise FileNotFoundError(err)
-
-    with path.joinpath(config).open(mode="r", encoding="utf-8") as file:
-        json = load(file)
-
-    # Raise an error if "umu" and "versions" doesn't exist
-    if not json or "umu" not in json or "versions" not in json["umu"]:
-        err: str = (
-            f"Failed to load {config} or 'umu' or 'versions' not in: {config}"
-        )
-        raise ValueError(err)
-
-    # The launcher will use the value runtime_platform to glob files. Attempt
-    # to guard against directory removal attacks for non-system wide installs
-    if json["umu"]["versions"]["runtime_platform"] not in steamrts:
-        err: str = "Value for 'runtime_platform' is not a steamrt"
-        raise ValueError(err)
-
-    return json
 
 
 def _move(file: Path, src: Path, dst: Path) -> None:
