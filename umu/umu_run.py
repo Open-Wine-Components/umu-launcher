@@ -33,7 +33,7 @@ from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
 
-from umu import __container_runtime__, __version__
+from umu import __version__
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
