@@ -31,7 +31,7 @@ from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
 
-from umu import __version__
+from umu import __runtime_version__, __version__
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
@@ -803,7 +803,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
         # Setup the launcher and runtime files
         future: Future = thread_pool.submit(
-            setup_umu, root, UMU_LOCAL, thread_pool
+            setup_umu, root, UMU_LOCAL, __runtime_version__, thread_pool
         )
 
         if isinstance(args, Namespace):

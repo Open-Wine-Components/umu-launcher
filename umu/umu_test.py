@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 import re
 import sys
@@ -84,22 +83,10 @@ class TestGameLauncher(unittest.TestCase):
         self.test_local_share = Path("./tmp.aDl73CbQCP")
         # Wine prefix
         self.test_winepfx = Path("./tmp.AlfLPDhDvA")
+        self.test_runtime_version = ("sniper", "steamrt3")
 
         # /usr
         self.test_usr = Path("./tmp.QnZRGFfnqH")
-
-        # Dictionary that represents the umu_versionS.json
-        self.root_config = {
-            "umu": {
-                "versions": {
-                    "launcher": "0.1-RC3",
-                    "runner": "0.1-RC3",
-                    "runtime_platform": "sniper",
-                }
-            }
-        }
-        # umu_version.json
-        self.test_config = json.dumps(self.root_config, indent=4)
 
         self.test_winepfx.mkdir(exist_ok=True)
         self.test_user_share.mkdir(exist_ok=True)
@@ -109,14 +96,6 @@ class TestGameLauncher(unittest.TestCase):
         self.test_proton_dir.mkdir(exist_ok=True)
         self.test_usr.mkdir(exist_ok=True)
         self.test_cache_home.mkdir(exist_ok=True)
-
-        # Mock a valid configuration file at /usr/share/umu:
-        # tmp.BXk2NnvW2m/umu_version.json
-        Path(self.test_user_share, "umu_version.json").touch()
-        with Path(self.test_user_share, "umu_version.json").open(
-            mode="w", encoding="utf-8"
-        ) as file:
-            file.write(self.test_config)
 
         # Mock the launcher files
         Path(self.test_user_share, "umu_consts.py").touch()
@@ -459,32 +438,27 @@ class TestGameLauncher(unittest.TestCase):
         If the pv-verify binary does not exist, a warning should be logged and
         the function should return
         """
-        json_root = umu_runtime._get_json(
-            self.test_user_share, "umu_version.json"
-        )
         self.test_user_share.joinpath(
             "pressure-vessel", "bin", "pv-verify"
         ).unlink()
-        result = umu_runtime.check_runtime(self.test_user_share, json_root)
+        result = umu_runtime.check_runtime(
+            self.test_user_share, self.test_runtime_version
+        )
         self.assertEqual(result, 1, "Expected the exit code 1")
 
     def test_check_runtime_success(self):
         """Test check_runtime when runtime validation succeeds."""
-        json_root = umu_runtime._get_json(
-            self.test_user_share, "umu_version.json"
-        )
         mock = CompletedProcess(["foo"], 0)
         with patch.object(umu_runtime, "run", return_value=mock):
-            result = umu_runtime.check_runtime(self.test_user_share, json_root)
+            result = umu_runtime.check_runtime(
+                self.test_user_share, self.test_runtime_version
+            )
             self.assertEqual(result, 0, "Expected the exit code 0")
 
     def test_check_runtime_dir(self):
         """Test check_runtime when passed a BUILD_ID that does not exist."""
         runtime = Path(
             self.test_user_share, "sniper_platform_0.20240125.75305"
-        )
-        json_root = umu_runtime._get_json(
-            self.test_user_share, "umu_version.json"
         )
 
         # Mock the removal of the runtime directory
@@ -496,7 +470,9 @@ class TestGameLauncher(unittest.TestCase):
 
         mock = CompletedProcess(["foo"], 1)
         with patch.object(umu_runtime, "run", return_value=mock):
-            result = umu_runtime.check_runtime(self.test_user_share, json_root)
+            result = umu_runtime.check_runtime(
+                self.test_user_share, self.test_runtime_version
+            )
             self.assertEqual(result, 1, "Expected the exit code 1")
 
     def test_move(self):
@@ -726,119 +702,6 @@ class TestGameLauncher(unittest.TestCase):
             self.assertFalse(
                 os.environ.get("PROTONPATH"), "Expected empty string"
             )
-
-    def test_get_json_err(self):
-        """Test _get_json when specifying a corrupted umu_version.json file.
-
-        A ValueError should be raised because we expect 'umu' and 'version'
-        keys to exist
-        """
-        test_config = """
-        {
-            "foo": {
-                "versions": {
-                    "launcher": "0.1-RC3",
-                    "runner": "0.1-RC3",
-                    "runtime_platform": "sniper"
-                }
-            }
-        }
-        """
-        test_config2 = """
-        {
-            "umu": {
-                "foo": {
-                    "launcher": "0.1-RC3",
-                    "runner": "0.1-RC3",
-                    "runtime_platform": "sniper"
-                }
-            }
-        }
-        """
-        # Remove the valid config created at setup
-        Path(self.test_user_share, "umu_version.json").unlink(missing_ok=True)
-
-        Path(self.test_user_share, "umu_version.json").touch()
-        with Path(self.test_user_share, "umu_version.json").open(
-            mode="w", encoding="utf-8"
-        ) as file:
-            file.write(test_config)
-
-        # Test when "umu" doesn't exist
-        with self.assertRaisesRegex(ValueError, "load"):
-            umu_runtime._get_json(self.test_user_share, "umu_version.json")
-
-        # Test when "versions" doesn't exist
-        Path(self.test_user_share, "umu_version.json").unlink(missing_ok=True)
-
-        Path(self.test_user_share, "umu_version.json").touch()
-        with Path(self.test_user_share, "umu_version.json").open(
-            mode="w", encoding="utf-8"
-        ) as file:
-            file.write(test_config2)
-
-        with self.assertRaisesRegex(ValueError, "load"):
-            umu_runtime._get_json(self.test_user_share, "umu_version.json")
-
-    def test_get_json_foo(self):
-        """Test _get_json when not specifying umu_version.json as 2nd arg.
-
-        A FileNotFoundError should be raised
-        """
-        with self.assertRaisesRegex(FileNotFoundError, "configuration"):
-            umu_runtime._get_json(self.test_user_share, "foo")
-
-    def test_get_json_steamrt(self):
-        """Test _get_json when passed a non-steamrt value.
-
-        This attempts to mitigate against directory removal attacks for user
-        installations in the home directory, since the launcher will remove the
-        old runtime on update. Currently expects runtime_platform value to be
-        'soldier', 'sniper', 'medic' and 'steamrt5'
-        """
-        config = {
-            "umu": {
-                "versions": {
-                    "launcher": "0.1-RC3",
-                    "runner": "0.1-RC3",
-                    "runtime_platform": "foo",
-                }
-            }
-        }
-        test_config = json.dumps(config, indent=4)
-
-        self.test_user_share.joinpath("umu_version.json").unlink(
-            missing_ok=True
-        )
-        self.test_user_share.joinpath("umu_version.json").write_text(
-            test_config, encoding="utf-8"
-        )
-
-        with self.assertRaises(ValueError):
-            umu_runtime._get_json(self.test_user_share, "umu_version.json")
-
-    def test_get_json(self):
-        """Test _get_json.
-
-        This function is used to verify the existence and integrity of
-        umu_version.json file during the setup process
-
-        umu_version.json is used to synchronize the state of 2 directories:
-        /usr/share/umu and ~/.local/share/umu
-
-        An error should not be raised when passed a JSON we expect
-        """
-        result = None
-
-        self.assertTrue(
-            self.test_user_share.joinpath("umu_version.json").exists(),
-            "Expected umu_version.json to exist",
-        )
-
-        result = umu_runtime._get_json(
-            self.test_user_share, "umu_version.json"
-        )
-        self.assertIsInstance(result, dict, "Expected a dict")
 
     def test_latest_interrupt(self):
         """Test _get_latest when the user interrupts the download/extraction.
@@ -1436,7 +1299,10 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                self.test_runtime_version,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -1520,7 +1386,10 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                self.test_runtime_version,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -1649,7 +1518,10 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                self.test_runtime_version,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
