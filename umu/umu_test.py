@@ -554,6 +554,93 @@ class TestGameLauncher(unittest.TestCase):
             "qux did not move to dst",
         )
 
+    def test_fetch_releases_no_assets(self):
+        """Test _fetch_releases for unexpected values.
+
+        Expects a Github asset's name field to have the suffix '.tar.gz' and
+        the prefix 'UMU-Proton' or 'GE-Proton'. Or the name field to have 'sum'
+        suffix, for the digest file.
+
+        A tuple should always be returned. Otherwise, it indicates that Github
+        has changed its API or we had change file names. An exception should
+        never be raised.
+        """
+        result = None
+        mock_gh_release = {
+            "assets": [
+                {
+                    "name": "foo",
+                    "browser_download_url": "",
+                },
+                {
+                    "name": "bar",
+                    "browser_download_url": "",
+                },
+            ]
+        }
+        # Mock the call to urlopen
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = b"foo"
+        mock_resp.status = 200
+        mock_resp.__enter__.return_value = mock_resp
+        # Mock PROTONPATH="", representing a download to UMU-Proton
+        os.environ["PROTONPATH"] = ""
+        with (
+            patch.object(umu_proton, "urlopen", return_value=mock_resp),
+            patch.object(umu_proton, "loads", return_value=mock_gh_release),
+        ):
+            result = umu_proton._fetch_releases()
+            self.assertTrue(
+                result is not None, "Expected a value, received None"
+            )
+            self.assertTrue(
+                isinstance(result, tuple), f"Expected tuple, received {result}"
+            )
+            result_len = len(result)
+            self.assertFalse(
+                result_len,
+                f"Expected tuple with no len, received len {result_len}",
+            )
+
+    def test_fetch_releases(self):
+        """Test _fetch_releases."""
+        result = None
+        mock_gh_release = {
+            "assets": [
+                {
+                    "name": "sum",
+                    "browser_download_url": "",
+                },
+                {
+                    "name": "UMU-Proton.tar.gz",
+                    "browser_download_url": "",
+                },
+            ]
+        }
+        # Mock the call to urlopen
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = b"foo"
+        mock_resp.status = 200
+        mock_resp.__enter__.return_value = mock_resp
+        # Mock PROTONPATH="", representing a download to UMU-Proton
+        os.environ["PROTONPATH"] = ""
+        with (
+            patch.object(umu_proton, "urlopen", return_value=mock_resp),
+            patch.object(umu_proton, "loads", return_value=mock_gh_release),
+        ):
+            result = umu_proton._fetch_releases()
+            self.assertTrue(
+                result is not None, "Expected a value, received None"
+            )
+            self.assertTrue(
+                isinstance(result, tuple), f"Expected tuple, received {result}"
+            )
+            result_len = len(result)
+            self.assertTrue(
+                result_len,
+                f"Expected tuple with len, received len {result_len}",
+            )
+
     def test_update_proton(self):
         """Test _update_proton."""
         mock_protons = [Path(mkdtemp()), Path(mkdtemp())]
