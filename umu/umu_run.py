@@ -213,7 +213,6 @@ def set_env(
 
     # UMU_ID
     env["UMU_ID"] = env["GAMEID"]
-    env["ULWGL_ID"] = env["UMU_ID"]  # Set ULWGL_ID for compatibility
     env["STEAM_COMPAT_APP_ID"] = "0"
 
     if match(r"^umu-[\d\w]+$", env["UMU_ID"]):
@@ -741,7 +740,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         "STORE": "",
         "PROTON_VERB": "",
         "UMU_ID": "",
-        "ULWGL_ID": "",
         "UMU_ZENITY": "",
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
