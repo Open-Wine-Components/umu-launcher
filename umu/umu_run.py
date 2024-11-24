@@ -574,7 +574,7 @@ def monitor_windows(
     steam_appid: int = get_steam_appid(os.environ)
 
     log.debug(
-        "Waiting for windows under display '%s'...",
+        "Waiting for new windows IDs for DISPLAY=%s...",
         d_secondary.get_display_name(),
     )
 
@@ -584,7 +584,7 @@ def monitor_windows(
     set_steam_game_property(d_secondary, window_ids, steam_appid)
 
     log.debug(
-        "Monitoring for new windows under display '%s'...",
+        "Monitoring for new window IDs for DISPLAY=%s...",
         d_secondary.get_display_name(),
     )
 
@@ -596,10 +596,9 @@ def monitor_windows(
             continue
 
         if diff := current_window_ids.difference(window_ids):
-            log.debug("Seen windows: %s", window_ids)
-            log.debug("Current windows: %s", current_window_ids)
-            log.debug("Difference: %s", diff)
-            log.debug("New windows detected")
+            log.debug("New window IDs detected: %s", window_ids)
+            log.debug("Current tracked windows IDs: %s", current_window_ids)
+            log.debug("Window IDs set difference: %s", diff)
             window_ids |= diff
             set_steam_game_property(d_secondary, diff, steam_appid)
 
