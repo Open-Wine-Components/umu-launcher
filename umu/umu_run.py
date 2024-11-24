@@ -92,7 +92,7 @@ def check_env(
 
     GAMEID is strictly required and the client is responsible for setting this.
     When the client only sets the GAMEID, the WINE prefix directory will be
-    created as ~/Games/umu/GAMEID.
+    created as $HOME/Games/umu/$GAMEID.
     """
     if not os.environ.get("GAMEID"):
         err: str = "Environment variable not set or is empty: GAMEID"
@@ -410,7 +410,7 @@ def set_steam_game_property(
 def get_gamescope_baselayer_appid(
     d: display.Display,
 ) -> list[int] | None:
-    """Get the gamescope base layer seq on the primary root window."""
+    """Get the GAMESCOPECTRL_BASELAYER_APPID value on the primary root window."""
     try:
         root_primary: Window = d.screen().root
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
@@ -436,8 +436,7 @@ def get_gamescope_baselayer_appid(
 def rearrange_gamescope_baselayer_appid(
     sequence: list[int],
 ) -> tuple[list[int], int] | None:
-    """Rearrange a gamescope base layer sequence retrieved from a window."""
-    # Note: 'sequence' is actually an array type with unsigned integers
+    """Rearrange the GAMESCOPECTRL_BASELAYER_APPID value retrieved from a window."""
     rearranged: list[int] = list(sequence)
     steam_appid: int = get_steam_appid(os.environ)
 
@@ -449,9 +448,9 @@ def rearrange_gamescope_baselayer_appid(
     try:
         rearranged.remove(steam_appid)
     except ValueError as e:
-        # Case when the layer ID isn't in GAMESCOPECTRL_BASELAYER_APPID
+        # Case when the app ID isn't in GAMESCOPECTRL_BASELAYER_APPID
         # One case this can occur is if the client overrides Steam's env vars
-        # that we get the layer ID from
+        # that we get the app ID from
         log.exception(e)
         return None
 
@@ -466,7 +465,7 @@ def rearrange_gamescope_baselayer_appid(
 def set_gamescope_baselayer_appid(
     d: display.Display, rearranged: list[int]
 ) -> None:
-    """Set a new gamescope base layer seq on the primary root window."""
+    """Set a new gamescope GAMESCOPECTRL_BASELAYER_APPID on the primary root window."""
     try:
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
         atom = d.get_atom(GamescopeAtom.BaselayerAppId.value)
@@ -512,7 +511,7 @@ def monitor_baselayer_appid(
     d_primary: display.Display,
     gamescope_baselayer_sequence: list[int],
 ) -> None:
-    """Monitor for broken gamescope baselayer sequences."""
+    """Monitor for broken GAMESCOPECTRL_BASELAYER_APPID values."""
     root_primary: Window = d_primary.screen().root
     rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
     atom = d_primary.get_atom(GamescopeAtom.BaselayerAppId.value)
@@ -529,7 +528,7 @@ def monitor_baselayer_appid(
         gamescope_baselayer_sequence
     )
 
-    # Set the rearranged sequence from GAMESCOPECTRL_BASELAYER_APPID.
+    # Set the rearranged GAMESCOPECTRL_BASELAYER_APPID
     if rearranged_gamescope_baselayer:
         rearranged, _ = rearranged_gamescope_baselayer
         set_gamescope_baselayer_appid(d_primary, rearranged)
@@ -570,7 +569,7 @@ def monitor_baselayer_appid(
 def monitor_windows(
     d_secondary: display.Display,
 ) -> None:
-    """Monitor for new windows and assign them Steam's layer ID."""
+    """Monitor for new windows for a display and assign them Steam's assigned app ID."""
     window_ids: set[str] | None = None
     steam_appid: int = get_steam_appid(os.environ)
 
@@ -635,14 +634,11 @@ def run_in_steammode(proc: Popen) -> int:
                 gamescope_baselayer_sequence
                 and os.environ.get("PROTON_VERB") == "waitforexitandrun"
             ):
-                # Note: If the executable is one that exists in the WINE prefix
-                # or container it is possible that umu wil hang when running a
-                # game within a gamescope session
                 d_secondary.screen().root.change_attributes(
                     event_mask=X.SubstructureNotifyMask
                 )
 
-                # Monitor for new windows
+                # Monitor for new windows for the DISPLAY associated with game
                 window_thread = threading.Thread(
                     target=monitor_windows,
                     args=(d_secondary,),
@@ -650,7 +646,7 @@ def run_in_steammode(proc: Popen) -> int:
                 window_thread.daemon = True
                 window_thread.start()
 
-                # Monitor for broken baselayers
+                # Monitor for broken GAMESCOPECTRL_BASELAYER_APPID
                 baselayer_thread = threading.Thread(
                     target=monitor_baselayer_appid,
                     args=(d_primary, gamescope_baselayer_sequence),
@@ -678,7 +674,6 @@ def run_command(command: tuple[Path | str, ...]) -> int:
         os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
         or os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
     )
-
     # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
     # documented to be a legacy env var.
     is_steammode: bool = (
