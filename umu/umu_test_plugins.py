@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 import re
 import sys
@@ -66,33 +65,13 @@ class TestGameLauncherPlugins(unittest.TestCase):
         self.test_user_share = Path("./tmp.jl3W4MtO57")
         # ~/.local/share/Steam/compatibilitytools.d
         self.test_local_share = Path("./tmp.WUaQAk7hQJ")
-
-        # Dictionary that represents the umu_versionS.json
-        self.root_config = {
-            "umu": {
-                "versions": {
-                    "launcher": "0.1-RC3",
-                    "runner": "0.1-RC3",
-                    "runtime_platform": "sniper",
-                }
-            }
-        }
-        # umu_version.json
-        self.test_config = json.dumps(self.root_config, indent=4)
+        self.test_runtime_version = ("sniper", "steamrt3")
 
         self.test_user_share.mkdir(exist_ok=True)
         self.test_local_share.mkdir(exist_ok=True)
         self.test_cache.mkdir(exist_ok=True)
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
-
-        # Mock a valid configuration file at /usr/share/umu:
-        # tmp.BXk2NnvW2m/umu_version.json
-        Path(self.test_user_share, "umu_version.json").touch()
-        with Path(self.test_user_share, "umu_version.json").open(
-            mode="w", encoding="utf-8"
-        ) as file:
-            file.write(self.test_config)
 
         # Mock the launcher files
         Path(self.test_user_share, "umu_consts.py").touch()
@@ -222,8 +201,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
         with (
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
+            # TODO
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                self.test_runtime_version,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -298,7 +281,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                self.test_runtime_version,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -380,7 +366,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share, self.test_local_share, None
+                self.test_user_share,
+                self.test_local_share,
+                self.test_runtime_version,
+                None,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
