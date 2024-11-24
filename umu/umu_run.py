@@ -435,7 +435,7 @@ def get_gamescope_baselayer_appid(
     return None
 
 
-def rearrange_gamescope_baselayer_order(
+def rearrange_gamescope_baselayer_appid(
     sequence: list[int],
 ) -> tuple[list[int], int] | None:
     """Rearrange a gamescope base layer sequence retrieved from a window."""
@@ -526,8 +526,8 @@ def monitor_baselayer(
         d_primary.get_display_name(),
     )
 
-    # Get a rearranged sequence from GAMESCOPECTRL_BASELAYER_APPID.
-    rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_order(
+    # Rearranged GAMESCOPECTRL_BASELAYER_APPID
+    rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_appid(
         gamescope_baselayer_sequence
     )
 
@@ -557,7 +557,7 @@ def monitor_baselayer(
                 prop.value,
             )
             rearranged_gamescope_baselayer = (
-                rearrange_gamescope_baselayer_order(prop.value)
+                rearrange_gamescope_baselayer_appid(prop.value)
             )
 
         if rearranged_gamescope_baselayer:
