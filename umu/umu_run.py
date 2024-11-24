@@ -363,11 +363,10 @@ def build_command(
     )
 
 
-def get_window_client_ids(d: display.Display) -> set[str] | None:
-    """Get the list of new client windows under the root window."""
+def get_window_ids(d: display.Display) -> set[str] | None:
+    """Get the list of window ids under the root window for a display."""
     try:
         event: Event = d.next_event()
-
         if event.type == X.CreateNotify:
             return {
                 child.id for child in d.screen().root.query_tree().children
@@ -581,7 +580,7 @@ def monitor_windows(
     )
 
     while not window_ids:
-        window_ids = get_window_client_ids(d_secondary)
+        window_ids = get_window_ids(d_secondary)
 
     set_steam_game_property(d_secondary, window_ids, steam_appid)
 
@@ -592,9 +591,7 @@ def monitor_windows(
 
     # Check if the window sequence has changed
     while True:
-        current_window_ids: set[str] | None = get_window_client_ids(
-            d_secondary
-        )
+        current_window_ids: set[str] | None = get_window_ids(d_secondary)
 
         if not current_window_ids:
             continue
