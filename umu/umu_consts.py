@@ -1,5 +1,14 @@
 import os
+from enum import Enum
 from pathlib import Path
+
+
+class GamescopeAtom(Enum):
+    """Represent Gamescope-specific X11 atom names."""
+
+    SteamGame = "STEAM_GAME"
+    BaselayerAppId = "GAMESCOPECTRL_BASELAYER_APPID"
+
 
 CONFIG = "umu_version.json"
 

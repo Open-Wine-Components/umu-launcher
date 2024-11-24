@@ -207,7 +207,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["STEAM_COMPAT_MEDIA_PATH"] = "foo"
         os.environ["STEAM_FOSSILIZE_DUMP_PATH"] = "bar"
         os.environ["DXVK_STATE_CACHE_PATH"] = "baz"
-        result = umu_run.get_steam_layer_id(os.environ)
+        result = umu_run.get_steam_appid(os.environ)
 
         self.assertEqual(
             result,
@@ -270,7 +270,7 @@ class TestGameLauncher(unittest.TestCase):
         # it has been tampered by the client or by some middleware.
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
         baselayer = [1, steam_window_id, steam_layer_id]
-        result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
+        result = umu_run.rearrange_gamescope_baselayer_appid(baselayer)
 
         self.assertTrue(result is None, f"Expected None, received '{result}'")
 
@@ -284,13 +284,13 @@ class TestGameLauncher(unittest.TestCase):
         """
         steam_window_id = 769
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_layer_id(os.environ)
+        steam_layer_id = umu_run.get_steam_appid(os.environ)
         baselayer = [1, steam_window_id, steam_layer_id]
         expected = (
             [baselayer[0], steam_layer_id, steam_window_id],
             steam_layer_id,
         )
-        result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
+        result = umu_run.rearrange_gamescope_baselayer_appid(baselayer)
 
         self.assertEqual(
             result,
@@ -303,7 +303,7 @@ class TestGameLauncher(unittest.TestCase):
         baselayer = []
 
         self.assertTrue(
-            umu_run.rearrange_gamescope_baselayer_order(baselayer) is None,
+            umu_run.rearrange_gamescope_baselayer_appid(baselayer) is None,
             "Expected None",
         )
 
@@ -311,9 +311,9 @@ class TestGameLauncher(unittest.TestCase):
         """Test rearrange_gamescope_baselayer_order when passed a sequence."""
         steam_window_id = 769
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_layer_id(os.environ)
+        steam_layer_id = umu_run.get_steam_appid(os.environ)
         baselayer = [1, steam_layer_id, steam_window_id]
-        result = umu_run.rearrange_gamescope_baselayer_order(baselayer)
+        result = umu_run.rearrange_gamescope_baselayer_appid(baselayer)
 
         # Original sequence should be returned when Steam's window ID is last
         self.assertTrue(
