@@ -45,7 +45,7 @@ if os.environ.get("container") == "flatpak":  # noqa: SIM112
     XDG_DATA_HOME: Path = (
         Path(os.environ["HOST_XDG_DATA_HOME"])
         if os.environ.get("HOST_XDG_DATA_HOME")
-        else Path.home().joinpath(".local", "share")
+        else Path(os.environ["XDG_DATA_HOME"])
     )
 elif os.environ.get("SNAP"):
     XDG_DATA_HOME: Path = Path(os.environ["SNAP_REAL_HOME"])
