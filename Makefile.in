@@ -89,7 +89,7 @@ endif
 ifeq ($(FLATPAK), xtrue)
 UMU_LAUNCHER_COMMAND = org.openwinecomponents.umu.umu-launcher
 else
-UMU_LAUNCHER_COMMAND = $(PYTHONDIR)/umu/umu_run.py
+UMU_LAUNCHER_COMMAND = $(BINDIR)/umu-run
 endif
 
 # umu-launcher is separate to allow control over installing the bin target
