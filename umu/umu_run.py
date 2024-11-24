@@ -143,9 +143,9 @@ def check_env(
     # If download fails/doesn't exist in the system, raise an error
     if not os.environ["PROTONPATH"]:
         err: str = (
-            "Download failed\n"
-            "UMU-Proton could not be found in compatibilitytools.d\n"
-            "Please set $PROTONPATH or visit https://github.com/Open-Wine-Components/umu-proton/releases"
+            "Environment variable not set or is empty: PROTONPATH\n"
+            f"Possible reason: GE-Proton or UMU-Proton not found in '{STEAM_COMPAT}'"
+            " or network error"
         )
         raise FileNotFoundError(err)
 
