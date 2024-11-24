@@ -465,7 +465,7 @@ def rearrange_gamescope_baselayer_appid(
     return rearranged, steam_layer_id
 
 
-def set_gamescope_baselayer_order(
+def set_gamescope_baselayer_appid(
     d: display.Display, rearranged: list[int]
 ) -> None:
     """Set a new gamescope base layer seq on the primary root window."""
@@ -534,7 +534,7 @@ def monitor_baselayer(
     # Set the rearranged sequence from GAMESCOPECTRL_BASELAYER_APPID.
     if rearranged_gamescope_baselayer:
         rearranged, _ = rearranged_gamescope_baselayer
-        set_gamescope_baselayer_order(d_primary, rearranged)
+        set_gamescope_baselayer_appid(d_primary, rearranged)
         rearranged_gamescope_baselayer = None
 
     while True:
@@ -562,7 +562,7 @@ def monitor_baselayer(
 
         if rearranged_gamescope_baselayer:
             rearranged, _ = rearranged_gamescope_baselayer
-            set_gamescope_baselayer_order(d_primary, rearranged)
+            set_gamescope_baselayer_appid(d_primary, rearranged)
             rearranged_gamescope_baselayer = None
             continue
 
