@@ -6,6 +6,7 @@ import threading
 import time
 from _ctypes import CFuncPtr
 from argparse import Namespace
+from array import array
 from collections.abc import MutableMapping
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
@@ -420,9 +421,10 @@ def get_gamescope_baselayer_order(
         prop: GetProperty | None = root_primary.get_full_property(
             atom, Xatom.CARDINAL
         )
-        if prop:
-            # Extract and return the value
-            return prop.value  # type: ignore
+        # For GAMESCOPECTRL_BASELAYER_APPID, the value is a u32 array
+        if prop and prop.value and isinstance(prop.value, array):
+            # Convert data to a Python list for safety
+            return prop.value.tolist()
         log.debug("%s property not found", GamescopeAtom.BaselayerAppId.value)
     except Exception as e:
         log.error(
