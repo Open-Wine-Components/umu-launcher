@@ -82,9 +82,6 @@ def setup_pfx(path: str) -> None:
     elif not wineuser.exists() and steam.is_dir():
         wineuser.symlink_to("steamuser")
 
-    log.debug("steamuser in prefix is link: %s", steam.is_symlink())
-    log.debug("user in prefix is link: %s", wineuser.is_symlink())
-
 
 def check_env(
     env: dict[str, str], thread_pool: ThreadPoolExecutor
