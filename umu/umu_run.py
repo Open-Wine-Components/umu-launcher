@@ -4,7 +4,6 @@ import os
 import sys
 import threading
 import time
-import zipfile
 from _ctypes import CFuncPtr
 from argparse import Namespace
 from collections.abc import MutableMapping
@@ -12,6 +11,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
+from zipfile import Path as ZipPath
 
 try:
     from importlib.resources.abc import Traversable
@@ -758,7 +758,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         root = Path(__file__).resolve(strict=True).parent
     except NotADirectoryError:
         # Raised when within a zipapp. Try again in non-strict mode
-        root = zipfile.Path(
+        root = ZipPath(
             Path(__file__).resolve().parent.parent, Path(__file__).parent.name
         )
 
