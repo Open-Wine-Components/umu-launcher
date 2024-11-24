@@ -120,8 +120,9 @@ def _fetch_releases() -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
             break
 
     if asset_count != 2:  # noqa: PLR2004
-        err: str = "Failed to acquire all assets from api.github.com"
-        raise RuntimeError(err)
+        log.warning("Failed to acquire release assets from '%s'", url)
+        log.debug("'%' returned: %s", url, releases)
+        return ()
 
     return digest_asset, proton_asset
 
