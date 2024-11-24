@@ -412,6 +412,7 @@ def get_gamescope_baselayer_appid(
 ) -> list[int] | None:
     """Get the GAMESCOPECTRL_BASELAYER_APPID value on the primary root window."""
     try:
+        baselayer_appid: list[int]
         root_primary: Window = d.screen().root
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
         atom = d.get_atom(GamescopeAtom.BaselayerAppId.value)
@@ -422,7 +423,8 @@ def get_gamescope_baselayer_appid(
         # For GAMESCOPECTRL_BASELAYER_APPID, the value is a u32 array
         if prop and prop.value and isinstance(prop.value, array):
             # Convert data to a Python list for safety
-            return prop.value.tolist()
+            baselayer_appid = prop.value.tolist()
+            return baselayer_appid
         log.debug("%s property not found", GamescopeAtom.BaselayerAppId.value)
     except Exception as e:
         log.error(
