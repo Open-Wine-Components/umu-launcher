@@ -441,15 +441,15 @@ def rearrange_gamescope_baselayer_appid(
     """Rearrange a gamescope base layer sequence retrieved from a window."""
     # Note: 'sequence' is actually an array type with unsigned integers
     rearranged: list[int] = list(sequence)
-    steam_layer_id: int = get_steam_layer_id(os.environ)
+    steam_appid: int = get_steam_appid(os.environ)
 
     log.debug("%s: %s", GamescopeAtom.BaselayerAppId.value, sequence)
 
-    if not steam_layer_id:
+    if not steam_appid:
         return None
 
     try:
-        rearranged.remove(steam_layer_id)
+        rearranged.remove(steam_appid)
     except ValueError as e:
         # Case when the layer ID isn't in GAMESCOPECTRL_BASELAYER_APPID
         # One case this can occur is if the client overrides Steam's env vars
@@ -462,7 +462,7 @@ def rearrange_gamescope_baselayer_appid(
     log.debug("Rearranging %s", GamescopeAtom.BaselayerAppId.value)
     log.debug("'%s' -> '%s'", sequence, rearranged)
 
-    return rearranged, steam_layer_id
+    return rearranged, steam_appid
 
 
 def set_gamescope_baselayer_appid(
@@ -486,9 +486,9 @@ def set_gamescope_baselayer_appid(
         log.exception(e)
 
 
-def get_steam_layer_id(env: MutableMapping) -> int:
-    """Get the Steam layer ID from the host environment variables."""
     steam_layer_id: int = 0
+def get_steam_appid(env: MutableMapping) -> int:
+    """Get the Steam app ID from the host environment variables."""
 
     if path := env.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
         # Suppress cases when value is not a number or empty tuple
@@ -574,7 +574,7 @@ def monitor_windows(
 ) -> None:
     """Monitor for new windows and assign them Steam's layer ID."""
     window_ids: set[str] | None = None
-    steam_assigned_layer_id: int = get_steam_layer_id(os.environ)
+    steam_appid: int = get_steam_appid(os.environ)
 
     log.debug(
         "Waiting for windows under display '%s'...",
