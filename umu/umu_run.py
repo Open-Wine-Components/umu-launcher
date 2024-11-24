@@ -245,7 +245,7 @@ def set_env(
     # Winetricks
     if env.get("EXE", "").endswith("winetricks"):
         env["WINETRICKS_SUPER_QUIET"] = (
-            "" if os.environ.get("UMU_LOG") == "debug" else "1"
+            "" if os.environ.get("UMU_LOG") in {"debug", "1"} else "1"
         )
 
     # Runtime
