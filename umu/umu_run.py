@@ -508,7 +508,7 @@ def get_steam_appid(env: MutableMapping) -> int:
     return steam_appid
 
 
-def monitor_baselayer(
+def monitor_baselayer_appid(
     d_primary: display.Display,
     gamescope_baselayer_sequence: list[int],
 ) -> None:
@@ -652,7 +652,7 @@ def run_in_steammode(proc: Popen) -> int:
 
                 # Monitor for broken baselayers
                 baselayer_thread = threading.Thread(
-                    target=monitor_baselayer,
+                    target=monitor_baselayer_appid,
                     args=(d_primary, gamescope_baselayer_sequence),
                 )
                 baselayer_thread.daemon = True
