@@ -1,8 +1,7 @@
 PROJECT := umu-launcher
 
 # Define the interpreters to use to prevent shebang complaints
-PYTHON_INTERPRETER = /usr/bin/python3
-SHELL_INTERPRETER = /usr/bin/sh
+PYTHON_INTERPRETER = /usr/bin/env python3
 
 # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
 INSTALLDIR ?= umu
@@ -32,19 +31,8 @@ all: zipapp
 install: zipapp-install
 else
 all: umu-dist umu-docs umu-launcher
-install: umu-install umu-launcher-install fix_shebangs
+install: umu-install umu-launcher-install
 endif
-
-fix_shebangs:
-	$(info :: Fixing shebangs in $(DESTDIR)... )
-	find $(DESTDIR) -type f -name "*.py" -exec sed -i '1s|^#!/usr/bin/python\b|#!$(PYTHON_INTERPRETER)|' {} \;
-	find $(DESTDIR) -type f -name "*.py" -exec sed -i '1s|^#!/usr/bin/env python\b|#!/usr/bin/env $(PYTHON_INTERPRETER)|' {} \;
-	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/python\b|#!$(PYTHON_INTERPRETER)|' {} \;
-	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/env python\b|#!/usr/bin/env $(PYTHON_INTERPRETER)|' {} \;
-	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/python\b|#!$(PYTHON_INTERPRETER)|' {} \;
-	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/env python\b|#!/usr/bin/env $(PYTHON_INTERPRETER)|' {} \;
-	find $(DESTDIR) -type f -name "*.sh" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
-	find $(DESTDIR) -type f -name "umu-run" -exec sed -i '1s|^#!/usr/bin/env sh|#!$(SHELL_INTERPRETER)|' {} \;
 
 # Special case, do this inside the source directory for release distribution
 umu/umu_version.json: umu/umu_version.json.in
@@ -101,7 +89,7 @@ endif
 ifeq ($(FLATPAK), xtrue)
 UMU_LAUNCHER_COMMAND = org.openwinecomponents.umu.umu-launcher
 else
-UMU_LAUNCHER_COMMAND = $(PYTHONDIR)/umu/umu_run.py
+UMU_LAUNCHER_COMMAND = $(BINDIR)/umu-run
 endif
 
 # umu-launcher is separate to allow control over installing the bin target
