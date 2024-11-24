@@ -381,11 +381,10 @@ def get_window_client_ids(d: display.Display) -> set[str] | None:
 def set_steam_game_property(
     d: display.Display,
     window_ids: list[str] | set[str],
-    steam_assigned_layer_id: int,
+    steam_assigned_appid: int,
 ) -> None:
     """Set Steam's assigned layer ID on a list of windows."""
-    log.debug("steam_layer: %s", steam_assigned_layer_id)
-
+    log.debug("Steam app ID: %s", steam_assigned_appid)
     for window_id in window_ids:
         try:
             window: Window = d.create_resource_object("window", int(window_id))
@@ -393,7 +392,7 @@ def set_steam_game_property(
                 d.get_atom(GamescopeAtom.SteamGame.value),
                 Xatom.CARDINAL,
                 32,
-                [steam_assigned_layer_id],
+                [steam_assigned_appid],
             )
             log.debug(
                 "Successfully set %s property for window ID: %s",
@@ -486,9 +485,9 @@ def set_gamescope_baselayer_appid(
         log.exception(e)
 
 
-    steam_layer_id: int = 0
 def get_steam_appid(env: MutableMapping) -> int:
     """Get the Steam app ID from the host environment variables."""
+    steam_appid: int = 0
 
     if path := env.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
         # Suppress cases when value is not a number or empty tuple
@@ -507,7 +506,7 @@ def get_steam_appid(env: MutableMapping) -> int:
         with suppress(ValueError, IndexError):
             return int(Path(path).parts[-2])
 
-    return steam_layer_id
+    return steam_appid
 
 
 def monitor_baselayer(
@@ -584,7 +583,7 @@ def monitor_windows(
     while not window_ids:
         window_ids = get_window_client_ids(d_secondary)
 
-    set_steam_game_property(d_secondary, window_ids, steam_assigned_layer_id)
+    set_steam_game_property(d_secondary, window_ids, steam_appid)
 
     log.debug(
         "Monitoring for new windows under display '%s'...",
@@ -606,7 +605,7 @@ def monitor_windows(
             log.debug("Difference: %s", diff)
             log.debug("New windows detected")
             window_ids |= diff
-            set_steam_game_property(d_secondary, diff, steam_assigned_layer_id)
+            set_steam_game_property(d_secondary, diff, steam_appid)
 
 
 def run_in_steammode(proc: Popen) -> int:
