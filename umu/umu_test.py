@@ -5,6 +5,7 @@ import sys
 import tarfile
 import unittest
 from argparse import Namespace
+from array import array
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from pwd import getpwuid
@@ -12,6 +13,12 @@ from shutil import copy, copytree, move, rmtree
 from subprocess import CompletedProcess
 from tempfile import TemporaryDirectory, mkdtemp
 from unittest.mock import MagicMock, patch
+
+from Xlib.display import Display
+from Xlib.error import DisplayConnectionError
+from Xlib.protocol.rq import Event
+from Xlib.X import CreateNotify
+from Xlib.xobject.drawable import Window
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -175,6 +182,41 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
+
+    def test_get_gamescope_baselayer_appid_err(self):
+        """Test get_gamescope_baselayer_appid on error.
+
+        Expects function be fail safe, handling any exceptions when getting
+        GAMESCOPECTRL_BASELAYER_APPID
+        """
+        mock_display = MagicMock(spec=Display)
+        mock_display.screen.side_effect = DisplayConnectionError(
+            mock_display, "foo"
+        )
+
+        result = umu_run.get_gamescope_baselayer_appid(mock_display)
+        self.assertTrue(
+            result is None, f"Expected a value, received: {result}"
+        )
+
+    def test_get_gamescope_baselayer_appid(self):
+        """Test get_gamescope_baselayer_appid."""
+        mock_display = MagicMock(spec=Display)
+        mock_screen = MagicMock()
+        mock_root = MagicMock()
+        mock_prop = MagicMock()
+        result = None
+
+        mock_display.screen.return_value = mock_screen
+        mock_display.get_atom.return_value = 0
+        mock_screen.root = mock_root
+        mock_root.get_full_property.return_value = mock_prop
+        mock_prop.value = array("I", [1, 2, 3])
+
+        result = umu_run.get_gamescope_baselayer_appid(mock_display)
+        self.assertTrue(
+            result == [1, 2, 3], f"Expected a value, received: {result}"
+        )
 
     def test_get_steam_layer_id(self):
         """Test get_steam_layer_id.
