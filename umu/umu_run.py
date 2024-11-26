@@ -377,10 +377,10 @@ def get_window_ids(d: display.Display) -> set[str] | None:
 
 def set_steam_game_property(
     d: display.Display,
-    window_ids: list[str] | set[str],
+    window_ids: set[str],
     steam_assigned_appid: int,
-) -> None:
-    """Set Steam's assigned layer ID on a list of windows."""
+) -> display.Display:
+    """Set Steam's assigned app ID on a list of windows."""
     log.debug("Steam app ID: %s", steam_assigned_appid)
     for window_id in window_ids:
         try:
@@ -403,6 +403,8 @@ def set_steam_game_property(
                 window_id,
             )
             log.exception(e)
+
+    return d
 
 
 def get_gamescope_baselayer_appid(
