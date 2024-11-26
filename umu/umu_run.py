@@ -377,10 +377,10 @@ def get_window_ids(d: display.Display) -> set[str] | None:
 
 def set_steam_game_property(
     d: display.Display,
-    window_ids: list[str] | set[str],
+    window_ids: set[str],
     steam_assigned_appid: int,
-) -> None:
-    """Set Steam's assigned layer ID on a list of windows."""
+) -> display.Display:
+    """Set Steam's assigned app ID on a list of windows."""
     log.debug("Steam app ID: %s", steam_assigned_appid)
     for window_id in window_ids:
         try:
@@ -403,6 +403,8 @@ def set_steam_game_property(
                 window_id,
             )
             log.exception(e)
+
+    return d
 
 
 def get_gamescope_baselayer_appid(
@@ -464,7 +466,7 @@ def rearrange_gamescope_baselayer_appid(
 
 def set_gamescope_baselayer_appid(
     d: display.Display, rearranged: list[int]
-) -> None:
+) -> display.Display | None:
     """Set a new gamescope GAMESCOPECTRL_BASELAYER_APPID on the primary root window."""
     try:
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
@@ -476,11 +478,14 @@ def set_gamescope_baselayer_appid(
             GamescopeAtom.BaselayerAppId.value,
             ", ".join(map(str, rearranged)),
         )
+        return d
     except Exception as e:
         log.error(
             "Error setting %s property", GamescopeAtom.BaselayerAppId.value
         )
         log.exception(e)
+
+    return None
 
 
 def get_steam_appid(env: MutableMapping) -> int:

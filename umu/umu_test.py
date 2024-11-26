@@ -5,6 +5,7 @@ import sys
 import tarfile
 import unittest
 from argparse import Namespace
+from array import array
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from pwd import getpwuid
@@ -12,6 +13,12 @@ from shutil import copy, copytree, move, rmtree
 from subprocess import CompletedProcess
 from tempfile import TemporaryDirectory, mkdtemp
 from unittest.mock import MagicMock, patch
+
+from Xlib.display import Display
+from Xlib.error import DisplayConnectionError
+from Xlib.protocol.rq import Event
+from Xlib.X import CreateNotify
+from Xlib.xobject.drawable import Window
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -175,6 +182,138 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
+
+    def test_get_gamescope_baselayer_appid_err(self):
+        """Test get_gamescope_baselayer_appid on error.
+
+        Expects function be fail safe, handling any exceptions when getting
+        GAMESCOPECTRL_BASELAYER_APPID
+        """
+        mock_display = MagicMock(spec=Display)
+        mock_display.screen.side_effect = DisplayConnectionError(
+            mock_display, "foo"
+        )
+
+        result = umu_run.get_gamescope_baselayer_appid(mock_display)
+        self.assertTrue(
+            result is None, f"Expected a value, received: {result}"
+        )
+
+    def test_get_gamescope_baselayer_appid(self):
+        """Test get_gamescope_baselayer_appid."""
+        mock_display = MagicMock(spec=Display)
+        mock_screen = MagicMock()
+        mock_root = MagicMock()
+        mock_prop = MagicMock()
+        result = None
+
+        mock_display.screen.return_value = mock_screen
+        mock_display.get_atom.return_value = 0
+        mock_screen.root = mock_root
+        mock_root.get_full_property.return_value = mock_prop
+        mock_prop.value = array("I", [1, 2, 3])
+
+        result = umu_run.get_gamescope_baselayer_appid(mock_display)
+        self.assertTrue(
+            result == [1, 2, 3], f"Expected a value, received: {result}"
+        )
+
+    def test_set_steam_game_property_err(self):
+        """Test set_steam_game_property on error.
+
+        Expects function be fail safe, handling any exceptions when setting
+        a new value for STEAM_GAME.
+        """
+        mock_display = MagicMock(spec=Display)
+        mock_window_ids = {"1", "2", "3"}
+        mock_appid = 123
+
+        mock_display.create_resource_object.side_effect = (
+            DisplayConnectionError(mock_display, "foo")
+        )
+
+        result = umu_run.set_steam_game_property(
+            mock_display, mock_window_ids, mock_appid
+        )
+
+        self.assertTrue(
+            result is mock_display, f"Expected Display, received: {result}"
+        )
+        mock_display.create_resource_object.assert_called()
+
+    def test_set_steam_game_property(self):
+        """Test set_steam_game_property."""
+        mock_display = MagicMock(spec=Display)
+        mock_window = MagicMock(spec=Window)
+        mock_window_ids = {"1", "2", "3"}
+        mock_appid = 123
+
+        mock_display.create_resource_object.return_value = mock_window
+        mock_display.get_atom.return_value = 0
+
+        result = umu_run.set_steam_game_property(
+            mock_display, mock_window_ids, mock_appid
+        )
+        self.assertTrue(
+            result is mock_display, f"Expected Display, received: {result}"
+        )
+        mock_display.create_resource_object.assert_called()
+        mock_display.get_atom.assert_called()
+
+    def test_get_window_ids_err(self):
+        """Test get_window_ids on error.
+
+        Expects function to be fail safe, so any exceptions should be handled
+        when returning child windows.
+        """
+        mock_display = MagicMock(spec=Display)
+        mock_event = MagicMock(spec=Event)
+        mock_screen = MagicMock()
+        mock_root = MagicMock()
+        mock_query_tree = MagicMock()
+
+        mock_event.type = CreateNotify
+        mock_display.next_event.return_value = mock_event
+
+        mock_display.screen.return_value = mock_screen
+        mock_screen.root = mock_root
+        mock_root.query_tree.side_effect = DisplayConnectionError(
+            mock_display, "foo"
+        )
+        mock_query_tree.children = set()
+
+        result = umu_run.get_window_ids(mock_display)
+
+        # Assertions
+        self.assertTrue(result is None, f"Expected None, received: {result}")
+        mock_display.next_event.assert_called_once()
+        mock_display.screen.assert_called_once()
+        mock_screen.root.query_tree.assert_called_once()
+
+    def test_get_window_ids(self):
+        """Test get_window_ids."""
+        mock_display = MagicMock(spec=Display)
+        mock_event = MagicMock(spec=Event)
+        mock_screen = MagicMock()
+        mock_root = MagicMock()
+        mock_query_tree = MagicMock()
+
+        mock_event.type = CreateNotify
+        mock_display.next_event.return_value = mock_event
+
+        mock_display.screen.return_value = mock_screen
+        mock_screen.root = mock_root
+        mock_root.query_tree.return_value = mock_query_tree
+        mock_query_tree.children = set()
+
+        result = umu_run.get_window_ids(mock_display)
+
+        self.assertTrue(
+            isinstance(result, set), f"Expected a set, received: {result}"
+        )
+        mock_display.next_event.assert_called_once()
+        mock_display.screen.assert_called_once()
+        mock_screen.root.query_tree.assert_called_once()
 
     def test_get_steam_layer_id(self):
         """Test get_steam_layer_id.
