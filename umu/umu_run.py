@@ -466,7 +466,7 @@ def rearrange_gamescope_baselayer_appid(
 
 def set_gamescope_baselayer_appid(
     d: display.Display, rearranged: list[int]
-) -> None:
+) -> display.Display | None:
     """Set a new gamescope GAMESCOPECTRL_BASELAYER_APPID on the primary root window."""
     try:
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
@@ -478,11 +478,14 @@ def set_gamescope_baselayer_appid(
             GamescopeAtom.BaselayerAppId.value,
             ", ".join(map(str, rearranged)),
         )
+        return d
     except Exception as e:
         log.error(
             "Error setting %s property", GamescopeAtom.BaselayerAppId.value
         )
         log.exception(e)
+
+    return None
 
 
 def get_steam_appid(env: MutableMapping) -> int:
