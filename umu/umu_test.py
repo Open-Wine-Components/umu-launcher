@@ -260,6 +260,61 @@ class TestGameLauncher(unittest.TestCase):
         mock_display.create_resource_object.assert_called()
         mock_display.get_atom.assert_called()
 
+    def test_get_window_ids_err(self):
+        """Test get_window_ids on error.
+
+        Expects function to be fail safe, so any exceptions should be handled
+        when returning child windows.
+        """
+        mock_display = MagicMock(spec=Display)
+        mock_event = MagicMock(spec=Event)
+        mock_screen = MagicMock()
+        mock_root = MagicMock()
+        mock_query_tree = MagicMock()
+
+        mock_event.type = CreateNotify
+        mock_display.next_event.return_value = mock_event
+
+        mock_display.screen.return_value = mock_screen
+        mock_screen.root = mock_root
+        mock_root.query_tree.side_effect = DisplayConnectionError(
+            mock_display, "foo"
+        )
+        mock_query_tree.children = set()
+
+        result = umu_run.get_window_ids(mock_display)
+
+        # Assertions
+        self.assertTrue(result is None, f"Expected None, received: {result}")
+        mock_display.next_event.assert_called_once()
+        mock_display.screen.assert_called_once()
+        mock_screen.root.query_tree.assert_called_once()
+
+    def test_get_window_ids(self):
+        """Test get_window_ids."""
+        mock_display = MagicMock(spec=Display)
+        mock_event = MagicMock(spec=Event)
+        mock_screen = MagicMock()
+        mock_root = MagicMock()
+        mock_query_tree = MagicMock()
+
+        mock_event.type = CreateNotify
+        mock_display.next_event.return_value = mock_event
+
+        mock_display.screen.return_value = mock_screen
+        mock_screen.root = mock_root
+        mock_root.query_tree.return_value = mock_query_tree
+        mock_query_tree.children = set()
+
+        result = umu_run.get_window_ids(mock_display)
+
+        self.assertTrue(
+            isinstance(result, set), f"Expected a set, received: {result}"
+        )
+        mock_display.next_event.assert_called_once()
+        mock_display.screen.assert_called_once()
+        mock_screen.root.query_tree.assert_called_once()
+
     def test_get_steam_layer_id(self):
         """Test get_steam_layer_id.
 
