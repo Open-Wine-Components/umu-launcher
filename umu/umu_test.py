@@ -218,6 +218,48 @@ class TestGameLauncher(unittest.TestCase):
             result == [1, 2, 3], f"Expected a value, received: {result}"
         )
 
+    def test_set_steam_game_property_err(self):
+        """Test set_steam_game_property on error.
+
+        Expects function be fail safe, handling any exceptions when setting
+        a new value for STEAM_GAME.
+        """
+        mock_display = MagicMock(spec=Display)
+        mock_window_ids = {"1", "2", "3"}
+        mock_appid = 123
+
+        mock_display.create_resource_object.side_effect = (
+            DisplayConnectionError(mock_display, "foo")
+        )
+
+        result = umu_run.set_steam_game_property(
+            mock_display, mock_window_ids, mock_appid
+        )
+
+        self.assertTrue(
+            result is mock_display, f"Expected Display, received: {result}"
+        )
+        mock_display.create_resource_object.assert_called()
+
+    def test_set_steam_game_property(self):
+        """Test set_steam_game_property."""
+        mock_display = MagicMock(spec=Display)
+        mock_window = MagicMock(spec=Window)
+        mock_window_ids = {"1", "2", "3"}
+        mock_appid = 123
+
+        mock_display.create_resource_object.return_value = mock_window
+        mock_display.get_atom.return_value = 0
+
+        result = umu_run.set_steam_game_property(
+            mock_display, mock_window_ids, mock_appid
+        )
+        self.assertTrue(
+            result is mock_display, f"Expected Display, received: {result}"
+        )
+        mock_display.create_resource_object.assert_called()
+        mock_display.get_atom.assert_called()
+
     def test_get_steam_layer_id(self):
         """Test get_steam_layer_id.
 
