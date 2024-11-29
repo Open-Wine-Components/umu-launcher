@@ -191,6 +191,32 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
 
+    def test_main_nomusl(self):
+        """Test __main__.main to ensure an exit when on a musl-based system."""
+        os.environ["LD_LIBRARY_PATH"] = f"{os.environ['LD_LIBRARY_PATH']}:musl"
+        with (
+            patch.object(
+                __main__,
+                "parse_args",
+                return_value=["foo", "foo"],
+            ),
+            self.assertRaises(SystemExit),
+        ):
+            __main__.main()
+
+    def test_main_noroot(self):
+        """Test __main__.main to ensure an exit when run as a privileged user."""
+        with (
+            patch.object(
+                __main__,
+                "parse_args",
+                return_value=["foo", "foo"],
+            ),
+            self.assertRaises(SystemExit),
+            patch.object(os, "geteuid", return_value=0),
+        ):
+            __main__.main()
+
     def test_restore_umu_cb_false(self):
         """Test _restore_umu when the callback evaluates to False."""
         mock_cb = Mock(return_value=False)
