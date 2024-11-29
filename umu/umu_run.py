@@ -49,14 +49,14 @@ from umu.umu_plugins import set_env_toml
 from umu.umu_proton import get_umu_proton
 from umu.umu_runtime import setup_umu
 from umu.umu_util import (
+    CompatibilityTool,
+    SteamRuntime,
     get_libc,
     get_library_paths,
     has_umu_setup,
     is_installed_verb,
     unix_flock,
     xdisplay,
-    SteamRuntime,
-    CompatibilityTool
 )
 
 NET_TIMEOUT = 5.0
@@ -306,7 +306,8 @@ def build_command(
     """Build the command to be executed."""
     shim: Path = local.joinpath("umu-shim")
     entry_point: Path = local.joinpath("umu")
-    if opts is None: opts = []
+    if opts is None:
+        opts = []
 
     # Exit if the entry point is missing
     # The _v2-entry-point script and container framework tools are included in
