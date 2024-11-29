@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
       - name: Install dependencies
         run: |
-          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck
+          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck bubblewrap
           python3 -m pip install --upgrade pip
           pip install uv
       - name: Initialize submodules
@@ -64,3 +64,7 @@ jobs:
         run: |
           source .venv/bin/activate
           sh tests/test_config.sh
+      - name: Test offline launch
+        run: |
+          source .venv/bin/activate
+          sh tests/test_offline.sh
