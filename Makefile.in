@@ -101,7 +101,7 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
-	pip3 install urllib3 -t $(OBJDIR)
+    python3 -m pip install urllib3 -t $(OBJDIR)
 
 .PHONY: umu-vendored
 umu-vendored: $(OBJDIR)/.build-umu-vendored
