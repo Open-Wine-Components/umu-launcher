@@ -861,7 +861,14 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
         try:
             future.result()
-        except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3):
+        except (
+            # Network errors
+            MaxRetryError,
+            NewConnectionError,
+            TimeoutErrorUrllib3,
+            # Digest mismatched for runtime
+            ValueError,
+        ):
             if not has_umu_setup():
                 err: str = (
                     "umu has not been setup for the user\n"
