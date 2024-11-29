@@ -25,7 +25,7 @@ jobs:
           python-version: ${{ matrix.version }}
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip uv
+          python3 -m pip install --upgrade pip uv mypy
       - name: Setup venv
         run: |
           uv venv --python 3.11
@@ -34,5 +34,4 @@ jobs:
       - name: Check types with mypy
         run: |
           source .venv/bin/activate
-          pip install mypy
           mypy .
