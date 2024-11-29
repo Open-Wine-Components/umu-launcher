@@ -1013,27 +1013,29 @@ class TestGameLauncher(unittest.TestCase):
         }
         # Mock the call to urlopen
         mock_resp = MagicMock()
-        mock_resp.read.return_value = b"foo"
         mock_resp.status = 200
-        mock_resp.__enter__.return_value = mock_resp
+        mock_resp.json.return_value = mock_gh_release
+
+        # Mock thread pool
+        mock_tp = MagicMock()
+
+        # Mock conn pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
         # Mock PROTONPATH="", representing a download to UMU-Proton
         os.environ["PROTONPATH"] = ""
-        with (
-            patch.object(umu_proton, "urlopen", return_value=mock_resp),
-            patch.object(umu_proton, "loads", return_value=mock_gh_release),
-        ):
-            result = umu_proton._fetch_releases()
-            self.assertTrue(
-                result is not None, "Expected a value, received None"
-            )
-            self.assertTrue(
-                isinstance(result, tuple), f"Expected tuple, received {result}"
-            )
-            result_len = len(result)
-            self.assertFalse(
-                result_len,
-                f"Expected tuple with no len, received len {result_len}",
-            )
+
+        result = umu_proton._fetch_releases((mock_tp, mock_hp))
+        self.assertTrue(result is not None, "Expected a value, received None")
+        self.assertTrue(
+            isinstance(result, tuple), f"Expected tuple, received {result}"
+        )
+        result_len = len(result)
+        self.assertFalse(
+            result_len,
+            f"Expected tuple with no len, received len {result_len}",
+        )
 
     def test_fetch_releases(self):
         """Test _fetch_releases."""
@@ -1050,29 +1052,33 @@ class TestGameLauncher(unittest.TestCase):
                 },
             ]
         }
-        # Mock the call to urlopen
+
+        # Mock the response
         mock_resp = MagicMock()
-        mock_resp.read.return_value = b"foo"
         mock_resp.status = 200
-        mock_resp.__enter__.return_value = mock_resp
+        mock_resp.json.return_value = mock_gh_release
+        # Mock our thread and http pools
+
+        # Mock the thread pool
+        mock_tp = MagicMock()
+
+        # Mock the call to http pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
         # Mock PROTONPATH="", representing a download to UMU-Proton
         os.environ["PROTONPATH"] = ""
-        with (
-            patch.object(umu_proton, "urlopen", return_value=mock_resp),
-            patch.object(umu_proton, "loads", return_value=mock_gh_release),
-        ):
-            result = umu_proton._fetch_releases()
-            self.assertTrue(
-                result is not None, "Expected a value, received None"
-            )
-            self.assertTrue(
-                isinstance(result, tuple), f"Expected tuple, received {result}"
-            )
-            result_len = len(result)
-            self.assertTrue(
-                result_len,
-                f"Expected tuple with len, received len {result_len}",
-            )
+
+        result = umu_proton._fetch_releases((mock_tp, mock_hp))
+        self.assertTrue(result is not None, "Expected a value, received None")
+        self.assertTrue(
+            isinstance(result, tuple), f"Expected tuple, received {result}"
+        )
+        result_len = len(result)
+        self.assertTrue(
+            result_len,
+            f"Expected tuple with len, received len {result_len}",
+        )
 
     def test_update_proton(self):
         """Test _update_proton."""
@@ -1110,7 +1116,7 @@ class TestGameLauncher(unittest.TestCase):
         wasn't found in local system.
         """
         test_archive = self.test_archive.rename("GE-Proton9-2.tar.gz")
-        umu_proton._extract_dir(test_archive)
+        umu_util.extract_tarfile(test_archive, test_archive.parent)
 
         with (
             self.assertRaises(FileNotFoundError),
@@ -1119,12 +1125,11 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(
                 umu_proton, "_get_from_steamcompat", return_value=None
             ),
-            ThreadPoolExecutor() as thread_pool,
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["PROTONPATH"] = "GE-Proton"
-            umu_run.check_env(self.env, thread_pool)
+            umu_run.check_env(self.env, self.test_session_pools)
             self.assertEqual(
                 self.env["PROTONPATH"],
                 self.test_compat.joinpath(
@@ -1177,13 +1182,17 @@ class TestGameLauncher(unittest.TestCase):
 
         with (
             patch("umu.umu_proton._fetch_proton") as mock_function,
-            ThreadPoolExecutor() as thread_pool,
+            ThreadPoolExecutor(),
         ):
             # Mock the interrupt
             # We want the dir we tried to extract to be cleaned
             mock_function.side_effect = KeyboardInterrupt
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                self.test_session_pools,
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -1213,12 +1222,16 @@ class TestGameLauncher(unittest.TestCase):
 
         with (
             patch("umu.umu_proton._fetch_proton") as mock_function,
-            ThreadPoolExecutor() as thread_pool,
+            ThreadPoolExecutor(),
         ):
             # Mock the interrupt
             mock_function.side_effect = ValueError
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                self.test_session_pools,
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -1239,10 +1252,14 @@ class TestGameLauncher(unittest.TestCase):
 
         with (
             patch("umu.umu_proton._fetch_proton"),
-            ThreadPoolExecutor() as thread_pool,
+            ThreadPoolExecutor(),
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                self.test_session_pools,
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -1284,10 +1301,14 @@ class TestGameLauncher(unittest.TestCase):
         )
         with (
             patch("umu.umu_proton._fetch_proton"),
-            ThreadPoolExecutor() as thread_pool,
+            ThreadPoolExecutor(),
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                self.test_session_pools,
             )
             self.assertTrue(result is self.env, "Expected the same reference")
             # Verify the latest was set
@@ -1328,6 +1349,9 @@ class TestGameLauncher(unittest.TestCase):
         with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
             tar.add(latest.as_posix(), arcname=latest.as_posix())
 
+        # Add the .parts suffix
+        move(test_archive, self.test_cache.joinpath(f"{latest}.tar.gz.parts"))
+
         # Mock old versions
         self.test_compat.joinpath("UMU-Proton-9.0-beta15").mkdir()
         self.test_compat.joinpath("UMU-Proton-9.0-beta14").mkdir()
@@ -1345,7 +1369,11 @@ class TestGameLauncher(unittest.TestCase):
             ThreadPoolExecutor() as thread_pool,
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                (thread_pool, MagicMock()),
             )
             self.assertTrue(result is self.env, "Expected the same reference")
             # Verify the latest was set
@@ -1415,7 +1443,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        umu_proton._extract_dir(self.test_archive)
+        umu_util.extract_tarfile(self.test_archive, self.test_archive.parent)
         move(str(self.test_archive).removesuffix(".tar.gz"), self.test_compat)
 
         result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
@@ -1431,12 +1459,15 @@ class TestGameLauncher(unittest.TestCase):
             "Expected PROTONPATH to be proton dir in compat",
         )
 
-    def test_extract_err(self):
-        """Test _extract_dir when passed a non-gzip compressed archive.
+    def test_extract_tarfile_err(self):
+        """Test extract_tarfile when passed a non-gzip compressed archive.
 
         A ReadError should be raised as we only expect .tar.gz releases
         """
-        test_archive = self.test_cache.joinpath(f"{self.test_proton_dir}.tar")
+        test_archive = self.test_cache.joinpath(
+            f"{self.test_proton_dir}.tar.zst"
+        )
+
         # Do not apply compression
         with tarfile.open(test_archive.as_posix(), "w") as tar:
             tar.add(
@@ -1444,23 +1475,29 @@ class TestGameLauncher(unittest.TestCase):
                 arcname=self.test_proton_dir.as_posix(),
             )
 
-        with self.assertRaisesRegex(tarfile.ReadError, "gzip"):
-            umu_proton._extract_dir(test_archive)
+        with self.assertRaisesRegex(tarfile.CompressionError, "zst"):
+            umu_util.extract_tarfile(test_archive, test_archive.parent)
 
         if test_archive.exists():
             test_archive.unlink()
 
-    def test_extract(self):
-        """Test _extract_dir.
+    def test_extract_tarfile(self):
+        """Test extract_tarfile.
 
         An error should not be raised when the Proton release is extracted to
         a temporary directory
         """
         result = None
 
-        result = umu_proton._extract_dir(self.test_archive)
+        result = umu_util.extract_tarfile(
+            self.test_archive, self.test_archive.parent
+        )
         move(str(self.test_archive).removesuffix(".tar.gz"), self.test_compat)
-        self.assertFalse(result, "Expected None after extracting")
+        self.assertEqual(
+            result,
+            self.test_archive.parent,
+            f"Expected {self.test_archive.parent}, received: {result}",
+        )
         self.assertTrue(
             self.test_compat.joinpath(self.test_proton_dir).exists(),
             "Expected proton dir to exists in compat",
@@ -1487,7 +1524,7 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_file + "/proton").touch()
 
         # Replicate main's execution and test up until enable_steam_game_drive
-        with patch("sys.argv", ["", ""]), ThreadPoolExecutor() as thread_pool:
+        with patch("sys.argv", ["", ""]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
@@ -1495,7 +1532,7 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             args = __main__.parse_args()
             # Config
-            umu_run.check_env(self.env, thread_pool)
+            umu_run.check_env(self.env, self.test_session_pools)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -1759,7 +1796,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
-                None,
+                self.test_session_pools,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -1846,7 +1883,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
-                None,
+                self.test_session_pools,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -1978,7 +2015,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
-                None,
+                self.test_session_pools,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
