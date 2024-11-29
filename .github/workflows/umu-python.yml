@@ -2,9 +2,9 @@ name: umu-launcher
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -20,23 +20,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.version }}
-    - name: Install dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install ruff
-        pip install python-xlib
-        pip install filelock
-    - name: Lint umu_*.py files with Ruff
-      run: |
-        pip install ruff
-        ruff check --output-format github ./umu/umu_*.py
-    - name: Test with unittest
-      run: python3 ./umu/umu_test.py
-    - name: Test with unittest for plugins
-      if: ${{ matrix.version == '3.11' || matrix.version == '3.12' || matrix.version == '3.13' }}
-      run: python3 ./umu/umu_test_plugins.py
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.version }}
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install ruff
+          pip install python-xlib
+          pip install filelock
+          pip install uv
+      - name: Setup venv
+        run: |
+          uv venv --python 3.11
+          uv pip install -r requirements.in
+      - name: Lint umu_*.py files with Ruff
+        run: |
+          pip install ruff
+          ruff check --output-format github ./umu/umu_*.py
+      - name: Test with unittest
+        run: python3 ./umu/umu_test.py
+      - name: Test with unittest for plugins
+        if: ${{ matrix.version == '3.11' || matrix.version == '3.12' || matrix.version == '3.13' }}
+        run: python3 ./umu/umu_test_plugins.py
