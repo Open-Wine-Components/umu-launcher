@@ -64,6 +64,7 @@ jobs:
         run: |
           source .venv/bin/activate
           sh tests/test_config.sh
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
       - name: Test offline launch
         run: |
           source .venv/bin/activate
