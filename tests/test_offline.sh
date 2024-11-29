@@ -12,10 +12,10 @@ url=$(curl -L "https://api.github.com/repos/Open-Wine-Components/umu-proton/rele
 # Download Proton
 curl -LJO "$url"
 
-mkdir -p "$HOME"/.local/share/compatibilitytools.d "$HOME"/.local/share/umu
+mkdir -p "$HOME"/.local/share/Steam/compatibilitytools.d "$HOME"/.local/share/umu
 
 # Extract the archives
-tar xaf "$name" -C "$HOME"/.local/share/compatibilitytools.d
+tar xaf "$name" -C "$HOME"/.local/share/Steam/compatibilitytools.d
 tar xaf SteamLinuxRuntime_sniper.tar.xz
 
 cp -a SteamLinuxRuntime_sniper/* "$HOME"/.local/share/umu
