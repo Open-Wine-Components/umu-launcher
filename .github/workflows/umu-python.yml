@@ -32,17 +32,21 @@ jobs:
           pip install python-xlib
           pip install filelock
           pip install uv
+      - name: Lint umu_*.py files with Ruff
+        run: |
+          pip install ruff
+          ruff check --output-format github ./umu/umu_*.py
       - name: Setup venv
         run: |
           uv venv --python 3.11
           source .venv/bin/activate
           uv pip install -r requirements.in
-      - name: Lint umu_*.py files with Ruff
-        run: |
-          pip install ruff
-          ruff check --output-format github ./umu/umu_*.py
       - name: Test with unittest
-        run: python3 ./umu/umu_test.py
+        run: |
+          source .venv/bin/activate
+          python3 ./umu/umu_test.py
       - name: Test with unittest for plugins
         if: ${{ matrix.version == '3.11' || matrix.version == '3.12' || matrix.version == '3.13' }}
-        run: python3 ./umu/umu_test_plugins.py
+        run: |
+          source .venv/bin/activate
+          python3 ./umu/umu_test_plugins.py
