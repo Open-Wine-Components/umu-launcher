@@ -151,7 +151,7 @@ $(OBJDIR)/.build-zipapp: | $(OBJDIR)
 	$(info :: Building umu-launcher as zipapp )
 	$(PYTHON_INTERPRETER) -m venv $(ZIPAPP_VENV)
 	. $(ZIPAPP_VENV)/bin/activate && python3 -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile . truststore
-	rm -r "$(ZIPAPP_STAGING)"/bin
+	cp umu/__main__.py "$(ZIPAPP_STAGING)"
 	find "$(ZIPAPP_STAGING)" -exec touch -h -d "$(SOURCE_DATE_EPOCH)" {} +
 	. $(ZIPAPP_VENV)/bin/activate && python3 -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c
 	touch -d "$(SOURCE_DATE_EPOCH)" $(ZIPAPP)
