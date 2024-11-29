@@ -1,5 +1,7 @@
 import os
 import sys
+import shlex
+import vdf
 from contextlib import contextmanager
 from ctypes.util import find_library
 from functools import lru_cache
@@ -10,11 +12,12 @@ from re import compile as re_compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 from tarfile import open as taropen
+from typing import Optional
 
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
-from umu.umu_consts import UMU_LOCAL
+from umu.umu_consts import UMU_LOCAL, RUNTIME_VERSIONS
 from umu.umu_log import log
 
 
@@ -254,3 +257,64 @@ def has_umu_setup(path: Path = UMU_LOCAL) -> bool:
     return path.exists() and any(
         file for file in path.glob("*") if not file.name.endswith("lock")
     )
+
+
+class SteamBase:
+
+    def __init__(self, path: str):
+        self.tool_path = path
+        with open(Path(path).joinpath("toolmanifest.vdf"), "r", encoding="utf-8") as f:
+            self.tool_manifest = vdf.load(f)["manifest"]
+
+    @property
+    def required_tool_appid(self) -> Optional[str]:
+        return self.tool_manifest.get("require_tool_appid", None)
+
+    @property
+    def required_tool_name(self) -> Optional[str]:
+        if self.required_tool_appid is None:
+            return None
+        return RUNTIME_VERSIONS[self.required_tool_appid]
+
+    @property
+    def layer(self) -> Optional[str]:
+        return self.tool_manifest.get("compatmanager_layer_name", None)
+
+    def command(self, verb: str) -> list[str]:
+        tool_path = os.path.normpath(self.tool_path)
+        cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
+        cmd = cmd.replace("_v2-entry-point", "umu")
+        cmd = cmd.replace("%verb%", str(verb))
+        return shlex.split(cmd)
+
+    def as_str(self, verb: str):
+        return " ".join(map(shlex.quote, self.command(verb)))
+
+
+class SteamRuntime(SteamBase):
+
+    def __init__(self, path: str):
+        super().__init__(path)
+
+
+class CompatibilityTool(SteamBase):
+
+    def __init__(self, tool_path: str, shim: Path, runtime: SteamRuntime):
+        super().__init__(tool_path)
+        self.shim = shim
+        self.runtime = runtime if self.required_tool_appid is not None else None
+        with open(Path(tool_path).joinpath("compatibilitytool.vdf"), "r", encoding="utf-8") as f:
+            # There can be multiple tools definitions in `compatibilitytools.vdf`
+            # Take the first one and hope it is the one with the correct display_name
+            compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
+            self.compatibilitytool = compat_tools[0]
+
+    @property
+    def display_name(self) -> str:
+        return self.compatibilitytool["display_name"]
+
+    def command(self, verb: str) -> list[str]:
+        cmd = self.runtime.command(verb) if self.runtime is not None else []
+        cmd.append(self.shim.as_posix())
+        cmd.extend(super().command(verb))
+        return cmd
