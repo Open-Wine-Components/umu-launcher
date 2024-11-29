@@ -111,12 +111,14 @@ umu-launcher-dist-install:
 
 umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
+
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
 		sed -i 's/setuptools>=64,<74/setuptools/' subprojects/pyzstd/pyproject.toml; \
 		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 	fi
+	cd subprojects/vdf && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR)
 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 		cd subprojects/urllib3 && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 	fi
@@ -132,6 +134,8 @@ umu-vendored-install: umu-vendored
 		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/pyzstd/$(OBJDIR)/pyzstd*.whl; \
 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name pyzstd | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
 	fi
+	$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/vdf/$(OBJDIR)/vdf*.whl
+	find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name vdf | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/urllib3/$(OBJDIR)/urllib3*.whl; \
 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name urllib3 | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
