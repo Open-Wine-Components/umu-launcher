@@ -39,7 +39,7 @@ dependencies = ["python-xlib>=0.33", "filelock>=3.9.0", "urllib3>=2.0.0,<3.0.0"]
 
 [project.optional-dependencies]
 # Recommended
-# Use the system's CA bundle instead of certifi's
+# For network requests, use the system's CA bundle instead of certifi's
 cli = ["truststore"]
 
 [project.scripts]
