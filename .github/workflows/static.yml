@@ -2,9 +2,9 @@ name: mypy
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -13,20 +13,25 @@ jobs:
   build:
     strategy:
       matrix:
-        version: ["3.10"]
+        version: ["3.11"]
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.version }}
-    - name: Install dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-    - name: Check types with mypy
-      run: |
-        pip install mypy
-        mypy .
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.version }}
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip uv mypy
+      - name: Setup venv
+        run: |
+          uv venv --python 3.11
+          source .venv/bin/activate
+          uv pip install -r requirements.in
+      - name: Check types with mypy
+        run: |
+          source .venv/bin/activate
+          mypy --python-version 3.11 .

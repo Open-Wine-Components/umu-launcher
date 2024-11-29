@@ -21,7 +21,7 @@ FLATPAK ?= xfalse
 
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)
-all: umu-dist umu-launcher
+all: umu-dist umu-launcher umu-vendored
 endif
 
 .PHONY: install
@@ -30,8 +30,8 @@ SOURCE_DATE_EPOCH = $(shell LC_ALL=C date --date='@1580601600')
 all: zipapp
 install: zipapp-install
 else
-all: umu-dist umu-docs umu-launcher
-install: umu-install umu-launcher-install
+all: umu-dist umu-docs umu-launcher umu-vendored
+install: umu-install umu-launcher-install umu-vendored-install
 endif
 
 
@@ -99,20 +99,17 @@ umu-launcher-dist-install:
 umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
 
-$(OBJDIR)/.build-umu-subprojects: | $(OBJDIR)
-	$(info :: Building subprojects )
-	pip3 install -r requirements.in -t $(OBJDIR)
+$(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
+	$(info :: Building vendored dependencies )
+	python3 -m pip install urllib3 -t $(OBJDIR)
 
-.PHONY: umu-subprojects
-umu-subprojects: $(OBJDIR)/.build-umu-subprojects
+.PHONY: umu-vendored
+umu-vendored: $(OBJDIR)/.build-umu-vendored
 
-umu-subprojects-install:
+umu-vendored-install: umu-vendored
 	$(info :: Installing subprojects )
-	install -d $(DESTDIR)$(PYTHONDIR)
-	cp      -r $(OBJDIR)/*-info     $(DESTDIR)$(PYTHONDIR)
-	cp      -r $(OBJDIR)/Xlib       $(DESTDIR)$(PYTHONDIR)
-	cp      -r $(OBJDIR)/filelock   $(DESTDIR)$(PYTHONDIR)
-	cp         $(OBJDIR)/six.py     $(DESTDIR)$(PYTHONDIR)
+	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
+	cp      -r $(OBJDIR)/urllib3 $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 
 $(OBJDIR):
 	@mkdir -p $(@)
@@ -153,7 +150,7 @@ ZIPAPP_VENV := $(OBJDIR)/zipapp_venv
 $(OBJDIR)/.build-zipapp: | $(OBJDIR)
 	$(info :: Building umu-launcher as zipapp )
 	$(PYTHON_INTERPRETER) -m venv $(ZIPAPP_VENV)
-	. $(ZIPAPP_VENV)/bin/activate && python3 -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile .
+	. $(ZIPAPP_VENV)/bin/activate && python3 -m pip install -t "$(ZIPAPP_STAGING)" -U --no-compile . truststore
 	cp umu/__main__.py "$(ZIPAPP_STAGING)"
 	find "$(ZIPAPP_STAGING)" -exec touch -h -d "$(SOURCE_DATE_EPOCH)" {} +
 	. $(ZIPAPP_VENV)/bin/activate && python3 -m zipapp $(ZIPAPP_STAGING) -o $(ZIPAPP) -p "$(PYTHON_INTERPRETER)" -c

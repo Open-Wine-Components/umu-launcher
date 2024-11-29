@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import os
 import re
 import sys
@@ -11,8 +12,13 @@ from pathlib import Path
 from pwd import getpwuid
 from shutil import copy, copytree, move, rmtree
 from subprocess import CompletedProcess
-from tempfile import TemporaryDirectory, mkdtemp
-from unittest.mock import MagicMock, patch
+from tempfile import (
+    NamedTemporaryFile,
+    TemporaryDirectory,
+    TemporaryFile,
+    mkdtemp,
+)
+from unittest.mock import MagicMock, Mock, patch
 
 from Xlib.display import Display
 from Xlib.error import DisplayConnectionError
@@ -91,6 +97,8 @@ class TestGameLauncher(unittest.TestCase):
         # Wine prefix
         self.test_winepfx = Path("./tmp.AlfLPDhDvA")
         self.test_runtime_version = ("sniper", "steamrt3")
+        # Thread pool and connection pool instances
+        self.test_session_pools = (MagicMock(), MagicMock())
 
         # /usr
         self.test_usr = Path("./tmp.QnZRGFfnqH")
@@ -182,6 +190,316 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
+
+    def test_restore_umu_cb_false(self):
+        """Test _restore_umu when the callback evaluates to False."""
+        mock_cb = Mock(return_value=False)
+        result = MagicMock()
+
+        with (
+            TemporaryDirectory() as file,
+            patch.object(umu_runtime, "_install_umu"),
+        ):
+            mock_local = Path(file)
+            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_session_pools = (MagicMock(), MagicMock())
+            result = umu_runtime._restore_umu(
+                mock_local, mock_runtime_ver, mock_session_pools, mock_cb
+            )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+            self.assertTrue(
+                mock_cb.mock_calls,
+                "Expected callback to be called",
+            )
+
+    def test_restore_umu(self):
+        """Test _restore_umu."""
+        mock_cb = Mock(return_value=True)
+        result = MagicMock()
+
+        with TemporaryDirectory() as file:
+            mock_local = Path(file)
+            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_session_pools = (MagicMock(), MagicMock())
+            result = umu_runtime._restore_umu(
+                mock_local, mock_runtime_ver, mock_session_pools, mock_cb
+            )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+            self.assertTrue(
+                mock_cb.mock_calls,
+                "Expected callback to be called",
+            )
+
+    def test_setup_umu_update(self):
+        """Test setup_umu when updating the runtime."""
+        result = MagicMock()
+
+        # Mock a new install
+        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            # Populate our fake $XDG_DATA_HOME/umu
+            Path(file2, "umu").touch()
+            # Mock the runtime ver
+            mock_runtime_ver = ("sniper", "steamrt3")
+            # Mock our thread and conn pool
+            mock_session_pools = (MagicMock(), MagicMock())
+            with patch.object(umu_runtime, "_update_umu"):
+                result = umu_runtime.setup_umu(
+                    Path(file1),
+                    Path(file2),
+                    mock_runtime_ver,
+                    mock_session_pools,
+                )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+
+    def test_setup_umu_noupdate(self):
+        """Test setup_umu when setting runtime updates are disabled."""
+        result = MagicMock()
+        os.environ["UMU_RUNTIME_UPDATE"] = "0"
+
+        # Mock a new install
+        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            # Populate our fake $XDG_DATA_HOME/umu
+            Path(file2, "umu").touch()
+            # Mock the runtime ver
+            mock_runtime_ver = ("sniper", "steamrt3")
+            # Mock our thread and conn pool
+            mock_session_pools = (MagicMock(), MagicMock())
+            with patch.object(umu_runtime, "_restore_umu"):
+                result = umu_runtime.setup_umu(
+                    Path(file1),
+                    Path(file2),
+                    mock_runtime_ver,
+                    mock_session_pools,
+                )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+
+    def test_setup_umu(self):
+        """Test setup_umu on new install."""
+        result = MagicMock()
+
+        # Mock a new install
+        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            # Mock the runtime ver
+            mock_runtime_ver = ("sniper", "steamrt3")
+            # Mock our thread and conn pool
+            mock_session_pools = (MagicMock(), MagicMock())
+            with patch.object(umu_runtime, "_restore_umu"):
+                result = umu_runtime.setup_umu(
+                    Path(file1),
+                    Path(file2),
+                    mock_runtime_ver,
+                    mock_session_pools,
+                )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+
+    def test_restore_umu_platformid_status_err(self):
+        """Test _restore_umu_platformid when the server returns a non-200 status code."""
+        result = None
+        # Mock os-release data
+        mock_osrel = (
+            'PRETTY_NAME="Steam Runtime 3 (sniper)""\n'
+            'NAME="Steam Runtime"\n'
+            'VERSION_ID="3"\n'
+            'VERSION="3 (sniper)"\n'
+            "VERSION_CODENAME=sniper\n"
+            "ID=steamrt\n"
+            "ID_LIKE=debian\n"
+            'HOME_URL="https://store.steampowered.com/"\n'
+            'SUPPORT_URL="https://help.steampowered.com/"\n'
+            'BUG_REPORT_URL="https://github.com/ValveSoftware/steam-runtime/issues"\n'
+            'BUILD_ID="0.20241118.108552"\n'
+            "VARIANT=Platform\n"
+            'VARIANT_ID="com.valvesoftware.steamruntime.platform-amd64_i386-sniper"\n'
+        )
+        # Mock the response
+        mock_resp = MagicMock()
+        mock_resp.status = 404
+        mock_resp.data = b"foo"
+        mock_resp.getheader.return_value = "foo"
+
+        # Mock the conn pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        # Mock thread pool
+        mock_tp = MagicMock()
+
+        # Mock runtime ver
+        mock_runtime_ver = ("sniper", "steamrt3")
+
+        with TemporaryDirectory() as file:
+            mock_runtime_base = Path(file)
+            mock_osrel_file = mock_runtime_base.joinpath(
+                "files", "lib", "os-release"
+            )
+            mock_runtime_base.joinpath("files", "lib").mkdir(parents=True)
+            mock_osrel_file.touch(exist_ok=True)
+            mock_osrel_file.write_text(mock_osrel)
+            result = umu_runtime._restore_umu_platformid(
+                mock_runtime_base, mock_runtime_ver, (mock_tp, mock_hp)
+            )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+
+    def test_restore_umu_platformid_osrel_none(self):
+        """Test _restore_umu_platformid when the os-release file is missing."""
+        result = None
+        # Mock the response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.data = b"foo"
+
+        # Mock the conn pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        # Mock thread pool
+        mock_tp = MagicMock()
+
+        # Mock runtime ver
+        mock_runtime_ver = ("sniper", "steamrt3")
+
+        with TemporaryDirectory() as file:
+            mock_runtime_base = Path(file)
+            mock_runtime_base.joinpath("files", "lib").mkdir(parents=True)
+            result = umu_runtime._restore_umu_platformid(
+                mock_runtime_base, mock_runtime_ver, (mock_tp, mock_hp)
+            )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+
+    def test_restore_umu_platformid_osrel_err(self):
+        """Test _restore_umu_platformid on error parsing os-release."""
+        result = None
+        # Mock os-release data. Remove the BUILD_ID field to error
+        mock_osrel = (
+            'PRETTY_NAME="Steam Runtime 3 (sniper)""\n'
+            'NAME="Steam Runtime"\n'
+            'VERSION_ID="3"\n'
+            'VERSION="3 (sniper)"\n'
+            "VERSION_CODENAME=sniper\n"
+            "ID=steamrt\n"
+            "ID_LIKE=debian\n"
+            'HOME_URL="https://store.steampowered.com/"\n'
+            'SUPPORT_URL="https://help.steampowered.com/"\n'
+            'BUG_REPORT_URL="https://github.com/ValveSoftware/steam-runtime/issues"\n'
+            "VARIANT=Platform\n"
+            'VARIANT_ID="com.valvesoftware.steamruntime.platform-amd64_i386-sniper"\n'
+        )
+        # Mock the response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.data = b"foo"
+
+        # Mock the conn pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        # Mock thread pool
+        mock_tp = MagicMock()
+
+        # Mock runtime ver
+        mock_runtime_ver = ("sniper", "steamrt3")
+
+        with TemporaryDirectory() as file:
+            mock_runtime_base = Path(file)
+            mock_runtime_base.joinpath("files", "lib").mkdir(parents=True)
+            mock_osrel_file = mock_runtime_base.joinpath(
+                "files", "lib", "os-release"
+            )
+            mock_osrel_file.touch(exist_ok=True)
+            mock_osrel_file.write_text(mock_osrel)
+            result = umu_runtime._restore_umu_platformid(
+                mock_runtime_base, mock_runtime_ver, (mock_tp, mock_hp)
+            )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+
+    def test_restore_umu_platformid(self):
+        """Test _restore_umu_platformid."""
+        result = None
+        # Mock os-release data
+        mock_osrel = (
+            'PRETTY_NAME="Steam Runtime 3 (sniper)""\n'
+            'NAME="Steam Runtime"\n'
+            'VERSION_ID="3"\n'
+            'VERSION="3 (sniper)"\n'
+            "VERSION_CODENAME=sniper\n"
+            "ID=steamrt\n"
+            "ID_LIKE=debian\n"
+            'HOME_URL="https://store.steampowered.com/"\n'
+            'SUPPORT_URL="https://help.steampowered.com/"\n'
+            'BUG_REPORT_URL="https://github.com/ValveSoftware/steam-runtime/issues"\n'
+            'BUILD_ID="0.20241118.108552"\n'
+            "VARIANT=Platform\n"
+            'VARIANT_ID="com.valvesoftware.steamruntime.platform-amd64_i386-sniper"\n'
+        )
+        # Mock the response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.data = b"foo"
+
+        # Mock the conn pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        # Mock thread pool
+        mock_tp = MagicMock()
+
+        # Mock runtime ver
+        mock_runtime_ver = ("sniper", "steamrt3")
+
+        with TemporaryDirectory() as file:
+            mock_runtime_base = Path(file)
+            mock_osrel_file = mock_runtime_base.joinpath(
+                "files", "lib", "os-release"
+            )
+            mock_runtime_base.joinpath("files", "lib").mkdir(parents=True)
+            mock_osrel_file.touch(exist_ok=True)
+            mock_osrel_file.write_text(mock_osrel)
+            result = umu_runtime._restore_umu_platformid(
+                mock_runtime_base, mock_runtime_ver, (mock_tp, mock_hp)
+            )
+            self.assertEqual(result, "foo", f"Expected foo, received {result}")
+
+    def test_write_file_chunks_none(self):
+        """Test write_file_chunks when not passing a chunk size."""
+        with NamedTemporaryFile() as file1, TemporaryFile("rb+") as file2:
+            chunk_size = 8
+            mock_file = Path(file1.name)
+            hasher = hashlib.blake2b()
+            file2.write(os.getrandom(chunk_size))
+            # Pass a buffered reader as our fake http response
+            umu_util.write_file_chunks(mock_file, file2, hasher)
+            self.assertTrue(
+                hasher.digest(), "Expected hashed data > 0, received 0"
+            )
+
+    def test_write_file_chunks(self):
+        """Test write_file_chunks."""
+        with NamedTemporaryFile() as file1, TemporaryFile("rb+") as file2:
+            chunk_size = 8
+            mock_file = Path(file1.name)
+            hasher = hashlib.blake2b()
+            file2.write(os.getrandom(chunk_size))
+            # Pass a buffered reader as our fake http response
+            umu_util.write_file_chunks(mock_file, file2, hasher, chunk_size)
+            self.assertTrue(
+                hasher.digest(), "Expected hashed data > 0, received 0"
+            )
 
     def test_get_gamescope_baselayer_appid_err(self):
         """Test get_gamescope_baselayer_appid on error.
@@ -695,27 +1013,29 @@ class TestGameLauncher(unittest.TestCase):
         }
         # Mock the call to urlopen
         mock_resp = MagicMock()
-        mock_resp.read.return_value = b"foo"
         mock_resp.status = 200
-        mock_resp.__enter__.return_value = mock_resp
+        mock_resp.json.return_value = mock_gh_release
+
+        # Mock thread pool
+        mock_tp = MagicMock()
+
+        # Mock conn pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
         # Mock PROTONPATH="", representing a download to UMU-Proton
         os.environ["PROTONPATH"] = ""
-        with (
-            patch.object(umu_proton, "urlopen", return_value=mock_resp),
-            patch.object(umu_proton, "loads", return_value=mock_gh_release),
-        ):
-            result = umu_proton._fetch_releases()
-            self.assertTrue(
-                result is not None, "Expected a value, received None"
-            )
-            self.assertTrue(
-                isinstance(result, tuple), f"Expected tuple, received {result}"
-            )
-            result_len = len(result)
-            self.assertFalse(
-                result_len,
-                f"Expected tuple with no len, received len {result_len}",
-            )
+
+        result = umu_proton._fetch_releases((mock_tp, mock_hp))
+        self.assertTrue(result is not None, "Expected a value, received None")
+        self.assertTrue(
+            isinstance(result, tuple), f"Expected tuple, received {result}"
+        )
+        result_len = len(result)
+        self.assertFalse(
+            result_len,
+            f"Expected tuple with no len, received len {result_len}",
+        )
 
     def test_fetch_releases(self):
         """Test _fetch_releases."""
@@ -732,29 +1052,33 @@ class TestGameLauncher(unittest.TestCase):
                 },
             ]
         }
-        # Mock the call to urlopen
+
+        # Mock the response
         mock_resp = MagicMock()
-        mock_resp.read.return_value = b"foo"
         mock_resp.status = 200
-        mock_resp.__enter__.return_value = mock_resp
+        mock_resp.json.return_value = mock_gh_release
+        # Mock our thread and http pools
+
+        # Mock the thread pool
+        mock_tp = MagicMock()
+
+        # Mock the call to http pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
         # Mock PROTONPATH="", representing a download to UMU-Proton
         os.environ["PROTONPATH"] = ""
-        with (
-            patch.object(umu_proton, "urlopen", return_value=mock_resp),
-            patch.object(umu_proton, "loads", return_value=mock_gh_release),
-        ):
-            result = umu_proton._fetch_releases()
-            self.assertTrue(
-                result is not None, "Expected a value, received None"
-            )
-            self.assertTrue(
-                isinstance(result, tuple), f"Expected tuple, received {result}"
-            )
-            result_len = len(result)
-            self.assertTrue(
-                result_len,
-                f"Expected tuple with len, received len {result_len}",
-            )
+
+        result = umu_proton._fetch_releases((mock_tp, mock_hp))
+        self.assertTrue(result is not None, "Expected a value, received None")
+        self.assertTrue(
+            isinstance(result, tuple), f"Expected tuple, received {result}"
+        )
+        result_len = len(result)
+        self.assertTrue(
+            result_len,
+            f"Expected tuple with len, received len {result_len}",
+        )
 
     def test_update_proton(self):
         """Test _update_proton."""
@@ -792,7 +1116,7 @@ class TestGameLauncher(unittest.TestCase):
         wasn't found in local system.
         """
         test_archive = self.test_archive.rename("GE-Proton9-2.tar.gz")
-        umu_proton._extract_dir(test_archive)
+        umu_util.extract_tarfile(test_archive, test_archive.parent)
 
         with (
             self.assertRaises(FileNotFoundError),
@@ -801,12 +1125,11 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(
                 umu_proton, "_get_from_steamcompat", return_value=None
             ),
-            ThreadPoolExecutor() as thread_pool,
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["PROTONPATH"] = "GE-Proton"
-            umu_run.check_env(self.env, thread_pool)
+            umu_run.check_env(self.env, self.test_session_pools)
             self.assertEqual(
                 self.env["PROTONPATH"],
                 self.test_compat.joinpath(
@@ -859,13 +1182,17 @@ class TestGameLauncher(unittest.TestCase):
 
         with (
             patch("umu.umu_proton._fetch_proton") as mock_function,
-            ThreadPoolExecutor() as thread_pool,
+            ThreadPoolExecutor(),
         ):
             # Mock the interrupt
             # We want the dir we tried to extract to be cleaned
             mock_function.side_effect = KeyboardInterrupt
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                self.test_session_pools,
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -895,12 +1222,16 @@ class TestGameLauncher(unittest.TestCase):
 
         with (
             patch("umu.umu_proton._fetch_proton") as mock_function,
-            ThreadPoolExecutor() as thread_pool,
+            ThreadPoolExecutor(),
         ):
             # Mock the interrupt
             mock_function.side_effect = ValueError
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                self.test_session_pools,
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -921,10 +1252,14 @@ class TestGameLauncher(unittest.TestCase):
 
         with (
             patch("umu.umu_proton._fetch_proton"),
-            ThreadPoolExecutor() as thread_pool,
+            ThreadPoolExecutor(),
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                self.test_session_pools,
             )
             self.assertFalse(
                 self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
@@ -966,10 +1301,14 @@ class TestGameLauncher(unittest.TestCase):
         )
         with (
             patch("umu.umu_proton._fetch_proton"),
-            ThreadPoolExecutor() as thread_pool,
+            ThreadPoolExecutor(),
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                self.test_session_pools,
             )
             self.assertTrue(result is self.env, "Expected the same reference")
             # Verify the latest was set
@@ -1010,6 +1349,9 @@ class TestGameLauncher(unittest.TestCase):
         with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
             tar.add(latest.as_posix(), arcname=latest.as_posix())
 
+        # Add the .parts suffix
+        move(test_archive, self.test_cache.joinpath(f"{latest}.tar.gz.parts"))
+
         # Mock old versions
         self.test_compat.joinpath("UMU-Proton-9.0-beta15").mkdir()
         self.test_compat.joinpath("UMU-Proton-9.0-beta14").mkdir()
@@ -1027,7 +1369,11 @@ class TestGameLauncher(unittest.TestCase):
             ThreadPoolExecutor() as thread_pool,
         ):
             result = umu_proton._get_latest(
-                self.env, self.test_compat, tmpdirs, files, thread_pool
+                self.env,
+                self.test_compat,
+                tmpdirs,
+                files,
+                (thread_pool, MagicMock()),
             )
             self.assertTrue(result is self.env, "Expected the same reference")
             # Verify the latest was set
@@ -1097,7 +1443,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        umu_proton._extract_dir(self.test_archive)
+        umu_util.extract_tarfile(self.test_archive, self.test_archive.parent)
         move(str(self.test_archive).removesuffix(".tar.gz"), self.test_compat)
 
         result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
@@ -1113,12 +1459,15 @@ class TestGameLauncher(unittest.TestCase):
             "Expected PROTONPATH to be proton dir in compat",
         )
 
-    def test_extract_err(self):
-        """Test _extract_dir when passed a non-gzip compressed archive.
+    def test_extract_tarfile_err(self):
+        """Test extract_tarfile when passed a non-gzip compressed archive.
 
         A ReadError should be raised as we only expect .tar.gz releases
         """
-        test_archive = self.test_cache.joinpath(f"{self.test_proton_dir}.tar")
+        test_archive = self.test_cache.joinpath(
+            f"{self.test_proton_dir}.tar.zst"
+        )
+
         # Do not apply compression
         with tarfile.open(test_archive.as_posix(), "w") as tar:
             tar.add(
@@ -1126,23 +1475,29 @@ class TestGameLauncher(unittest.TestCase):
                 arcname=self.test_proton_dir.as_posix(),
             )
 
-        with self.assertRaisesRegex(tarfile.ReadError, "gzip"):
-            umu_proton._extract_dir(test_archive)
+        with self.assertRaisesRegex(tarfile.CompressionError, "zst"):
+            umu_util.extract_tarfile(test_archive, test_archive.parent)
 
         if test_archive.exists():
             test_archive.unlink()
 
-    def test_extract(self):
-        """Test _extract_dir.
+    def test_extract_tarfile(self):
+        """Test extract_tarfile.
 
         An error should not be raised when the Proton release is extracted to
         a temporary directory
         """
         result = None
 
-        result = umu_proton._extract_dir(self.test_archive)
+        result = umu_util.extract_tarfile(
+            self.test_archive, self.test_archive.parent
+        )
         move(str(self.test_archive).removesuffix(".tar.gz"), self.test_compat)
-        self.assertFalse(result, "Expected None after extracting")
+        self.assertEqual(
+            result,
+            self.test_archive.parent,
+            f"Expected {self.test_archive.parent}, received: {result}",
+        )
         self.assertTrue(
             self.test_compat.joinpath(self.test_proton_dir).exists(),
             "Expected proton dir to exists in compat",
@@ -1169,7 +1524,7 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_file + "/proton").touch()
 
         # Replicate main's execution and test up until enable_steam_game_drive
-        with patch("sys.argv", ["", ""]), ThreadPoolExecutor() as thread_pool:
+        with patch("sys.argv", ["", ""]):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
@@ -1177,7 +1532,7 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             args = __main__.parse_args()
             # Config
-            umu_run.check_env(self.env, thread_pool)
+            umu_run.check_env(self.env, self.test_session_pools)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -1441,7 +1796,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
-                None,
+                self.test_session_pools,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -1528,7 +1883,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
-                None,
+                self.test_session_pools,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -1660,7 +2015,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
-                None,
+                self.test_session_pools,
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),

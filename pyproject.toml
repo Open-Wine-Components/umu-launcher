@@ -33,7 +33,14 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 urls = { repository = "https://github.com/Open-Wine-Components/umu-launcher" }
-dependencies = ["python-xlib>=0.33", "filelock>=3.9.0"]
+# Note: urllib3 is a vendored dependency. When using our Makefile, it will be
+# installed automatically.
+dependencies = ["python-xlib>=0.33", "filelock>=3.9.0", "urllib3>=2.0.0,<3.0.0"]
+
+[project.optional-dependencies]
+# Recommended
+# For network requests, use the system's CA bundle instead of certifi's
+cli = ["truststore"]
 
 [project.scripts]
 umu-run = "umu.__main__:main"

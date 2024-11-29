@@ -1,20 +1,21 @@
 import os
+import sys
 from contextlib import contextmanager
 from ctypes.util import find_library
 from functools import lru_cache
-from http.client import HTTPSConnection
+from io import BufferedIOBase
 from pathlib import Path
 from re import Pattern
 from re import compile as re_compile
 from shutil import which
-from ssl import SSLContext, create_default_context
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+from tarfile import open as taropen
 
+from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
+from umu.umu_consts import UMU_LOCAL
 from umu.umu_log import log
-
-ssl_context: SSLContext | None = None
 
 
 @lru_cache
@@ -173,26 +174,6 @@ def is_winetricks_verb(
 
 
 @contextmanager
-def https_connection(host: str):
-    """Create an HTTPSConnection."""
-    global ssl_context
-    conn: HTTPSConnection
-
-    if not ssl_context:
-        ssl_context = create_default_context()
-
-    conn = HTTPSConnection(host, context=ssl_context)
-
-    if os.environ.get("UMU_LOG") in {"1", "debug"}:
-        conn.set_debuglevel(1)
-
-    try:
-        yield conn
-    finally:
-        conn.close()
-
-
-@contextmanager
 def xdisplay(no: str):
     """Create a Display."""
     d: display.Display = display.Display(no)
@@ -201,3 +182,75 @@ def xdisplay(no: str):
         yield d
     finally:
         d.close()
+
+
+def write_file_chunks(
+    path: Path,
+    resp: BufferedIOBase | BaseHTTPResponse,
+    # Note: hashlib._Hash is internal and an exception will be raised when imported
+    hasher,  # noqa: ANN001
+    chunk_size: int = 64 * 1024,
+):
+    """Write a file to path in chunks from a response stream while hashing it.
+
+    Args:
+        path: file path
+        resp: urllib3 response streamed response
+        hasher: hashlib object
+        chunk_size: max size of data to read from the streamed response
+    Returns:
+        hashlib._Hash instance
+
+    """
+    buffer: bytearray
+    view: memoryview
+
+    if not chunk_size:
+        chunk_size = 64 * 1024
+
+    buffer = bytearray(chunk_size)
+    view = memoryview(buffer)
+    with path.open(mode="ab+", buffering=0) as file:
+        while size := resp.readinto(buffer):
+            file.write(view[:size])
+            hasher.update(view[:size])
+
+    return hasher
+
+
+def extract_tarfile(path: Path, dest: Path) -> Path | None:
+    """Read and securely extract a compressed TAR archive to path.
+
+    Warns the user if unable to extract the archive securely, falling
+    back to unsafe extraction. The filter used is 'tar_filter'.
+
+    See https://docs.python.org/3/library/tarfile.html#tarfile.tar_filter
+    """
+    if not path.is_file():
+        return None
+
+    # Note: r:tar is a valid mode in cpython.
+    # See https://github.com/python/cpython/blob/b83be9c9718aac42d0d8fc689a829d6594192afa/Lib/tarfile.py#L1871
+    with taropen(path, f"r:{path.suffix.removeprefix('.')}") as tar:  # type: ignore
+        try:
+            from tarfile import tar_filter
+
+            tar.extraction_filter = tar_filter
+            log.debug("Using data filter for archive")
+        except ImportError:
+            # User is on a distro that did not backport extraction filters
+            log.warning("Python: %s", sys.version)
+            log.warning("Using no data filter for archive")
+            log.warning("Archive will be extracted insecurely")
+
+        log.debug("Extracting: %s -> %s", path, dest)
+        tar.extractall(path=dest)  # noqa: S202
+
+    return dest
+
+
+def has_umu_setup(path: Path = UMU_LOCAL) -> bool:
+    """Check if umu has been setup in our runtime directory."""
+    return path.exists() and any(
+        file for file in path.glob("*") if not file.name.endswith("lock")
+    )
