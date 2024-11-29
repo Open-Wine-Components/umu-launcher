@@ -34,4 +34,4 @@ jobs:
       - name: Check types with mypy
         run: |
           source .venv/bin/activate
-          mypy .
+          mypy --python-version 3.11 .
