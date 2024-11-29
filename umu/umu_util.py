@@ -1,8 +1,7 @@
 import os
+import shlex
 import sys
 from collections.abc import Generator
-import shlex
-import vdf
 from contextlib import contextmanager
 from ctypes.util import find_library
 from fcntl import LOCK_EX, LOCK_UN, flock
@@ -16,8 +15,8 @@ from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 from tarfile import open as taropen
 from typing import Any
-from typing import Optional
 
+import vdf
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
@@ -348,60 +347,69 @@ def file_digest(fileobj, digest, /, *, _bufsize=2**18):  # noqa: ANN001
 
 
 class SteamBase:
+    """Base class describing runtime and compat tool common features."""
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:  # noqa: D107
         self.tool_path = path
-        with open(Path(path).joinpath("toolmanifest.vdf"), "r", encoding="utf-8") as f:
+        with Path(path).joinpath("toolmanifest.vdf").open(encoding="utf-8") as f:
             self.tool_manifest = vdf.load(f)["manifest"]
 
     @property
-    def required_tool_appid(self) -> Optional[str]:
+    def required_tool_appid(self) ->  str:  # noqa: D102
         return self.tool_manifest.get("require_tool_appid", None)
 
     @property
-    def required_tool_name(self) -> Optional[str]:
+    def required_tool_name(self) -> None:
+        """Map the required tool's appid to a tuple of commonly used names."""
         if self.required_tool_appid is None:
             return None
         return RUNTIME_VERSIONS[self.required_tool_appid]
 
     @property
-    def layer(self) -> Optional[str]:
+    def layer(self) -> str:  # noqa: D102
         return self.tool_manifest.get("compatmanager_layer_name", None)
 
     def command(self, verb: str) -> list[str]:
+        """Return the tool specific entry point."""
         tool_path = os.path.normpath(self.tool_path)
         cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
         cmd = cmd.replace("_v2-entry-point", "umu")
         cmd = cmd.replace("%verb%", str(verb))
         return shlex.split(cmd)
 
-    def as_str(self, verb: str):
+    def as_str(self, verb: str):  # noqa: D102
         return " ".join(map(shlex.quote, self.command(verb)))
 
 
 class SteamRuntime(SteamBase):
+    """A Steam Linux Runtime (soldier, sniper, medic etc)."""
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:  # noqa: D107
         super().__init__(path)
 
 
 class CompatibilityTool(SteamBase):
+    """A compatibility tool (Proton, luxtorpeda, etc)."""
 
-    def __init__(self, tool_path: str, shim: Path, runtime: SteamRuntime):
+    def __init__(self, tool_path: str, shim: Path, runtime: SteamRuntime) -> None:  # noqa: D107
         super().__init__(tool_path)
         self.shim = shim
         self.runtime = runtime if self.required_tool_appid is not None else None
-        with open(Path(tool_path).joinpath("compatibilitytool.vdf"), "r", encoding="utf-8") as f:
+        with Path(tool_path).joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
             # There can be multiple tools definitions in `compatibilitytools.vdf`
             # Take the first one and hope it is the one with the correct display_name
             compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
-            self.compatibilitytool = compat_tools[0]
+            self.compatibility_tool = compat_tools[0]
 
     @property
-    def display_name(self) -> str:
-        return self.compatibilitytool["display_name"]
+    def display_name(self) -> str:  # noqa: D102
+        return self.compatibility_tool["display_name"]
 
     def command(self, verb: str) -> list[str]:
+        """Return the fully qualified command for the tool .
+
+        If the tool uses a runtime, it's entry point is prepended to the tool's command.
+        """
         cmd = self.runtime.command(verb) if self.runtime is not None else []
         cmd.append(self.shim.as_posix())
         cmd.extend(super().command(verb))
