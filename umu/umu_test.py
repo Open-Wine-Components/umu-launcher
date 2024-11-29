@@ -234,6 +234,74 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected callback to be called",
             )
 
+    def test_setup_umu_update(self):
+        """Test setup_umu when updating the runtime."""
+        result = MagicMock()
+
+        # Mock a new install
+        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            # Populate our fake $XDG_DATA_HOME/umu
+            Path(file2, "umu").touch()
+            # Mock the runtime ver
+            mock_runtime_ver = ("sniper", "steamrt3")
+            # Mock our thread and conn pool
+            mock_session_pools = (MagicMock(), MagicMock())
+            with patch.object(umu_runtime, "_update_umu"):
+                result = umu_runtime.setup_umu(
+                    Path(file1),
+                    Path(file2),
+                    mock_runtime_ver,
+                    mock_session_pools,
+                )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+
+    def test_setup_umu_noupdate(self):
+        """Test setup_umu when setting runtime updates are disabled."""
+        result = MagicMock()
+        os.environ["UMU_RUNTIME_UPDATE"] = "0"
+
+        # Mock a new install
+        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            # Populate our fake $XDG_DATA_HOME/umu
+            Path(file2, "umu").touch()
+            # Mock the runtime ver
+            mock_runtime_ver = ("sniper", "steamrt3")
+            # Mock our thread and conn pool
+            mock_session_pools = (MagicMock(), MagicMock())
+            with patch.object(umu_runtime, "_restore_umu"):
+                result = umu_runtime.setup_umu(
+                    Path(file1),
+                    Path(file2),
+                    mock_runtime_ver,
+                    mock_session_pools,
+                )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+
+    def test_setup_umu(self):
+        """Test setup_umu on new install."""
+        result = MagicMock()
+
+        # Mock a new install
+        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            # Mock the runtime ver
+            mock_runtime_ver = ("sniper", "steamrt3")
+            # Mock our thread and conn pool
+            mock_session_pools = (MagicMock(), MagicMock())
+            with patch.object(umu_runtime, "_restore_umu"):
+                result = umu_runtime.setup_umu(
+                    Path(file1),
+                    Path(file2),
+                    mock_runtime_ver,
+                    mock_session_pools,
+                )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+
     def test_get_gamescope_baselayer_appid_err(self):
         """Test get_gamescope_baselayer_appid on error.
 
