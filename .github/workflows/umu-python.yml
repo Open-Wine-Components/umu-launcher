@@ -38,9 +38,11 @@ jobs:
           ruff check --output-format github ./umu/umu_*.py
       - name: Setup venv
         run: |
-          uv venv --python 3.11
+          uv venv --python $pyver
           source .venv/bin/activate
           uv pip install -r requirements.in
+        env:
+          pyver: ${{ matrix.version }}
       - name: Test with unittest
         run: |
           source .venv/bin/activate
