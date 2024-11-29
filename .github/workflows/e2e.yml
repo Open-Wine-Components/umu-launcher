@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
       - name: Install dependencies
         run: |
-          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck
+          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck bubblewrap
           python3 -m pip install --upgrade pip
           pip install uv
       - name: Initialize submodules
@@ -45,6 +45,16 @@ jobs:
           source .venv/bin/activate
           sh tests/test_update.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+      - name: Test steamrt resume
+        run: |
+          source .venv/bin/activate
+          sh tests/test_resume.sh
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
+      - name: Test Proton resume
+        run: |
+          source .venv/bin/activate
+          sh tests/test_proton_resume.sh
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
       - name: Test winetricks
         run: |
           source .venv/bin/activate
@@ -54,3 +64,8 @@ jobs:
         run: |
           source .venv/bin/activate
           sh tests/test_config.sh
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
+      - name: Test offline launch
+        run: |
+          source .venv/bin/activate
+          sh tests/test_offline.sh
