@@ -35,7 +35,7 @@ jobs:
       - name: Setup venv
         run: |
           uv venv --python 3.11
-          source .venv/bin/activate.fish
+          source .venv/bin/activate.sh
           uv pip install -r requirements.in
       - name: Lint umu_*.py files with Ruff
         run: |
