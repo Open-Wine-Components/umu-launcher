@@ -199,6 +199,10 @@ def _install_umu(
         log.debug("Digest: %s", digest)
         if hashsum.hexdigest() != digest:
             err: str = f"Digest mismatched: {archive}"
+            # Remove our cached file because it had probably got corrupted
+            # somehow since the last launch. Abort the update then continue
+            # to launch using existing runtime
+            cached_parts.unlink(missing_ok=True)
             raise ValueError(err)
 
         log.info("%s: SHA256 is OK", archive)
