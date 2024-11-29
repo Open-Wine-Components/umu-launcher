@@ -17,14 +17,19 @@ try:
 except ModuleNotFoundError:
     from importlib.abc import Traversable
 
+
 from pathlib import Path
 from pwd import getpwuid
 from re import match
-from socket import AF_INET, SOCK_DGRAM, gaierror, socket
+from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
 from typing import Any
 
 from filelock import FileLock
+from urllib3 import PoolManager, Retry
+from urllib3.exceptions import MaxRetryError, NewConnectionError
+from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
+from urllib3.util import Timeout
 from Xlib import X, Xatom, display
 from Xlib.error import DisplayConnectionError
 from Xlib.protocol.request import GetProperty
@@ -47,9 +52,14 @@ from umu.umu_runtime import setup_umu
 from umu.umu_util import (
     get_libc,
     get_library_paths,
+    has_umu_setup,
     is_installed_verb,
     xdisplay,
 )
+
+NET_TIMEOUT = 5.0
+
+NET_RETRIES = 1
 
 
 def setup_pfx(path: str) -> None:
@@ -84,7 +94,7 @@ def setup_pfx(path: str) -> None:
 
 
 def check_env(
-    env: dict[str, str], thread_pool: ThreadPoolExecutor
+    env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]
 ) -> dict[str, str] | dict[str, Any]:
     """Before executing a game, check for environment variables and set them.
 
@@ -129,11 +139,11 @@ def check_env(
 
     # GE-Proton
     if os.environ.get("PROTONPATH") == "GE-Proton":
-        get_umu_proton(env, thread_pool)
+        get_umu_proton(env, session_pools)
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
-        get_umu_proton(env, thread_pool)
+        get_umu_proton(env, session_pools)
 
     env["PROTONPATH"] = os.environ["PROTONPATH"]
 
@@ -768,54 +778,71 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
     log.info("umu-launcher version %s (%s)", __version__, sys.version)
 
-    with ThreadPoolExecutor() as thread_pool:
-        try:
-            # Test the network environment and fail early if the user is trying
-            # to run umu-run offline because an internet connection is required
-            # for new setups
-            log.debug("Connecting to '1.1.1.1'...")
-            with socket(AF_INET, SOCK_DGRAM) as sock:
-                sock.settimeout(5)
-                sock.connect(("1.1.1.1", 53))
-            prereq = True
-        except TimeoutError:  # Request to a server timed out
-            if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
-                err: str = (
-                    "umu has not been setup for the user\n"
-                    "An internet connection is required to setup umu"
-                )
-                raise RuntimeError(err)
-            log.debug("Request timed out")
-            prereq = True
-        except OSError as e:  # No internet
-            if e.errno != ENETUNREACH:
-                raise
-            if not UMU_LOCAL.exists() or not any(UMU_LOCAL.iterdir()):
-                err: str = (
-                    "umu has not been setup for the user\n"
-                    "An internet connection is required to setup umu"
-                )
-                raise RuntimeError(err)
-            log.debug("Network is unreachable")
-            prereq = True
-
-        if not prereq:
+    # Test the network environment and fail early if the user is trying
+    # to run umu-run offline because an internet connection is required
+    # for new setups
+    try:
+        log.debug("Connecting to '1.1.1.1'...")
+        with socket(AF_INET, SOCK_DGRAM) as sock:
+            sock.settimeout(5)
+            sock.connect(("1.1.1.1", 53))
+        prereq = True
+    except TimeoutError:  # Request to a server timed out
+        if not has_umu_setup():
             err: str = (
                 "umu has not been setup for the user\n"
                 "An internet connection is required to setup umu"
             )
             raise RuntimeError(err)
+        log.debug("Request timed out")
+        prereq = True
+    except OSError as e:  # No internet
+        if e.errno != ENETUNREACH:
+            raise
+        if not has_umu_setup():
+            err: str = (
+                "umu has not been setup for the user\n"
+                "An internet connection is required to setup umu"
+            )
+            raise RuntimeError(err)
+        log.debug("Network is unreachable")
+        prereq = True
+    if not prereq:
+        err: str = (
+            "umu has not been setup for the user\n"
+            "An internet connection is required to setup umu"
+        )
+        raise RuntimeError(err)
 
+    # Opt to use the system's native CA bundle rather than certifi's
+    with suppress(ModuleNotFoundError):
+        import truststore
+
+        truststore.inject_into_ssl()
+
+    # Default to retrying requests once, while using urllib's defaults
+    retries: Retry = Retry(total=NET_RETRIES, redirect=True)
+    # Default to a strict 5 second timeouts throughout
+    timeout: Timeout = Timeout(connect=NET_TIMEOUT, read=NET_TIMEOUT)
+
+    with (
+        ThreadPoolExecutor() as thread_pool,
+        PoolManager(timeout=timeout, retries=retries) as http_pool,
+    ):
+        session_pools: tuple[ThreadPoolExecutor, PoolManager] = (
+            thread_pool,
+            http_pool,
+        )
         # Setup the launcher and runtime files
         future: Future = thread_pool.submit(
-            setup_umu, root, UMU_LOCAL, __runtime_version__, thread_pool
+            setup_umu, root, UMU_LOCAL, __runtime_version__, session_pools
         )
 
         if isinstance(args, Namespace):
             env, opts = set_env_toml(env, args)
         else:
             opts = args[1]  # Reference the executable options
-            check_env(env, thread_pool)
+            check_env(env, session_pools)
 
         UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
@@ -834,16 +861,13 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
         try:
             future.result()
-        except gaierror as e:
-            # Network address-related errors in the request to repo.steampowered.com
-            # At this point, the user's network was reachable on launch, but
-            # the network suddenly became unreliable so the request failed.
-            log.exception(e)
-        except OSError as e:
-            # Similar situation as above, but the host was resolved yet the
-            # network suddenly became unreachable in the request to repo.steampowered.com.
-            if e.errno != ENETUNREACH:
-                raise
+        except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3):
+            if not has_umu_setup():
+                err: str = (
+                    "umu has not been setup for the user\n"
+                    "An internet connection is required to setup umu"
+                )
+                raise RuntimeError(err)
             log.debug("Network is unreachable")
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
