@@ -1,5 +1,13 @@
 import os
 import sys
+from zipfile import is_zipfile
+
+if not is_zipfile(os.path.dirname(__file__)):  # noqa: PTH120
+    sys.path = [
+        f"{os.path.dirname(os.path.realpath(__file__, strict=True))}/_vendor",  # noqa: PTH120
+        *sys.path,
+    ]
+
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 
 from umu import __version__
