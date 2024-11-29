@@ -241,7 +241,12 @@ def _fetch_proton(
 
         log.debug("Digest: %s", digest)
         if hashsum.hexdigest() != digest:
-            err: str = f"Digest mismatched: {tarball}"
+            parts.unlink(missing_ok=True)
+            err: str = (
+                f"Digest mismatched: {tarball}\n"
+                "Possible reason: cached file corrupted or failed to acquire upstream digest\n"
+                f"Link: {tar_url}"
+            )
             raise ValueError(err)
 
         log.info("%s: SHA512 is OK", tarball)
