@@ -128,13 +128,14 @@ def _install_umu(
 
     if not os.environ.get("UMU_ZENITY") or ret:
         digest: str = ""
+        buildid: str = ""
         endpoint: str = (
             f"/steamrt-images-{codename}"
             "/snapshots/latest-container-runtime-public-beta"
         )
         hashsum = sha256()
         headers: dict[str, str] | None = None
-        cached_parts: Path = UMU_CACHE.joinpath(parts.name)
+        cached_parts: Path
 
         # Get the digest for the runtime archive
         resp = http_pool.request(
@@ -150,6 +151,27 @@ def _install_umu(
         for line in resp.data.decode(encoding="utf-8").splitlines():
             if line.endswith(archive):
                 digest = line.split(" ")[0]
+
+        # Get BUILD_ID.txt. We'll use the value to identify the file when cached.
+        # This will guarantee we'll be picking up the correct file when resuming
+        resp = http_pool.request(
+            HTTPMethod.GET, f"{host}{endpoint}/BUILD_ID.txt{token}"
+        )
+        if resp.status != HTTPStatus.OK:
+            err: str = (
+                f"{resp.getheader('Host')} returned the status: {resp.status}"
+            )
+            raise HTTPError(err)
+
+        buildid = resp.data.decode(encoding="utf-8").strip()
+        log.debug("BUILD_ID: %s", buildid)
+
+        # Extend our variables with the BUILD_ID
+        log.debug(
+            "Renaming: %s -> %s", parts, parts.with_suffix(f".{buildid}.parts")
+        )
+        parts = parts.with_suffix(f".{buildid}.parts")
+        cached_parts = UMU_CACHE.joinpath(f"{archive}.{buildid}.parts")
 
         # Resume from our cached file, if we were interrupted previously
         if cached_parts.is_file():
@@ -211,9 +233,10 @@ def _install_umu(
 
         log.info("%s: SHA256 is OK", archive)
 
-        # Remove the .parts suffix
-        move(parts, parts.with_suffix(""))
-        parts = parts.with_suffix("")
+        # Remove the .parts and BUILD_ID suffix
+        parts = parts.rename(
+            parts.parent / parts.name.removesuffix(f".{buildid}.parts")
+        )
 
     # Open the tar file and move the files
     log.debug("Opening: %s", parts)
@@ -222,7 +245,7 @@ def _install_umu(
         futures: list[Future] = []
         var: Path = UMU_LOCAL.joinpath("var")
         log.debug("Created: %s", tmpcache)
-        log.debug("Moving: %s -> %s", tmp.joinpath(archive), tmpcache)
+        log.debug("Moving: %s -> %s", parts, tmpcache)
         move(parts, tmpcache)
 
         # Ensure the target directory exists
