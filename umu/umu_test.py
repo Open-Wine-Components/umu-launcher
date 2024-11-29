@@ -194,12 +194,24 @@ class TestGameLauncher(unittest.TestCase):
     def test_main_nomusl(self):
         """Test __main__.main to ensure an exit when on a musl-based system."""
         os.environ["LD_LIBRARY_PATH"] = f"{os.environ['LD_LIBRARY_PATH']}:musl"
-        with self.assertRaises(SystemExit):
+        with (
+            patch.object(
+                __main__,
+                "parse_args",
+                return_value=["foo", "foo"],
+            ),
+            self.assertRaises(SystemExit),
+        ):
             __main__.main()
 
     def test_main_noroot(self):
         """Test __main__.main to ensure an exit when run as a privileged user."""
         with (
+            patch.object(
+                __main__,
+                "parse_args",
+                return_value=["foo", "foo"],
+            ),
             self.assertRaises(SystemExit),
             patch.object(os, "geteuid", return_value=0),
         ):
