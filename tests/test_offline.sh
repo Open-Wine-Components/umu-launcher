@@ -12,7 +12,7 @@ url=$(curl -L "https://api.github.com/repos/Open-Wine-Components/umu-proton/rele
 # Download Proton
 curl -LJO "$url"
 
-mkdir -p "$HOME"/.local/share/Steam/compatibilitytools.d "$HOME"/.local/share/umu
+mkdir -p "$HOME"/.local/share/Steam/compatibilitytools.d "$HOME"/.local/share/umu "$HOME"/Games/umu
 
 # Extract the archives
 tar xaf "$name" -C "$HOME"/.local/share/Steam/compatibilitytools.d
