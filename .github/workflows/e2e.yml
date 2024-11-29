@@ -32,25 +32,25 @@ jobs:
       - name: Run shellcheck
         run: |
           shellcheck tests/*.sh
-      - name: Test steamrt install
+      - name: Setup venv
         run: |
           uv venv --python 3.11
+      - name: Test steamrt install
+        run: |
           source .venv/bin/activate
           sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test steamrt update
         run: |
-          uv venv --python 3.11
           source .venv/bin/activate
           sh tests/test_update.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test winetricks
         run: |
-          uv venv --python 3.11
           source .venv/bin/activate
           sh tests/test_winetricks.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test configuration file
         run: |
-          uv python install 3.11
-          uv run --python 3.11 -- sh tests/test_config.sh
+          source .venv/bin/activate
+          sh tests/test_config.sh
