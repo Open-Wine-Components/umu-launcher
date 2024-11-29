@@ -102,6 +102,7 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
 	python3 -m pip install urllib3 -t $(OBJDIR)
+	python3 -m pip install vdf     -t $(OBJDIR)
 
 .PHONY: umu-vendored
 umu-vendored: $(OBJDIR)/.build-umu-vendored
@@ -110,6 +111,7 @@ umu-vendored-install: umu-vendored
 	$(info :: Installing subprojects )
 	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 	cp      -r $(OBJDIR)/urllib3 $(DESTDIR)$(PYTHONDIR)/umu/_vendor
+	cp      -r $(OBJDIR)/vdf     $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 
 $(OBJDIR):
 	@mkdir -p $(@)
