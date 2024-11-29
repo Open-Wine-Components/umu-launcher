@@ -7,14 +7,11 @@ from pathlib import Path
 from re import Pattern
 from re import compile as re_compile
 from shutil import which
-from ssl import SSLContext, create_default_context
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
 from Xlib import display
 
 from umu.umu_log import log
-
-ssl_context: SSLContext | None = None
 
 
 @lru_cache
@@ -170,26 +167,6 @@ def is_winetricks_verb(
             return False
 
     return True
-
-
-@contextmanager
-def https_connection(host: str):
-    """Create an HTTPSConnection."""
-    global ssl_context
-    conn: HTTPSConnection
-
-    if not ssl_context:
-        ssl_context = create_default_context()
-
-    conn = HTTPSConnection(host, context=ssl_context)
-
-    if os.environ.get("UMU_LOG") in {"1", "debug"}:
-        conn.set_debuglevel(1)
-
-    try:
-        yield conn
-    finally:
-        conn.close()
 
 
 @contextmanager
