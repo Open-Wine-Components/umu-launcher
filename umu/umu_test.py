@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import os
 import re
 import sys
@@ -11,8 +12,13 @@ from pathlib import Path
 from pwd import getpwuid
 from shutil import copy, copytree, move, rmtree
 from subprocess import CompletedProcess
-from tempfile import TemporaryDirectory, mkdtemp
-from unittest.mock import MagicMock, patch
+from tempfile import (
+    NamedTemporaryFile,
+    TemporaryDirectory,
+    TemporaryFile,
+    mkdtemp,
+)
+from unittest.mock import MagicMock, Mock, patch
 
 from Xlib.display import Display
 from Xlib.error import DisplayConnectionError
@@ -91,6 +97,8 @@ class TestGameLauncher(unittest.TestCase):
         # Wine prefix
         self.test_winepfx = Path("./tmp.AlfLPDhDvA")
         self.test_runtime_version = ("sniper", "steamrt3")
+        # Thread pool and connection pool instances
+        self.test_session_pools = (MagicMock(), MagicMock())
 
         # /usr
         self.test_usr = Path("./tmp.QnZRGFfnqH")
@@ -182,6 +190,49 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
+
+    def test_restore_umu_cb_false(self):
+        """Test _restore_umu when the callback evaluates to False."""
+        mock_cb = Mock(return_value=False)
+        result = MagicMock()
+
+        with (
+            TemporaryDirectory() as file,
+            patch.object(umu_runtime, "_install_umu"),
+        ):
+            mock_local = Path(file)
+            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_session_pools = (MagicMock(), MagicMock())
+            result = umu_runtime._restore_umu(
+                mock_local, mock_runtime_ver, mock_session_pools, mock_cb
+            )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+            self.assertTrue(
+                mock_cb.mock_calls,
+                "Expected callback to be called",
+            )
+
+    def test_restore_umu(self):
+        """Test _restore_umu."""
+        mock_cb = Mock(return_value=True)
+        result = MagicMock()
+
+        with TemporaryDirectory() as file:
+            mock_local = Path(file)
+            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_session_pools = (MagicMock(), MagicMock())
+            result = umu_runtime._restore_umu(
+                mock_local, mock_runtime_ver, mock_session_pools, mock_cb
+            )
+            self.assertTrue(
+                result is None, f"Expected None, received {result}"
+            )
+            self.assertTrue(
+                mock_cb.mock_calls,
+                "Expected callback to be called",
+            )
 
     def test_get_gamescope_baselayer_appid_err(self):
         """Test get_gamescope_baselayer_appid on error.
