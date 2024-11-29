@@ -22,4 +22,4 @@ cp -a SteamLinuxRuntime_sniper/* "$HOME"/.local/share/umu
 mv "$HOME"/.local/share/umu/_v2-entry-point "$HOME"/.local/share/umu/umu
 
 # Run offline using bwrap
-UMU_LOG=debug GAMEID=umu-0 bwrap --unshare-net --bind / / --dev /dev -- "$HOME/.local/bin/umu-run" ""
+UMU_LOG=debug GAMEID=umu-0 bwrap --unshare-net --bind / / --dev /dev -- "$HOME/.local/bin/umu-run" wineboot -u
