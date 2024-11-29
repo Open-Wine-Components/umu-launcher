@@ -475,6 +475,32 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(result, "foo", f"Expected foo, received {result}")
 
+    def test_write_file_chunks_none(self):
+        """Test write_file_chunks when not passing a chunk size."""
+        with NamedTemporaryFile() as file1, TemporaryFile("rb+") as file2:
+            chunk_size = 8
+            mock_file = Path(file1.name)
+            hasher = hashlib.blake2b()
+            file2.write(os.getrandom(chunk_size))
+            # Pass a buffered reader as our fake http response
+            umu_util.write_file_chunks(mock_file, file2, hasher)
+            self.assertTrue(
+                hasher.digest(), "Expected hashed data > 0, received 0"
+            )
+
+    def test_write_file_chunks(self):
+        """Test write_file_chunks."""
+        with NamedTemporaryFile() as file1, TemporaryFile("rb+") as file2:
+            chunk_size = 8
+            mock_file = Path(file1.name)
+            hasher = hashlib.blake2b()
+            file2.write(os.getrandom(chunk_size))
+            # Pass a buffered reader as our fake http response
+            umu_util.write_file_chunks(mock_file, file2, hasher, chunk_size)
+            self.assertTrue(
+                hasher.digest(), "Expected hashed data > 0, received 0"
+            )
+
     def test_get_gamescope_baselayer_appid_err(self):
         """Test get_gamescope_baselayer_appid on error.
 
