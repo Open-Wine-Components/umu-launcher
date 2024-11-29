@@ -7,7 +7,7 @@ import unittest
 from argparse import Namespace
 from pathlib import Path
 from shutil import copy, copytree, rmtree
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from tomllib import TOMLDecodeError
 
@@ -201,12 +201,11 @@ class TestGameLauncherPlugins(unittest.TestCase):
         with (
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
-            # TODO
             umu_runtime.setup_umu(
                 self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
-                None,
+                (MagicMock(), MagicMock()),
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -284,7 +283,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
-                None,
+                (MagicMock(), MagicMock()),
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
@@ -369,7 +368,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
-                None,
+                (MagicMock(), MagicMock()),
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
