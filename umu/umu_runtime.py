@@ -153,7 +153,7 @@ def _install_umu(
 
         # Resume from our cached file, if we were interrupted previously
         if cached_parts.is_file():
-            log.info("Found '%s' in cache, resuming...", cached_parts)
+            log.info("Found '%s' in cache, resuming...", cached_parts.name)
             headers = {"Range": f"bytes={cached_parts.stat().st_size}-"}
             parts = cached_parts
             # Rebuild our hashed progress
