@@ -35,7 +35,7 @@ classifiers = [
 urls = { repository = "https://github.com/Open-Wine-Components/umu-launcher" }
 # Note: urllib3 is a vendored dependency. When using our Makefile, it will be
 # installed automatically.
-dependencies = ["python-xlib>=0.33", "urllib3>=2.0.0,<3.0.0"]
+dependencies = ["python-xlib>=0.33", "urllib3>=2.0.0,<3.0.0", "vdf>=3.4.0"]
 
 [project.optional-dependencies]
 # Recommended
@@ -156,7 +156,7 @@ exclude = [
     "subprojects",
 ]
 # Same as Black.
-line-length = 88
+line-length = 79
 indent-width = 4
 target-version = "py310"
 
