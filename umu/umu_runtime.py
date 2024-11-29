@@ -204,7 +204,8 @@ def _install_umu(
             cached_parts.unlink(missing_ok=True)
             err: str = (
                 f"Digest mismatched: {archive}\n"
-                "Possible reason: cached file corrupted or failed to acquire upstream digest"
+                "Possible reason: cached file corrupted or failed to acquire upstream digest\n"
+                f"Link: {host}{endpoint}/{archive}"
             )
             raise ValueError(err)
 
