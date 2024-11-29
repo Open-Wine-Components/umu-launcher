@@ -18,7 +18,7 @@ mkdir -p "$HOME"/.local/share/compatibilitytools.d "$HOME"/.local/share/umu
 tar xaf "$name" -C "$HOME"/.local/share/compatibilitytools.d
 tar xaf SteamLinuxRuntime_sniper.tar.xz
 
-cp -a SteamLinuxRuntime_sniper.tar.xz/* "$HOME"/.local/share/umu
+cp -a SteamLinuxRuntime_sniper/* "$HOME"/.local/share/umu
 mv "$HOME"/.local/share/umu/_v2-entry-point "$HOME"/.local/share/umu/umu
 
 # Run offline using bwrap
