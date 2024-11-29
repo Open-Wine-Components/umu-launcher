@@ -45,6 +45,16 @@ jobs:
           source .venv/bin/activate
           sh tests/test_update.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+      - name: Test steamrt resume
+        run: |
+          source .venv/bin/activate
+          sh tests/test_resume.sh
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
+      - name: Test Proton resume
+        run: |
+          source .venv/bin/activate
+          sh tests/test_proton_resume.sh
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
       - name: Test winetricks
         run: |
           source .venv/bin/activate
