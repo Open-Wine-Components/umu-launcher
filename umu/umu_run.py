@@ -131,7 +131,7 @@ def check_env(
     env["WINEPREFIX"] = os.environ.get("WINEPREFIX", "")
 
     # Skip Proton if running a native Linux executable
-    if os.environ.get("UMU_NO_PROTON") == "1":
+    if os.environ.get("UMU_NO_TOOL") == "1":
         return env
 
     # Proton Version
@@ -253,7 +253,7 @@ def set_env(
     # Runtime
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
-    env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
+    env["UMU_NO_TOOL"] = os.environ.get("UMU_NO_TOOL") or ""
 
     # Proton logging (to stdout)
     # Check for PROTON_LOG because it redirects output to log file
@@ -321,7 +321,7 @@ def build_command(
     # Will run the game within the Steam Runtime w/o Proton
     # Ideally, for reliability, executables should be compiled within
     # the Steam Runtime
-    if env.get("UMU_NO_PROTON") == "1":
+    if env.get("UMU_NO_TOOL") == "1":
         log.debug(
             "Compatibility tool disabled. Executing linux-native executable %s", env["EXE"]
         )
@@ -745,7 +745,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         "UMU_ZENITY": "",
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
-        "UMU_NO_PROTON": "",
+        "UMU_NO_TOOL": "",
     }
     opts: list[str] = []
     prereq: bool = False
