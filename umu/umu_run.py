@@ -23,7 +23,7 @@ from pwd import getpwuid
 from re import match
 from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
-from typing import Any
+from typing import Any, Optional
 
 from filelock import FileLock
 from urllib3 import PoolManager, Retry
@@ -136,7 +136,7 @@ def check_env(
     env["WINEPREFIX"] = os.environ.get("WINEPREFIX", "")
 
     # Skip Proton if running a native Linux executable
-    if os.environ.get("UMU_NO_PROTON") == "1" or os.environ.get("UMU_NO_TOOL") == "1":
+    if os.environ.get("UMU_NO_PROTON") == "1":
         return env
 
     # Proton Version
@@ -269,7 +269,6 @@ def set_env(
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
-    env["UMU_NO_TOOL"] = os.environ.get("UMU_NO_TOOL") or ""
 
     # Proton logging (to stdout)
     # Check for PROTON_LOG because it redirects output to log file
@@ -315,7 +314,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 def build_command(
     env: dict[str, str],
     local: Path,
-    opts: list[str] = None,
+    opts: Optional | list[str] = None,
 ) -> tuple[Path | str, ...]:
     """Build the command to be executed."""
     shim: Path = local.joinpath("umu-shim")
@@ -337,20 +336,34 @@ def build_command(
     # Will run the game within the Steam Runtime w/o Proton
     # Ideally, for reliability, executables should be compiled within
     # the Steam Runtime
-    if env.get("UMU_NO_TOOL") == "1" or env.get("UMU_NO_PROTON") == "1":
-        log.debug("Compatibility tool disabled. Executing linux-native executable %s", env["EXE"])
+    if env.get("UMU_NO_PROTON") == "1":
+        log.debug(
+            "Compatibility tool disabled. Executing linux-native executable %s", env["EXE"]
+        )
         return (
             *runtime.command(env["PROTON_VERB"]),
             env["EXE"],
             *opts,
         )
 
-    compat_tool = CompatibilityTool(env["PROTONPATH"], shim, runtime)
+    # Setup compatibility tool
+    # If the user explicitly requested to run without the runtime,
+    # force runtime to None
+    compat_tool = CompatibilityTool(
+        env["PROTONPATH"],
+        shim,
+        None if env["UMU_NO_RUNTIME"] == "1" else runtime
+    )
     log.info("Using compatibility tool %s", compat_tool.display_name)
-    env["UMU_NO_RUNTIME"] = "1" if compat_tool.runtime is None else "0"
+    # Will run the game outside the Steam Runtime w/ Proton
+    if not compat_tool.runtime_enabled:
+        log.warning("Runtime Platform disabled")
 
     # Winetricks
-    if env.get("EXE", "").endswith("winetricks") and opts and compat_tool.layer == "proton":
+    if env.get("EXE", "").endswith("winetricks") and opts:
+        if compat_tool.layer != "proton":
+            err: str = "Winetricks is available only on Proton and Proton-derived tools"
+            raise ValueError(err)
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         return (
@@ -359,10 +372,6 @@ def build_command(
             "-q",
             *opts,
         )
-
-    # Will run the game outside the Steam Runtime w/ Proton
-    if env.get("UMU_NO_RUNTIME") == "1":
-        log.warning("Runtime Platform disabled")
 
     return (
         *compat_tool.command(env["PROTON_VERB"]),
@@ -763,7 +772,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
         "UMU_NO_PROTON": "",
-        "UMU_NO_TOOL": "",
     }
     opts: list[str] = []
     prereq: bool = False
