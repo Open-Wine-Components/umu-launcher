@@ -333,10 +333,10 @@ class SteamBase:
         return self.tool_manifest.get("require_tool_appid", None)
 
     @property
-    def required_tool_name(self) -> None:
+    def required_tool_name(self) -> tuple:
         """Map the required tool's appid to a tuple of commonly used names."""
         if self.required_tool_appid is None:
-            return None
+            return None, None
         return RUNTIME_VERSIONS[self.required_tool_appid]
 
     @property
@@ -365,7 +365,7 @@ class SteamRuntime(SteamBase):
 class CompatibilityTool(SteamBase):
     """A compatibility tool (Proton, luxtorpeda, etc)."""
 
-    def __init__(self, tool_path: str, shim: Path, runtime: SteamRuntime) -> None:  # noqa: D107
+    def __init__(self, tool_path: str, shim: Path, runtime: None | SteamRuntime) -> None:  # noqa: D107
         super().__init__(tool_path)
         self.shim = shim
         self.runtime = runtime if self.required_tool_appid is not None else None
@@ -379,10 +379,15 @@ class CompatibilityTool(SteamBase):
     def display_name(self) -> str:  # noqa: D102
         return self.compatibility_tool["display_name"]
 
+    @property
+    def runtime_enabled(self) -> bool:
+        """Report if the compatibility tool has a configured runtime."""
+        return self.runtime is not None
+
     def command(self, verb: str) -> list[str]:
         """Return the fully qualified command for the tool .
 
-        If the tool uses a runtime, it's entry point is prepended to the tool's command.
+        If the tool uses a runtime, its entry point is prepended to the tool's command.
         """
         cmd = self.runtime.command(verb) if self.runtime is not None else []
         cmd.append(self.shim.as_posix())
