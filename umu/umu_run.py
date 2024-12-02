@@ -23,7 +23,7 @@ from pwd import getpwuid
 from re import match
 from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
-from typing import Any, Optional
+from typing import Any
 
 from filelock import FileLock
 from urllib3 import PoolManager, Retry
@@ -314,7 +314,7 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 def build_command(
     env: dict[str, str],
     local: Path,
-    opts: Optional | list[str] = None,
+    opts: list[str] | None = None,
 ) -> tuple[Path | str, ...]:
     """Build the command to be executed."""
     shim: Path = local.joinpath("umu-shim")
