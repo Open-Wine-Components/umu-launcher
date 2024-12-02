@@ -267,8 +267,8 @@ class SteamBase:
             self.tool_manifest = vdf.load(f)["manifest"]
 
     @property
-    def required_tool_appid(self) ->  str:  # noqa: D102
-        return self.tool_manifest.get("require_tool_appid", None)
+    def required_tool_appid(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.tool_manifest.get("require_tool_appid")) else None
 
     @property
     def required_tool_name(self) -> tuple:
@@ -278,8 +278,8 @@ class SteamBase:
         return RUNTIME_VERSIONS[self.required_tool_appid]
 
     @property
-    def layer(self) -> str:  # noqa: D102
-        return self.tool_manifest.get("compatmanager_layer_name", None)
+    def layer(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else None
 
     def command(self, verb: str) -> list[str]:
         """Return the tool specific entry point."""
@@ -303,7 +303,7 @@ class SteamRuntime(SteamBase):
 class CompatibilityTool(SteamBase):
     """A compatibility tool (Proton, luxtorpeda, etc)."""
 
-    def __init__(self, tool_path: str, shim: Path, runtime: None | SteamRuntime) -> None:  # noqa: D107
+    def __init__(self, tool_path: str, shim: Path, runtime: SteamRuntime | None) -> None:  # noqa: D107
         super().__init__(tool_path)
         self.shim = shim
         self.runtime = runtime if self.required_tool_appid is not None else None
@@ -314,8 +314,8 @@ class CompatibilityTool(SteamBase):
             self.compatibility_tool = compat_tools[0]
 
     @property
-    def display_name(self) -> str:  # noqa: D102
-        return self.compatibility_tool["display_name"]
+    def display_name(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.compatibility_tool.get("display_name")) else None
 
     @property
     def runtime_enabled(self) -> bool:
