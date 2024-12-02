@@ -31,7 +31,7 @@ RUNTIME_VERSIONS = {
     # "1070560": ("scout", "steamrt1"),
     "1391110": ("soldier", "steamrt2"),
     "1628350": ("sniper", "steamrt3"),
-    # "": ("medic": "steamrt4"),
+    # "": ("medic", "steamrt4"),
 }
 
 XDG_CACHE_HOME: Path = (
