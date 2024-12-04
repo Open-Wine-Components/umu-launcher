@@ -20,6 +20,7 @@ from tempfile import (
 )
 from unittest.mock import MagicMock, Mock, patch
 
+import vdf
 from Xlib.display import Display
 from Xlib.error import DisplayConnectionError
 from Xlib.protocol.rq import Event
@@ -76,6 +77,7 @@ class TestGameLauncher(unittest.TestCase):
         # Proton verb
         # Used when testing build_command
         self.test_verb = "waitforexitandrun"
+        self.test_verb_as_arg = "--verb=waitforexitandrun"
         # Test directory
         self.test_file = "./tmp.WMYQiPb9A"
         # Executable
@@ -132,6 +134,18 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "run").touch()
         Path(self.test_user_share, "run-in-sniper").touch()
         Path(self.test_user_share, "umu").touch()
+        with Path(self.test_user_share, "toolmanifest.vdf").open(
+            "w"
+        ) as toolmanifest:
+            vdf.dump(
+                {
+                    "manifest": {
+                        "commandline": "/_v2-entry-point --verb=%verb% --",
+                        "compatmanager_layer_name": "container-runtime",
+                    }
+                },
+                toolmanifest,
+            )
 
         # Mock pressure vessel
         Path(self.test_user_share, "pressure-vessel", "bin").mkdir(parents=True)
@@ -140,6 +154,34 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
+        with Path(self.test_proton_dir, "toolmanifest.vdf").open(
+            "w"
+        ) as toolmanifest:
+            vdf.dump(
+                {
+                    "manifest": {
+                        "commandline": "/proton %verb%",
+                        "require_tool_appid": "1628350",
+                        "compatmanager_layer_name": "proton",
+                    }
+                },
+                toolmanifest,
+            )
+        with Path(self.test_proton_dir, "compatibilitytool.vdf").open(
+            "w"
+        ) as compatibilitytool:
+            vdf.dump(
+                {
+                    "compatibilitytools": {
+                        "compat_tools": {
+                            "Proton": {
+                                "display_name": "Proton",
+                            }
+                        }
+                    }
+                },
+                compatibilitytool,
+            )
 
         # Mock the release downloaded in the cache:
         # tmp.5HYdpddgvs/umu-Proton-5HYdpddgvs.tar.gz
@@ -2101,7 +2143,7 @@ class TestGameLauncher(unittest.TestCase):
     def test_build_command_linux_exe(self):
         """Test build_command when running a Linux executable.
 
-        UMU_NO_PROTON=1 disables Proton, running the executable directly in the
+        UMU_NO_TOOL=1 skips using a tool, running the executable directly in the
         Steam Linux Runtime.
         """
         result_args = None
@@ -2118,7 +2160,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
-            os.environ["UMU_NO_PROTON"] = "1"
+            os.environ["UMU_NO_TOOL"] = "1"
             # Args
             result_args = __main__.parse_args()
             # Config
@@ -2160,6 +2202,10 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
+            copy(
+                Path(self.test_user_share, "toolmanifest.vdf"),
+                Path(self.test_local_share, "toolmanifest.vdf"),
+            )
 
         # Build
         test_command = umu_run.build_command(self.env, self.test_local_share)
@@ -2168,18 +2214,17 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertEqual(
             len(test_command),
-            5,
-            f"Expected 5 element, received {len(test_command)}",
+            4,
+            f"Expected 4 element, received {len(test_command)}",
         )
 
-        entry_point, opt, verb, sep, exe = [*test_command]
+        entry_point, verb, sep, exe = [*test_command]
         self.assertEqual(
-            entry_point,
-            self.test_local_share / "umu",
+            Path(entry_point),
+            Path(self.test_local_share / "umu"),
             "Expected an entry point",
         )
-        self.assertEqual(opt, "--verb", "Expected --verb")
-        self.assertEqual(verb, "waitforexitandrun", "Expected PROTON_VERB")
+        self.assertEqual(verb, self.test_verb_as_arg, "Expected PROTON_VERB")
         self.assertEqual(sep, "--", "Expected --")
         self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
 
@@ -2197,12 +2242,16 @@ class TestGameLauncher(unittest.TestCase):
         # Mock the proton file
         Path(self.test_file, "proton").touch()
 
+        # Mock the shim file
+        shim_path = Path(self.test_local_share, "umu-shim")
+        shim_path.touch()
+
         with (
             patch("sys.argv", ["", self.test_exe]),
             ThreadPoolExecutor() as thread_pool,
         ):
             os.environ["WINEPREFIX"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_proton_dir.as_posix()
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
@@ -2245,6 +2294,10 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
+            copy(
+                Path(self.test_user_share, "toolmanifest.vdf"),
+                Path(self.test_local_share, "toolmanifest.vdf"),
+            )
 
         os.environ |= self.env
 
@@ -2255,13 +2308,13 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertEqual(
             len(test_command),
-            3,
-            f"Expected 3 elements, received {len(test_command)}",
+            4,
+            f"Expected 4 elements, received {len(test_command)}",
         )
-        proton, verb, exe, *_ = [*test_command]
-        self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
+        _, proton, verb, exe, *_ = [*test_command]
+        self.assertIsInstance(Path(proton), os.PathLike, "Expected proton to be PathLike")
         self.assertEqual(
-            proton,
+            Path(proton),
             Path(self.env["PROTONPATH"], "proton"),
             "Expected PROTONPATH",
         )
@@ -2328,7 +2381,7 @@ class TestGameLauncher(unittest.TestCase):
             ThreadPoolExecutor() as thread_pool,
         ):
             os.environ["WINEPREFIX"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
+            os.environ["PROTONPATH"] = self.test_proton_dir.as_posix()
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             # Args
@@ -2373,6 +2426,10 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
+            copy(
+                Path(self.test_user_share, "toolmanifest.vdf"),
+                Path(self.test_local_share, "toolmanifest.vdf"),
+            )
 
         # Build
         test_command = umu_run.build_command(self.env, self.test_local_share)
@@ -2381,23 +2438,24 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertEqual(
             len(test_command),
-            8,
-            f"Expected 8 elements, received {len(test_command)}",
+            7,
+            f"Expected 7 elements, received {len(test_command)}",
         )
-        entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [*test_command]
+        entry_point, verb, sep, shim, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertIsInstance(
-            entry_point, os.PathLike, "Expected entry point to be PathLike"
+            Path(entry_point),
+            os.PathLike,
+            "Expected entry point to be PathLike",
         )
-        self.assertEqual(opt1, "--verb", "Expected --verb")
-        self.assertEqual(verb, self.test_verb, "Expected a verb")
-        self.assertEqual(opt2, "--", "Expected --")
-        self.assertIsInstance(shim, os.PathLike, "Expected shim to be PathLike")
-        self.assertEqual(shim, shim_path, "Expected the shim file")
-        self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
+        self.assertEqual(verb, self.test_verb_as_arg, "Expected a verb")
+        self.assertEqual(sep, "--", "Expected --")
+        self.assertIsInstance(Path(shim), os.PathLike, "Expected shim to be PathLike")
+        self.assertEqual(Path(shim), shim_path, "Expected the shim file")
+        self.assertIsInstance(Path(proton), os.PathLike, "Expected proton to be PathLike")
         self.assertEqual(
-            proton,
+            Path(proton),
             Path(self.env["PROTONPATH"], "proton"),
             "Expected the proton file",
         )
