@@ -1,4 +1,4 @@
-{pyth1 ,python3Packages , umu-launcher, pkgs,version, ...}:
+{lib, pyth1 ,python3Packages , umu-launcher, pkgs,version, truststore ? true, ...}:
 python3Packages.buildPythonPackage {
   pname = "umu-launcher";
   version = "${version}";
@@ -20,7 +20,7 @@ python3Packages.buildPythonPackage {
     pkgs.python3Packages.xlib
     pkgs.python3Packages.filelock
     pkgs.python3Packages.urllib3
-  ];
+  ] ++ lib.optional truststore pkgs.python3Packages.truststore;
   makeFlags = [ "PYTHON_INTERPRETER=${pyth1}/bin/python" "SHELL_INTERPRETER=/run/current-system/sw/bin/bash" "DESTDIR=${placeholder "out"}" ];
   dontUseMesonConfigure = true;
   dontUseNinjaBuild = true;
