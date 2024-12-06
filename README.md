@@ -155,9 +155,10 @@ and in your `configuration.nix`
 ```nix
 {inputs, pkgs, ... }:
 {
-  environment.systemPackages = [  (inputs.umu.packages.${pkgs.system}.umu.override {version = "${inputs.umu.shortRev}";})  ];
+  environment.systemPackages = [  (inputs.umu.packages.${pkgs.system}.umu.override {version = "${inputs.umu.shortRev}"; truststore = true;})  ];
 }
 ```
+> truststore is an optional dependency that is enabled by default if you want to keep it that way you can remove the `truststore = true;` part
 
 ## Contributing
 
