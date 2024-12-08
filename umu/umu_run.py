@@ -72,6 +72,9 @@ def setup_pfx(path: str) -> None:
     user: str = getpwuid(os.getuid()).pw_name
     wineuser: Path = Path(path).expanduser().joinpath("drive_c", "users", user)
 
+    if os.environ.get("UMU_NO_PROTON") == "1":
+        return
+
     if pfx.is_symlink():
         pfx.unlink()
 
@@ -112,17 +115,23 @@ def check_env(
         err: str = "Environment variable is empty: WINEPREFIX"
         raise ValueError(err)
 
-    if "WINEPREFIX" not in os.environ:
+    if (
+        os.environ.get("UMU_NO_PROTON") != "1"
+        and "WINEPREFIX" not in os.environ
+    ):
         pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = str(pfx)
 
-    if not Path(os.environ["WINEPREFIX"]).expanduser().is_dir():
+    if (
+        os.environ.get("UMU_NO_PROTON") != "1"
+        and not Path(os.environ["WINEPREFIX"]).expanduser().is_dir()
+    ):
         pfx: Path = Path(os.environ["WINEPREFIX"])
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = str(pfx)
 
-    env["WINEPREFIX"] = os.environ["WINEPREFIX"]
+    env["WINEPREFIX"] = os.environ.get("WINEPREFIX", "")
 
     # Skip Proton if running a native Linux executable
     if os.environ.get("UMU_NO_PROTON") == "1":
