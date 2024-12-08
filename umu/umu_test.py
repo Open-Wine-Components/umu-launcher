@@ -69,6 +69,7 @@ class TestGameLauncher(unittest.TestCase):
             "STEAM_COMPAT_MEDIA_PATH": "",
             "STEAM_FOSSILIZE_DUMP_PATH": "",
             "DXVK_STATE_CACHE_PATH": "",
+            "UMU_NO_PROTON": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -2914,6 +2915,26 @@ class TestGameLauncher(unittest.TestCase):
             "Expected tracked_files to be a file",
         )
 
+    def test_setup_pfx_noproton(self):
+        """Test setup_pfx when configured to not use Proton."""
+        result = None
+        os.environ["UMU_NO_PROTON"] = "1"
+
+        result = umu_run.setup_pfx(self.test_file)
+        self.assertTrue(result is None, f"Expected None, received {result}")
+        self.assertFalse(
+            Path(self.test_file, "pfx").exists(),
+            f"Expected {self.test_file}/pfx to not exist",
+        )
+        self.assertFalse(
+            Path(self.test_file, "tracked_files").exists(),
+            f"Expected {self.test_file}/tracked_files to not exist",
+        )
+        self.assertFalse(
+            Path(self.test_file, "drive_c").exists(),
+            f"Expected {self.test_file}/drive_c to not exist",
+        )
+
     def test_setup_pfx(self):
         """Test setup_pfx."""
         result = None
@@ -3032,6 +3053,62 @@ class TestGameLauncher(unittest.TestCase):
             result = __main__.parse_args()
             self.assertIsInstance(
                 result, Namespace, "Expected a Namespace from parse_arg"
+            )
+
+    def test_env_nowine_noproton(self):
+        """Test check_env when configured to not use Proton.
+
+        Expects the directory $HOME/Games/umu/$GAMEID to not be created
+        when UMU_NO_PROTON=1 and GAMEID is set in the host environment.
+        """
+        result = None
+        # Mock $HOME
+        mock_home = Path(self.test_file)
+
+        with (
+            ThreadPoolExecutor() as thread_pool,
+            # Mock the internal call to Path.home(). Otherwise, some of our
+            # assertions may fail when running this test suite locally if
+            # the user already has that dir
+            patch.object(Path, "home", return_value=mock_home),
+        ):
+            os.environ["UMU_NO_PROTON"] = "1"
+            os.environ["GAMEID"] = "foo"
+            result = umu_run.check_env(self.env, thread_pool)
+            self.assertTrue(result is self.env)
+            path = mock_home.joinpath("Games", "umu", os.environ["GAMEID"])
+            # Ensure we did not create the target nor its parents up to $HOME
+            self.assertFalse(path.exists(), f"Expected {path} to not exist")
+            self.assertFalse(
+                path.parent.exists(), f"Expected {path.parent} to not exist"
+            )
+            self.assertFalse(
+                path.parent.parent.exists(),
+                f"Expected {path.parent.parent} to not exist",
+            )
+            self.assertTrue(
+                mock_home.exists(), f"Expected {mock_home} to exist"
+            )
+
+    def test_env_wine_noproton(self):
+        """Test check_env when configured to not use Proton.
+
+        Expects the WINE prefix directory to not be created when
+        UMU_NO_PROTON=1 and WINEPREFIX is set in the host environment.
+        """
+        result = None
+
+        with (
+            ThreadPoolExecutor() as thread_pool,
+        ):
+            os.environ["WINEPREFIX"] = "123"
+            os.environ["UMU_NO_PROTON"] = "1"
+            os.environ["GAMEID"] = "foo"
+            result = umu_run.check_env(self.env, thread_pool)
+            self.assertTrue(result is self.env)
+            self.assertFalse(
+                Path(os.environ["WINEPREFIX"]).exists(),
+                f"Expected directory {os.environ['WINEPREFIX']} to not exist",
             )
 
     def test_env_proton_nodir(self):
