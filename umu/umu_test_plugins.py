@@ -9,6 +9,7 @@ from pathlib import Path
 from shutil import copy, copytree, rmtree
 from unittest.mock import MagicMock, patch
 
+import vdf
 from tomllib import TOMLDecodeError
 
 sys.path.append(str(Path(__file__).parent.parent))
@@ -47,6 +48,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         # Proton verb
         # Used when testing build_command
         self.test_verb = "waitforexitandrun"
+        self.test_verb_as_arg = "--verb=waitforexitandrun"
         # Test directory
         self.test_file = "./tmp.AKN6tnueyO"
         # Executable
@@ -91,6 +93,18 @@ class TestGameLauncherPlugins(unittest.TestCase):
         Path(self.test_user_share, "run").touch()
         Path(self.test_user_share, "run-in-sniper").touch()
         Path(self.test_user_share, "umu").touch()
+        with Path(self.test_user_share, "toolmanifest.vdf").open(
+            "w"
+        ) as toolmanifest:
+            vdf.dump(
+                {
+                    "manifest": {
+                        "commandline": "/_v2-entry-point --verb=%verb% --",
+                        "compatmanager_layer_name": "container-runtime",
+                    }
+                },
+                toolmanifest,
+            )
 
         # Mock pressure vessel
         Path(self.test_user_share, "pressure-vessel").mkdir()
@@ -105,6 +119,34 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
+        with Path(self.test_proton_dir, "toolmanifest.vdf").open(
+            "w"
+        ) as toolmanifest:
+            vdf.dump(
+                {
+                    "manifest": {
+                        "commandline": "/proton %verb%",
+                        "require_tool_appid": "1628350",
+                        "compatmanager_layer_name": "proton",
+                    }
+                },
+                toolmanifest,
+            )
+        with Path(self.test_proton_dir, "compatibilitytool.vdf").open(
+            "w"
+        ) as compatibilitytool:
+            vdf.dump(
+                {
+                    "compatibilitytools": {
+                        "compat_tools": {
+                            "Proton": {
+                                "display_name": "Proton",
+                            }
+                        }
+                    }
+                },
+                compatibilitytool,
+            )
 
         Path(self.test_file).mkdir(exist_ok=True)
         Path(self.test_exe).touch()
@@ -305,12 +347,18 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
+            copy(
+                Path(self.test_user_share, "toolmanifest.vdf"),
+                Path(self.test_local_share, "toolmanifest.vdf"),
+            )
 
         for key, val in self.env.items():
             os.environ[key] = val
 
         # Build
-        with self.assertRaisesRegex(FileNotFoundError, "proton"):
+        with self.assertRaisesRegex(
+            FileNotFoundError, "proton|toolmanifest.vdf|compatibilitytool.vdf"
+        ):
             umu_run.build_command(
                 self.env, self.test_local_share, test_command
             )
@@ -325,7 +373,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         toml_str = f"""
         [umu]
         prefix = "{self.test_file}"
-        proton = "{self.test_file}"
+        proton = "{self.test_proton_dir}"
         game_id = "{self.test_file}"
         launch_args = ["{self.test_file}", "{self.test_file}"]
         exe = "{self.test_exe}"
@@ -390,6 +438,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
+            copy(
+                Path(self.test_user_share, "toolmanifest.vdf"),
+                Path(self.test_local_share, "toolmanifest.vdf"),
+            )
 
         for key, val in self.env.items():
             os.environ[key] = val
@@ -398,26 +450,25 @@ class TestGameLauncherPlugins(unittest.TestCase):
         test_command = umu_run.build_command(self.env, self.test_local_share)
 
         # Verify contents of the command
-        entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [
-            *test_command
-        ]
+        entry_point, verb, sep, shim, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertIsInstance(
-            entry_point, os.PathLike, "Expected entry point to be PathLike"
+            Path(entry_point),
+            os.PathLike,
+            "Expected entry point to be PathLike",
         )
-        self.assertEqual(opt1, "--verb", "Expected --verb")
-        self.assertEqual(verb, self.test_verb, "Expected a verb")
-        self.assertEqual(opt2, "--", "Expected --")
+        self.assertEqual(verb, self.test_verb_as_arg, "Expected a verb")
+        self.assertEqual(sep, "--", "Expected --")
         self.assertIsInstance(
-            shim, os.PathLike, "Expected shim to be PathLike"
+            Path(shim), os.PathLike, "Expected shim to be PathLike"
         )
-        self.assertEqual(shim, shim_path, "Expected the shim file")
+        self.assertEqual(Path(shim), shim_path, "Expected the shim file")
         self.assertIsInstance(
-            proton, os.PathLike, "Expected proton to be PathLike"
+            Path(proton), os.PathLike, "Expected proton to be PathLike"
         )
         self.assertEqual(
-            proton,
+            Path(proton),
             Path(self.env["PROTONPATH"], "proton"),
             "Expected the proton file",
         )

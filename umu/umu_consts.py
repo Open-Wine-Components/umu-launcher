@@ -27,6 +27,13 @@ PROTON_VERBS = {
     "getnativepath",
 }
 
+RUNTIME_VERSIONS = {
+    # "1070560": ("scout", "steamrt1"),
+    "1391110": ("soldier", "steamrt2"),
+    "1628350": ("sniper", "steamrt3"),
+    # "": ("medic", "steamrt4"),
+}
+
 XDG_CACHE_HOME: Path = (
     Path(os.environ["XDG_CACHE_HOME"])
     if os.environ.get("XDG_CACHE_HOME")
