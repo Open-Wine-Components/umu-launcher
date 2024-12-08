@@ -10,4 +10,4 @@ curl -LJO --range 0-104857599 "$url"
 mkdir -p "$HOME"/.cache/umu
 mv "$name" "$HOME"/.cache/umu/"$name".parts
 UMU_LOG=debug GAMEID=umu-0 "$HOME/.local/bin/umu-run" wineboot -u 2> "$tmp"
-grep "resuming" "$tmp"
+grep "resuming" "$tmp" && grep "exited with wait status" "$tmp"
