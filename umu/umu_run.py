@@ -337,11 +337,10 @@ def build_command(
     if env.get("EXE", "").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
+        runtime_cmd: list[str|Path] = [entry_point, "--verb", env["PROTON_VERB"], "--"] if env.get(
+            "UMU_NO_RUNTIME") != "1" else []
         return (
-            entry_point,
-            "--verb",
-            env["PROTON_VERB"],
-            "--",
+            *runtime_cmd,
             proton,
             env["PROTON_VERB"],
             env["EXE"],
