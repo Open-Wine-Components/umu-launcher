@@ -72,6 +72,9 @@ def setup_pfx(path: str) -> None:
     user: str = getpwuid(os.getuid()).pw_name
     wineuser: Path = Path(path).expanduser().joinpath("drive_c", "users", user)
 
+    if os.environ.get("UMU_NO_PROTON") == "1":
+        return
+
     if pfx.is_symlink():
         pfx.unlink()
 
