@@ -1,0 +1,83 @@
+name: Build and upload release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  fedora40-build:
+    name: Fedora 40 Build
+    uses: ./.github/workflows/build-umu-fedora-40.yml
+    with:
+      version: ${{ github.ref_name }}
+      shasum: ${{ github.sha }}
+  fedora40-release:
+    name: Fedora 40 Release ${{ github.ref_name }}
+    needs: fedora40-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: umu-launcher-${{ github.ref_name }}.fc40.noarch.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc40.noarch.rpm
+
+  fedora41-build:
+    name: Fedora 41 Build
+    uses: ./.github/workflows/build-umu-fedora-41.yml
+    with:
+      version: ${{ github.ref_name }}
+      shasum: ${{ github.sha }}
+  fedora41-release:
+    name: Fedora 41 Release ${{ github.ref_name }}
+    needs: fedora41-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: umu-launcher-${{ github.ref_name }}.fc41.noarch.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc41.noarch.rpm
+
+  debian12-build:
+    name: Debian 12 Build
+    uses: ./.github/workflows/build-umu-debian-12.yml
+    with:
+      version: ${{ github.ref_name }}
+  debian12-release:
+    name: Debian 12 Release ${{ github.ref_name }}
+    needs: debian12-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: python3-umu-launcher_${{ github.ref_name }}-1_amd64_debian-12.deb
+      name1: python3-umu-launcher_${{ github.ref_name }}-1_amd64_debian-12.deb
+      file2: umu-launcher_${{ github.ref_name }}-1_all_debian-12.deb
+      name2: umu-launcher_${{ github.ref_name }}-1_all_debian-12.deb
+
+  ubuntu-noble-build:
+    name: Ubuntu 24.04 Build
+    uses: ./.github/workflows/build-umu-ubuntu-noble.yml
+    with:
+      version: ${{ github.ref_name }}
+  ubuntu-noble-release:
+    name: Ubuntu 24.04 Release ${{ github.ref_name }}
+    needs: ubuntu-noble-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: python3-umu-launcher_${{ github.ref_name }}-1_amd64_ubuntu-noble.deb
+      name1: python3-umu-launcher_${{ github.ref_name }}-1_amd64_ubuntu-noble.deb
+      file2: umu-launcher_${{ github.ref_name }}-1_all_ubuntu-noble.deb
+      name2: umu-launcher_${{ github.ref_name }}-1_all_ubuntu-noble.deb
+
+  zipapp-build:
+    name: Zipapp Build
+    uses: ./.github/workflows/build-umu-zipapp.yml
+    with:
+      version: ${{ github.ref_name }}
+  zipapp-release:
+    name: Zippapp Release ${{ github.ref_name }}
+    needs: zipapp-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: umu-launcher-${{ github.ref_name }}-zipapp.tar.gz
+      name1: umu-launcher-${{ github.ref_name }}-zipapp.tar.gz
+
