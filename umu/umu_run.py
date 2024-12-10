@@ -147,7 +147,11 @@ def check_env(
         )
 
     # GE-Proton
-    if os.environ.get("PROTONPATH") == "GE-Proton":
+    if os.environ.get("PROTONPATH") in {
+        "GE-Proton",
+        "GE-Latest",
+        "UMU-Latest",
+    }:
         get_umu_proton(env, session_pools)
 
     if "PROTONPATH" not in os.environ:

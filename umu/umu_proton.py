@@ -1,7 +1,9 @@
 import os
+import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import file_digest, sha512
 from http import HTTPMethod, HTTPStatus
+from importlib.util import find_spec
 from pathlib import Path
 from re import split as resplit
 from shutil import move, rmtree
@@ -14,7 +16,18 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
-from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_LOCAL
+from umu.umu_bspatch import (
+    ContentContainer,
+    CustomPatcher,
+    ManifestEntry,
+)
+from umu.umu_consts import (
+    STEAM_COMPAT,
+    UMU_CACHE,
+    UMU_COMPAT,
+    UMU_LOCAL,
+    UMU_SSH_PUBLIC_KEYS,
+)
 from umu.umu_log import log
 from umu.umu_util import extract_tarfile, run_zenity, write_file_chunks
 
@@ -47,12 +60,15 @@ def get_umu_proton(
     # First element is the digest asset, second is the Proton asset. Each asset
     # will contain the asset's name and the URL that hosts it.
     assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()] = ()
+    patch: bytes = b""
+
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
     UMU_CACHE.mkdir(parents=True, exist_ok=True)
 
     try:
         log.debug("Sending request to 'api.github.com'...")
         assets = _fetch_releases(session_pools)
+        patch = _fetch_patch(session_pools)
     except HTTPError:
         log.debug("Network is unreachable")
 
@@ -61,6 +77,12 @@ def get_umu_proton(
         TemporaryDirectory(dir=UMU_CACHE) as tmpcache,
     ):
         tmpdirs: SessionCaches = (Path(tmp), Path(tmpcache))
+        if _get_delta(env, UMU_COMPAT, tmpdirs, patch, session_pools) is env:
+            log.info("%s is up to date", os.environ["PROTONPATH"])
+            os.environ["PROTONPATH"] = str(
+                UMU_COMPAT.joinpath(os.environ["PROTONPATH"])
+            )
+            return env
         if (
             _get_latest(env, STEAM_COMPAT, tmpdirs, assets, session_pools)
             is env
@@ -72,6 +94,22 @@ def get_umu_proton(
     os.environ["PROTONPATH"] = ""
 
     return env
+
+
+def _fetch_patch(session_pools: SessionPools) -> bytes:  # noqa: ARG001
+    if not find_spec("cbor2") and not find_spec("cryptography"):
+        return b""
+
+    # TODO: Refactor implementation to request patches from owc server and remove
+    # 'noqa' directive once we upload them
+    if not os.environ.get("UMU_DELTA"):
+        return b""
+
+    path = Path(os.environ["UMU_DELTA"]).resolve()
+    if not path.is_file():
+        return b""
+
+    return path.read_bytes()
 
 
 def _fetch_releases(
@@ -109,7 +147,10 @@ def _fetch_releases(
             asset_count += 1
             continue
         if release["name"].endswith("tar.gz") and release["name"].startswith(
-            ("UMU-Proton", "GE-Proton")
+            (
+                "UMU-Proton",
+                "GE-Proton",
+            )
         ):
             proton_asset = (
                 release["name"],
@@ -265,7 +306,7 @@ def _get_from_steamcompat(
     """
     version: str = (
         "GE-Proton"
-        if os.environ.get("PROTONPATH") == "GE-Proton"
+        if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest"}
         else "UMU-Proton"
     )
 
@@ -330,8 +371,6 @@ def _get_latest(
     # Return if the latest Proton is already installed
     if steam_compat.joinpath(proton).is_dir():
         log.info("%s is up to date", version)
-        steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
-        steam_compat.joinpath("UMU-Latest").symlink_to(proton)
         os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
         env["PROTONPATH"] = os.environ["PROTONPATH"]
         return env
@@ -465,11 +504,111 @@ def _install_proton(
     )
     move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
 
-    steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
-    steam_compat.joinpath("UMU-Latest").symlink_to(
-        tarball.removesuffix(".tar.gz")
-    )
-    log.debug("Linking: UMU-Latest -> %s", tarball.removesuffix(".tar.gz"))
-
     if future:
         future.result()
+
+
+def _get_delta(
+    env: dict[str, str],
+    umu_compat: Path,
+    session_caches: SessionCaches,
+    patch: bytes,
+    session_pools: SessionPools,
+) -> dict[str, str] | None:
+    _, cache = session_caches
+    thread_pool, _ = session_pools
+    version: str = (
+        "GE-Latest"
+        if os.environ.get("PROTONPATH") == "GE-Latest"
+        else "UMU-Latest"
+    )
+    proton: Path = umu_compat.joinpath(version)
+    cbor: ContentContainer
+    lock: FileLock
+    patcher: CustomPatcher
+
+    if not proton.is_dir():
+        log.debug("File '%s' does not exist, skipping update", proton)
+        return None
+
+    if not patch:
+        log.debug("Received empty byte string for patch, skipping update")
+        return None
+
+    from cbor2 import CBORDecodeError, dumps, loads
+    from cryptography.exceptions import InvalidSignature
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+
+    try:
+        cbor = loads(patch)
+    except CBORDecodeError as e:
+        log.exception(e)
+        return None
+
+    lock = FileLock(f"{UMU_LOCAL}/compatibilitytools.d.lock")
+    log.debug("Acquiring lock '%s'", lock.lock_file)
+    with lock:
+        log.debug("Acquired lock '%s'", lock.lock_file)
+
+        # Validate the integrity of the embedded public key
+        if (
+            sha512(cbor.get("public_key")).hexdigest()
+            not in UMU_SSH_PUBLIC_KEYS
+        ):
+            # OWC maintainer forgot to add digest to whitelist, a different
+            # public key was accidentally used or patch was created by a
+            # 3rd party
+            log.error(
+                "Digest mismatched for SSH public key '%s', skipping update",
+                cbor.get("public_key"),
+            )
+            return None
+
+        # With the public key, verify the signature and data
+        ssh_public_key = ed25519.Ed25519PublicKey.from_public_bytes(
+            cbor.get("public_key")
+        )
+        try:
+            ssh_public_key.verify(
+                cbor.get("signature"),
+                dumps(cbor.get("contents"), canonical=True),
+            )
+        except InvalidSignature:
+            # Patch file data was tampered
+            log.error("Digital signature verification failed, skipping update")
+            return None
+
+        patcher: CustomPatcher = CustomPatcher(
+            cbor, proton, cache, thread_pool
+        )
+
+        # Verify the identity of the build. At this point the patch file is
+        # authenticated. Note, this will skip the update if the user had
+        # tinkered with their build. We do this so we can ensure the result
+        # of each binary patch isn't garbage
+        patcher.verify_integrity()
+        for future in patcher.result():
+            future_ret: ManifestEntry | None = future.result()
+            if not future_ret:
+                # Exit here. Just assume we're up to date in this case
+                log.debug(
+                    "%s (latest) validation failed, skipping update",
+                    os.environ["PROTONPATH"],
+                )
+                return env
+
+        # Patch the current build, upgrading proton to the latest
+        log.info(
+            "%s is OK, applying partial update...", os.environ["PROTONPATH"]
+        )
+        log.debug("Partial update start time: %s", time.time())
+        patcher.update_binaries()
+        patcher.add_binaries()
+        patcher.delete_binaries()
+
+        for future in patcher.result():
+            if future:
+                future.result()
+        log.debug("Partial update end time: %s", time.time())
+
+    return env
