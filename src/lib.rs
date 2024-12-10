@@ -52,6 +52,7 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
             file.set_len(target.len() as u64)?;
             std::mem::forget(file);
         }
+        mmap.flush_async()?;
         Ok(target)
     })
 }
