@@ -1,6 +1,6 @@
 use bzip2::read::BzDecoder;
 use crc32fast::Hasher;
-use memmap2::{Mmap, MmapMut};
+use memmap2::{Advice, Mmap, MmapMut};
 use pyo3::prelude::*;
 use qbsdiff::Bspatch;
 use std::fs::File;
@@ -29,6 +29,11 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
         // Don't run the destructor. We'll manage the file descriptor in Python
         std::mem::forget(file);
         let mut target = Vec::new();
+        // Optimization. Let the kernel know the specific ranges we're
+        // accessing. Here, we only need to access up to the original's
+        // length
+        mmap.advise_range(Advice::Sequential, 0, original_size as usize)
+            .unwrap();
         patcher.apply(&mmap[..original_size as usize], &mut target)?;
         // Validate target size before writing to mmap
         if target.len() > mmap.len() {
@@ -37,6 +42,9 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
                 "Patch exceeds mapped file size",
             ));
         }
+        // Access the entire range, then apply our patched result in-place
+        mmap.advise_range(Advice::Sequential, 0, target.len())
+            .unwrap();
         mmap[..target.len()].copy_from_slice(&target[..]);
         // Handle small file case
         if target.len() < original_size as usize {
