@@ -1,9 +1,9 @@
 import os
-from base64 import b64encode
 from concurrent.futures import Future, ThreadPoolExecutor
 from enum import StrEnum
 from pathlib import Path
 from shutil import move, rmtree
+from tempfile import NamedTemporaryFile
 from typing import TypedDict
 
 from umu.umu_log import log
@@ -110,7 +110,6 @@ class CustomPatcher:  # noqa: D101
                     self._thread_pool.submit(
                         self._write_proton_file,
                         build_file,
-                        Path(item["name"]).name,
                         self._cache,
                         item["data"],
                         item["cksum"],
@@ -306,16 +305,13 @@ class CustomPatcher:  # noqa: D101
     def _write_proton_file(
         self,
         path: Path,
-        segment: str,
         tmp: Path,
         data: bytes,
         digest: int,
         mode: int,
         time: float,
     ) -> None:
-        token: str = b64encode(os.getrandom(8, os.GRND_NONBLOCK)).hex()
-        parts: Path = tmp.joinpath(f"{segment}.{token}.parts")
-        with parts.open("ab+") as fp:
+        with NamedTemporaryFile(dir=tmp) as fp:
             stats: os.stat_result
             cksum: int = 0
 
@@ -336,7 +332,7 @@ class CustomPatcher:  # noqa: D101
                     "Expected %s, received %s for file '%s'",
                     digest,
                     cksum,
-                    parts,
+                    fp.name,
                 )
                 err: str = "Digest mismatch when creating file"
                 raise ValueError(err)
@@ -344,4 +340,4 @@ class CustomPatcher:  # noqa: D101
             # Update our metadata
             os.fchmod(fp.fileno(), mode)
             os.utime(fp.fileno(), (stats.st_atime, time))
-            move(parts, path)
+            move(fp.name, path)
