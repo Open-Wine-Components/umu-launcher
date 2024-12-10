@@ -547,7 +547,6 @@ def _get_delta(
             return None
 
         # With the public key, verify the signature and data
-        log.info("Verifying digital signature of update...")
         ssh_public_key = ed25519.Ed25519PublicKey.from_public_bytes(
             cbor.get("public_key")
         )
@@ -560,11 +559,6 @@ def _get_delta(
             # Patch file data was tampered
             log.error("Digital signature verification failed, skipping update")
             return None
-
-        log.info(
-            "Digital signature is OK, verifying %s...",
-            os.environ["PROTONPATH"],
-        )
 
         patcher: CustomPatcher = CustomPatcher(cbor, proton, cache, thread_pool)
 
