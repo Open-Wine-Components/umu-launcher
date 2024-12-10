@@ -1,0 +1,20 @@
+[package]
+name = "umu"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "umu_delta"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.23.1", features = ["extension-module"] }
+qbsdiff = "1.4.2"
+crc32fast = "1.4.2"
+bzip2 = "0.4.4"
+memmap2 = "0.9.5"
+
+[profile.release]
+opt-level = 2
+lto = true
