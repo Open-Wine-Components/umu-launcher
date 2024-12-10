@@ -7,6 +7,10 @@ use std::fs::File;
 use std::io::{self, Read};
 use std::os::unix::io::FromRawFd;
 
+/// Given a binary patch, update a file in-place
+///
+/// `source`: writable, open file descriptor
+/// `patch`: data produced from a BSDIFF 4.x compatible delta compressor
 #[pyfunction]
 fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> {
     py.allow_threads(|| {
@@ -22,7 +26,7 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
                 io::Error::new(io::ErrorKind::Other, format!("Failed to map source: {}", e))
             })?
         };
-        // Don't run the destructor. We'll manage the resource within Python
+        // Don't run the destructor. We'll manage the file descriptor in Python
         std::mem::forget(file);
         let mut target = Vec::new();
         patcher.apply(&mmap[..original_size as usize], &mut target)?;
