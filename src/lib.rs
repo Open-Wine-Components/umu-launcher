@@ -28,7 +28,7 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
         };
         // Don't run the destructor. We'll manage the file descriptor in Python
         std::mem::forget(file);
-        let mut target = Vec::new();
+        let mut target = Vec::with_capacity(patcher.hint_target_size() as usize);
         // Optimization. Let the kernel know the specific ranges we're
         // accessing. Here, we only need to access up to the original's
         // length
@@ -58,9 +58,10 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
 }
 
 #[pyfunction]
-fn bz2_decompress_rs(py: Python<'_>, source: &[u8], target: i32) -> io::Result<u64> {
+fn bz2_decompress_rs(py: Python<'_>, source: &[u8], target: i32, size: u64) -> io::Result<u64> {
     py.allow_threads(|| {
         let mut file = unsafe { File::from_raw_fd(target) };
+        file.set_len(size)?;
         let mut decoder = BzDecoder::new(source);
         let result = io::copy(&mut decoder, &mut file);
         std::mem::forget(file);
