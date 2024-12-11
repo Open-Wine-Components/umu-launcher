@@ -42,6 +42,8 @@ class Entry(TypedDict):  # noqa: D101
     cksum: int
     # File's modification time
     time: float
+    # File's size
+    size: int
 
 
 Block = list[Entry]
@@ -115,6 +117,7 @@ class CustomPatcher:  # noqa: D101
                         item["cksum"],
                         item["mode"],
                         item["time"],
+                        item["size"],
                     )
                 )
                 continue
@@ -310,13 +313,14 @@ class CustomPatcher:  # noqa: D101
         digest: int,
         mode: int,
         time: float,
+        size: int,
     ) -> None:
         with NamedTemporaryFile(dir=tmp) as fp:
             stats: os.stat_result
             cksum: int = 0
 
             # Decompress our data and write to our file.
-            bz2_decompress_rs(data, fp.fileno())
+            bz2_decompress_rs(data, fp.fileno(), size)
 
             # Following blake3's heuristic, don't use mmap if < 16KB
             stats = os.fstat(fp.fileno())
