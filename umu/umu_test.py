@@ -1103,17 +1103,17 @@ class TestGameLauncher(unittest.TestCase):
         Tests the case when the user has no internet connection or GE-Proton
         wasn't found in local system.
         """
+        mock_session_pools = (MagicMock(), MagicMock())
         with (
             self.assertRaises(FileNotFoundError),
             patch.object(umu_proton, "_fetch_releases", return_value=None),
             patch.object(umu_proton, "_get_latest", return_value=None),
             patch.object(umu_proton, "_get_from_steamcompat", return_value=None),
-            ThreadPoolExecutor() as thread_pool,
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["PROTONPATH"] = "GE-Proton"
-            umu_run.check_env(self.env, thread_pool)
+            umu_run.check_env(self.env, mock_session_pools)
             self.assertFalse(os.environ.get("PROTONPATH"), "Expected empty string")
 
     def test_latest_interrupt(self):
