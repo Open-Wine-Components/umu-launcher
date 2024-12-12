@@ -1,5 +1,6 @@
 import os
 from concurrent.futures import Future, ThreadPoolExecutor
+from contextlib import suppress
 from enum import StrEnum
 from pathlib import Path
 from shutil import rmtree
@@ -8,12 +9,13 @@ from typing import TypedDict
 
 from umu.umu_log import log
 
-from .umu_delta import (
-    bspatch_rs,
-    bz2_decompress_rs,
-    crc32_mmap_rs,
-    crc32_rs,
-)
+with suppress(ModuleNotFoundError):
+    from .umu_delta import (
+        bspatch_rs,
+        bz2_decompress_rs,
+        crc32_mmap_rs,
+        crc32_rs,
+    )
 
 
 class FileType(StrEnum):  # noqa: D101
