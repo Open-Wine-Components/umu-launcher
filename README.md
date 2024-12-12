@@ -81,6 +81,8 @@ Borderlands 3 from EGS store.
 
 Building umu-launcher currently requires `bash`, `make`, and `scdoc` for distribution, as well as the following Python build tools: [build](https://github.com/pypa/build), [hatchling](https://github.com/pypa/hatch), [installer](https://github.com/pypa/installer), and [pip](https://github.com/pypa/pip).
 
+Additionally, [cargo](https://github.com/rust-lang/cargo) will be required only if enabling support for delta updates.
+
 To build umu-launcher, after downloading and extracting the source code from this repository, change into the newly extracted directory
 ```shell
 cd umu-launcher
