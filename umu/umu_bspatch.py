@@ -2,7 +2,7 @@ import os
 from concurrent.futures import Future, ThreadPoolExecutor
 from enum import StrEnum
 from pathlib import Path
-from shutil import move, rmtree
+from shutil import rmtree
 from tempfile import NamedTemporaryFile
 from typing import TypedDict
 
@@ -344,4 +344,4 @@ class CustomPatcher:  # noqa: D101
             # Update our metadata
             os.fchmod(fp.fileno(), mode)
             os.utime(fp.fileno(), (stats.st_atime, time))
-            move(fp.name, path)
+            os.rename(fp.name, path)  # noqa: PTH104
