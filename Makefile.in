@@ -66,9 +66,9 @@ umu-dist-install: umu-dist
 	$(PYTHON_INTERPRETER)  -m installer --destdir=$(DESTDIR) $(OBJDIR)/*.whl
 
 ifeq ($(FLATPAK), xtrue)
-umu-install: umu-dist-install
+umu-install: umu-dist-install umu-delta-install
 else
-umu-install: umu-dist-install umu-docs-install
+umu-install: umu-dist-install umu-delta-install umu-docs-install 
 endif
 
 ifeq ($(FLATPAK), xtrue)
