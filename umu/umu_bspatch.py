@@ -94,19 +94,19 @@ class CustomPatcher:  # noqa: D101
         cache: Path,
         thread_pool: ThreadPoolExecutor,
     ) -> None:
-        self._arc = arc
-        self._arc_manifest: list[ManifestEntry] = self._arc.get(
-            "contents"
-        ).get("manifest")
-        self._arc_contents: Content = self._arc.get("contents")
+        self._arc: ContentContainer = arc
+        self._arc_contents: Content = self._arc["contents"]
+        self._arc_manifest: list[ManifestEntry] = self._arc_contents[
+            "manifest"
+        ]
         self._proton = proton
         self._cache = cache
         self._thread_pool = thread_pool
-        self._futures = []
+        self._futures: list[Future] = []
 
     def add_binaries(self) -> None:  # noqa: D102
         # Create new files, if there are any items
-        for item in self._arc_contents.get("add"):
+        for item in self._arc_contents["add"]:
             build_file: Path = self._proton.joinpath(item["name"])
             if item["type"] == FileType.File:
                 # Decompress the bz2 data and write the file
@@ -154,7 +154,7 @@ class CustomPatcher:  # noqa: D101
             )
 
     def update_binaries(self) -> None:  # noqa: D102
-        for item in self._arc_contents.get("update"):
+        for item in self._arc_contents["update"]:
             build_file: Path = self._proton.joinpath(item["name"])
             if item["type"] == FileType.File:
                 # For files, apply a binary patch
@@ -203,7 +203,7 @@ class CustomPatcher:  # noqa: D101
     def delete_binaries(self) -> None:  # noqa: D102
         # Delete files, if there are any items. Only operate on links, normal
         # files and directories while skipping everything else.
-        for item in self._arc_contents.get("delete"):
+        for item in self._arc_contents["delete"]:
             if item["type"] == FileType.File or item["type"] == FileType.Link:
                 self._proton.joinpath(item["name"]).unlink(missing_ok=True)
                 continue
