@@ -9,7 +9,7 @@ name = "umu_delta"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.23.1", features = ["extension-module"] }
+pyo3 = { version = "0.23.3", features = ["extension-module"] }
 qbsdiff = "1.4.2"
 crc32fast = "1.4.2"
 bzip2 = "0.4.4"
