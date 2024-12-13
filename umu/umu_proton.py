@@ -1,6 +1,7 @@
 import os
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
+from enum import StrEnum
 from hashlib import sha512
 from http import HTTPStatus
 from importlib.util import find_spec
@@ -48,6 +49,15 @@ CacheSubdir = Path
 SessionCaches = tuple[CacheTmpfs, CacheSubdir]
 
 
+class ProtonVersion(StrEnum):
+    """Represent valid version keywords for Proton."""
+
+    GE = "GE-Proton"
+    UMU = "UMU-Proton"
+    GELatest = "GE-Latest"
+    UMULatest = "UMU-Latest"
+
+
 def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str, str]:
     """Attempt to use the latest Proton when configured.
 
@@ -87,7 +97,10 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
                 UMU_COMPAT.joinpath(os.environ["PROTONPATH"])
             )
             return env
-        if _get_latest(env, STEAM_COMPAT, tmpdirs, assets, session_pools) is env:
+        if (
+            _get_latest(env, (UMU_COMPAT, STEAM_COMPAT), tmpdirs, assets, session_pools)
+            is env
+        ):
             return env
         if _get_from_steamcompat(env, STEAM_COMPAT) is env:
             return env
@@ -131,7 +144,7 @@ def _fetch_releases(
         "User-Agent": "",
     }
 
-    if os.environ.get("PROTONPATH") == "GE-Proton":
+    if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest"}:
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
 
     resp = http_pool.request(HTTPMethod.GET.value, f"{url}{repo}", headers=headers)
@@ -334,7 +347,7 @@ def _get_from_steamcompat(
 
 def _get_latest(
     env: dict[str, str],
-    steam_compat: Path,
+    compat_tools: tuple[Path, Path],
     session_caches: SessionCaches,
     assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()],
     session_pools: SessionPools,
@@ -349,6 +362,7 @@ def _get_latest(
     When the digests mismatched or when interrupted, an old build will in
     $HOME/.local/share/Steam/compatibilitytool.d will be used.
     """
+    umu_compat, steam_compat = compat_tools
     # Name of the Proton archive (e.g., GE-Proton9-7.tar.gz)
     tarball: str
     # Name of the Proton directory (e.g., GE-Proton9-7)
@@ -356,6 +370,7 @@ def _get_latest(
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
     version: str
     lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
+    latest_candidates: set[ProtonVersion]
 
     if not assets:
         return None
@@ -365,6 +380,31 @@ def _get_latest(
     version = (
         "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
     )
+    latest_candidates = {ProtonVersion.GELatest, ProtonVersion.UMULatest}
+
+    if os.environ.get("PROTONPATH") in ProtonVersion:
+        version = os.environ["PROTONPATH"]
+
+    # Return if the latest Proton is already installed in private directory
+    compat_version: Path = umu_compat.joinpath(version)
+    if (
+        version in latest_candidates
+        and compat_version.is_dir()
+        and compat_version.joinpath("compatibilitytool.vdf").is_file()
+    ):
+        with umu_compat.joinpath(version, "compatibilitytool.vdf").open(
+            encoding="utf-8"
+        ) as file:
+            # We're up to date if the internal tool is the GH asset name
+            # without the suffix. Note: This will break if Valve ever
+            # pivots to the VDF binary format
+            for line in file:
+                if proton not in line:
+                    continue
+                log.info("%s is up to date", version)
+                os.environ["PROTONPATH"] = str(umu_compat.joinpath(proton))
+                env["PROTONPATH"] = os.environ["PROTONPATH"]
+                return env
 
     # Return if the latest Proton is already installed
     if steam_compat.joinpath(proton).is_dir():
@@ -381,11 +421,18 @@ def _get_latest(
             if steam_compat.joinpath(proton).is_dir():
                 raise FileExistsError
 
-            # Download the archive to a temporary directory
-            _fetch_proton(env, session_caches, assets, session_pools)
+        # Once acquiring the lock check if Proton hasn't been installed
+        if (
+            steam_compat.joinpath(proton).is_dir()
+            or umu_compat.joinpath(version).is_dir()
+        ):
+            raise FileExistsError
 
-            # Extract the archive then move the directory
-            _install_proton(tarball, session_caches, steam_compat, session_pools)
+        # Download the archive to a temporary directory
+        _fetch_proton(env, session_caches, assets, session_pools)
+
+        # Extract the archive then move the directory
+        _install_proton(tarball, session_caches, compat_tools)
     except (
         ValueError,
         KeyboardInterrupt,
@@ -397,10 +444,12 @@ def _get_latest(
         # Proton was installed by another proc, continue
         pass
 
-    log.debug("Released file lock '%s'", lockfile)
-    os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
+    os.environ["PROTONPATH"] = (
+        str(umu_compat.joinpath(version))
+        if version in latest_candidates
+        else str(steam_compat.joinpath(proton))
+    )
     env["PROTONPATH"] = os.environ["PROTONPATH"]
-    log.debug("Removing: %s", tarball)
     log.info("Using %s", proton)
 
     return env
@@ -435,8 +484,7 @@ def _update_proton(
 def _install_proton(
     tarball: str,
     session_caches: SessionCaches,
-    steam_compat: Path,
-    session_pools: SessionPools,
+    compat_tools: tuple[Path, Path],
 ) -> None:
     """Install a Proton directory to Steam's compatibilitytools.d.
 
@@ -446,24 +494,18 @@ def _install_proton(
     $HOME. In the case of UMU-Proton, an installation will include a remove
     step, where old builds will be removed in parallel.
     """
-    future: Future | None = None
+    umu_compat, steam_compat = compat_tools
     tmpfs, cache = session_caches
-    thread_pool, _ = session_pools
     parts: str = f"{tarball}.parts"
     cached_parts: Path = cache.parent.joinpath(f"{tarball}.parts")
-    version: str = (
-        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
-    )
+    latest_candidates: set[ProtonVersion] = {
+        ProtonVersion.GELatest,
+        ProtonVersion.UMULatest,
+    }
+    version: str = ProtonVersion.UMU
 
-    # TODO: Refactor when differential updates are implemented.
-    # Remove all previous builds when the build is UMU-Proton
-    if version == "UMU-Proton":
-        protons: list[Path] = [
-            file
-            for file in steam_compat.glob("*")
-            if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
-        ]
-        future = thread_pool.submit(_update_proton, protons, thread_pool)
+    if os.environ.get("PROTONPATH") in ProtonVersion:
+        version = os.environ["PROTONPATH"]
 
     # Move our file and extract within our cache
     if cached_parts.is_file():
@@ -483,16 +525,28 @@ def _install_proton(
         log.info("Extracting %s...", tarball)
         extract_tarfile(cache.joinpath(tarball), cache.joinpath(tarball).parent)
 
-    # Move decompressed archive to compatibilitytools.d
-    log.info(
-        "%s -> %s",
-        cache.joinpath(tarball.removesuffix(".tar.gz")),
-        steam_compat,
-    )
-    move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
-
-    if future:
-        future.result()
+    # Move decompressed archive to compatibilitytools.d or
+    # $XDG_DATA_HOME/umu/compatibilitytools
+    if os.environ.get("PROTONPATH") in latest_candidates:
+        log.info(
+            "%s -> %s",
+            cache.joinpath(tarball.removesuffix(".tar.gz")),
+            umu_compat,
+        )
+        move(
+            cache.joinpath(tarball.removesuffix(".tar.gz")),
+            umu_compat.joinpath(version),
+        )
+    else:
+        log.info(
+            "%s -> %s",
+            cache.joinpath(tarball.removesuffix(".tar.gz")),
+            steam_compat,
+        )
+        move(
+            cache.joinpath(tarball.removesuffix(".tar.gz")),
+            steam_compat.joinpath(version),
+        )
 
 
 def _get_delta(
