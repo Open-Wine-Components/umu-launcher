@@ -112,14 +112,7 @@ class CustomPatcher:  # noqa: D101
                 # Decompress the bz2 data and write the file
                 self._futures.append(
                     self._thread_pool.submit(
-                        self._write_proton_file,
-                        build_file,
-                        self._cache,
-                        item["data"],
-                        item["cksum"],
-                        item["mode"],
-                        item["time"],
-                        item["size"],
+                        self._write_proton_file, build_file, self._cache, item
                     )
                 )
                 continue
@@ -160,12 +153,7 @@ class CustomPatcher:  # noqa: D101
                 # For files, apply a binary patch
                 self._futures.append(
                     self._thread_pool.submit(
-                        self._patch_proton_file,
-                        build_file,
-                        item["data"],
-                        item["cksum"],
-                        item["mode"],
-                        item["time"],
+                        self._patch_proton_file, build_file, item
                     )
                 )
                 continue
@@ -256,14 +244,11 @@ class CustomPatcher:  # noqa: D101
 
         return item
 
-    def _patch_proton_file(
-        self,
-        path: Path,
-        bdiff: bytes,
-        digest: int,
-        mode: int,
-        time: float,
-    ) -> None:
+    def _patch_proton_file(self, path: Path, item: Entry) -> None:
+        bdiff: bytes = item["data"]
+        digest: int = item["cksum"]
+        mode: int = item["mode"]
+        time: float = item["time"]
         try:
             # Since some wine binaries are missing the writable bit and
             # we're memory mapping files, before applying a binary patch,
@@ -307,16 +292,12 @@ class CustomPatcher:  # noqa: D101
             log.warning("File '%s' has mode bits 0o700", path)
             raise
 
-    def _write_proton_file(
-        self,
-        path: Path,
-        tmp: Path,
-        data: bytes,
-        digest: int,
-        mode: int,
-        time: float,
-        size: int,
-    ) -> None:
+    def _write_proton_file(self, path: Path, tmp: Path, item: Entry) -> None:
+        data: bytes = item["data"]
+        digest: int = item["cksum"]
+        mode: int = item["mode"]
+        time: float = item["time"]
+        size: int = item["size"]
         with NamedTemporaryFile(dir=tmp) as fp:
             stats: os.stat_result
             cksum: int = 0
