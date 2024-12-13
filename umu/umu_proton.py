@@ -392,19 +392,26 @@ def _get_latest(
         and compat_version.is_dir()
         and compat_version.joinpath("compatibilitytool.vdf").is_file()
     ):
-        with umu_compat.joinpath(version, "compatibilitytool.vdf").open(
-            encoding="utf-8"
-        ) as file:
-            # We're up to date if the internal tool is the GH asset name
-            # without the suffix. Note: This will break if Valve ever
-            # pivots to the VDF binary format
-            for line in file:
-                if proton not in line:
-                    continue
-                log.info("%s is up to date", version)
-                os.environ["PROTONPATH"] = str(umu_compat.joinpath(proton))
-                env["PROTONPATH"] = os.environ["PROTONPATH"]
-                return env
+        vdf: Path = umu_compat.joinpath(version, "compatibilitytool.vdf")
+        try:
+            with vdf.open(encoding="utf-8") as file:
+                # We're up to date if the internal tool is the GH asset name
+                # without the suffix
+                for line in file:
+                    if proton not in line:
+                        continue
+                    log.info("%s is up to date", version)
+                    os.environ["PROTONPATH"] = str(umu_compat.joinpath(proton))
+                    env["PROTONPATH"] = os.environ["PROTONPATH"]
+                    return env
+        except UnicodeDecodeError:
+            # Case when the VDF file is the binary format/has non-utf-8 chars
+            # Return and fallback to Steam's compatibilitytools.d
+            log.warning(
+                "Failed opening file '%s', unable to determine latest build",
+                vdf,
+            )
+            return None
 
     # Return if the latest Proton is already installed
     if steam_compat.joinpath(proton).is_dir():
