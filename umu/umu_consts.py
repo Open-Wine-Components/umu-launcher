@@ -3,6 +3,32 @@ from enum import Enum
 from pathlib import Path
 
 
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+# 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023
+# Python Software Foundation;
+# Source: https://raw.githubusercontent.com/python/cpython/refs/heads/3.11/Lib/http/__init__.py
+# License: https://raw.githubusercontent.com/python/cpython/refs/heads/3.11/LICENSE
+class HTTPMethod(Enum):
+    """HTTP methods and descriptions.
+
+    Methods from the following RFCs are all observed:
+
+        * RFF 9110: HTTP Semantics, obsoletes 7231, which obsoleted 2616
+        * RFC 5789: PATCH Method for HTTP
+
+    """
+
+    CONNECT = "CONNECT"
+    DELETE = "DELETE"
+    GET = "GET"
+    HEAD = "HEAD"
+    OPTIONS = "OPTIONS"
+    PATCH = "PATCH"
+    POST = "POST"
+    PUT = "PUT"
+    TRACE = "TRACE"
+
+
 class GamescopeAtom(Enum):
     """Represent Gamescope-specific X11 atom names."""
 
