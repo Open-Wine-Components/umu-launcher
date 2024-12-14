@@ -168,6 +168,24 @@ in
 > [!NOTE]
 > truststore is an optional dependency that is enabled by default if you want to keep it that way you can remove the `truststore = true;` part
 
+> [!NOTE]
+> The example above relies on having your flake's `inputs` passed through to your nixos configuration.
+> This can be done with `specialArgs` or `_module.args`, e.g:
+> ```nix
+> {
+>   # inputs omitted ...
+>
+>   # Assign a name to the input args using @inputs
+>   outputs = { self, nixpkgs, ... }@inputs: {
+>     nixosConfiurations."your-hostname" = nixpkgs.lib.nixosSystem {
+>       system = "x86_64-linux";
+>       specialArgs = { inherit self inputs; };
+>       # modules omitted ...
+>     };
+>   };
+> }
+> ```
+
 ## Contributing
 
 Contributions are welcome and appreciated. To get started, install [ruff](https://github.com/astral-sh/ruff) from your distribution and enable [ruff server](https://github.com/astral-sh/ruff/blob/main/crates/ruff_server/README.md) in your editor.
