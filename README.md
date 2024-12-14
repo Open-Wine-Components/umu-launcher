@@ -145,8 +145,8 @@ If there is any problem with the flake feel free to open a bug report and tag an
 If you want to add umu-launcher as a flake add this to your inputs in `flake.nix`
 ```nix
   inputs = {
-    umu= {
-      url = "git+https://github.com/Open-Wine-Components/umu-launcher/?dir=packaging\/nix&submodules=1";
+    umu = {
+      url = "github:Open-Wine-Components/umu-launcher?dir=packaging/nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   }
@@ -154,11 +154,37 @@ If you want to add umu-launcher as a flake add this to your inputs in `flake.nix
 and in your `configuration.nix`
 ```nix
 {inputs, pkgs, ... }:
+let
+  inherit (pkgs.stdenv.hostPlatform) system;
+  umu = inputs.umu.packages.${system}.umu.override {
+    version = inputs.umu.shortRev;
+    truststore = true;
+  };
+in
 {
-  environment.systemPackages = [  (inputs.umu.packages.${pkgs.system}.umu.override {version = "${inputs.umu.shortRev}"; truststore = true;})  ];
+  environment.systemPackages = [ umu ];
 }
 ```
+> [!NOTE]
 > truststore is an optional dependency that is enabled by default if you want to keep it that way you can remove the `truststore = true;` part
+
+> [!NOTE]
+> The example above relies on having your flake's `inputs` passed through to your nixos configuration.
+> This can be done with `specialArgs` or `_module.args`, e.g:
+> ```nix
+> {
+>   # inputs omitted ...
+>
+>   # Assign a name to the input args using @inputs
+>   outputs = { self, nixpkgs, ... }@inputs: {
+>     nixosConfiurations."your-hostname" = nixpkgs.lib.nixosSystem {
+>       system = "x86_64-linux";
+>       specialArgs = { inherit self inputs; };
+>       # modules omitted ...
+>     };
+>   };
+> }
+> ```
 
 ## Contributing
 
