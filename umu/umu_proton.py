@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import Future, ThreadPoolExecutor
-from hashlib import file_digest, sha512
-from http import HTTPMethod, HTTPStatus
+from hashlib import sha512
+from http import HTTPStatus
 from pathlib import Path
 from re import split as resplit
 from shutil import move, rmtree
@@ -14,9 +14,14 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
-from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_LOCAL
+from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_LOCAL, HTTPMethod
 from umu.umu_log import log
-from umu.umu_util import extract_tarfile, run_zenity, write_file_chunks
+from umu.umu_util import (
+    extract_tarfile,
+    file_digest,
+    run_zenity,
+    write_file_chunks,
+)
 
 SessionPools = tuple[ThreadPoolExecutor, PoolManager]
 
@@ -95,7 +100,9 @@ def _fetch_releases(
     if os.environ.get("PROTONPATH") == "GE-Proton":
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
 
-    resp = http_pool.request(HTTPMethod.GET, f"{url}{repo}", headers=headers)
+    resp = http_pool.request(
+        HTTPMethod.GET.value, f"{url}{repo}", headers=headers
+    )
     if resp.status != HTTPStatus.OK:
         return ()
 
@@ -159,7 +166,7 @@ def _fetch_proton(
     # See https://github.com/astral-sh/ruff/issues/7918
     log.info("Downloading %s...", proton_hash)
 
-    resp = http_pool.request(HTTPMethod.GET, proton_hash_url)
+    resp = http_pool.request(HTTPMethod.GET.value, proton_hash_url)
     if resp.status != HTTPStatus.OK:
         err: str = (
             f"Unable to download {proton_hash}\n"
@@ -208,7 +215,10 @@ def _fetch_proton(
             log.info("Downloading %s...", tarball)
 
         resp = http_pool.request(
-            HTTPMethod.GET, tar_url, preload_content=False, headers=headers
+            HTTPMethod.GET.value,
+            tar_url,
+            preload_content=False,
+            headers=headers,
         )
 
         # Bail out for unexpected status codes
