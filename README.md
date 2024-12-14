@@ -146,7 +146,7 @@ If you want to add umu-launcher as a flake add this to your inputs in `flake.nix
 ```nix
   inputs = {
     umu= {
-      url = "git+https://github.com/Open-Wine-Components/umu-launcher/?dir=packaging\/nix&submodules=1";
+      url = "github:Open-Wine-Components/umu-launcher?dir=packaging/nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   }
