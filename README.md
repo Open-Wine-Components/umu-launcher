@@ -154,8 +154,14 @@ If you want to add umu-launcher as a flake add this to your inputs in `flake.nix
 and in your `configuration.nix`
 ```nix
 {inputs, pkgs, ... }:
+let
+  umu = inputs.umu.packages.${pkgs.stdenv.hostPlatform.system}.umu.override {
+    version = "${inputs.umu.shortRev}";
+    truststore = true;
+  };
+in
 {
-  environment.systemPackages = [  (inputs.umu.packages.${pkgs.stdenv.hostPlatform.system}.umu.override {version = "${inputs.umu.shortRev}"; truststore = true;})  ];
+  environment.systemPackages = [ umu ];
 }
 ```
 > truststore is an optional dependency that is enabled by default if you want to keep it that way you can remove the `truststore = true;` part
