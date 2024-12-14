@@ -165,6 +165,7 @@ in
   environment.systemPackages = [ umu ];
 }
 ```
+> [!NOTE]
 > truststore is an optional dependency that is enabled by default if you want to keep it that way you can remove the `truststore = true;` part
 
 ## Contributing
