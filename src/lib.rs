@@ -46,8 +46,6 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
         // Optimization. Let the kernel know the specific ranges we're
         // accessing. Here, we only need to access up to the original's
         // length
-        mmap.advise_range(Advice::Sequential, 0, original_size as usize)
-            .unwrap();
         patcher.apply(&mmap[..original_size as usize], &mut target)?;
 
         // Validate target size before writing to mmap
@@ -58,8 +56,6 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
             ));
         }
         // Access the entire range, then apply our patched result in-place
-        mmap.advise_range(Advice::Sequential, 0, target.len())
-            .unwrap();
         mmap[..target.len()].copy_from_slice(&target[..]);
 
         // Handle small file case
