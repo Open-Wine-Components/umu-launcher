@@ -1,6 +1,6 @@
 use bzip2::read::BzDecoder;
 use crc32fast::Hasher;
-use memmap2::{Advice, Mmap, MmapMut};
+use memmap2::{Mmap, MmapMut, UncheckedAdvice};
 use pyo3::prelude::*;
 use qbsdiff::Bspatch;
 use std::fs::File;
@@ -62,8 +62,12 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
         if target.len() < original_size as usize {
             let file = unsafe { File::from_raw_fd(source) };
             file.set_len(target.len() as u64)?;
+            mmap.unchecked_advise_range(UncheckedAdvice::DontNeed, 0, target.len())?;
             std::mem::forget(file);
+            return Ok(target);
         }
+
+        mmap.unchecked_advise_range(UncheckedAdvice::DontNeed, 0, target.len())?;
         Ok(target)
     })
 }
