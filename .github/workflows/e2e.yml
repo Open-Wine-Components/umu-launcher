@@ -34,7 +34,7 @@ jobs:
           shellcheck tests/*.sh
       - name: Setup venv
         run: |
-          uv venv --python 3.11
+          uv venv --python 3.10
       - name: Test steamrt install
         run: |
           source .venv/bin/activate
