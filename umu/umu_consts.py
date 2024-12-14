@@ -61,6 +61,16 @@ UMU_LOCAL: Path = XDG_DATA_HOME.joinpath("umu")
 # Temporary directory for downloaded resources moved from tmpfs
 UMU_CACHE: Path = XDG_CACHE_HOME.joinpath("umu")
 
+# Directory storing Proton and other compatibility tools built against the SLR
+UMU_COMPAT: Path = XDG_DATA_HOME.joinpath("umu", "compatibilitytools")
+
 # Constant defined in prctl.h
 # See prctl(2) for more details
 PR_SET_CHILD_SUBREAPER = 36
+
+# sha512 digests of all umu maintainers' SSH public keys. Only relevant for
+# those creating patch files.
+# TODO: Add all public keys from relevant parties
+UMU_SSH_PUBLIC_KEYS = {
+    "df269f4c8aac484220b9e33f0cdccf1f9b6b300d7f1a184f2b1439ce4ac4f0875abef0a4612d4c7b116f204078369c35707ebb9c51fd08887ef1c7966dcb030c"
+}

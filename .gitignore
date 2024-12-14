@@ -6,3 +6,6 @@ umu_version.json
 umu_version.json.in.tmp
 Makefile
 /debian
+umu_delta*.so
+target
+Cargo.lock
