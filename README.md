@@ -155,7 +155,8 @@ and in your `configuration.nix`
 ```nix
 {inputs, pkgs, ... }:
 let
-  umu = inputs.umu.packages.${pkgs.stdenv.hostPlatform.system}.umu.override {
+  inherit (pkgs.stdenv.hostPlatform) system;
+  umu = inputs.umu.packages.${system}.umu.override {
     version = "${inputs.umu.shortRev}";
     truststore = true;
   };
