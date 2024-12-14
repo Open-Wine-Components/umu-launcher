@@ -62,6 +62,7 @@ jobs:
           rm -rf "$HOME/.local/share/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test configuration file
         run: |
+          uv venv --python 3.11
           source .venv/bin/activate
           sh tests/test_config.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
