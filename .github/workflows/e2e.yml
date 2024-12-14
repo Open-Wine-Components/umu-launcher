@@ -34,7 +34,7 @@ jobs:
           shellcheck tests/*.sh
       - name: Setup venv
         run: |
-          uv venv --python 3.11
+          uv venv --python 3.10
       - name: Test steamrt install
         run: |
           source .venv/bin/activate
@@ -62,6 +62,7 @@ jobs:
           rm -rf "$HOME/.local/share/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test configuration file
         run: |
+          uv venv --python 3.11
           source .venv/bin/activate
           sh tests/test_config.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"

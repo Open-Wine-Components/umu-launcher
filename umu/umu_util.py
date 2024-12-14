@@ -3,6 +3,7 @@ import sys
 from contextlib import contextmanager
 from ctypes.util import find_library
 from functools import lru_cache
+from hashlib import new as hashnew
 from io import BufferedIOBase
 from pathlib import Path
 from re import Pattern
@@ -254,3 +255,51 @@ def has_umu_setup(path: Path = UMU_LOCAL) -> bool:
     return path.exists() and any(
         file for file in path.glob("*") if not file.name.endswith("lock")
     )
+
+
+# Copyright (C) 2005-2010   Gregory P. Smith (greg@krypto.org)
+# Licensed to PSF under a Contributor Agreement.
+# Source: https://raw.githubusercontent.com/python/cpython/refs/heads/3.11/Lib/hashlib.py
+# License: https://raw.githubusercontent.com/python/cpython/refs/heads/3.11/LICENSE
+def file_digest(fileobj, digest, /, *, _bufsize=2**18):  # noqa: ANN001
+    """Hash the contents of a file-like object. Returns a digest object.
+
+    *fileobj* must be a file-like object opened for reading in binary mode.
+    It accepts file objects from open(), io.BytesIO(), and SocketIO objects.
+    The function may bypass Python's I/O and use the file descriptor *fileno*
+    directly.
+
+    *digest* must either be a hash algorithm name as a *str*, a hash
+    constructor, or a callable that returns a hash object.
+    """
+    # On Linux we could use AF_ALG sockets and sendfile() to archive zero-copy
+    # hashing with hardware acceleration.
+    digestobj = hashnew(digest) if isinstance(digest, str) else digest()
+
+    if hasattr(fileobj, "getbuffer"):
+        # io.BytesIO object, use zero-copy buffer
+        digestobj.update(fileobj.getbuffer())
+        return digestobj
+
+    # Only binary files implement readinto().
+    if not (
+        hasattr(fileobj, "readinto")
+        and hasattr(fileobj, "readable")
+        and fileobj.readable()
+    ):
+        err = (
+            f"'{fileobj!r}' is not a file-like object in binary reading mode."
+        )
+        raise ValueError(err)
+
+    # binary file, socket.SocketIO object
+    # Note: socket I/O uses different syscalls than file I/O.
+    buf = bytearray(_bufsize)  # Reusable buffer to reduce allocations.
+    view = memoryview(buf)
+    while True:
+        size = fileobj.readinto(buf)
+        if size == 0:
+            break  # EOF
+        digestobj.update(view[:size])
+
+    return digestobj

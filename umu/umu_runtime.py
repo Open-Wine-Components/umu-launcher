@@ -1,14 +1,14 @@
 import os
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
-from hashlib import file_digest, sha256
+from hashlib import sha256
 
 try:
     from importlib.resources.abc import Traversable
 except ModuleNotFoundError:
     from importlib.abc import Traversable
 
-from http import HTTPMethod, HTTPStatus
+from http import HTTPStatus
 from pathlib import Path
 from secrets import token_urlsafe
 from shutil import move, rmtree
@@ -21,10 +21,11 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
-from umu.umu_consts import UMU_CACHE, UMU_LOCAL
+from umu.umu_consts import UMU_CACHE, UMU_LOCAL, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
+    file_digest,
     has_umu_setup,
     run_zenity,
     write_file_chunks,
@@ -139,7 +140,7 @@ def _install_umu(
 
         # Get the digest for the runtime archive
         resp = http_pool.request(
-            HTTPMethod.GET, f"{host}{endpoint}/SHA256SUMS{token}"
+            HTTPMethod.GET.value, f"{host}{endpoint}/SHA256SUMS{token}"
         )
         if resp.status != HTTPStatus.OK:
             err: str = (
@@ -155,7 +156,7 @@ def _install_umu(
         # Get BUILD_ID.txt. We'll use the value to identify the file when cached.
         # This will guarantee we'll be picking up the correct file when resuming
         resp = http_pool.request(
-            HTTPMethod.GET, f"{host}{endpoint}/BUILD_ID.txt{token}"
+            HTTPMethod.GET.value, f"{host}{endpoint}/BUILD_ID.txt{token}"
         )
         if resp.status != HTTPStatus.OK:
             err: str = (
@@ -185,7 +186,7 @@ def _install_umu(
             log.info("Downloading %s (latest), please wait...", variant)
 
         resp = http_pool.request(
-            HTTPMethod.GET,
+            HTTPMethod.GET.value,
             f"{host}{endpoint}/{archive}{token}",
             preload_content=False,
             headers=headers,
@@ -401,7 +402,7 @@ def _update_umu(
         f"{host}{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt{token}"
     )
     log.debug("Sending request to '%s' for 'VERSIONS.txt'...", url)
-    resp = http_pool.request(HTTPMethod.GET, url)
+    resp = http_pool.request(HTTPMethod.GET.value, url)
     if resp.status != HTTPStatus.OK:
         log.error(
             "%s returned the status: %s", resp.getheader("Host"), resp.status
@@ -539,7 +540,7 @@ def _restore_umu_platformid(
 
     # Make the request to the VERSIONS.txt endpoint. It's fine to hit the
     # cache for this endpoint, as it differs to the latest-beta endpoint
-    resp = http_pool.request(HTTPMethod.GET, f"{host}{url}{versions}")
+    resp = http_pool.request(HTTPMethod.GET.value, f"{host}{url}{versions}")
     if resp.status != HTTPStatus.OK:
         log.error(
             "%s returned the status: %s",
