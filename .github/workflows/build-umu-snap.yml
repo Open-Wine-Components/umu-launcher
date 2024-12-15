@@ -1,0 +1,23 @@
+name: UMU Snap Build
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 🧪 Build snap on amd64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🧪 Build snap on amd64
+        uses: snapcrafters/ci/test-snap-build@5d324dfd09955a81a018be6d7544d07770552644
+        with:
+              snapcraft-project-root: ./packaging/snap
