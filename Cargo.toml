@@ -14,6 +14,7 @@ qbsdiff = "1.4.2"
 crc32fast = "1.4.2"
 bzip2 = "0.4.4"
 memmap2 = "0.9.5"
+ssh-key = { version = "0.6.7", features = ["ed25519"] }
 
 [profile.release]
 opt-level = 2
