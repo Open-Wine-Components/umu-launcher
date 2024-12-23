@@ -1,3 +1,6 @@
 [submodule "subprojects/python-xlib"]
 	path = subprojects/python-xlib
 	url = https://github.com/python-xlib/python-xlib.git
+[submodule "subprojects/apparmor"]
+	path = subprojects/apparmor
+	url = https://gitlab.com/apparmor/apparmor.git
