@@ -15,7 +15,6 @@ from shutil import move, rmtree
 from subprocess import run
 from tempfile import TemporaryDirectory, mkdtemp
 
-from filelock import FileLock
 from urllib3.exceptions import HTTPError
 from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
@@ -28,6 +27,7 @@ from umu.umu_util import (
     file_digest,
     has_umu_setup,
     run_zenity,
+    unix_flock,
     write_file_chunks,
 )
 
@@ -476,14 +476,15 @@ def _restore_umu(
     session_pools: SessionPools,
     callback_fn: Callable[[], bool],
 ) -> None:
-    with FileLock(f"{local}/umu.lock") as lock:
-        log.debug("Acquired file lock '%s'...", lock.lock_file)
+    lockfile: str = f"{local}/umu.lock"
+    with unix_flock(lockfile):
+        log.debug("Acquired file lock '%s'...", lockfile)
         if callback_fn():
-            log.debug("Released file lock '%s'", lock.lock_file)
+            log.debug("Released file lock '%s'", lockfile)
             log.info("%s was restored", runtime_ver[1])
             return
         _install_umu(runtime_ver, session_pools)
-        log.debug("Released file lock '%s'", lock.lock_file)
+        log.debug("Released file lock '%s'", lockfile)
 
 
 def _restore_umu_platformid(
@@ -547,18 +548,18 @@ def _update_umu_platform(
     latest: bytes = sha256(resp.data).digest()
     current: bytes = sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     versions: Path = local.joinpath("VERSIONS.txt")
-    lock: FileLock = FileLock(f"{local}/umu.lock")
+    lockfile: str = f"{local}/umu.lock"
 
     # Compare our version file to upstream's, updating if different
     if latest != current:
         log.info("Updating %s to latest...", variant)
-        log.debug("Acquiring file lock '%s'...", lock.lock_file)
-        with lock:
-            log.debug("Acquired file lock '%s'", lock.lock_file)
+        log.debug("Acquiring file lock '%s'...", lockfile)
+        with unix_flock(lockfile) as lock:
+            log.debug("Acquired file lock '%s'", lockfile)
             # Once another process acquires the lock, check if the latest
             # runtime has already been downloaded
             if latest == sha256(versions.read_bytes()).digest():
-                log.debug("Released file lock '%s'", lock.lock_file)
+                log.debug("Released file lock '%s'", lockfile)
                 return
             _install_umu(runtime_ver, session_pools)
             log.debug("Removing: %s", runtime)
