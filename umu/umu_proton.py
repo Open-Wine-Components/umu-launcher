@@ -545,7 +545,7 @@ def _install_proton(
         )
         move(
             cache.joinpath(tarball.removesuffix(".tar.gz")),
-            umu_compat.joinpath(version),
+            umu_compat / os.environ["PROTONPATH"],
         )
     else:
         log.info(
@@ -553,10 +553,7 @@ def _install_proton(
             cache.joinpath(tarball.removesuffix(".tar.gz")),
             steam_compat,
         )
-        move(
-            cache.joinpath(tarball.removesuffix(".tar.gz")),
-            steam_compat.joinpath(version),
-        )
+        move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
 
 
 def _get_delta(
