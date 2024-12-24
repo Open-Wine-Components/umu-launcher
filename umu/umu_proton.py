@@ -402,7 +402,9 @@ def _get_latest(
                     if proton not in line:
                         continue
                     log.info("%s is up to date", version)
-                    os.environ["PROTONPATH"] = str(umu_compat.joinpath(proton))
+                    os.environ["PROTONPATH"] = str(
+                        umu_compat.joinpath(version)
+                    )
                     env["PROTONPATH"] = os.environ["PROTONPATH"]
                     return env
         except UnicodeDecodeError:
