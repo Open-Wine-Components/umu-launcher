@@ -1,4 +1,4 @@
-{lib, pyth1 ,python3Packages , umu-launcher, pkgs,version, truststore ? true, cbor2 ? true, ...}:
+{lib, pyth1 ,python3Packages , umu-launcher, pkgs,version, truststore ? true, cbor2 ? true, rustPlatform, ...}:
 python3Packages.buildPythonPackage {
   pname = "umu-launcher";
   version = "${version}";
@@ -15,6 +15,10 @@ python3Packages.buildPythonPackage {
     pkgs.python3Packages.build
     pkgs.cargo
   ];
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ./Cargo.lock;
+  };
+  nativeBuildInputs = with rustPlatform; [ cargoSetupHook ];
   propagatedBuildInputs = [
     pyth1
     pkgs.bubblewrap
