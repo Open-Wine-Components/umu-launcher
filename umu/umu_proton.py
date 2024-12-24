@@ -8,7 +8,6 @@ from shutil import move, rmtree
 from tempfile import TemporaryDirectory
 from typing import Any
 
-from filelock import FileLock
 from urllib3.exceptions import HTTPError
 from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
@@ -20,6 +19,7 @@ from umu.umu_util import (
     extract_tarfile,
     file_digest,
     run_zenity,
+    unix_flock,
     write_file_chunks,
 )
 
@@ -313,7 +313,7 @@ def _get_latest(
     proton: str
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
     version: str
-    lock: FileLock
+    lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
 
     if not assets:
         return None
@@ -335,19 +335,19 @@ def _get_latest(
 
     # Use the latest UMU/GE-Proton
     try:
-        lock = FileLock(f"{UMU_LOCAL}/compatibilitytools.d.lock")
-        log.debug("Acquiring file lock '%s'...", lock.lock_file)
-        lock.acquire()
+        log.debug("Acquiring file lock '%s'...", lockfile)
+        with unix_flock(lockfile):
+            # Once acquiring the lock check if Proton hasn't been installed
+            if steam_compat.joinpath(proton).is_dir():
+                raise FileExistsError
 
-        # Once acquiring the lock check if Proton hasn't been installed
-        if steam_compat.joinpath(proton).is_dir():
-            raise FileExistsError
+            # Download the archive to a temporary directory
+            _fetch_proton(env, session_caches, assets, session_pools)
 
-        # Download the archive to a temporary directory
-        _fetch_proton(env, session_caches, assets, session_pools)
-
-        # Extract the archive then move the directory
-        _install_proton(tarball, session_caches, steam_compat, session_pools)
+            # Extract the archive then move the directory
+            _install_proton(
+                tarball, session_caches, steam_compat, session_pools
+            )
     except (
         ValueError,
         KeyboardInterrupt,
@@ -356,11 +356,10 @@ def _get_latest(
         log.exception(e)
         return None
     except FileExistsError:
+        # Proton was installed by another proc, continue
         pass
-    finally:
-        log.debug("Released file lock '%s'", lock.lock_file)
-        lock.release()
 
+    log.debug("Released file lock '%s'", lockfile)
     os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
     env["PROTONPATH"] = os.environ["PROTONPATH"]
     log.debug("Removing: %s", tarball)
