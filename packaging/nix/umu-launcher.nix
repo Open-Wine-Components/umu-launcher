@@ -18,7 +18,6 @@ python3Packages.buildPythonPackage {
     pyth1
     pkgs.bubblewrap
     pkgs.python3Packages.xlib
-    pkgs.python3Packages.filelock
     pkgs.python3Packages.urllib3
   ] ++ lib.optional truststore pkgs.python3Packages.truststore;
   makeFlags = [ "PYTHON_INTERPRETER=${pyth1}/bin/python" "SHELL_INTERPRETER=/run/current-system/sw/bin/bash" "DESTDIR=${placeholder "out"}" ];
