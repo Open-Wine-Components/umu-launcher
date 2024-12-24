@@ -314,10 +314,11 @@ class CustomPatcher:  # noqa: D101
 
             if cksum != digest:
                 log.error(
-                    "Expected %s, received %s for file '%s'",
+                    "Expected %s, received %s for file '%s' from source '%s'",
                     digest,
                     cksum,
                     fp.name,
+                    path,
                 )
                 err: str = "Digest mismatch when creating file"
                 raise ValueError(err)
