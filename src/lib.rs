@@ -3,9 +3,14 @@ use crc32fast::Hasher;
 use memmap2::{Mmap, MmapMut, UncheckedAdvice};
 use pyo3::prelude::*;
 use qbsdiff::Bspatch;
+use ssh_key::{PublicKey, SshSig};
 use std::fs::File;
 use std::io::{self, Read};
 use std::os::unix::io::FromRawFd;
+
+/// Required parameter to create/verify digital signatures
+/// See https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.sshsig?annotate=HEAD
+const NAMESPACE: &str = "umu.openwinecomponents.org";
 
 /// Given a binary patch, update a file in-place
 ///
@@ -116,11 +121,27 @@ fn crc32_mmap_rs(py: Python<'_>, source: i32) -> u32 {
     })
 }
 
+#[pyfunction]
+fn ssh_verify_rs(source: &str, message: &[u8], pem: &[u8]) -> io::Result<()> {
+    // Parse the public key
+    let public_key = PublicKey::from_openssh(source)
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+    // Parse the signature from the PEM format
+    let ssh_sig =
+        SshSig::from_pem(pem).map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+    // Verify the signature
+    public_key
+        .verify(NAMESPACE, message, &ssh_sig)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+    Ok(())
+}
+
 #[pymodule(name = "umu_delta")]
 fn umu(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(bspatch_rs, m)?)?;
     m.add_function(wrap_pyfunction!(crc32_rs, m)?)?;
     m.add_function(wrap_pyfunction!(bz2_decompress_rs, m)?)?;
     m.add_function(wrap_pyfunction!(crc32_mmap_rs, m)?)?;
+    m.add_function(wrap_pyfunction!(ssh_verify_rs, m)?)?;
     Ok(())
 }
