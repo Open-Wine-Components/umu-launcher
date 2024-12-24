@@ -17,6 +17,7 @@ from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
 from umu.umu_bspatch import (
+    Content,
     ContentContainer,
     CustomPatcher,
     ManifestEntry,
@@ -582,8 +583,8 @@ def _get_delta(
         return None
 
     from cbor2 import CBORDecodeError, dumps, loads
-    from cryptography.exceptions import InvalidSignature
-    from cryptography.hazmat.primitives.asymmetric import ed25519
+
+    from .umu_delta import ssh_verify_rs
 
     try:
         cbor = loads(patch)
@@ -597,7 +598,10 @@ def _get_delta(
         log.debug("Acquired lock '%s'", lock.lock_file)
 
         # Validate the integrity of the embedded public key
-        if sha512(cbor["public_key"]).hexdigest() not in UMU_SSH_PUBLIC_KEYS:
+        if (
+            sha512(cbor["public_key"].encode(encoding="utf-8")).hexdigest()
+            not in UMU_SSH_PUBLIC_KEYS
+        ):
             # OWC maintainer forgot to add digest to whitelist, a different
             # public key was accidentally used or patch was created by a
             # 3rd party
@@ -608,17 +612,19 @@ def _get_delta(
             return None
 
         # With the public key, verify the signature and data
-        ssh_public_key = ed25519.Ed25519PublicKey.from_public_bytes(cbor["public_key"])
         try:
-            ssh_public_key.verify(
-                cbor["signature"], dumps(cbor["contents"], canonical=True)
+            ssh_verify_rs(
+                cbor["public_key"],
+                dumps(cbor["contents"], canonical=True),
+                cbor["signature"],
             )
-        except InvalidSignature:
-            # Patch file data was tampered
+        except OSError:
             log.error("Digital signature verification failed, skipping update")
             return None
 
-        patcher: CustomPatcher = CustomPatcher(cbor, proton, cache, thread_pool)
+        patcher: CustomPatcher = CustomPatcher(
+            cbor["contents"][0], proton, cache, thread_pool
+        )
 
         # Verify the identity of the build. At this point the patch file is
         # authenticated. Note, this will skip the update if the user had
@@ -646,5 +652,60 @@ def _get_delta(
             if future:
                 future.result()
         log.debug("Partial update end time: %s", time.time())
+
+        if len(cbor["contents"]) < 2:
+            return env
+
+        # Patch the subdirectory contents
+        lst: list[Content] = cbor["contents"][1:]
+        for content in lst:
+            subdir: str = content["source"]
+            subdir_candidates: list[Path] = list(
+                umu_compat.joinpath(version).rglob(f"{subdir}")
+            )
+
+            if not subdir_candidates:
+                log.warning("Could not find subdirectory '%s', skipping update", subdir)
+                continue
+
+            log.info("Subdirectories: %s", subdir_candidates)
+
+            # TODO: Create a function. We're repeating ourselves
+            patcher: CustomPatcher = CustomPatcher(
+                content, subdir_candidates[0], cache, thread_pool
+            )
+
+            # Verify the identity of the build. At this point the patch file is
+            # authenticated. Note, this will skip the update if the user had
+            # tinkered with their build. We do this so we can ensure the result
+            # of each binary patch isn't garbage
+            patcher.verify_integrity()
+            for future in patcher.result():
+                future_ret: ManifestEntry | None = future.result()
+                if not future_ret:
+                    # Exit here. Just assume we're up to date in this case
+                    log.debug(
+                        "%s (latest) validation failed, skipping update",
+                        os.environ["PROTONPATH"],
+                    )
+                    return env
+
+            # Patch the current build, upgrading proton to the latest
+            log.info(
+                "%s is OK, applying partial update...",
+                os.environ["PROTONPATH"],
+            )
+            log.debug("Partial update start time: %s", time.time())
+            patcher.update_binaries()
+            patcher.add_binaries()
+            patcher.delete_binaries()
+
+            for future in patcher.result():
+                if future:
+                    future.result()
+            log.debug("Partial update end time: %s", time.time())
+
+            # Rename the subdirectory
+            subdir_candidates[0].rename(subdir_candidates[0].parent / content["target"])
 
     return env
