@@ -500,8 +500,7 @@ def _install_proton(
     An installation is primarily composed of two steps: extract and move. A
     UMU-Proton or GE-Proton build will first be extracted to a secure temporary
     directory then moved to compatibilitytools.d, which is expected to be in
-    $HOME. In the case of UMU-Proton, an installation will include a remove
-    step, where old builds will be removed in parallel.
+    $HOME.
     """
     umu_compat, steam_compat = compat_tools
     tmpfs, cache = session_caches
