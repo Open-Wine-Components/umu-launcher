@@ -554,7 +554,7 @@ def _update_umu_platform(
     if latest != current:
         log.info("Updating %s to latest...", variant)
         log.debug("Acquiring file lock '%s'...", lockfile)
-        with unix_flock(lockfile) as lock:
+        with unix_flock(lockfile):
             log.debug("Acquired file lock '%s'", lockfile)
             # Once another process acquires the lock, check if the latest
             # runtime has already been downloaded
@@ -564,4 +564,4 @@ def _update_umu_platform(
             _install_umu(runtime_ver, session_pools)
             log.debug("Removing: %s", runtime)
             rmtree(str(runtime))
-            log.debug("Released file lock '%s'", lock.lock_file)
+            log.debug("Released file lock '%s'", lockfile)
