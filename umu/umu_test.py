@@ -85,6 +85,8 @@ class TestGameLauncher(unittest.TestCase):
         self.test_cache = Path("./tmp.5HYdpddgvs")
         # Steam compat dir
         self.test_compat = Path("./tmp.ZssGZoiNod")
+        # umu compat dir
+        self.test_umu_compat = Path("./tmp/tmp.tu692WxQHH")
         # umu-proton dir
         self.test_proton_dir = Path("UMU-Proton-5HYdpddgvs")
         # umu-proton release
@@ -1130,6 +1132,7 @@ class TestGameLauncher(unittest.TestCase):
         # In this case, assume the test variable will be downloaded
         files = (("", ""), (self.test_archive.name, ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
+        compats = (self.test_umu_compat, self.test_compat)
 
         # Mock the context manager object that creates the file lock
         mock_ctx = MagicMock()
@@ -1146,7 +1149,7 @@ class TestGameLauncher(unittest.TestCase):
             mock_function.side_effect = KeyboardInterrupt
             result = umu_proton._get_latest(
                 self.env,
-                self.test_compat,
+                compats,
                 tmpdirs,
                 files,
                 self.test_session_pools,
@@ -1169,6 +1172,7 @@ class TestGameLauncher(unittest.TestCase):
         # internet)
         files = (("", ""), (self.test_archive.name, ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
+        compats = (self.test_umu_compat, self.test_compat)
 
         # Mock the context manager object that creates the file lock
         mock_ctx = MagicMock()
@@ -1189,7 +1193,7 @@ class TestGameLauncher(unittest.TestCase):
             mock_function.side_effect = ValueError
             result = umu_proton._get_latest(
                 self.env,
-                self.test_compat,
+                compats,
                 tmpdirs,
                 files,
                 self.test_session_pools,
@@ -1206,6 +1210,7 @@ class TestGameLauncher(unittest.TestCase):
         # internet)
         files = ()
         tmpdirs = (self.test_cache, self.test_cache_home)
+        compats = (self.test_umu_compat, self.test_compat)
 
         # Mock the context manager object that creates the file lock
         mock_ctx = MagicMock()
@@ -1221,7 +1226,7 @@ class TestGameLauncher(unittest.TestCase):
         ):
             result = umu_proton._get_latest(
                 self.env,
-                self.test_compat,
+                compats,
                 tmpdirs,
                 files,
                 self.test_session_pools,
@@ -1241,6 +1246,7 @@ class TestGameLauncher(unittest.TestCase):
         Path(f"{latest}.sha512sum").touch()
         files = ((f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
+        compats = (self.test_umu_compat, self.test_compat)
 
         # Mock the context manager object that creates the file lock
         mock_ctx = MagicMock()
@@ -1274,7 +1280,7 @@ class TestGameLauncher(unittest.TestCase):
         ):
             result = umu_proton._get_latest(
                 self.env,
-                self.test_compat,
+                compats,
                 tmpdirs,
                 files,
                 (thread_pool, MagicMock()),
