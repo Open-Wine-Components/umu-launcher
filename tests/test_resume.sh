@@ -10,4 +10,5 @@ mkdir -p "$HOME"/.cache/umu
 # Note: Must include the *.parts extension
 mv SteamLinuxRuntime_sniper.tar.xz "$HOME"/.cache/umu/SteamLinuxRuntime_sniper.tar.xz."$id".parts
 UMU_LOG=debug GAMEID=umu-0 "$HOME/.local/bin/umu-run" wineboot -u 2> "$tmp"
+cat "$tmp"
 grep "resuming" "$tmp" && grep "exited with wait status" "$tmp"
