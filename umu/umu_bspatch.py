@@ -219,6 +219,7 @@ class CustomPatcher:  # noqa: D101
         self, proton: Path, item: ManifestEntry
     ) -> ManifestEntry | None:
         rpath: Path = proton.joinpath(item["name"])
+
         try:
             with rpath.open("rb") as fp:
                 stats: os.stat_result = os.fstat(fp.fileno())
@@ -247,6 +248,7 @@ class CustomPatcher:  # noqa: D101
         digest: int = item["cksum"]
         mode: int = item["mode"]
         time: float = item["time"]
+
         try:
             # Since some wine binaries are missing the writable bit and
             # we're memory mapping files, before applying a binary patch,
