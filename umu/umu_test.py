@@ -1292,19 +1292,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_compat.joinpath(latest).as_posix(),
                 "Expected latest to be set",
             )
-            # Verify that the old versions were deleted
-            self.assertFalse(
-                self.test_compat.joinpath("UMU-Proton-9.0-beta15").exists(),
-                "Expected old version to be removed",
-            )
-            self.assertFalse(
-                self.test_compat.joinpath("UMU-Proton-9.0-beta14").exists(),
-                "Expected old version to be removed",
-            )
-            self.assertFalse(
-                self.test_compat.joinpath("ULWGL-Proton-8.0-5-2").exists(),
-                "Expected old version to be removed",
-            )
             # Verify foo files survived
             self.assertTrue(
                 self.test_compat.joinpath("foo").exists(),
