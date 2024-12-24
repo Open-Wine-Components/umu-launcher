@@ -49,8 +49,6 @@ fn bspatch_rs(py: Python<'_>, source: i32, patch: &[u8]) -> io::Result<Vec<u8>> 
         std::mem::forget(file);
         let mut target = Vec::with_capacity(patcher.hint_target_size() as usize);
 
-        // Optimization. Let the kernel know the specific ranges we're
-        // accessing. Here, we only need to access up to the original's
         patcher.apply(&mmap[..original_size as usize], &mut target)?;
 
         // Validate target size before writing to mmap
