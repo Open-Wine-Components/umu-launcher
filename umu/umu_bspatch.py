@@ -48,9 +48,6 @@ class Entry(TypedDict):  # noqa: D101
     size: int
 
 
-Block = list[Entry]
-
-
 class ManifestEntry(TypedDict):  # noqa: D101
     # File mode bits as decimal
     mode: int
@@ -68,11 +65,11 @@ class ManifestEntry(TypedDict):  # noqa: D101
 class Content(TypedDict):  # noqa: D101
     manifest: list[ManifestEntry]
     # List of binaries to add in target directory
-    add: Block
+    add: list[Entry]
     # List of binaries to update in target directory
-    update: Block
+    update: list[Entry]
     # List of binaries to delete in target directory
-    delete: Block
+    delete: list[Entry]
 
 
 class ContentContainer(TypedDict):  # noqa: D101
