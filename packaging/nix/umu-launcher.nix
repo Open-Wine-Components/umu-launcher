@@ -13,6 +13,7 @@ python3Packages.buildPythonPackage {
     pkgs.python3Packages.installer
     pkgs.hatch
     pkgs.python3Packages.build
+    pkgs.cargo
   ];
   propagatedBuildInputs = [
     pyth1
