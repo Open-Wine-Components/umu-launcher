@@ -161,6 +161,7 @@ let
   umu = inputs.umu.packages.${system}.umu.override {
     version = inputs.umu.shortRev;
     truststore = true;
+    cbor2 = true;
   };
 in
 {
@@ -168,7 +169,7 @@ in
 }
 ```
 > [!NOTE]
-> truststore is an optional dependency that is enabled by default if you want to keep it that way you can remove the `truststore = true;` part
+> truststore and cbor2 (for delta updates) are optional dependency which are enabled by default if you want to keep it that way you can remove the `truststore = true; cbor2 = true;` part
 
 > [!NOTE]
 > The example above relies on having your flake's `inputs` passed through to your nixos configuration.
