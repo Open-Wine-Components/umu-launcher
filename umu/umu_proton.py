@@ -511,11 +511,6 @@ def _install_proton(
         ProtonVersion.GELatest.value,
         ProtonVersion.UMULatest.value,
     }
-    version: str = ProtonVersion.UMU.value
-
-    proton_versions: set[str] = {member.value for member in ProtonVersion}
-    if os.environ.get("PROTONPATH") in proton_versions:
-        version = os.environ["PROTONPATH"]
 
     # Move our file and extract within our cache
     if cached_parts.is_file():
