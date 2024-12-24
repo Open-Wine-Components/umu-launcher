@@ -75,11 +75,11 @@ class Content(TypedDict):  # noqa: D101
 
 
 class ContentContainer(TypedDict):  # noqa: D101
-    contents: Content
+    contents: list[Content]
     # Ed25519 digital signature of 'contents'
     signature: bytes
     # Ed25519 SSH public key
-    public_key: bytes
+    public_key: str
 
 
 MMAP_MIN = 16 * 1024
