@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
-from enum import StrEnum
+from enum import Enum
 from pathlib import Path
 from shutil import rmtree
 from typing import TypedDict
@@ -18,7 +18,7 @@ with suppress(ModuleNotFoundError):
     )
 
 
-class FileType(StrEnum):  # noqa: D101
+class FileType(Enum):  # noqa: D101
     # All file types currently supported under mtree
     # See mtree(1)
     File = "file"
@@ -106,7 +106,7 @@ class CustomPatcher:  # noqa: D101
         # Create new files, if there are any items
         for item in self._arc_contents["add"]:
             build_file: Path = self._proton.joinpath(item["name"])
-            if item["type"] == FileType.File:
+            if item["type"] == FileType.File.value:
                 # Decompress the bz2 data and write the file
                 self._futures.append(
                     self._thread_pool.submit(
@@ -114,7 +114,7 @@ class CustomPatcher:  # noqa: D101
                     )
                 )
                 continue
-            if item["type"] == FileType.Link:
+            if item["type"] == FileType.Link.value:
                 build_file.symlink_to(item["data"])
                 os.utime(
                     build_file,
@@ -125,7 +125,7 @@ class CustomPatcher:  # noqa: D101
                     follow_symlinks=False,
                 )
                 continue
-            if item["type"] == FileType.Dir:
+            if item["type"] == FileType.Dir.value:
                 build_file.mkdir(
                     mode=item["mode"], exist_ok=True, parents=True
                 )
@@ -147,7 +147,7 @@ class CustomPatcher:  # noqa: D101
     def update_binaries(self) -> None:  # noqa: D102
         for item in self._arc_contents["update"]:
             build_file: Path = self._proton.joinpath(item["name"])
-            if item["type"] == FileType.File:
+            if item["type"] == FileType.File.value:
                 # For files, apply a binary patch
                 self._futures.append(
                     self._thread_pool.submit(
@@ -155,7 +155,7 @@ class CustomPatcher:  # noqa: D101
                     )
                 )
                 continue
-            if item["type"] == FileType.Dir:
+            if item["type"] == FileType.Dir.value:
                 # For directories, change permissions
                 os.chmod(build_file, item["mode"], follow_symlinks=False)  # noqa: PTH101
                 os.utime(
@@ -167,7 +167,7 @@ class CustomPatcher:  # noqa: D101
                     follow_symlinks=False,
                 )
                 continue
-            if item["type"] == FileType.Link:
+            if item["type"] == FileType.Link.value:
                 # For links, replace the links
                 build_file.unlink()
                 build_file.symlink_to(item["data"])
@@ -190,10 +190,13 @@ class CustomPatcher:  # noqa: D101
         # Delete files, if there are any items. Only operate on links, normal
         # files and directories while skipping everything else.
         for item in self._arc_contents["delete"]:
-            if item["type"] == FileType.File or item["type"] == FileType.Link:
+            if (
+                item["type"] == FileType.File.value
+                or item["type"] == FileType.Link.value
+            ):
                 self._proton.joinpath(item["name"]).unlink(missing_ok=True)
                 continue
-            if item["type"] == FileType.Dir:
+            if item["type"] == FileType.Dir.value:
                 self._thread_pool.submit(
                     rmtree, str(self._proton.joinpath(item["name"]))
                 )

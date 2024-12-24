@@ -1,7 +1,7 @@
 import os
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
-from enum import StrEnum
+from enum import Enum
 from hashlib import sha512
 from http import HTTPStatus
 from importlib.util import find_spec
@@ -50,7 +50,7 @@ CacheSubdir = Path
 SessionCaches = tuple[CacheTmpfs, CacheSubdir]
 
 
-class ProtonVersion(StrEnum):
+class ProtonVersion(Enum):
     """Represent valid version keywords for Proton."""
 
     GE = "GE-Proton"
@@ -369,19 +369,19 @@ def _get_latest(
     # Name of the Proton directory (e.g., GE-Proton9-7)
     proton: str
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
-    version: str
-    lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
-    latest_candidates: set[ProtonVersion]
+    version: str = ProtonVersion.UMU.value
+    lock: FileLock
+    latest_candidates: set[str]
 
     if not assets:
         return None
 
     tarball = assets[1][0]
     proton = tarball.removesuffix(".tar.gz")
-    version = (
-        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
-    )
-    latest_candidates = {ProtonVersion.GELatest, ProtonVersion.UMULatest}
+    latest_candidates = {
+        ProtonVersion.GELatest.value,
+        ProtonVersion.UMULatest.value,
+    }
 
     if os.environ.get("PROTONPATH") in ProtonVersion:
         version = os.environ["PROTONPATH"]
@@ -402,9 +402,7 @@ def _get_latest(
                     if proton not in line:
                         continue
                     log.info("%s is up to date", version)
-                    os.environ["PROTONPATH"] = str(
-                        umu_compat.joinpath(version)
-                    )
+                    os.environ["PROTONPATH"] = str(umu_compat.joinpath(version))
                     env["PROTONPATH"] = os.environ["PROTONPATH"]
                     return env
         except UnicodeDecodeError:
@@ -508,11 +506,11 @@ def _install_proton(
     tmpfs, cache = session_caches
     parts: str = f"{tarball}.parts"
     cached_parts: Path = cache.parent.joinpath(f"{tarball}.parts")
-    latest_candidates: set[ProtonVersion] = {
-        ProtonVersion.GELatest,
-        ProtonVersion.UMULatest,
+    latest_candidates: set[str] = {
+        ProtonVersion.GELatest.value,
+        ProtonVersion.UMULatest.value,
     }
-    version: str = ProtonVersion.UMU
+    version: str = ProtonVersion.UMU.value
 
     if os.environ.get("PROTONPATH") in ProtonVersion:
         version = os.environ["PROTONPATH"]
