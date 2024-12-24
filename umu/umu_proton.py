@@ -383,7 +383,7 @@ def _get_latest(
         ProtonVersion.UMULatest.value,
     }
 
-    if os.environ.get("PROTONPATH") in ProtonVersion:
+    if os.environ["PROTONPATH"] in ProtonVersion:
         version = os.environ["PROTONPATH"]
 
     # Return if the latest Proton is already installed in private directory
@@ -512,7 +512,7 @@ def _install_proton(
     }
     version: str = ProtonVersion.UMU.value
 
-    if os.environ.get("PROTONPATH") in ProtonVersion:
+    if os.environ["PROTONPATH"] in ProtonVersion:
         version = os.environ["PROTONPATH"]
 
     # Move our file and extract within our cache
