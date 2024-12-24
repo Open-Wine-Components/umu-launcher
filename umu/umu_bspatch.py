@@ -70,6 +70,8 @@ class Content(TypedDict):  # noqa: D101
     update: list[Entry]
     # List of binaries to delete in target directory
     delete: list[Entry]
+    source: str
+    target: str
 
 
 class ContentContainer(TypedDict):  # noqa: D101
