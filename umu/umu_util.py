@@ -2,6 +2,7 @@ import os
 import sys
 from contextlib import contextmanager
 from ctypes.util import find_library
+from fcntl import LOCK_EX, LOCK_UN, flock
 from functools import lru_cache
 from hashlib import new as hashnew
 from io import BufferedIOBase
@@ -17,6 +18,23 @@ from Xlib import display
 
 from umu.umu_consts import UMU_LOCAL
 from umu.umu_log import log
+
+
+@contextmanager
+def unix_flock(path: str):
+    """Create a file and configure it to be locking."""
+    fd: int | None = None
+
+    try:
+        fd = os.open(path, os.O_CREAT | os.O_WRONLY, 0o644)
+        # Apply an exclusive lock
+        # See https://man7.org/linux/man-pages/man2/flock.2.html
+        flock(fd, LOCK_EX)
+        yield fd
+    finally:
+        if fd is not None:
+            flock(fd, LOCK_UN)
+            os.close(fd)
 
 
 @lru_cache
