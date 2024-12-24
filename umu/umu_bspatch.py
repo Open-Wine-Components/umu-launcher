@@ -88,13 +88,12 @@ MMAP_MIN = 16 * 1024
 class CustomPatcher:  # noqa: D101
     def __init__(  # noqa: D107
         self,
-        arc: ContentContainer,
+        content: Content,
         proton: Path,
         cache: Path,
         thread_pool: ThreadPoolExecutor,
     ) -> None:
-        self._arc: ContentContainer = arc
-        self._arc_contents: Content = self._arc["contents"]
+        self._arc_contents: Content = content
         self._arc_manifest: list[ManifestEntry] = self._arc_contents[
             "manifest"
         ]
