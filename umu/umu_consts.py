@@ -98,5 +98,5 @@ PR_SET_CHILD_SUBREAPER = 36
 # those creating patch files.
 # TODO: Add all public keys from relevant parties
 UMU_SSH_PUBLIC_KEYS = {
-    "df269f4c8aac484220b9e33f0cdccf1f9b6b300d7f1a184f2b1439ce4ac4f0875abef0a4612d4c7b116f204078369c35707ebb9c51fd08887ef1c7966dcb030c"
+    "065f44603e3efeb7bdc452b129b2fa1397f1dcb2e378abce6240cca48b03c6f375b5038f7c312173b51162be3bd22dec428760030951071d37e6b9525230c589"
 }
