@@ -4,10 +4,10 @@ from contextlib import suppress
 from enum import StrEnum
 from pathlib import Path
 from shutil import rmtree
-from tempfile import NamedTemporaryFile
 from typing import TypedDict
 
 from umu.umu_log import log
+from umu.umu_util import memfdfile
 
 with suppress(ModuleNotFoundError):
     from .umu_delta import (
@@ -110,7 +110,7 @@ class CustomPatcher:  # noqa: D101
                 # Decompress the bz2 data and write the file
                 self._futures.append(
                     self._thread_pool.submit(
-                        self._write_proton_file, build_file, self._cache, item
+                        self._write_proton_file, build_file, item
                     )
                 )
                 continue
@@ -290,13 +290,14 @@ class CustomPatcher:  # noqa: D101
             log.warning("File '%s' has mode bits 0o700", path)
             raise
 
-    def _write_proton_file(self, path: Path, tmp: Path, item: Entry) -> None:
+    def _write_proton_file(self, path: Path, item: Entry) -> None:
         data: bytes = item["data"]
         digest: int = item["cksum"]
         mode: int = item["mode"]
         time: float = item["time"]
         size: int = item["size"]
-        with NamedTemporaryFile(dir=tmp) as fp:
+
+        with memfdfile(path.name) as fp:
             stats: os.stat_result
             cksum: int = 0
 
@@ -306,24 +307,25 @@ class CustomPatcher:  # noqa: D101
             # Following blake3's heuristic, don't use mmap if < 16KB
             stats = os.fstat(fp.fileno())
             if stats.st_size > MMAP_MIN:
-                fp.seek(0)
+                os.lseek(fp.fileno(), 0, os.SEEK_SET)
                 cksum = crc32_mmap_rs(fp.fileno())
             else:
-                fp.seek(0)
+                os.lseek(fp.fileno(), 0, os.SEEK_SET)
                 cksum = crc32_rs(fp.fileno())
 
             if cksum != digest:
                 log.error(
-                    "Expected %s, received %s for file '%s' from source '%s'",
+                    "Expected %s, received %s for fd '%s' from source '%s'",
                     digest,
                     cksum,
-                    fp.name,
+                    fp.fileno(),
                     path,
                 )
                 err: str = "Digest mismatch when creating file"
                 raise ValueError(err)
 
-            # Update our metadata
-            os.fchmod(fp.fileno(), mode)
-            os.utime(fp.fileno(), (stats.st_atime, time))
-            os.rename(fp.name, path)  # noqa: PTH104
+            # Write to our file
+            with path.open("wb") as path_fp:
+                os.sendfile(path_fp.fileno(), fp.fileno(), 0, stats.st_size)
+                os.fchmod(path_fp.fileno(), mode)
+                os.utime(path_fp.fileno(), (stats.st_atime, time))
