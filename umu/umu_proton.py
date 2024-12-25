@@ -7,7 +7,7 @@ from http import HTTPStatus
 from importlib.util import find_spec
 from pathlib import Path
 from re import split as resplit
-from shutil import move, rmtree
+from shutil import move
 from tempfile import TemporaryDirectory
 from typing import Any
 
@@ -20,7 +20,6 @@ from umu.umu_bspatch import (
     Content,
     ContentContainer,
     CustomPatcher,
-    ManifestEntry,
 )
 from umu.umu_consts import (
     STEAM_COMPAT,
@@ -539,7 +538,6 @@ def _get_delta(
     proton: Path = umu_compat.joinpath(version)
     cbor: ContentContainer
     lock: FileLock
-    patcher: CustomPatcher
 
     if not proton.is_dir():
         log.debug("File '%s' does not exist, skipping update", proton)
@@ -589,90 +587,90 @@ def _get_delta(
             log.error("Digital signature verification failed, skipping update")
             return None
 
-        patcher: CustomPatcher = CustomPatcher(
-            cbor["contents"][0], proton, cache, thread_pool
-        )
+        futures: list[Future] = []
+        renames: list[tuple[Path, Path]] = []
 
-        # Verify the identity of the build. At this point the patch file is
-        # authenticated. Note, this will skip the update if the user had
-        # tinkered with their build. We do this so we can ensure the result
-        # of each binary patch isn't garbage
-        patcher.verify_integrity()
-        for future in patcher.result():
-            future_ret: ManifestEntry | None = future.result()
-            if not future_ret:
-                # Exit here. Just assume we're up to date in this case
-                log.debug(
-                    "%s (latest) validation failed, skipping update",
-                    os.environ["PROTONPATH"],
+        # Apply the patch
+        for content in cbor["contents"]:
+            src: str = content["source"]
+
+            if src.startswith((ProtonVersion.GE.value, ProtonVersion.UMU.value)):
+                futures.append(
+                    thread_pool.submit(
+                        _apply_delta,
+                        env,
+                        proton,
+                        cache,
+                        content,
+                        thread_pool,
+                    )
                 )
-                return env
-
-        # Patch the current build, upgrading proton to the latest
-        log.info("%s is OK, applying partial update...", os.environ["PROTONPATH"])
-        log.debug("Partial update start time: %s", time.time())
-        patcher.update_binaries()
-        patcher.add_binaries()
-        patcher.delete_binaries()
-
-        for future in patcher.result():
-            if future:
-                future.result()
-        log.debug("Partial update end time: %s", time.time())
-
-        if len(cbor["contents"]) < 2:
-            return env
-
-        # Patch the subdirectory contents
-        lst: list[Content] = cbor["contents"][1:]
-        for content in lst:
-            subdir: str = content["source"]
-            subdir_candidates: list[Path] = list(
-                umu_compat.joinpath(version).rglob(f"{subdir}")
-            )
-
-            if not subdir_candidates:
-                log.warning("Could not find subdirectory '%s', skipping update", subdir)
                 continue
 
-            log.info("Subdirectories: %s", subdir_candidates)
+            subdir: Path | None = next(umu_compat.joinpath(version).rglob(src), None)
+            if not subdir:
+                log.error("Could not find subdirectory '%s', skipping", subdir)
+                continue
 
-            # TODO: Create a function. We're repeating ourselves
-            patcher: CustomPatcher = CustomPatcher(
-                content, subdir_candidates[0], cache, thread_pool
+            futures.append(
+                thread_pool.submit(
+                    _apply_delta,
+                    env,
+                    subdir,
+                    cache,
+                    content,
+                    thread_pool,
+                )
+            )
+            renames.append(
+                (
+                    subdir,
+                    subdir.parent / content["target"],
+                )
             )
 
-            # Verify the identity of the build. At this point the patch file is
-            # authenticated. Note, this will skip the update if the user had
-            # tinkered with their build. We do this so we can ensure the result
-            # of each binary patch isn't garbage
-            patcher.verify_integrity()
-            for future in patcher.result():
-                future_ret: ManifestEntry | None = future.result()
-                if not future_ret:
-                    # Exit here. Just assume we're up to date in this case
-                    log.debug(
-                        "%s (latest) validation failed, skipping update",
-                        os.environ["PROTONPATH"],
-                    )
-                    return env
+        for future in futures:
+            future.result()
 
-            # Patch the current build, upgrading proton to the latest
-            log.info(
-                "%s is OK, applying partial update...",
-                os.environ["PROTONPATH"],
-            )
-            log.debug("Partial update start time: %s", time.time())
-            patcher.update_binaries()
-            patcher.add_binaries()
-            patcher.delete_binaries()
+        for rename in renames:
+            orig, new = rename
+            orig.rename(new)
 
-            for future in patcher.result():
-                if future:
-                    future.result()
-            log.debug("Partial update end time: %s", time.time())
+    return env
 
-            # Rename the subdirectory
-            subdir_candidates[0].rename(subdir_candidates[0].parent / content["target"])
+
+def _apply_delta(
+    env: dict[str, str],
+    path: Path,
+    cache: Path,
+    content: Content,
+    thread_pool: ThreadPoolExecutor,
+) -> dict[str, str] | None:
+    patcher: CustomPatcher = CustomPatcher(content, path, cache, thread_pool)
+
+    # Verify the identity of the build. At this point the patch file is
+    # authenticated. Note, this will skip the update if the user had
+    # tinkered with their build. We do this so we can ensure the result
+    # of each binary patch isn't garbage
+    patcher.verify_integrity()
+
+    is_updated = any(x.result() is None for x in patcher.result())
+    if is_updated:
+        log.debug("%s (latest) validation failed, skipping", os.environ["PROTONPATH"])
+        return env
+
+    # Patch the current build, upgrading proton to the latest
+    log.info("%s is OK, applying partial update...", os.environ["PROTONPATH"])
+
+    start: float = time.time()
+    patcher.update_binaries()
+    patcher.add_binaries()
+    patcher.delete_binaries()
+
+    for future in filter(None, patcher.result()):
+        future.result()
+
+    end: float = time.time()
+    log.debug("Update time: %s", end - start)
 
     return env
