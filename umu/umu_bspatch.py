@@ -15,6 +15,7 @@ with suppress(ModuleNotFoundError):
         bz2_decompress_rs,
         crc32_mmap_rs,
         crc32_rs,
+        zstd_decompress_rs,
     )
 
 
@@ -307,7 +308,7 @@ class CustomPatcher:  # noqa: D101
             cksum: int = 0
 
             # Decompress our data and write to our file.
-            bz2_decompress_rs(data, fp.fileno(), size)
+            zstd_decompress_rs(data, fp.fileno(), size)
 
             # Following blake3's heuristic, don't use mmap if < 16KB
             stats = os.fstat(fp.fileno())
