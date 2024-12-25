@@ -7,6 +7,7 @@ use ssh_key::{PublicKey, SshSig};
 use std::fs::File;
 use std::io::{self, Read};
 use std::os::unix::io::FromRawFd;
+use zstd;
 
 /// Required parameter to create/verify digital signatures
 /// See https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.sshsig?annotate=HEAD
@@ -134,6 +135,18 @@ fn ssh_verify_rs(source: &str, message: &[u8], pem: &[u8]) -> io::Result<()> {
     Ok(())
 }
 
+#[pyfunction]
+fn zstd_decompress_rs(py: Python<'_>, source: &[u8], target: i32, size: u64) -> io::Result<u64> {
+    py.allow_threads(|| {
+        let mut file = unsafe { File::from_raw_fd(target) };
+        file.set_len(size)?;
+        let mut decoder = zstd::Decoder::new(source)?;
+        let result = io::copy(&mut decoder, &mut file);
+        std::mem::forget(file);
+        return result;
+    })
+}
+
 #[pymodule(name = "umu_delta")]
 fn umu(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(bspatch_rs, m)?)?;
@@ -141,5 +154,6 @@ fn umu(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(bz2_decompress_rs, m)?)?;
     m.add_function(wrap_pyfunction!(crc32_mmap_rs, m)?)?;
     m.add_function(wrap_pyfunction!(ssh_verify_rs, m)?)?;
+    m.add_function(wrap_pyfunction!(zstd_decompress_rs, m)?)?;
     Ok(())
 }
