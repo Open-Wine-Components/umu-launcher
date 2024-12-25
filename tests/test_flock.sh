@@ -16,12 +16,12 @@ wait
 grep "exited with wait status" "$tmp1"
 
 # Ensure the 2nd proc didn't download the runtime
-if ! grep "\(latest\), please wait..." "$tmp2"; then
+if ! grep -E "\(latest\), please wait..." "$tmp2"; then
 	exit 1
 fi
 
 # Ensure the 2nd proc didn't download Proton
 grep "Downloading" "$tmp2" 
-if ! grep "exited with wait status" "$tmp2"; then
+if ! grep -E "exited with wait status" "$tmp2"; then
 	exit 1
 fi
