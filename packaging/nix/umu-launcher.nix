@@ -16,7 +16,7 @@ python3Packages.buildPythonPackage {
     pkgs.cargo
   ];
   cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
+    lockFile = ../../Cargo.lock;
   };
   nativeBuildInputs = with rustPlatform; [ cargoSetupHook ];
   propagatedBuildInputs = [
