@@ -20,6 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install meson shellcheck scdoc python3-hatchling python3-build python3-installer python3-filelock cargo
+          python3 -m pip install --upgrade pip
       - name: Initialize submodules
         run: |
           git submodule update --init --recursive
