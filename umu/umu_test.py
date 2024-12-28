@@ -16,7 +16,6 @@ from tempfile import (
     NamedTemporaryFile,
     TemporaryDirectory,
     TemporaryFile,
-    mkdtemp,
 )
 from unittest.mock import MagicMock, Mock, patch
 
