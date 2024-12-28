@@ -10,12 +10,10 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.23.3", features = ["extension-module"] }
-qbsdiff = "1.4.2"
-crc32fast = "1.4.2"
-bzip2 = "0.4.4"
-memmap2 = "0.9.5"
-ssh-key = { version = ">=0.5.1", features = ["ed25519"] }
-zstd = "0.13.2"
+ssh-key = { version = ">=0.5.1", default-features = false, features = [
+    "ed25519",
+    "alloc",
+] }
 
 [profile.release]
 opt-level = 2
