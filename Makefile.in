@@ -111,7 +111,7 @@ umu-vendored-install: umu-vendored
 	$(info :: Installing subprojects )
 	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 	cp      -r $(OBJDIR)/urllib3 $(DESTDIR)$(PYTHONDIR)/umu/_vendor
-	cp      -r $(OBJDIR)/urllib3 $(DESTDIR)$(PYTHONDIR)/umu/_vendor
+	cp      -r $(OBJDIR)/pyzstd  $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 
 $(OBJDIR):
 	@mkdir -p $(@)
