@@ -55,7 +55,7 @@ jobs:
           source .venv/bin/activate
           sh tests/test_proton_resume.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
-      - name: Test File Lock
+      - name: Test Filelock
         run: |
           source .venv/bin/activate
           sh tests/test_flock.sh
