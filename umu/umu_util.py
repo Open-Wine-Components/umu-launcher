@@ -27,7 +27,6 @@ def unix_flock(path: str):
 
     try:
         fd = os.open(path, os.O_CREAT | os.O_WRONLY, 0o644)
-        # Apply an exclusive lock
         # See https://man7.org/linux/man-pages/man2/flock.2.html
         flock(fd, LOCK_EX)
         yield fd
