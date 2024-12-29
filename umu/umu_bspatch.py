@@ -255,7 +255,7 @@ class CustomPatcher:  # noqa: D101
 
         try:
             # Since some wine binaries are missing the writable bit and
-            # we're memory mapping files, before applying a binary patch,
+            # we're memory mapping files. Before applying a binary patch,
             # ensure the file is writable
             os.chmod(path, 0o700, follow_symlinks=False)  # noqa: PTH101
 
@@ -284,9 +284,11 @@ class CustomPatcher:  # noqa: D101
 
                 # Apply our patch to the file in-place
                 with mmap(fp.fileno(), length=0, access=ACCESS_WRITE) as mm:
-                    # Patch the region
+                    # Prepare the zst dictionary and opt
                     zst_dict = ZstdDict(mm[: stats.st_size], is_raw=True)
                     zst_opt = {DParameter.windowLogMax: 31}
+
+                    # Patch the region
                     mm[:size] = decompress(
                         bdiff, zstd_dict=zst_dict.as_prefix, option=zst_opt
                     )
