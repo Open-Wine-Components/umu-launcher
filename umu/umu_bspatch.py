@@ -310,11 +310,8 @@ class CustomPatcher:  # noqa: D101
                 # Update the file's metadata
                 os.fchmod(fp.fileno(), mode)
                 os.utime(fp.fileno(), (stats.st_atime, time))
-        except ValueError:
-            raise
-        except (KeyboardInterrupt, OSError) as e:
+        except BaseException as e:
             log.exception(e)
-            log.error("Binary patch errored for file '%s'", path)
             log.warning(
                 "File '%s' may be corrupt and has mode bits 0o700", path
             )
