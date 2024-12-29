@@ -25,7 +25,6 @@ from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
 from typing import Any
 
-from filelock import FileLock
 from urllib3 import PoolManager, Retry
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
@@ -54,6 +53,7 @@ from umu.umu_util import (
     get_library_paths,
     has_umu_setup,
     is_installed_verb,
+    unix_flock,
     xdisplay,
 )
 
@@ -830,7 +830,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
         # Prepare the prefix
-        with FileLock(f"{UMU_LOCAL}/pfx.lock"):
+        with unix_flock(f"{UMU_LOCAL}/pfx.lock"):
             setup_pfx(env["WINEPREFIX"])
 
         # Configure the environment

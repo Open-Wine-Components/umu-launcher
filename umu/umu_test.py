@@ -1131,9 +1131,15 @@ class TestGameLauncher(unittest.TestCase):
         files = (("", ""), (self.test_archive.name, ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
 
+        # Mock the context manager object that creates the file lock
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=None)
+        mock_ctx.__exit__ = MagicMock(return_value=None)
+
         with (
             patch("umu.umu_proton._fetch_proton") as mock_function,
             ThreadPoolExecutor(),
+            patch.object(umu_proton, "unix_flock", return_value=mock_ctx),
         ):
             # Mock the interrupt
             # We want the dir we tried to extract to be cleaned
@@ -1164,6 +1170,11 @@ class TestGameLauncher(unittest.TestCase):
         files = (("", ""), (self.test_archive.name, ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
 
+        # Mock the context manager object that creates the file lock
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=None)
+        mock_ctx.__exit__ = MagicMock(return_value=None)
+
         self.assertTrue(
             self.test_archive.is_file(),
             "Expected test file in cache to exist",
@@ -1172,6 +1183,7 @@ class TestGameLauncher(unittest.TestCase):
         with (
             patch("umu.umu_proton._fetch_proton") as mock_function,
             ThreadPoolExecutor(),
+            patch.object(umu_proton, "unix_flock", return_value=mock_ctx),
         ):
             # Mock the interrupt
             mock_function.side_effect = ValueError
@@ -1195,11 +1207,17 @@ class TestGameLauncher(unittest.TestCase):
         files = ()
         tmpdirs = (self.test_cache, self.test_cache_home)
 
+        # Mock the context manager object that creates the file lock
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=None)
+        mock_ctx.__exit__ = MagicMock(return_value=None)
+
         os.environ["PROTONPATH"] = ""
 
         with (
             patch("umu.umu_proton._fetch_proton"),
             ThreadPoolExecutor(),
+            patch.object(umu_proton, "unix_flock", return_value=mock_ctx),
         ):
             result = umu_proton._get_latest(
                 self.env,
@@ -1228,6 +1246,11 @@ class TestGameLauncher(unittest.TestCase):
         files = ((f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
 
+        # Mock the context manager object that creates the file lock
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=None)
+        mock_ctx.__exit__ = MagicMock(return_value=None)
+
         # Mock the latest Proton in /tmp
         test_archive = self.test_cache.joinpath(f"{latest}.tar.gz")
         with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
@@ -1245,6 +1268,7 @@ class TestGameLauncher(unittest.TestCase):
         with (
             patch("umu.umu_proton._fetch_proton"),
             ThreadPoolExecutor(),
+            patch.object(umu_proton, "unix_flock", return_value=mock_ctx),
         ):
             result = umu_proton._get_latest(
                 self.env,
@@ -1287,6 +1311,11 @@ class TestGameLauncher(unittest.TestCase):
         files = ((f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
 
+        # Mock the context manager object that creates the file lock
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=None)
+        mock_ctx.__exit__ = MagicMock(return_value=None)
+
         # Mock the latest Proton in /tmp
         test_archive = self.test_cache.joinpath(f"{latest}.tar.gz")
         with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
@@ -1310,6 +1339,7 @@ class TestGameLauncher(unittest.TestCase):
         with (
             patch("umu.umu_proton._fetch_proton"),
             ThreadPoolExecutor() as thread_pool,
+            patch.object(umu_proton, "unix_flock", return_value=mock_ctx),
         ):
             result = umu_proton._get_latest(
                 self.env,
