@@ -1,4 +1,4 @@
-{lib, pyth1 ,python3Packages , umu-launcher, pkgs,version, truststore ? true, cbor2 ? true, rustPlatform, ...}:
+{lib, pyth1 ,python3Packages , umu-launcher, pkgs,version, truststore ? true, cbor2 ? true, xxhash ? true, rustPlatform, ...}:
 python3Packages.buildPythonPackage {
   pname = "umu-launcher";
   version = "${version}";
