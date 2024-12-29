@@ -65,9 +65,7 @@ NET_RETRIES = 1
 def setup_pfx(path: str) -> None:
     """Prepare a Proton compatible WINE prefix."""
     pfx: Path = Path(path).joinpath("pfx").expanduser()
-    steam: Path = (
-        Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
-    )
+    steam: Path = Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
     # Login name of the user as determined by the password database (pwd)
     user: str = getpwuid(os.getuid()).pw_name
     wineuser: Path = Path(path).expanduser().joinpath("drive_c", "users", user)
@@ -115,10 +113,7 @@ def check_env(
         err: str = "Environment variable is empty: WINEPREFIX"
         raise ValueError(err)
 
-    if (
-        os.environ.get("UMU_NO_PROTON") != "1"
-        and "WINEPREFIX" not in os.environ
-    ):
+    if os.environ.get("UMU_NO_PROTON") != "1" and "WINEPREFIX" not in os.environ:
         pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
         pfx.mkdir(parents=True, exist_ok=True)
         os.environ["WINEPREFIX"] = str(pfx)
@@ -142,9 +137,7 @@ def check_env(
         os.environ.get("PROTONPATH")
         and Path(STEAM_COMPAT, os.environ["PROTONPATH"]).is_dir()
     ):
-        os.environ["PROTONPATH"] = str(
-            STEAM_COMPAT.joinpath(os.environ["PROTONPATH"])
-        )
+        os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
 
     # GE-Proton
     if os.environ.get("PROTONPATH") == "GE-Proton":
@@ -173,9 +166,7 @@ def set_env(
 ) -> dict[str, str]:
     """Set various environment variables for the Steam Runtime."""
     pfx: Path = Path(env["WINEPREFIX"]).expanduser().resolve(strict=True)
-    protonpath: Path = (
-        Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
-    )
+    protonpath: Path = Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
     # Command execution usage
     is_cmd: bool = isinstance(args, tuple)
     # Command execution usage, but client wants to create a prefix. When an
@@ -202,9 +193,7 @@ def set_env(
         # Make an absolute path to winetricks within GE-Proton or UMU-Proton.
         # The launcher will change to the winetricks parent directory before
         # creating the subprocess
-        exe: Path = Path(protonpath, "protonfixes", "winetricks").resolve(
-            strict=True
-        )
+        exe: Path = Path(protonpath, "protonfixes", "winetricks").resolve(strict=True)
         env["EXE"] = str(exe)
         args = (env["EXE"], args[1])  # type: ignore
         env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
@@ -235,9 +224,7 @@ def set_env(
     env["STEAM_COMPAT_APP_ID"] = "0"
 
     if match(r"^umu-[\d\w]+$", env["UMU_ID"]):
-        env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][
-            env["UMU_ID"].find("-") + 1 :
-        ]
+        env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][env["UMU_ID"].find("-") + 1 :]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
 
@@ -245,9 +232,7 @@ def set_env(
     env["WINEPREFIX"] = str(pfx)
     env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
-    env["STEAM_COMPAT_SHADER_PATH"] = (
-        f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
-    )
+    env["STEAM_COMPAT_SHADER_PATH"] = f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
     env["STEAM_COMPAT_TOOL_PATHS"] = f"{env['PROTONPATH']}:{UMU_LOCAL}"
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
@@ -385,9 +370,7 @@ def get_window_ids(d: display.Display) -> set[str] | None:
     try:
         event: Event = d.next_event()
         if event.type == X.CreateNotify:
-            return {
-                child.id for child in d.screen().root.query_tree().children
-            }
+            return {child.id for child in d.screen().root.query_tree().children}
     except Exception as e:
         log.exception(e)
 
@@ -436,9 +419,7 @@ def get_gamescope_baselayer_appid(
         # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
         atom = d.get_atom(GamescopeAtom.BaselayerAppId.value)
         # Get the property value
-        prop: GetProperty | None = root_primary.get_full_property(
-            atom, Xatom.CARDINAL
-        )
+        prop: GetProperty | None = root_primary.get_full_property(atom, Xatom.CARDINAL)
         # For GAMESCOPECTRL_BASELAYER_APPID, the value is a u32 array
         if prop and prop.value and isinstance(prop.value, array):
             # Convert data to a Python list for safety
@@ -446,9 +427,7 @@ def get_gamescope_baselayer_appid(
             return baselayer_appid
         log.debug("%s property not found", GamescopeAtom.BaselayerAppId.value)
     except Exception as e:
-        log.error(
-            "Error getting %s property", GamescopeAtom.BaselayerAppId.value
-        )
+        log.error("Error getting %s property", GamescopeAtom.BaselayerAppId.value)
         log.exception(e)
 
     return None
@@ -499,9 +478,7 @@ def set_gamescope_baselayer_appid(
         )
         return d
     except Exception as e:
-        log.error(
-            "Error setting %s property", GamescopeAtom.BaselayerAppId.value
-        )
+        log.error("Error setting %s property", GamescopeAtom.BaselayerAppId.value)
         log.exception(e)
 
     return None
@@ -577,8 +554,8 @@ def monitor_baselayer_appid(
                 atom,
                 prop.value,
             )
-            rearranged_gamescope_baselayer = (
-                rearrange_gamescope_baselayer_appid(prop.value)
+            rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_appid(
+                prop.value
             )
 
         if rearranged_gamescope_baselayer:
@@ -649,9 +626,7 @@ def run_in_steammode(proc: Popen) -> int:
             xdisplay(":0") as d_primary,
             xdisplay(":1") as d_secondary,
         ):
-            gamescope_baselayer_sequence = get_gamescope_baselayer_appid(
-                d_primary
-            )
+            gamescope_baselayer_sequence = get_gamescope_baselayer_appid(d_primary)
             # Dont do window fuckery if we're not inside gamescope
             if (
                 gamescope_baselayer_sequence
@@ -700,8 +675,7 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
     # documented to be a legacy env var.
     is_steammode: bool = (
-        is_gamescope_session
-        and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
+        is_gamescope_session and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
     )
 
     if not command:

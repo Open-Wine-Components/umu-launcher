@@ -145,9 +145,7 @@ def is_installed_verb(verb: list[str], pfx: Path) -> bool:
             _: str = line.strip()
             if _ in verbs:
                 is_installed = True
-                err: str = (
-                    f"winetricks verb '{_}' is already installed in '{pfx}'"
-                )
+                err: str = f"winetricks verb '{_}' is already installed in '{pfx}'"
                 log.error(err)
                 break
 
@@ -287,9 +285,7 @@ def file_digest(fileobj, digest, /, *, _bufsize=2**18):  # noqa: ANN001
         and hasattr(fileobj, "readable")
         and fileobj.readable()
     ):
-        err = (
-            f"'{fileobj!r}' is not a file-like object in binary reading mode."
-        )
+        err = f"'{fileobj!r}' is not a file-like object in binary reading mode."
         raise ValueError(err)
 
     # binary file, socket.SocketIO object

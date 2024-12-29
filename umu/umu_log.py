@@ -60,9 +60,7 @@ class CustomFormatter(Formatter):  # noqa: D101
                 color = Color.WARNING
             case _:
                 color = Color.BOLD
-        record.levelname = (
-            f"{color}{Color.BOLD}{record.levelname}{Color.RESET}"
-        )
+        record.levelname = f"{color}{Color.BOLD}{record.levelname}{Color.RESET}"
         return super().format(record)
 
 

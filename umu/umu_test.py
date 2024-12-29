@@ -125,21 +125,15 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock the runtime files
         Path(self.test_user_share, "sniper_platform_0.20240125.75305").mkdir()
-        Path(
-            self.test_user_share, "sniper_platform_0.20240125.75305", "foo"
-        ).touch()
+        Path(self.test_user_share, "sniper_platform_0.20240125.75305", "foo").touch()
         Path(self.test_user_share, "run").touch()
         Path(self.test_user_share, "run-in-sniper").touch()
         Path(self.test_user_share, "umu").touch()
 
         # Mock pressure vessel
-        Path(self.test_user_share, "pressure-vessel", "bin").mkdir(
-            parents=True
-        )
+        Path(self.test_user_share, "pressure-vessel", "bin").mkdir(parents=True)
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
-        Path(
-            self.test_user_share, "pressure-vessel", "bin", "pv-verify"
-        ).touch()
+        Path(self.test_user_share, "pressure-vessel", "bin", "pv-verify").touch()
 
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
@@ -233,9 +227,7 @@ class TestGameLauncher(unittest.TestCase):
             result = umu_runtime._restore_umu(
                 mock_local, mock_runtime_ver, mock_session_pools, mock_cb
             )
-            self.assertTrue(
-                result is None, f"Expected None, received {result}"
-            )
+            self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
                 mock_cb.mock_calls,
                 "Expected callback to be called",
@@ -253,9 +245,7 @@ class TestGameLauncher(unittest.TestCase):
             result = umu_runtime._restore_umu(
                 mock_local, mock_runtime_ver, mock_session_pools, mock_cb
             )
-            self.assertTrue(
-                result is None, f"Expected None, received {result}"
-            )
+            self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
                 mock_cb.mock_calls,
                 "Expected callback to be called",
@@ -280,9 +270,7 @@ class TestGameLauncher(unittest.TestCase):
                     mock_runtime_ver,
                     mock_session_pools,
                 )
-            self.assertTrue(
-                result is None, f"Expected None, received {result}"
-            )
+            self.assertTrue(result is None, f"Expected None, received {result}")
 
     def test_setup_umu_noupdate(self):
         """Test setup_umu when setting runtime updates are disabled."""
@@ -304,9 +292,7 @@ class TestGameLauncher(unittest.TestCase):
                     mock_runtime_ver,
                     mock_session_pools,
                 )
-            self.assertTrue(
-                result is None, f"Expected None, received {result}"
-            )
+            self.assertTrue(result is None, f"Expected None, received {result}")
 
     def test_setup_umu(self):
         """Test setup_umu on new install."""
@@ -325,9 +311,7 @@ class TestGameLauncher(unittest.TestCase):
                     mock_runtime_ver,
                     mock_session_pools,
                 )
-            self.assertTrue(
-                result is None, f"Expected None, received {result}"
-            )
+            self.assertTrue(result is None, f"Expected None, received {result}")
 
     def test_restore_umu_platformid_status_err(self):
         """Test _restore_umu_platformid when the server returns a non-200 status code."""
@@ -366,18 +350,14 @@ class TestGameLauncher(unittest.TestCase):
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
-            mock_osrel_file = mock_runtime_base.joinpath(
-                "files", "lib", "os-release"
-            )
+            mock_osrel_file = mock_runtime_base.joinpath("files", "lib", "os-release")
             mock_runtime_base.joinpath("files", "lib").mkdir(parents=True)
             mock_osrel_file.touch(exist_ok=True)
             mock_osrel_file.write_text(mock_osrel)
             result = umu_runtime._restore_umu_platformid(
                 mock_runtime_base, mock_runtime_ver, (mock_tp, mock_hp)
             )
-            self.assertTrue(
-                result is None, f"Expected None, received {result}"
-            )
+            self.assertTrue(result is None, f"Expected None, received {result}")
 
     def test_restore_umu_platformid_osrel_none(self):
         """Test _restore_umu_platformid when the os-release file is missing."""
@@ -403,9 +383,7 @@ class TestGameLauncher(unittest.TestCase):
             result = umu_runtime._restore_umu_platformid(
                 mock_runtime_base, mock_runtime_ver, (mock_tp, mock_hp)
             )
-            self.assertTrue(
-                result is None, f"Expected None, received {result}"
-            )
+            self.assertTrue(result is None, f"Expected None, received {result}")
 
     def test_restore_umu_platformid_osrel_err(self):
         """Test _restore_umu_platformid on error parsing os-release."""
@@ -443,17 +421,13 @@ class TestGameLauncher(unittest.TestCase):
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
             mock_runtime_base.joinpath("files", "lib").mkdir(parents=True)
-            mock_osrel_file = mock_runtime_base.joinpath(
-                "files", "lib", "os-release"
-            )
+            mock_osrel_file = mock_runtime_base.joinpath("files", "lib", "os-release")
             mock_osrel_file.touch(exist_ok=True)
             mock_osrel_file.write_text(mock_osrel)
             result = umu_runtime._restore_umu_platformid(
                 mock_runtime_base, mock_runtime_ver, (mock_tp, mock_hp)
             )
-            self.assertTrue(
-                result is None, f"Expected None, received {result}"
-            )
+            self.assertTrue(result is None, f"Expected None, received {result}")
 
     def test_restore_umu_platformid(self):
         """Test _restore_umu_platformid."""
@@ -491,9 +465,7 @@ class TestGameLauncher(unittest.TestCase):
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
-            mock_osrel_file = mock_runtime_base.joinpath(
-                "files", "lib", "os-release"
-            )
+            mock_osrel_file = mock_runtime_base.joinpath("files", "lib", "os-release")
             mock_runtime_base.joinpath("files", "lib").mkdir(parents=True)
             mock_osrel_file.touch(exist_ok=True)
             mock_osrel_file.write_text(mock_osrel)
@@ -511,9 +483,7 @@ class TestGameLauncher(unittest.TestCase):
             file2.write(os.getrandom(chunk_size))
             # Pass a buffered reader as our fake http response
             umu_util.write_file_chunks(mock_file, file2, hasher)
-            self.assertTrue(
-                hasher.digest(), "Expected hashed data > 0, received 0"
-            )
+            self.assertTrue(hasher.digest(), "Expected hashed data > 0, received 0")
 
     def test_write_file_chunks(self):
         """Test write_file_chunks."""
@@ -524,9 +494,7 @@ class TestGameLauncher(unittest.TestCase):
             file2.write(os.getrandom(chunk_size))
             # Pass a buffered reader as our fake http response
             umu_util.write_file_chunks(mock_file, file2, hasher, chunk_size)
-            self.assertTrue(
-                hasher.digest(), "Expected hashed data > 0, received 0"
-            )
+            self.assertTrue(hasher.digest(), "Expected hashed data > 0, received 0")
 
     def test_get_gamescope_baselayer_appid_err(self):
         """Test get_gamescope_baselayer_appid on error.
@@ -535,14 +503,10 @@ class TestGameLauncher(unittest.TestCase):
         GAMESCOPECTRL_BASELAYER_APPID
         """
         mock_display = MagicMock(spec=Display)
-        mock_display.screen.side_effect = DisplayConnectionError(
-            mock_display, "foo"
-        )
+        mock_display.screen.side_effect = DisplayConnectionError(mock_display, "foo")
 
         result = umu_run.get_gamescope_baselayer_appid(mock_display)
-        self.assertTrue(
-            result is None, f"Expected a value, received: {result}"
-        )
+        self.assertTrue(result is None, f"Expected a value, received: {result}")
 
     def test_get_gamescope_baselayer_appid(self):
         """Test get_gamescope_baselayer_appid."""
@@ -559,9 +523,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_prop.value = array("I", [1, 2, 3])
 
         result = umu_run.get_gamescope_baselayer_appid(mock_display)
-        self.assertTrue(
-            result == [1, 2, 3], f"Expected a value, received: {result}"
-        )
+        self.assertTrue(result == [1, 2, 3], f"Expected a value, received: {result}")
 
     def test_set_steam_game_property_err(self):
         """Test set_steam_game_property on error.
@@ -573,17 +535,15 @@ class TestGameLauncher(unittest.TestCase):
         mock_window_ids = {"1", "2", "3"}
         mock_appid = 123
 
-        mock_display.create_resource_object.side_effect = (
-            DisplayConnectionError(mock_display, "foo")
+        mock_display.create_resource_object.side_effect = DisplayConnectionError(
+            mock_display, "foo"
         )
 
         result = umu_run.set_steam_game_property(
             mock_display, mock_window_ids, mock_appid
         )
 
-        self.assertTrue(
-            result is mock_display, f"Expected Display, received: {result}"
-        )
+        self.assertTrue(result is mock_display, f"Expected Display, received: {result}")
         mock_display.create_resource_object.assert_called()
 
     def test_set_steam_game_property(self):
@@ -599,9 +559,7 @@ class TestGameLauncher(unittest.TestCase):
         result = umu_run.set_steam_game_property(
             mock_display, mock_window_ids, mock_appid
         )
-        self.assertTrue(
-            result is mock_display, f"Expected Display, received: {result}"
-        )
+        self.assertTrue(result is mock_display, f"Expected Display, received: {result}")
         mock_display.create_resource_object.assert_called()
         mock_display.get_atom.assert_called()
 
@@ -622,9 +580,7 @@ class TestGameLauncher(unittest.TestCase):
 
         mock_display.screen.return_value = mock_screen
         mock_screen.root = mock_root
-        mock_root.query_tree.side_effect = DisplayConnectionError(
-            mock_display, "foo"
-        )
+        mock_root.query_tree.side_effect = DisplayConnectionError(mock_display, "foo")
         mock_query_tree.children = set()
 
         result = umu_run.get_window_ids(mock_display)
@@ -653,9 +609,7 @@ class TestGameLauncher(unittest.TestCase):
 
         result = umu_run.get_window_ids(mock_display)
 
-        self.assertTrue(
-            isinstance(result, set), f"Expected a set, received: {result}"
-        )
+        self.assertTrue(isinstance(result, set), f"Expected a set, received: {result}")
         mock_display.next_event.assert_called_once()
         mock_display.screen.assert_called_once()
         mock_screen.root.query_tree.assert_called_once()
@@ -718,9 +672,7 @@ class TestGameLauncher(unittest.TestCase):
             umu_runtime.create_shim(shim)
             self.assertTrue(shim.is_file(), f"Expected '{shim}' to be a file")
             # Ensure there's data
-            self.assertTrue(
-                shim.stat().st_size > 0, f"Expected '{shim}' to have data"
-            )
+            self.assertTrue(shim.stat().st_size > 0, f"Expected '{shim}' to have data")
 
     def test_rearrange_gamescope_baselayer_order_none(self):
         """Test rearrange_gamescope_baselayer_order for layer ID mismatches."""
@@ -829,9 +781,7 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_get_libc(self):
         """Test get_libc."""
-        self.assertIsInstance(
-            umu_util.get_libc(), str, "Value is not a string"
-        )
+        self.assertIsInstance(umu_util.get_libc(), str, "Value is not a string")
 
     def test_is_installed_verb_noverb(self):
         """Test is_installed_verb when passed an empty verb."""
@@ -908,9 +858,7 @@ class TestGameLauncher(unittest.TestCase):
             verbs = [line.strip() for line in file]
 
         result = umu_util.is_winetricks_verb(verbs)
-        self.assertTrue(
-            result, f"Expected {verbs} to only contain winetricks verbs"
-        )
+        self.assertTrue(result, f"Expected {verbs} to only contain winetricks verbs")
 
     def test_check_runtime(self):
         """Test check_runtime when pv-verify does not exist.
@@ -922,9 +870,7 @@ class TestGameLauncher(unittest.TestCase):
         If the pv-verify binary does not exist, a warning should be logged and
         the function should return
         """
-        self.test_user_share.joinpath(
-            "pressure-vessel", "bin", "pv-verify"
-        ).unlink()
+        self.test_user_share.joinpath("pressure-vessel", "bin", "pv-verify").unlink()
         result = umu_runtime.check_runtime(
             self.test_user_share, self.test_runtime_version
         )
@@ -941,9 +887,7 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_check_runtime_dir(self):
         """Test check_runtime when passed a BUILD_ID that does not exist."""
-        runtime = Path(
-            self.test_user_share, "sniper_platform_0.20240125.75305"
-        )
+        runtime = Path(self.test_user_share, "sniper_platform_0.20240125.75305")
 
         # Mock the removal of the runtime directory
         # In the real usage when updating the runtime, this should not happen
@@ -974,9 +918,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_user_share.joinpath("qux").symlink_to(test_file)
 
         # Directory
-        umu_runtime._move(
-            test_dir, self.test_user_share, self.test_local_share
-        )
+        umu_runtime._move(test_dir, self.test_user_share, self.test_local_share)
         self.assertFalse(
             self.test_user_share.joinpath("foo").exists(),
             "foo did not move from src",
@@ -987,9 +929,7 @@ class TestGameLauncher(unittest.TestCase):
         )
 
         # File
-        umu_runtime._move(
-            test_file, self.test_user_share, self.test_local_share
-        )
+        umu_runtime._move(test_file, self.test_user_share, self.test_local_share)
         self.assertFalse(
             self.test_user_share.joinpath("bar").exists(),
             "bar did not move from src",
@@ -1055,9 +995,7 @@ class TestGameLauncher(unittest.TestCase):
 
         result = umu_proton._fetch_releases((mock_tp, mock_hp))
         self.assertTrue(result is not None, "Expected a value, received None")
-        self.assertTrue(
-            isinstance(result, tuple), f"Expected tuple, received {result}"
-        )
+        self.assertTrue(isinstance(result, tuple), f"Expected tuple, received {result}")
         result_len = len(result)
         self.assertFalse(
             result_len,
@@ -1098,9 +1036,7 @@ class TestGameLauncher(unittest.TestCase):
 
         result = umu_proton._fetch_releases((mock_tp, mock_hp))
         self.assertTrue(result is not None, "Expected a value, received None")
-        self.assertTrue(
-            isinstance(result, tuple), f"Expected tuple, received {result}"
-        )
+        self.assertTrue(isinstance(result, tuple), f"Expected tuple, received {result}")
         result_len = len(result)
         self.assertTrue(
             result_len,
@@ -1114,9 +1050,7 @@ class TestGameLauncher(unittest.TestCase):
         result = []
 
         for mock in mock_protons:
-            self.assertTrue(
-                mock.is_dir(), f"Directory '{mock}' does not exist"
-            )
+            self.assertTrue(mock.is_dir(), f"Directory '{mock}' does not exist")
 
         result = umu_proton._update_proton(mock_protons, thread_pool)
 
@@ -1132,9 +1066,7 @@ class TestGameLauncher(unittest.TestCase):
         # UMU/ULWGL-Proton found in compatibilitytools.d
         result = umu_proton._update_proton([], None)
 
-        self.assertTrue(
-            result is None, "Expected None when passed an empty list"
-        )
+        self.assertTrue(result is None, "Expected None when passed an empty list")
 
     def test_ge_proton(self):
         """Test check_env when the code name GE-Proton is set for PROTONPATH.
@@ -1149,9 +1081,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertRaises(FileNotFoundError),
             patch.object(umu_proton, "_fetch_releases", return_value=None),
             patch.object(umu_proton, "_get_latest", return_value=None),
-            patch.object(
-                umu_proton, "_get_from_steamcompat", return_value=None
-            ),
+            patch.object(umu_proton, "_get_from_steamcompat", return_value=None),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
@@ -1160,9 +1090,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertEqual(
                 self.env["PROTONPATH"],
                 self.test_compat.joinpath(
-                    self.test_archive.name[
-                        : self.test_archive.name.find(".tar.gz")
-                    ]
+                    self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
                 ).as_posix(),
                 "Expected PROTONPATH to be proton dir in compat",
             )
@@ -1179,18 +1107,14 @@ class TestGameLauncher(unittest.TestCase):
             self.assertRaises(FileNotFoundError),
             patch.object(umu_proton, "_fetch_releases", return_value=None),
             patch.object(umu_proton, "_get_latest", return_value=None),
-            patch.object(
-                umu_proton, "_get_from_steamcompat", return_value=None
-            ),
+            patch.object(umu_proton, "_get_from_steamcompat", return_value=None),
             ThreadPoolExecutor() as thread_pool,
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["PROTONPATH"] = "GE-Proton"
             umu_run.check_env(self.env, thread_pool)
-            self.assertFalse(
-                os.environ.get("PROTONPATH"), "Expected empty string"
-            )
+            self.assertFalse(os.environ.get("PROTONPATH"), "Expected empty string")
 
     def test_latest_interrupt(self):
         """Test _get_latest when the user interrupts the download/extraction.
@@ -1221,9 +1145,7 @@ class TestGameLauncher(unittest.TestCase):
                 files,
                 self.test_session_pools,
             )
-            self.assertFalse(
-                self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
-            )
+            self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
             self.assertFalse(result, "Expected None on KeyboardInterrupt")
 
     def test_latest_val_err(self):
@@ -1260,9 +1182,7 @@ class TestGameLauncher(unittest.TestCase):
                 files,
                 self.test_session_pools,
             )
-            self.assertFalse(
-                self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
-            )
+            self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
             self.assertFalse(result, "Expected None when a ValueError occurs")
 
     def test_latest_offline(self):
@@ -1288,12 +1208,8 @@ class TestGameLauncher(unittest.TestCase):
                 files,
                 self.test_session_pools,
             )
-            self.assertFalse(
-                self.env["PROTONPATH"], "Expected PROTONPATH to be empty"
-            )
-            self.assertFalse(
-                result, "Expected None to be returned from _get_latest"
-            )
+            self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
+            self.assertFalse(result, "Expected None to be returned from _get_latest")
 
     def test_link_umu(self):
         """Test _get_latest for recreating the UMU-Latest link.
@@ -1455,12 +1371,8 @@ class TestGameLauncher(unittest.TestCase):
 
         result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
 
-        self.assertFalse(
-            result, "Expected None after calling _get_from_steamcompat"
-        )
-        self.assertFalse(
-            self.env["PROTONPATH"], "Expected PROTONPATH to not be set"
-        )
+        self.assertFalse(result, "Expected None after calling _get_from_steamcompat")
+        self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to not be set")
 
     def test_steamcompat(self):
         """Test _get_from_steamcompat.
@@ -1479,9 +1391,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertEqual(
             self.env["PROTONPATH"],
             self.test_compat.joinpath(
-                self.test_archive.name[
-                    : self.test_archive.name.find(".tar.gz")
-                ]
+                self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
             ).as_posix(),
             "Expected PROTONPATH to be proton dir in compat",
         )
@@ -1491,9 +1401,7 @@ class TestGameLauncher(unittest.TestCase):
 
         A ReadError should be raised as we only expect .tar.gz releases
         """
-        test_archive = self.test_cache.joinpath(
-            f"{self.test_proton_dir}.tar.zst"
-        )
+        test_archive = self.test_cache.joinpath(f"{self.test_proton_dir}.tar.zst")
 
         # Do not apply compression
         with tarfile.open(test_archive.as_posix(), "w") as tar:
@@ -1516,9 +1424,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
 
-        result = umu_util.extract_tarfile(
-            self.test_archive, self.test_archive.parent
-        )
+        result = umu_util.extract_tarfile(self.test_archive, self.test_archive.parent)
         move(str(self.test_archive).removesuffix(".tar.gz"), self.test_compat)
         self.assertEqual(
             result,
@@ -1530,9 +1436,7 @@ class TestGameLauncher(unittest.TestCase):
             "Expected proton dir to exists in compat",
         )
         self.assertTrue(
-            self.test_compat.joinpath(self.test_proton_dir)
-            .joinpath("proton")
-            .exists(),
+            self.test_compat.joinpath(self.test_proton_dir).joinpath("proton").exists(),
             "Expected 'proton' file to exists in the proton dir",
         )
 
@@ -1579,9 +1483,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ[key] = val
 
         # Game drive
-        self.assertTrue(
-            result_gamedrive is self.env, "Expected the same reference"
-        )
+        self.assertTrue(result_gamedrive is self.env, "Expected the same reference")
         self.assertTrue(
             self.env["STEAM_RUNTIME_LIBRARY_PATH"],
             "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
@@ -1602,9 +1504,7 @@ class TestGameLauncher(unittest.TestCase):
             self.env["STEAM_COMPAT_INSTALL_PATH"],
             "Expected STEAM_COMPAT_INSTALL_PATH to be empty",
         )
-        self.assertFalse(
-            self.env["EXE"], "Expected EXE to be empty on empty string"
-        )
+        self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
 
     def test_game_drive_libpath(self):
         """Test enable_steam_game_drive for duplicate paths.
@@ -1661,9 +1561,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ[key] = val
 
         # Game drive
-        self.assertTrue(
-            result_gamedrive is self.env, "Expected the same reference"
-        )
+        self.assertTrue(result_gamedrive is self.env, "Expected the same reference")
         self.assertTrue(
             self.env["STEAM_RUNTIME_LIBRARY_PATH"],
             "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
@@ -1691,9 +1589,7 @@ class TestGameLauncher(unittest.TestCase):
             self.env["STEAM_COMPAT_INSTALL_PATH"],
             "Expected STEAM_COMPAT_INSTALL_PATH to be empty",
         )
-        self.assertFalse(
-            self.env["EXE"], "Expected EXE to be empty on empty string"
-        )
+        self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
 
     def test_game_drive_empty(self):
         """Test enable_steam_game_drive.
@@ -1750,9 +1646,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ[key] = val
 
         # Game drive
-        self.assertTrue(
-            result_gamedrive is self.env, "Expected the same reference"
-        )
+        self.assertTrue(result_gamedrive is self.env, "Expected the same reference")
         self.assertTrue(
             self.env["STEAM_RUNTIME_LIBRARY_PATH"],
             "Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS",
@@ -1777,9 +1671,7 @@ class TestGameLauncher(unittest.TestCase):
             self.env["STEAM_COMPAT_INSTALL_PATH"],
             "Expected STEAM_COMPAT_INSTALL_PATH to be empty",
         )
-        self.assertFalse(
-            self.env["EXE"], "Expected EXE to be empty on empty string"
-        )
+        self.assertFalse(self.env["EXE"], "Expected EXE to be empty on empty string")
 
     def test_build_command_linux_exe(self):
         """Test build_command when running a Linux executable.
@@ -1827,9 +1719,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
-                Path(
-                    self.test_local_share, "sniper_platform_0.20240125.75305"
-                ),
+                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
                 dirs_exist_ok=True,
                 symlinks=True,
             )
@@ -1914,9 +1804,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
-                Path(
-                    self.test_local_share, "sniper_platform_0.20240125.75305"
-                ),
+                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
                 dirs_exist_ok=True,
                 symlinks=True,
             )
@@ -1946,9 +1834,7 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected 3 elements, received {len(test_command)}",
         )
         proton, verb, exe, *_ = [*test_command]
-        self.assertIsInstance(
-            proton, os.PathLike, "Expected proton to be PathLike"
-        )
+        self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
         self.assertEqual(
             proton,
             Path(self.env["PROTONPATH"], "proton"),
@@ -2046,9 +1932,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             copytree(
                 Path(self.test_user_share, "sniper_platform_0.20240125.75305"),
-                Path(
-                    self.test_local_share, "sniper_platform_0.20240125.75305"
-                ),
+                Path(self.test_local_share, "sniper_platform_0.20240125.75305"),
                 dirs_exist_ok=True,
                 symlinks=True,
             )
@@ -2075,9 +1959,7 @@ class TestGameLauncher(unittest.TestCase):
             8,
             f"Expected 8 elements, received {len(test_command)}",
         )
-        entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [
-            *test_command
-        ]
+        entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertIsInstance(
@@ -2086,13 +1968,9 @@ class TestGameLauncher(unittest.TestCase):
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")
         self.assertEqual(opt2, "--", "Expected --")
-        self.assertIsInstance(
-            shim, os.PathLike, "Expected shim to be PathLike"
-        )
+        self.assertIsInstance(shim, os.PathLike, "Expected shim to be PathLike")
         self.assertEqual(shim, shim_path, "Expected the shim file")
-        self.assertIsInstance(
-            proton, os.PathLike, "Expected proton to be PathLike"
-        )
+        self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
         self.assertEqual(
             proton,
             Path(self.env["PROTONPATH"], "proton"),
@@ -2158,9 +2036,7 @@ class TestGameLauncher(unittest.TestCase):
                 path_exe,
                 "Expected EXE to be normalized and expanded",
             )
-            self.assertEqual(
-                self.env["STORE"], test_str, "Expected STORE to be set"
-            )
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
             self.assertEqual(
                 self.env["PROTONPATH"],
                 path_file,
@@ -2171,9 +2047,7 @@ class TestGameLauncher(unittest.TestCase):
                 path_file,
                 "Expected WINEPREFIX to be normalized and expanded",
             )
-            self.assertEqual(
-                self.env["GAMEID"], test_str, "Expected GAMEID to be set"
-            )
+            self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
             self.assertEqual(
                 self.env["PROTON_VERB"],
                 self.test_verb,
@@ -2228,9 +2102,7 @@ class TestGameLauncher(unittest.TestCase):
                 Path(path_exe).parent.as_posix(),
                 "Expected STEAM_COMPAT_INSTALL_PATH to be set",
             )
-            self.assertEqual(
-                self.env["STORE"], test_str, "Expected STORE to be set"
-            )
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
             self.assertEqual(
                 self.env["PROTONPATH"],
                 path_file,
@@ -2241,9 +2113,7 @@ class TestGameLauncher(unittest.TestCase):
                 path_file,
                 "Expected WINEPREFIX to be normalized and expanded",
             )
-            self.assertEqual(
-                self.env["GAMEID"], umu_id, "Expected GAMEID to be set"
-            )
+            self.assertEqual(self.env["GAMEID"], umu_id, "Expected GAMEID to be set")
             self.assertEqual(
                 self.env["PROTON_VERB"],
                 self.test_verb,
@@ -2347,9 +2217,7 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_INSTALL_PATH"],
                 "Expected STEAM_COMPAT_INSTALL_PATH to be empty",
             )
-            self.assertEqual(
-                self.env["STORE"], test_str, "Expected STORE to be set"
-            )
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
             self.assertEqual(
                 self.env["PROTONPATH"],
                 path_file,
@@ -2360,9 +2228,7 @@ class TestGameLauncher(unittest.TestCase):
                 path_file,
                 "Expected WINEPREFIX to be normalized and expanded",
             )
-            self.assertEqual(
-                self.env["GAMEID"], test_str, "Expected GAMEID to be set"
-            )
+            self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
             self.assertEqual(
                 self.env["PROTON_VERB"],
                 self.test_verb,
@@ -2469,9 +2335,7 @@ class TestGameLauncher(unittest.TestCase):
                 Path(path_exe).parent.as_posix(),
                 "Expected STEAM_COMPAT_INSTALL_PATH to be set",
             )
-            self.assertEqual(
-                self.env["STORE"], test_str, "Expected STORE to be set"
-            )
+            self.assertEqual(self.env["STORE"], test_str, "Expected STORE to be set")
             self.assertEqual(
                 self.env["PROTONPATH"],
                 path_file,
@@ -2482,9 +2346,7 @@ class TestGameLauncher(unittest.TestCase):
                 path_file,
                 "Expected WINEPREFIX to be normalized and expanded",
             )
-            self.assertEqual(
-                self.env["GAMEID"], test_str, "Expected GAMEID to be set"
-            )
+            self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
             self.assertEqual(
                 self.env["PROTON_VERB"],
                 self.test_verb,
@@ -2615,9 +2477,7 @@ class TestGameLauncher(unittest.TestCase):
                 path_file,
                 "Expected WINEPREFIX to be normalized and expanded",
             )
-            self.assertEqual(
-                self.env["GAMEID"], test_str, "Expected GAMEID to be set"
-            )
+            self.assertEqual(self.env["GAMEID"], test_str, "Expected GAMEID to be set")
             self.assertEqual(
                 self.env["PROTON_VERB"],
                 proton_verb,
@@ -2776,15 +2636,11 @@ class TestGameLauncher(unittest.TestCase):
 
         # Verify steamuser -> unix user
         self.assertTrue(
-            Path(self.test_file)
-            .joinpath("drive_c/users/steamuser")
-            .is_symlink(),
+            Path(self.test_file).joinpath("drive_c/users/steamuser").is_symlink(),
             "Expected steamuser to be a symbolic link",
         )
         self.assertEqual(
-            Path(self.test_file)
-            .joinpath("drive_c/users/steamuser")
-            .readlink(),
+            Path(self.test_file).joinpath("drive_c/users/steamuser").readlink(),
             Path(self.user),
             "Expected steamuser -> user",
         )
@@ -2830,9 +2686,7 @@ class TestGameLauncher(unittest.TestCase):
             "Expected symbolic link for unixuser",
         )
         self.assertEqual(
-            Path(self.test_file)
-            .joinpath(f"drive_c/users/{self.user}")
-            .readlink(),
+            Path(self.test_file).joinpath(f"drive_c/users/{self.user}").readlink(),
             Path("steamuser"),
             "Expected unixuser -> steamuser",
         )
@@ -3011,9 +2865,7 @@ class TestGameLauncher(unittest.TestCase):
             result = __main__.parse_args()
             self.assertIsInstance(result, tuple, "Expected a tuple")
             self.assertIsInstance(result[0], str, "Expected a string")
-            self.assertIsInstance(
-                result[1], list, "Expected a list as options"
-            )
+            self.assertIsInstance(result[1], list, "Expected a list as options")
             self.assertEqual(
                 *result[1],
                 test_opt,
@@ -3086,9 +2938,7 @@ class TestGameLauncher(unittest.TestCase):
                 path.parent.parent.exists(),
                 f"Expected {path.parent.parent} to not exist",
             )
-            self.assertTrue(
-                mock_home.exists(), f"Expected {mock_home} to exist"
-            )
+            self.assertTrue(mock_home.exists(), f"Expected {mock_home} to exist")
 
     def test_env_wine_noproton(self):
         """Test check_env when configured to not use Proton.
@@ -3271,9 +3121,7 @@ class TestGameLauncher(unittest.TestCase):
                 os.environ["WINEPREFIX"] = self.test_file
                 os.environ["GAMEID"] = self.test_file
                 result = umu_run.check_env(self.env, thread_pool)
-                self.assertTrue(
-                    result is self.env, "Expected the same reference"
-                )
+                self.assertTrue(result is self.env, "Expected the same reference")
                 self.assertFalse(os.environ["PROTONPATH"])
 
     def test_env_vars_wine(self):

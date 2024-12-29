@@ -145,9 +145,7 @@ def _install_umu(
             preload_content=False,
         )
         if resp.status != HTTPStatus.OK:
-            err: str = (
-                f"{resp.getheader('Host')} returned the status: {resp.status}"
-            )
+            err: str = f"{resp.getheader('Host')} returned the status: {resp.status}"
             raise HTTPError(err)
 
         # Parse data for the archive digest
@@ -165,18 +163,14 @@ def _install_umu(
             HTTPMethod.GET.value, f"{host}{endpoint}/BUILD_ID.txt{token}"
         )
         if resp.status != HTTPStatus.OK:
-            err: str = (
-                f"{resp.getheader('Host')} returned the status: {resp.status}"
-            )
+            err: str = f"{resp.getheader('Host')} returned the status: {resp.status}"
             raise HTTPError(err)
 
         buildid = resp.data.decode(encoding="utf-8").strip()
         log.debug("BUILD_ID: %s", buildid)
 
         # Extend our variables with the BUILD_ID
-        log.debug(
-            "Renaming: %s -> %s", parts, parts.with_suffix(f".{buildid}.parts")
-        )
+        log.debug("Renaming: %s -> %s", parts, parts.with_suffix(f".{buildid}.parts"))
         parts = parts.with_suffix(f".{buildid}.parts")
         cached_parts = UMU_CACHE.joinpath(f"{archive}.{buildid}.parts")
 
@@ -204,9 +198,7 @@ def _install_umu(
             HTTPStatus.PARTIAL_CONTENT,
             HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE,
         }:
-            err: str = (
-                f"{resp.getheader('Host')} returned the status: {resp.status}"
-            )
+            err: str = f"{resp.getheader('Host')} returned the status: {resp.status}"
             raise HTTPError(err)
 
         # Download the runtime
@@ -216,9 +208,7 @@ def _install_umu(
                 hashsum = write_file_chunks(parts, resp, hashsum)
             except TimeoutErrorUrllib3:
                 log.error("Aborting steamrt install due to network error")
-                log.info(
-                    "Moving '%s' to cache for future resumption", parts.name
-                )
+                log.info("Moving '%s' to cache for future resumption", parts.name)
                 move(parts, UMU_CACHE)
                 raise
 
@@ -341,8 +331,7 @@ def _update_umu(
     _, http_pool = session_pools
     codename, variant = runtime_ver
     endpoint: str = (
-        f"/steamrt-images-{codename}"
-        "/snapshots/latest-container-runtime-public-beta"
+        f"/steamrt-images-{codename}" "/snapshots/latest-container-runtime-public-beta"
     )
     # Create a token and append it to the URL to avoid the Cloudflare cache
     # Avoids infinite updates to the runtime each launch
@@ -356,9 +345,7 @@ def _update_umu(
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the variant
     try:
-        runtime = max(
-            file for file in local.glob(f"{codename}*") if file.is_dir()
-        )
+        runtime = max(file for file in local.glob(f"{codename}*") if file.is_dir())
     except ValueError:
         log.critical("*_platform_* directory missing in '%s'", local)
         log.info("Restoring Runtime Platform...")
@@ -366,9 +353,7 @@ def _update_umu(
             local,
             runtime_ver,
             session_pools,
-            lambda: len(
-                [file for file in local.glob(f"{codename}*") if file.is_dir()]
-            )
+            lambda: len([file for file in local.glob(f"{codename}*") if file.is_dir()])
             > 0,
         )
         return
@@ -404,15 +389,11 @@ def _update_umu(
         local.joinpath("VERSIONS.txt").write_text(platformid)
 
     # Fetch the version file
-    url: str = (
-        f"{host}{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt{token}"
-    )
+    url: str = f"{host}{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt{token}"
     log.debug("Sending request to '%s' for 'VERSIONS.txt'...", url)
     resp = http_pool.request(HTTPMethod.GET.value, url)
     if resp.status != HTTPStatus.OK:
-        log.error(
-            "%s returned the status: %s", resp.getheader("Host"), resp.status
-        )
+        log.error("%s returned the status: %s", resp.getheader("Host"), resp.status)
         return
 
     # Update our runtime
@@ -458,9 +439,7 @@ def check_runtime(src: Path, runtime_ver: RuntimeVersion) -> int:
 
     # Find the runtime directory
     try:
-        runtime = max(
-            file for file in src.glob(f"{codename}*") if file.is_dir()
-        )
+        runtime = max(file for file in src.glob(f"{codename}*") if file.is_dir())
     except ValueError:
         log.critical("%s validation failed", variant)
         log.critical("Could not find *_platform_* in '%s'", src)
@@ -532,9 +511,7 @@ def _restore_umu_platformid(
         for line in file:
             if line.startswith("BUILD_ID"):
                 # Get the value after 'BUILD_ID=' and strip the quotes
-                build_id: str = (
-                    line.removeprefix("BUILD_ID=").rstrip().strip('"')
-                )
+                build_id: str = line.removeprefix("BUILD_ID=").rstrip().strip('"')
                 url = f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
                 break
 
@@ -568,9 +545,7 @@ def _update_umu_platform(
 ) -> None:
     _, variant = runtime_ver
     latest: bytes = sha256(resp.data).digest()
-    current: bytes = sha256(
-        local.joinpath("VERSIONS.txt").read_bytes()
-    ).digest()
+    current: bytes = sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     versions: Path = local.joinpath("VERSIONS.txt")
     lock: FileLock = FileLock(f"{local}/umu.lock")
 

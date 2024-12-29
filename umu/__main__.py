@@ -34,9 +34,7 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         version=f"umu-launcher version {__version__} ({sys.version})",
         help="show this version and exit",
     )
-    parser.add_argument(
-        "--config", help=("path to TOML file (requires Python 3.11+)")
-    )
+    parser.add_argument("--config", help=("path to TOML file (requires Python 3.11+)"))
     parser.add_argument(
         "winetricks",
         help=("run winetricks verbs (requires UMU-Proton or GE-Proton)"),
@@ -56,9 +54,7 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         sys.exit(1)
 
     # Exit if argument is not a verb
-    if sys.argv[1].endswith("winetricks") and not is_winetricks_verb(
-        sys.argv[2:]
-    ):
+    if sys.argv[1].endswith("winetricks") and not is_winetricks_verb(sys.argv[2:]):
         sys.exit(1)
 
     if sys.argv[1:][0] in opt_args:

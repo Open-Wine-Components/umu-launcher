@@ -84,9 +84,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
         path: Path
 
         if key not in toml[table]:
-            err: str = (
-                f"The following key in table '[{table}]' is required: '{key}'"
-            )
+            err: str = f"The following key in table '[{table}]' is required: '{key}'"
             raise ValueError(err)
 
         path = Path(toml[table][key]).expanduser()
@@ -95,17 +93,14 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
         # can happen is when game options are appended at the end of the exe.
         # Users should use `launch_args` for game options
         if key == "exe" and not path.is_file():
-            err: str = (
-                f"Value for key '{key}' is not a file: '{toml[table][key]}'"
-            )
+            err: str = f"Value for key '{key}' is not a file: '{toml[table][key]}'"
             raise FileNotFoundError(err)
 
         if (key == "proton" and not path.is_dir()) or (
             key == "prefix" and not path.is_dir()
         ):
             err: str = (
-                f"Value for key '{key}' "
-                f"is not a directory: '{toml[table][key]}'"
+                f"Value for key '{key}' " f"is not a directory: '{toml[table][key]}'"
             )
             raise NotADirectoryError(err)
 

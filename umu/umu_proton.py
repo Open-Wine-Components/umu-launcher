@@ -34,9 +34,7 @@ CacheSubdir = Path
 SessionCaches = tuple[CacheTmpfs, CacheSubdir]
 
 
-def get_umu_proton(
-    env: dict[str, str], session_pools: SessionPools
-) -> dict[str, str]:
+def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str, str]:
     """Attempt to use the latest Proton when configured.
 
     When $PROTONPATH is not set or $PROTONPATH is 'GE-Proton', the launcher
@@ -66,10 +64,7 @@ def get_umu_proton(
         TemporaryDirectory(dir=UMU_CACHE) as tmpcache,
     ):
         tmpdirs: SessionCaches = (Path(tmp), Path(tmpcache))
-        if (
-            _get_latest(env, STEAM_COMPAT, tmpdirs, assets, session_pools)
-            is env
-        ):
+        if _get_latest(env, STEAM_COMPAT, tmpdirs, assets, session_pools) is env:
             return env
         if _get_from_steamcompat(env, STEAM_COMPAT) is env:
             return env
@@ -100,9 +95,7 @@ def _fetch_releases(
     if os.environ.get("PROTONPATH") == "GE-Proton":
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
 
-    resp = http_pool.request(
-        HTTPMethod.GET.value, f"{url}{repo}", headers=headers
-    )
+    resp = http_pool.request(HTTPMethod.GET.value, f"{url}{repo}", headers=headers)
     if resp.status != HTTPStatus.OK:
         return ()
 
@@ -153,12 +146,8 @@ def _fetch_proton(
     hashsum = sha512()
 
     # Verify the scheme from Github for resources
-    if not tar_url.startswith("https:") or not proton_hash_url.startswith(
-        "https:"
-    ):
-        err: str = (
-            f"Scheme in URLs is not 'https:': {(tar_url, proton_hash_url)}"
-        )
+    if not tar_url.startswith("https:") or not proton_hash_url.startswith("https:"):
+        err: str = f"Scheme in URLs is not 'https:': {(tar_url, proton_hash_url)}"
         raise ValueError(err)
 
     # Digest file
@@ -233,9 +222,7 @@ def _fetch_proton(
             HTTPStatus.PARTIAL_CONTENT,
             HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE,
         }:
-            err: str = (
-                f"{resp.getheader('Host')} returned the status: {resp.status}"
-            )
+            err: str = f"{resp.getheader('Host')} returned the status: {resp.status}"
             raise HTTPError(err)
 
         # Only write our file if we're resuming or downloading first time
@@ -245,9 +232,7 @@ def _fetch_proton(
                 hashsum = write_file_chunks(parts, resp, hashsum)
             except TimeoutErrorUrllib3:
                 log.error("Aborting Proton install due to network error")
-                log.info(
-                    "Moving '%s' to cache for future resumption", parts.name
-                )
+                log.info("Moving '%s' to cache for future resumption", parts.name)
                 log.debug("Moving: %s -> %s", parts, cache.parent)
                 move(parts, cache.parent)
                 raise
@@ -280,9 +265,7 @@ def _get_from_steamcompat(
     existing Proton build of that same version will be used
     """
     version: str = (
-        "GE-Proton"
-        if os.environ.get("PROTONPATH") == "GE-Proton"
-        else "UMU-Proton"
+        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
     )
 
     try:
@@ -338,9 +321,7 @@ def _get_latest(
     tarball = assets[1][0]
     proton = tarball.removesuffix(".tar.gz")
     version = (
-        "GE-Proton"
-        if os.environ.get("PROTONPATH") == "GE-Proton"
-        else "UMU-Proton"
+        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
     )
 
     # Return if the latest Proton is already installed
@@ -434,9 +415,7 @@ def _install_proton(
     parts: str = f"{tarball}.parts"
     cached_parts: Path = cache.parent.joinpath(f"{tarball}.parts")
     version: str = (
-        "GE-Proton"
-        if os.environ.get("PROTONPATH") == "GE-Proton"
-        else "UMU-Proton"
+        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
     )
 
     # TODO: Refactor when differential updates are implemented.
@@ -452,26 +431,20 @@ def _install_proton(
     # Move our file and extract within our cache
     if cached_parts.is_file():
         # In this case, arc is already in cache and checksum'd
-        log.debug(
-            "Moving: %s -> %s", cached_parts, cached_parts.with_suffix("")
-        )
+        log.debug("Moving: %s -> %s", cached_parts, cached_parts.with_suffix(""))
         move(cached_parts, cached_parts.with_suffix(""))
         # Move the archive to our unique subdir
         log.debug("Moving: %s -> %s", cached_parts.with_suffix(""), cache)
         move(cached_parts.with_suffix(""), cache)
         log.info("Extracting %s...", tarball)
         # Extract within the subdir
-        extract_tarfile(
-            cache.joinpath(tarball), cache.joinpath(tarball).parent
-        )
+        extract_tarfile(cache.joinpath(tarball), cache.joinpath(tarball).parent)
     else:
         # The archive is in tmpfs. Remove the parts extension
         move(tmpfs.joinpath(parts), tmpfs.joinpath(tarball))
         move(tmpfs.joinpath(tarball), cache)
         log.info("Extracting %s...", tarball)
-        extract_tarfile(
-            cache.joinpath(tarball), cache.joinpath(tarball).parent
-        )
+        extract_tarfile(cache.joinpath(tarball), cache.joinpath(tarball).parent)
 
     # Move decompressed archive to compatibilitytools.d
     log.info(
@@ -482,9 +455,7 @@ def _install_proton(
     move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
 
     steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
-    steam_compat.joinpath("UMU-Latest").symlink_to(
-        tarball.removesuffix(".tar.gz")
-    )
+    steam_compat.joinpath("UMU-Latest").symlink_to(tarball.removesuffix(".tar.gz"))
     log.debug("Linking: UMU-Latest -> %s", tarball.removesuffix(".tar.gz"))
 
     if future:
