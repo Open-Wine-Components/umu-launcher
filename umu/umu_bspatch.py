@@ -210,14 +210,14 @@ class CustomPatcher:  # noqa: D101
         for item in self._arc_manifest:
             self._futures.append(
                 self._thread_pool.submit(
-                    self._check_proton_binaries, self._proton, item
+                    self._check_binaries, self._proton, item
                 )
             )
 
     def result(self) -> list[Future]:  # noqa: D102
         return self._futures
 
-    def _check_proton_binaries(
+    def _check_binaries(
         self, proton: Path, item: ManifestEntry
     ) -> ManifestEntry | None:
         rpath: Path = proton.joinpath(item["name"])
