@@ -339,10 +339,11 @@ class CustomPatcher:  # noqa: D101
                     raise ValueError(err)
 
                 # Write to our file
-                stats: os.stat_result = os.fstat(fp.fileno())
                 with path.open("wb") as file:
                     os.sendfile(file.fileno(), fp.fileno(), 0, size)
                     os.fchmod(file.fileno(), mode)
-                    os.utime(file.fileno(), (stats.st_atime, time))
+                    os.utime(
+                        file.fileno(), (os.fstat(fp.fileno()).st_atime, time)
+                    )
 
                 mm.madvise(MADV_DONTNEED, 0, size)
