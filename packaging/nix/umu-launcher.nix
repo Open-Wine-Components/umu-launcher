@@ -1,4 +1,4 @@
-{lib, pyth1 ,python3Packages , umu-launcher, pkgs,version, truststore ? true, cbor2 ? true, xxhash ? true, rustPlatform, ...}:
+{lib, pyth1 ,python3Packages , umu-launcher, pkgs,version, truststore ? true, deltaUpdates ? { cbor2 = true; xxhash = true; }, rustPlatform, ...}:
 python3Packages.buildPythonPackage {
   pname = "umu-launcher";
   version = "${version}";
@@ -25,8 +25,8 @@ python3Packages.buildPythonPackage {
     pkgs.python3Packages.xlib
     pkgs.python3Packages.urllib3
   ] ++ lib.optional truststore pkgs.python3Packages.truststore
-    ++ lib.optional cbor2 pkgs.python3Packages.cbor2
-    ++ lib.optional xxhash pkgs.python3Packages.xxhash;
+    ++ lib.optional deltaUpdates.cbor2 pkgs.python3Packages.cbor2
+    ++ lib.optional deltaUpdates.xxhash pkgs.python3Packages.xxhash;
   makeFlags = [ "PYTHON_INTERPRETER=${pyth1}/bin/python" "SHELL_INTERPRETER=/run/current-system/sw/bin/bash" "DESTDIR=${placeholder "out"}" ];
   dontUseMesonConfigure = true;
   dontUseNinjaBuild = true;
