@@ -305,7 +305,7 @@ class CustomPatcher:  # noqa: D101
                         err: str = f"Expected xxhash {digest}, received {xxhash} for file '{path}' truncating from size {stats.st_size} -> {size}"
                         raise ValueError(err)
 
-                    mm.madvise(MADV_DONTNEED, 0, len(mm))
+                    mm.madvise(MADV_DONTNEED, 0, size)
 
                 # Update the file's metadata
                 os.fchmod(fp.fileno(), mode)
