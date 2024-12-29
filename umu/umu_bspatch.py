@@ -338,8 +338,6 @@ class CustomPatcher:  # noqa: D101
                     err: str = f"Expected xxhash {digest}, received {xxhash} for fd {fp.fileno()} from source {path}"
                     raise ValueError(err)
 
-                os.lseek(fp.fileno(), 0, os.SEEK_CUR)
-
                 # Write to our file
                 stats: os.stat_result = os.fstat(fp.fileno())
                 with path.open("wb") as file:
