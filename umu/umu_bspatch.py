@@ -226,23 +226,18 @@ class CustomPatcher:  # noqa: D101
             with rpath.open("rb") as fp:
                 stats: os.stat_result = os.fstat(fp.fileno())
                 xxhash: int = 0
-
                 if item["size"] != stats.st_size:
                     return None
-
                 if item["mode"] != stats.st_mode:
                     return None
-
                 if item["time"] != stats.st_mtime:
                     return None
-
                 if stats.st_size > MMAP_MIN:
                     with mmap(fp.fileno(), length=0, access=ACCESS_READ) as mm:
                         xxhash = xxh3_64_intdigest(mm)
                         mm.madvise(MADV_DONTNEED, 0, stats.st_size)
                 else:
                     xxhash = xxh3_64_intdigest(fp.read())
-
                 if item["xxhash"] != xxhash:
                     return None
         except FileNotFoundError:
