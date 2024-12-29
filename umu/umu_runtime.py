@@ -140,7 +140,9 @@ def _install_umu(
 
         # Get the digest for the runtime archive
         resp = http_pool.request(
-            HTTPMethod.GET.value, f"{host}{endpoint}/SHA256SUMS{token}"
+            HTTPMethod.GET.value,
+            f"{host}{endpoint}/SHA256SUMS{token}",
+            preload_content=False,
         )
         if resp.status != HTTPStatus.OK:
             err: str = (
@@ -148,10 +150,14 @@ def _install_umu(
             )
             raise HTTPError(err)
 
-        # Parse SHA256SUMS
-        for line in resp.data.decode(encoding="utf-8").splitlines():
-            if line.endswith(archive):
-                digest = line.split(" ")[0]
+        # Parse data for the archive digest
+        target: bytes = archive.encode()
+        while line := resp.readline():
+            if line.rstrip().endswith(target):
+                digest = line.split(b" ")[0].rstrip().decode()
+                break
+
+        resp.release_conn()
 
         # Get BUILD_ID.txt. We'll use the value to identify the file when cached.
         # This will guarantee we'll be picking up the correct file when resuming

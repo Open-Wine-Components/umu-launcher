@@ -166,7 +166,9 @@ def _fetch_proton(
     # See https://github.com/astral-sh/ruff/issues/7918
     log.info("Downloading %s...", proton_hash)
 
-    resp = http_pool.request(HTTPMethod.GET.value, proton_hash_url)
+    resp = http_pool.request(
+        HTTPMethod.GET.value, proton_hash_url, preload_content=False
+    )
     if resp.status != HTTPStatus.OK:
         err: str = (
             f"Unable to download {proton_hash}\n"
@@ -174,10 +176,14 @@ def _fetch_proton(
         )
         raise HTTPError(err)
 
-    # Parse the Proton digest file
-    for line in resp.data.decode(encoding="utf-8").splitlines():
-        if line.endswith(tarball):
-            digest = line.split(" ")[0]
+    # Parse data for the archive digest
+    target: bytes = tarball.encode()
+    while line := resp.readline():
+        if line.rstrip().endswith(target):
+            digest = line.split(b" ")[0].rstrip().decode()
+            break
+
+    resp.release_conn()
 
     # Proton
     # Create a popup with zenity when the env var is set
