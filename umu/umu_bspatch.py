@@ -88,7 +88,7 @@ class CustomPatcher:  # noqa: D101
     def __init__(  # noqa: D107
         self,
         content: Content,
-        proton: Path,
+        compat_tool: Path,
         cache: Path,
         thread_pool: ThreadPoolExecutor,
     ) -> None:
@@ -96,7 +96,7 @@ class CustomPatcher:  # noqa: D101
         self._arc_manifest: list[ManifestEntry] = self._arc_contents[
             "manifest"
         ]
-        self._proton = proton
+        self._compat_tool = compat_tool
         self._cache = cache
         self._thread_pool = thread_pool
         self._futures: list[Future] = []
@@ -104,7 +104,7 @@ class CustomPatcher:  # noqa: D101
     def add_binaries(self) -> None:  # noqa: D102
         # Create new files, if there are any items
         for item in self._arc_contents["add"]:
-            build_file: Path = self._proton.joinpath(item["name"])
+            build_file: Path = self._compat_tool.joinpath(item["name"])
             if item["type"] == FileType.File.value:
                 # Decompress the zstd data and write the file
                 self._futures.append(
@@ -145,7 +145,7 @@ class CustomPatcher:  # noqa: D101
 
     def update_binaries(self) -> None:  # noqa: D102
         for item in self._arc_contents["update"]:
-            build_file: Path = self._proton.joinpath(item["name"])
+            build_file: Path = self._compat_tool.joinpath(item["name"])
             if item["type"] == FileType.File.value:
                 # For files, apply a binary patch
                 self._futures.append(
@@ -193,11 +193,13 @@ class CustomPatcher:  # noqa: D101
                 item["type"] == FileType.File.value
                 or item["type"] == FileType.Link.value
             ):
-                self._proton.joinpath(item["name"]).unlink(missing_ok=True)
+                self._compat_tool.joinpath(item["name"]).unlink(
+                    missing_ok=True
+                )
                 continue
             if item["type"] == FileType.Dir.value:
                 self._thread_pool.submit(
-                    rmtree, str(self._proton.joinpath(item["name"]))
+                    rmtree, str(self._compat_tool.joinpath(item["name"]))
                 )
                 continue
             log.warning(
@@ -210,7 +212,7 @@ class CustomPatcher:  # noqa: D101
         for item in self._arc_manifest:
             self._futures.append(
                 self._thread_pool.submit(
-                    self._check_binaries, self._proton, item
+                    self._check_binaries, self._compat_tool, item
                 )
             )
 
