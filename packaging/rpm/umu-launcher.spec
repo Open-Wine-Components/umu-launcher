@@ -45,9 +45,9 @@ Requires:	python3-xlib
 %{name} A tool for launching non-steam games with proton
 
 %prep
-git clone --single-branch --branch main https://github.com/Open-Wine-Components/umu-launcher.git
+git clone https://github.com/Open-Wine-Components/umu-launcher.git
 cd umu-launcher
-git checkout %{tag}
+git checkout %{tag} || git checkout %{manual_commit}
 git submodule update --init --recursive
 
 %build
