@@ -613,7 +613,8 @@ def _get_delta(
 
         start: float = time.time_ns()
         for patcher in filter(None, patchers):
-            patcher.result()
+            for future in filter(None, patcher.result()):
+                future.result()
 
         for rename in renames:
             orig, new = rename
