@@ -266,9 +266,6 @@ class CustomPatcher:  # noqa: D101
                 stats: os.stat_result = os.stat(fp.fileno())  # noqa: PTH116
                 xxhash: int = 0
 
-                if stats.st_size < size:
-                    fp.truncate(size)
-
                 # If less than the window log, write the data
                 # The patcher inserts the raw, decompressed data in this case
                 if max(stats.st_size, size).bit_length() < ZSTD_WINDOW_LOG_MIN:
@@ -288,8 +285,12 @@ class CustomPatcher:  # noqa: D101
                 # Apply our patch to the file in-place
                 with mmap(fp.fileno(), length=0, access=ACCESS_WRITE) as mm:
                     # Prepare the zst dictionary and opt
-                    zst_dict = ZstdDict(mm[: stats.st_size], is_raw=True)
+                    zst_dict = ZstdDict(mm, is_raw=True)
                     zst_opt = {DParameter.windowLogMax: 31}
+
+                    # If file will become large, increase
+                    if stats.st_size < size:
+                        mm.resize(size)
 
                     # Patch the region
                     mm[:size] = decompress(
