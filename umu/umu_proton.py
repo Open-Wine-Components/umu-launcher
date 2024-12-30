@@ -1,6 +1,6 @@
 import os
 import time
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from hashlib import sha512
 from http import HTTPStatus
@@ -587,7 +587,7 @@ def _get_delta(
             log.error("Digital signature verification failed, skipping update")
             return None
 
-        futures: list[Future] = []
+        patchers: list[CustomPatcher | None] = []
         renames: list[tuple[Path, Path]] = []
 
         # Apply the patch
@@ -595,16 +595,7 @@ def _get_delta(
             src: str = content["source"]
 
             if src.startswith((ProtonVersion.GE.value, ProtonVersion.UMU.value)):
-                futures.append(
-                    thread_pool.submit(
-                        _apply_delta,
-                        env,
-                        proton,
-                        cache,
-                        content,
-                        thread_pool,
-                    )
-                )
+                patchers.append(_apply_delta(proton, cache, content, thread_pool))
                 continue
 
             subdir: Path | None = next(umu_compat.joinpath(version).rglob(src), None)
@@ -612,16 +603,7 @@ def _get_delta(
                 log.error("Could not find subdirectory '%s', skipping", subdir)
                 continue
 
-            futures.append(
-                thread_pool.submit(
-                    _apply_delta,
-                    env,
-                    subdir,
-                    cache,
-                    content,
-                    thread_pool,
-                )
-            )
+            patchers.append(_apply_delta(subdir, cache, content, thread_pool))
             renames.append(
                 (
                     subdir,
@@ -629,23 +611,24 @@ def _get_delta(
                 )
             )
 
-        for future in futures:
-            future.result()
+        start: float = time.time_ns()
+        for patcher in filter(None, patchers):
+            patcher.result()
 
         for rename in renames:
             orig, new = rename
             orig.rename(new)
+        log.debug("Update time (ns): %s", time.time_ns() - start)
 
     return env
 
 
 def _apply_delta(
-    env: dict[str, str],
     path: Path,
     cache: Path,
     content: Content,
     thread_pool: ThreadPoolExecutor,
-) -> dict[str, str] | None:
+) -> CustomPatcher | None:
     patcher: CustomPatcher = CustomPatcher(content, path, cache, thread_pool)
 
     # Verify the identity of the build. At this point the patch file is
@@ -657,20 +640,13 @@ def _apply_delta(
     is_updated = any(x.result() is None for x in patcher.result())
     if is_updated:
         log.debug("%s (latest) validation failed, skipping", os.environ["PROTONPATH"])
-        return env
+        return None
 
     # Patch the current build, upgrading proton to the latest
     log.info("%s is OK, applying partial update...", os.environ["PROTONPATH"])
 
-    start: float = time.time()
     patcher.update_binaries()
     patcher.add_binaries()
     patcher.delete_binaries()
 
-    for future in filter(None, patcher.result()):
-        future.result()
-
-    end: float = time.time()
-    log.debug("Update time: %s", end - start)
-
-    return env
+    return patcher
