@@ -269,12 +269,13 @@ class CustomPatcher:  # noqa: D101
                 if stats.st_size < size:
                     fp.truncate(size)
 
+                # If less than the window log, write the data
+                # The patcher inserts the raw, decompressed data in this case
                 if max(stats.st_size, size).bit_length() < ZSTD_WINDOW_LOG_MIN:
                     fp.write(bdiff)
                     fp.truncate(size)
                     os.lseek(fp.fileno(), 0, os.SEEK_SET)
 
-                    # Verify our data
                     xxhash = xxh3_64_intdigest(fp.read())
                     if xxhash != digest:
                         err: str = f"Expected xxhash {digest}, received {xxhash} for file '{path}' truncating from size {stats.st_size} -> {size}"
@@ -295,14 +296,13 @@ class CustomPatcher:  # noqa: D101
                         bdiff, zstd_dict=zst_dict.as_prefix, option=zst_opt
                     )
 
-                    # If file will become small, resize our map
+                    # If file will become small, decrease
                     if size < stats.st_size:
                         mm.resize(size)
 
-                    # Compute our expected digest
+                    # Verify
                     xxhash = xxh3_64_intdigest(mm)
 
-                    # Verify our data
                     if xxhash != digest:
                         err: str = f"Expected xxhash {digest}, received {xxhash} for file '{path}' truncating from size {stats.st_size} -> {size}"
                         raise ValueError(err)
@@ -331,8 +331,8 @@ class CustomPatcher:  # noqa: D101
 
             fp.truncate(size)
 
+            # Decompress our data and write to our file.
             with mmap(fp.fileno(), length=0, access=ACCESS_WRITE) as mm:
-                # Decompress our data and write to our file.
                 mm[:] = decompress(data)
                 xxhash = xxh3_64_intdigest(mm)
 
@@ -340,7 +340,6 @@ class CustomPatcher:  # noqa: D101
                     err: str = f"Expected xxhash {digest}, received {xxhash} for fd {fp.fileno()} from source {path}"
                     raise ValueError(err)
 
-                # Write to our file
                 with path.open("wb") as file:
                     os.sendfile(file.fileno(), fp.fileno(), 0, size)
                     os.fchmod(file.fileno(), mode)
