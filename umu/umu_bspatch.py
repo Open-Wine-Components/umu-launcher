@@ -15,9 +15,10 @@ with suppress(ModuleNotFoundError):
     from xxhash import xxh3_64_intdigest
 
 
-class FileType(Enum):  # noqa: D101
-    # All file types currently supported under mtree
-    # See mtree(1)
+class FileType(Enum):
+    """Represents an file type."""
+
+    # File types currently supported by mtree(1)
     File = "file"
     Block = "block"
     Char = "char"
@@ -27,8 +28,10 @@ class FileType(Enum):  # noqa: D101
     Socket = "socket"
 
 
-class Entry(TypedDict):  # noqa: D101
-    # BSDIFF data, zstd compressed data or symbolic link's target
+class Entry(TypedDict):
+    """Represents an entry within a patch section of a patch file."""
+
+    # Binary delta data, compressed data or symbolic link's target
     data: bytes
     # File mode bits as decimal
     mode: int
@@ -45,10 +48,12 @@ class Entry(TypedDict):  # noqa: D101
     size: int
 
 
-class ManifestEntry(TypedDict):  # noqa: D101
+class ManifestEntry(TypedDict):
+    """Represents an entry within a manifest section of a patch file."""
+
     # File mode bits as decimal
     mode: int
-    # File's name as a relative path with the base name of the ommitted
+    # File's name as a relative path with the base name omitted
     # e.g., protonfixes/gamefixes-umu/umu-zenlesszonezero.py
     name: str
     # xxhash result
@@ -59,7 +64,9 @@ class ManifestEntry(TypedDict):  # noqa: D101
     time: float
 
 
-class Content(TypedDict):  # noqa: D101
+class Content(TypedDict):
+    """Represent a child of the root section, containing patch sections of a patch file."""
+
     manifest: list[ManifestEntry]
     # List of binaries to add in target directory
     add: list[Entry]
@@ -71,7 +78,9 @@ class Content(TypedDict):  # noqa: D101
     target: str
 
 
-class ContentContainer(TypedDict):  # noqa: D101
+class ContentContainer(TypedDict):
+    """Represent the root section of a patch file."""
+
     contents: list[Content]
     # Ed25519 digital signature of 'contents'
     signature: bytes
@@ -84,7 +93,18 @@ MMAP_MIN = 16 * 1024
 ZSTD_WINDOW_LOG_MIN = 10
 
 
-class CustomPatcher:  # noqa: D101
+class CustomPatcher:
+    """Class for updating the contents within a compatibility tool directory.
+
+    Intended to update supported tools like Proton and the Steam Linux Runtime within
+    $XDG_DATA_HOME/umu.
+
+    Given a patch file and two directories, 'a' and 'b', that have similar structure
+    and where 'a' is already present on the system, will update all the contents within
+    'a' to recreate 'b'. The patch file format will drive behavior and will contain all
+    the necessary data and metadata to create 'b'.
+    """
+
     def __init__(  # noqa: D107
         self,
         content: Content,
@@ -101,7 +121,15 @@ class CustomPatcher:  # noqa: D101
         self._thread_pool = thread_pool
         self._futures: list[Future] = []
 
-    def add_binaries(self) -> None:  # noqa: D102
+    def add_binaries(self) -> None:
+        """Add binaries within a compatibility tool.
+
+        Handles the case where the subdirectory contents in 'b' are not in 'a'.
+
+        Will only operate on files, links and directories. Files will be recreated by
+        decompressing the data in the patch item. Links will be symlinked to its target
+        and directories will be created.
+        """
         # Create new files, if there are any items
         for item in self._arc_contents["add"]:
             build_file: Path = self._compat_tool.joinpath(item["name"])
@@ -143,7 +171,15 @@ class CustomPatcher:  # noqa: D101
                 item["type"],
             )
 
-    def update_binaries(self) -> None:  # noqa: D102
+    def update_binaries(self) -> None:
+        """Update binaries within a compatibility tool.
+
+        Handles the case where the subdirectory contents between 'a' and 'b' differ,
+        where 'b' is the new version.
+
+        Will apply a binary patch for files that need to be updated. Directories will
+        have its permissions changed. Links will be deleted.
+        """
         for item in self._arc_contents["update"]:
             build_file: Path = self._compat_tool.joinpath(item["name"])
             if item["type"] == FileType.File.value:
@@ -185,9 +221,15 @@ class CustomPatcher:  # noqa: D101
                 item["type"],
             )
 
-    def delete_binaries(self) -> None:  # noqa: D102
-        # Delete files, if there are any items. Only operate on links, normal
-        # files and directories while skipping everything else.
+    def delete_binaries(self) -> None:
+        """Delete obsolete binaries within a compatibility tool.
+
+        Handles the case where the subdirectory contents of 'b' are not in 'a',
+        where 'b' is the new version.
+
+        Will only operate on links, normal files, and directories while skipping
+        everything else.
+        """
         for item in self._arc_contents["delete"]:
             if (
                 item["type"] == FileType.File.value
@@ -208,7 +250,8 @@ class CustomPatcher:  # noqa: D101
                 item["type"],
             )
 
-    def verify_integrity(self) -> None:  # noqa: D102
+    def verify_integrity(self) -> None:
+        """Verify the expected mode, size, file and digest of the compatibility tool."""
         for item in self._arc_manifest:
             self._futures.append(
                 self._thread_pool.submit(
@@ -216,7 +259,8 @@ class CustomPatcher:  # noqa: D101
                 )
             )
 
-    def result(self) -> list[Future]:  # noqa: D102
+    def result(self) -> list[Future]:
+        """Return the currently submitted tasks."""
         return self._futures
 
     def _check_binaries(
@@ -301,7 +345,6 @@ class CustomPatcher:  # noqa: D101
                     if size < stats.st_size:
                         mm.resize(size)
 
-                    # Verify
                     xxhash = xxh3_64_intdigest(mm)
 
                     if xxhash != digest:
@@ -332,7 +375,7 @@ class CustomPatcher:  # noqa: D101
 
             fp.truncate(size)
 
-            # Decompress our data and write to our file.
+            # Decompress our data and write to our file
             with mmap(fp.fileno(), length=0, access=ACCESS_WRITE) as mm:
                 mm[:] = decompress(data)
                 xxhash = xxh3_64_intdigest(mm)
