@@ -273,10 +273,20 @@ class CustomPatcher:
                 stats: os.stat_result = os.fstat(fp.fileno())
                 xxhash: int = 0
                 if item["size"] != stats.st_size:
+                    log.error(
+                        "Expected size %s, received %s",
+                        item["size"],
+                        stats.st_size,
+                    )
                     return None
                 if item["mode"] != stats.st_mode:
                     return None
                 if item["time"] != stats.st_mtime:
+                    log.error(
+                        "Expected mode %s, received %s",
+                        item["mode"],
+                        stats.st_mode,
+                    )
                     return None
                 if stats.st_size > MMAP_MIN:
                     with mmap(fp.fileno(), length=0, access=ACCESS_READ) as mm:
@@ -285,6 +295,11 @@ class CustomPatcher:
                 else:
                     xxhash = xxh3_64_intdigest(fp.read())
                 if item["xxhash"] != xxhash:
+                    log.error(
+                        "Expected xxhash %s, received %s",
+                        item["xxhash"],
+                        xxhash,
+                    )
                     return None
         except FileNotFoundError:
             log.debug("Aborting partial update, file not found: %s", rpath)
