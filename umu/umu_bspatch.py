@@ -143,26 +143,10 @@ class CustomPatcher:
                 continue
             if item["type"] == FileType.Link.value:
                 build_file.symlink_to(item["data"])
-                os.utime(
-                    build_file,
-                    (
-                        build_file.stat(follow_symlinks=False).st_atime,
-                        item["time"],
-                    ),
-                    follow_symlinks=False,
-                )
                 continue
             if item["type"] == FileType.Dir.value:
                 build_file.mkdir(
                     mode=item["mode"], exist_ok=True, parents=True
-                )
-                os.utime(
-                    build_file,
-                    (
-                        build_file.stat(follow_symlinks=False).st_atime,
-                        item["time"],
-                    ),
-                    follow_symlinks=False,
                 )
                 continue
             log.warning(
@@ -193,27 +177,11 @@ class CustomPatcher:
             if item["type"] == FileType.Dir.value:
                 # For directories, change permissions
                 os.chmod(build_file, item["mode"], follow_symlinks=False)  # noqa: PTH101
-                os.utime(
-                    build_file,
-                    (
-                        build_file.stat(follow_symlinks=False).st_atime,
-                        item["time"],
-                    ),
-                    follow_symlinks=False,
-                )
                 continue
             if item["type"] == FileType.Link.value:
                 # For links, replace the links
                 build_file.unlink()
                 build_file.symlink_to(item["data"])
-                os.utime(
-                    build_file,
-                    (
-                        build_file.stat(follow_symlinks=False).st_atime,
-                        item["time"],
-                    ),
-                    follow_symlinks=False,
-                )
                 continue
             log.warning(
                 "Found file '%s' with type '%s', skipping its update",
@@ -280,8 +248,6 @@ class CustomPatcher:
                     )
                     return None
                 if item["mode"] != stats.st_mode:
-                    return None
-                if item["time"] != stats.st_mtime:
                     log.error(
                         "Expected mode %s, received %s",
                         item["mode"],
@@ -311,7 +277,6 @@ class CustomPatcher:
         bdiff: bytes = item["data"]
         digest: int = item["xxhash"]
         mode: int = item["mode"]
-        time: float = item["time"]
         size: int = item["size"]
 
         try:
@@ -338,7 +303,6 @@ class CustomPatcher:
                         raise ValueError(err)
 
                     os.fchmod(fp.fileno(), mode)
-                    os.utime(fp.fileno(), (stats.st_atime, time))
                     return
 
                 # Apply our patch to the file in-place
@@ -370,7 +334,6 @@ class CustomPatcher:
 
                 # Update the file's metadata
                 os.fchmod(fp.fileno(), mode)
-                os.utime(fp.fileno(), (stats.st_atime, time))
         except BaseException as e:
             log.exception(e)
             log.warning(
@@ -382,7 +345,6 @@ class CustomPatcher:
         data: bytes = item["data"]
         digest: int = item["xxhash"]
         mode: int = item["mode"]
-        time: float = item["time"]
         size: int = item["size"]
 
         with memfdfile(path.name) as fp:
@@ -402,8 +364,5 @@ class CustomPatcher:
                 with path.open("wb") as file:
                     os.sendfile(file.fileno(), fp.fileno(), 0, size)
                     os.fchmod(file.fileno(), mode)
-                    os.utime(
-                        file.fileno(), (os.fstat(fp.fileno()).st_atime, time)
-                    )
 
                 mm.madvise(MADV_DONTNEED, 0, size)
