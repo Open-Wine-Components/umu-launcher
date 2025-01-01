@@ -24,7 +24,7 @@ index 03b18fc4..bf018f7f 100644
  	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
  
  PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
-+CARGO_BIN := $(HOME)/.cargo/cargo
++CARGO_BIN := $(HOME)/.cargo/bin/cargo
  
  $(OBJDIR)/.build-umu-delta: | $(OBJDIR)
  	$(info :: Building delta dependencies )
