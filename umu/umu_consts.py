@@ -93,10 +93,3 @@ UMU_COMPAT: Path = XDG_DATA_HOME.joinpath("umu", "compatibilitytools")
 # Constant defined in prctl.h
 # See prctl(2) for more details
 PR_SET_CHILD_SUBREAPER = 36
-
-# sha512 digests of all umu maintainers' SSH public keys. Only relevant for
-# those creating patch files.
-# TODO: Add all public keys from relevant parties
-UMU_SSH_PUBLIC_KEYS = {
-    "5b0b4cd1dad99cd013d5a88cf27d6c7414db33ece7f3146f96fb0f62c64ec15317a22f3f05048ac29177be9d95c47856e01b6e2a3dc61dd8202df4156465899c"
-}
