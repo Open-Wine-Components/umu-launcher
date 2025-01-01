@@ -27,6 +27,7 @@ PYTHONDIR = /usr/lib/python3/dist-packages
 	dh $@
 
 override_dh_auto_configure:
+	patch -p1 < packaging/deb/debian/0001-debian-compile-using-latest-stable.patch
 	./configure.sh --prefix=/usr
 	
 override_dh_auto_build:

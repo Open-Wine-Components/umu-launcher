@@ -1,0 +1,37 @@
+From 20381cd1ae673bed6b11ca36ce7cc83ff8e7a794 Mon Sep 17 00:00:00 2001
+From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
+Date: Wed, 1 Jan 2025 13:42:06 -0800
+Subject: [PATCH] debian: compile using latest stable
+
+---
+ Makefile.in | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 03b18fc4..9631d2b4 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -3,6 +3,8 @@ PROJECT := umu-launcher
+ # Define the interpreters to use to prevent shebang complaints
+ PYTHON_INTERPRETER = /usr/bin/env python3
+ 
++SHELL_INTERPRETER = /usr/bin/env sh
++
+ # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
+ INSTALLDIR ?= umu
+ 
+@@ -173,7 +175,10 @@ PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(
+ 
+ $(OBJDIR)/.build-umu-delta: | $(OBJDIR)
+ 	$(info :: Building delta dependencies )
+-	cargo build -r
++	curl -LJO https://sh.rustup.rs
++	chmod u+x sh.rustup.rs
++	$(SHELL_INTERPRETER) sh.rustup.rs --default-toolchain stable -y
++	./.cargo/bin/cargo build -r
+ 	cp -a ./target/release/libumu_delta.so $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
+ 
+ .PHONY: umu-delta
+-- 
+2.47.1
+
