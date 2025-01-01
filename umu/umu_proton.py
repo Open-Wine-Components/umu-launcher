@@ -104,7 +104,7 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
 
 
 def _fetch_patch(session_pools: SessionPools) -> bytes:  # noqa: ARG001
-    if not find_spec("cbor2") and not find_spec("cryptography"):
+    if not find_spec("cbor2") and not find_spec("xxhash"):
         return b""
 
     # TODO: Refactor implementation to request patches from owc server and remove
