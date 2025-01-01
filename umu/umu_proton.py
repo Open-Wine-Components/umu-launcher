@@ -566,11 +566,10 @@ def _get_delta(
             sha512(cbor["public_key"].encode(encoding="utf-8")).hexdigest()
             not in UMU_SSH_PUBLIC_KEYS
         ):
-            # OWC maintainer forgot to add digest to whitelist, a different
-            # public key was accidentally used or patch was created by a
-            # 3rd party
+            # OWC maintainer forgot to add digest to whitelist, a different public key
+            # was accidentally used or patch was created by a 3rd party
             log.error(
-                "Digest mismatched for SSH public key '%s', skipping update",
+                "Digest mismatched for public key '%s', skipping update",
                 cbor.get("public_key"),
             )
             return None
@@ -603,13 +602,9 @@ def _get_delta(
                 continue
 
             patchers.append(_apply_delta(subdir, cache, content, thread_pool))
-            renames.append(
-                (
-                    subdir,
-                    subdir.parent / content["target"],
-                )
-            )
+            renames.append((subdir, subdir.parent / content["target"]))
 
+        # Wait for results and rename versioned subdirectories
         start: float = time.time_ns()
         for patcher in filter(None, patchers):
             for future in filter(None, patcher.result()):
@@ -631,10 +626,9 @@ def _apply_delta(
 ) -> CustomPatcher | None:
     patcher: CustomPatcher = CustomPatcher(content, path, cache, thread_pool)
 
-    # Verify the identity of the build. At this point the patch file is
-    # authenticated. Note, this will skip the update if the user had
-    # tinkered with their build. We do this so we can ensure the result
-    # of each binary patch isn't garbage
+    # Verify the identity of the build. At this point the patch file is authenticated.
+    # Note, this will skip the update if the user had tinkered with their build. We do
+    # this so we can ensure the result of each binary patch isn't garbage
     patcher.verify_integrity()
 
     is_updated = any(x.result() is None for x in patcher.result())
