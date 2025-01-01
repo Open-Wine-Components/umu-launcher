@@ -42,6 +42,7 @@ def unix_flock(path: str):
 def memfdfile(name: str) -> Generator[BufferedRandom, Any, None]:
     """Create an anonymous file."""
     fp: BufferedRandom | None = None
+
     try:
         fd = os.memfd_create(name, os.MFD_CLOEXEC)
         os.set_inheritable(fd, True)
