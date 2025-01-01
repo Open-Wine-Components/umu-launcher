@@ -1,14 +1,14 @@
-From 71e2328a511e144c03bdf62f79c3f0798d9ece5a Mon Sep 17 00:00:00 2001
+From 2c492c01f5ece3e6bc6bc433b6f6630244353a74 Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Wed, 1 Jan 2025 13:55:21 -0800
+Date: Wed, 1 Jan 2025 14:00:55 -0800
 Subject: [PATCH] debian: fix build by using rustup
 
 ---
- Makefile.in | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ Makefile.in | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 03b18fc4..e27e8c28 100644
+index 03b18fc4..bf018f7f 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -3,6 +3,8 @@ PROJECT := umu-launcher
@@ -20,7 +20,11 @@ index 03b18fc4..e27e8c28 100644
  # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
  INSTALLDIR ?= umu
  
-@@ -173,7 +175,10 @@ PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(
+@@ -170,10 +172,14 @@ zipapp-install: zipapp
+ 	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
+ 
+ PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
++CARGO_BIN := $(HOME)/.cargo/cargo
  
  $(OBJDIR)/.build-umu-delta: | $(OBJDIR)
  	$(info :: Building delta dependencies )
@@ -28,7 +32,7 @@ index 03b18fc4..e27e8c28 100644
 +	curl -LJO https://sh.rustup.rs
 +	chmod u+x ./rustup-init.sh
 +	$(SHELL_INTERPRETER) rustup-init.sh --default-toolchain stable -y
-+	./.cargo/bin/cargo build -r
++	$(CARGO_BIN) build -r
  	cp -a ./target/release/libumu_delta.so $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
  
  .PHONY: umu-delta
