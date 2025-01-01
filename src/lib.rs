@@ -1,31 +1,41 @@
+use base16ct::lower::encode_string;
 use pyo3::prelude::*;
+use sha2::{Digest, Sha512};
 use ssh_key::{PublicKey, SshSig};
-use std::io::{self};
 
 /// Required parameter to create/verify digital signatures
 /// See https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.sshsig?annotate=HEAD
 const NAMESPACE: &str = "umu.openwinecomponents.org";
 
+/// Whitelist of valid OpenSSH formatted, Ed25519 public keys
+/// Used for delta updates to create the root of trust
+const PUBLIC_KEYS: [&str; 1] = ["5b0b4cd1dad99cd013d5a88cf27d6c7414db33ece7f3146f96fb0f62c64ec15317a22f3f05048ac29177be9d95c47856e01b6e2a3dc61dd8202df4156465899c"];
+
 #[pyfunction]
-fn ssh_verify_rs(source: &str, message: &[u8], pem: &[u8]) -> io::Result<()> {
-    // Parse the public key
-    let public_key = PublicKey::from_openssh(source)
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+fn valid_key(source: &str) -> bool {
+    let hash = Sha512::digest(source.as_bytes());
+    let hash_hex = &encode_string(&hash);
+    PUBLIC_KEYS.contains(&hash_hex.as_str())
+}
 
-    // Parse the signature from the PEM format
-    let ssh_sig =
-        SshSig::from_pem(pem).map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
-
-    // Verify the signature
-    public_key
-        .verify(NAMESPACE, message, &ssh_sig)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
-
-    Ok(())
+#[pyfunction]
+fn valid_signature(source: &str, message: &[u8], pem: &[u8]) -> bool {
+    if let Err(e) = PublicKey::from_openssh(source) {
+        eprintln!("{}", e);
+        return false;
+    }
+    let public_key = PublicKey::from_openssh(source).unwrap();
+    if let Err(e) = SshSig::from_pem(pem) {
+        eprintln!("{}", e);
+        return false;
+    }
+    let ssh_sig = SshSig::from_pem(pem).unwrap();
+    public_key.verify(NAMESPACE, message, &ssh_sig).is_ok()
 }
 
 #[pymodule(name = "umu_delta")]
 fn umu(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(ssh_verify_rs, m)?)?;
+    m.add_function(wrap_pyfunction!(valid_signature, m)?)?;
+    m.add_function(wrap_pyfunction!(valid_key, m)?)?;
     Ok(())
 }
