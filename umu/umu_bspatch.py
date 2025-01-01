@@ -113,9 +113,7 @@ class CustomPatcher:
         thread_pool: ThreadPoolExecutor,
     ) -> None:
         self._arc_contents: Content = content
-        self._arc_manifest: list[ManifestEntry] = self._arc_contents[
-            "manifest"
-        ]
+        self._arc_manifest: list[ManifestEntry] = self._arc_contents["manifest"]
         self._compat_tool = compat_tool
         self._cache = cache
         self._thread_pool = thread_pool
@@ -136,18 +134,14 @@ class CustomPatcher:
             if item["type"] == FileType.File.value:
                 # Decompress the zstd data and write the file
                 self._futures.append(
-                    self._thread_pool.submit(
-                        self._write_proton_file, build_file, item
-                    )
+                    self._thread_pool.submit(self._write_proton_file, build_file, item)
                 )
                 continue
             if item["type"] == FileType.Link.value:
                 build_file.symlink_to(item["data"])
                 continue
             if item["type"] == FileType.Dir.value:
-                build_file.mkdir(
-                    mode=item["mode"], exist_ok=True, parents=True
-                )
+                build_file.mkdir(mode=item["mode"], exist_ok=True, parents=True)
                 continue
             log.warning(
                 "Found file '%s' with type '%s', skipping its inclusion",
@@ -169,9 +163,7 @@ class CustomPatcher:
             if item["type"] == FileType.File.value:
                 # For files, apply a binary patch
                 self._futures.append(
-                    self._thread_pool.submit(
-                        self._patch_proton_file, build_file, item
-                    )
+                    self._thread_pool.submit(self._patch_proton_file, build_file, item)
                 )
                 continue
             if item["type"] == FileType.Dir.value:
@@ -203,9 +195,7 @@ class CustomPatcher:
                 item["type"] == FileType.File.value
                 or item["type"] == FileType.Link.value
             ):
-                self._compat_tool.joinpath(item["name"]).unlink(
-                    missing_ok=True
-                )
+                self._compat_tool.joinpath(item["name"]).unlink(missing_ok=True)
                 continue
             if item["type"] == FileType.Dir.value:
                 self._thread_pool.submit(
@@ -222,9 +212,7 @@ class CustomPatcher:
         """Verify the expected mode, size, file and digest of the compatibility tool."""
         for item in self._arc_manifest:
             self._futures.append(
-                self._thread_pool.submit(
-                    self._check_binaries, self._compat_tool, item
-                )
+                self._thread_pool.submit(self._check_binaries, self._compat_tool, item)
             )
 
     def result(self) -> list[Future]:
@@ -242,16 +230,12 @@ class CustomPatcher:
                 xxhash: int = 0
                 if item["size"] != stats.st_size:
                     log.error(
-                        "Expected size %s, received %s",
-                        item["size"],
-                        stats.st_size,
+                        "Expected size %s, received %s", item["size"], stats.st_size
                     )
                     return None
                 if item["mode"] != stats.st_mode:
                     log.error(
-                        "Expected mode %s, received %s",
-                        item["mode"],
-                        stats.st_mode,
+                        "Expected mode %s, received %s", item["mode"], stats.st_mode
                     )
                     return None
                 if stats.st_size > MMAP_MIN:
@@ -261,11 +245,7 @@ class CustomPatcher:
                 else:
                     xxhash = xxh3_64_intdigest(fp.read())
                 if item["xxhash"] != xxhash:
-                    log.error(
-                        "Expected xxhash %s, received %s",
-                        item["xxhash"],
-                        xxhash,
-                    )
+                    log.error("Expected xxhash %s, received %s", item["xxhash"], xxhash)
                     return None
         except FileNotFoundError:
             log.debug("Aborting partial update, file not found: %s", rpath)
@@ -299,7 +279,10 @@ class CustomPatcher:
 
                     xxhash = xxh3_64_intdigest(fp.read())
                     if xxhash != digest:
-                        err: str = f"Expected xxhash {digest}, received {xxhash} for file '{path}' truncating from size {stats.st_size} -> {size}"
+                        err: str = (
+                            f"Expected xxhash {digest}, received {xxhash} for file "
+                            f"'{path}' truncating from size {stats.st_size} -> {size}"
+                        )
                         raise ValueError(err)
 
                     os.fchmod(fp.fileno(), mode)
@@ -327,7 +310,10 @@ class CustomPatcher:
                     xxhash = xxh3_64_intdigest(mm)
 
                     if xxhash != digest:
-                        err: str = f"Expected xxhash {digest}, received {xxhash} for file '{path}' truncating from size {stats.st_size} -> {size}"
+                        err: str = (
+                            f"Expected xxhash {digest}, received {xxhash} for "
+                            f"file '{path}' truncating from size {stats.st_size} -> {size}"
+                        )
                         raise ValueError(err)
 
                     mm.madvise(MADV_DONTNEED, 0, size)
@@ -336,9 +322,7 @@ class CustomPatcher:
                 os.fchmod(fp.fileno(), mode)
         except BaseException as e:
             log.exception(e)
-            log.warning(
-                "File '%s' may be corrupt and has mode bits 0o700", path
-            )
+            log.warning("File '%s' may be corrupt and has mode bits 0o700", path)
             raise
 
     def _write_proton_file(self, path: Path, item: Entry) -> None:
@@ -358,7 +342,10 @@ class CustomPatcher:
                 xxhash = xxh3_64_intdigest(mm)
 
                 if xxhash != digest:
-                    err: str = f"Expected xxhash {digest}, received {xxhash} for fd {fp.fileno()} from source {path}"
+                    err: str = (
+                        f"Expected xxhash {digest}, received {xxhash} for fd "
+                        f"{fp.fileno()} from source {path}"
+                    )
                     raise ValueError(err)
 
                 with path.open("wb") as file:
