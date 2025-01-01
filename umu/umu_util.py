@@ -38,6 +38,7 @@ def unix_flock(path: str):
             os.close(fd)
 
 
+@contextmanager
 def memfdfile(name: str) -> Generator[BufferedRandom, Any, None]:
     """Create an anonymous file."""
     fp: BufferedRandom | None = None
