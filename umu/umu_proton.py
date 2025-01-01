@@ -369,7 +369,7 @@ def _get_latest(
     proton: str
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
     version: str = ProtonVersion.UMU.value
-    lock: FileLock
+    lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
     latest_candidates: set[str]
 
     if not assets:
@@ -537,7 +537,7 @@ def _get_delta(
     )
     proton: Path = umu_compat.joinpath(version)
     cbor: ContentContainer
-    lock: FileLock
+    lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
 
     if not proton.is_dir():
         log.debug("File '%s' does not exist, skipping update", proton)
@@ -557,10 +557,9 @@ def _get_delta(
         log.exception(e)
         return None
 
-    lock = FileLock(f"{UMU_LOCAL}/compatibilitytools.d.lock")
-    log.debug("Acquiring lock '%s'", lock.lock_file)
-    with lock:
-        log.debug("Acquired lock '%s'", lock.lock_file)
+    log.debug("Acquiring lock '%s'", lockfile)
+    with unix_flock(lockfile):
+        log.debug("Acquired lock '%s'", lockfile)
 
         # Validate the integrity of the embedded public key
         if (
