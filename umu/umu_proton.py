@@ -21,14 +21,7 @@ from umu.umu_bspatch import (
     ContentContainer,
     CustomPatcher,
 )
-from umu.umu_consts import (
-    STEAM_COMPAT,
-    UMU_CACHE,
-    UMU_COMPAT,
-    UMU_LOCAL,
-    UMU_SSH_PUBLIC_KEYS,
-    HTTPMethod,
-)
+from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_COMPAT, UMU_LOCAL, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
@@ -549,7 +542,7 @@ def _get_delta(
 
     from cbor2 import CBORDecodeError, dumps, loads
 
-    from .umu_delta import ssh_verify_rs
+    from .umu_delta import valid_key, valid_signature
 
     try:
         cbor = loads(patch)
@@ -561,11 +554,9 @@ def _get_delta(
     with unix_flock(lockfile):
         log.debug("Acquired lock '%s'", lockfile)
 
-        # Validate the integrity of the embedded public key
-        if (
-            sha512(cbor["public_key"].encode(encoding="utf-8")).hexdigest()
-            not in UMU_SSH_PUBLIC_KEYS
-        ):
+        # Validate the integrity of the embedded public key. Use RustCrypto's SHA2
+        # implementation to keep the security boundary consistent
+        if not valid_key(cbor["public_key"]):
             # OWC maintainer forgot to add digest to whitelist, a different public key
             # was accidentally used or patch was created by a 3rd party
             log.error(
@@ -575,13 +566,11 @@ def _get_delta(
             return None
 
         # With the public key, verify the signature and data
-        try:
-            ssh_verify_rs(
-                cbor["public_key"],
-                dumps(cbor["contents"], canonical=True),
-                cbor["signature"],
-            )
-        except OSError:
+        if not valid_signature(
+            cbor["public_key"],
+            dumps(cbor["contents"], canonical=True),
+            cbor["signature"],
+        ):
             log.error("Digital signature verification failed, skipping update")
             return None
 
