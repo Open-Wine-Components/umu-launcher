@@ -109,13 +109,11 @@ class CustomPatcher:
         self,
         content: Content,
         compat_tool: Path,
-        cache: Path,
         thread_pool: ThreadPoolExecutor,
     ) -> None:
         self._arc_contents: Content = content
         self._arc_manifest: list[ManifestEntry] = self._arc_contents["manifest"]
         self._compat_tool = compat_tool
-        self._cache = cache
         self._thread_pool = thread_pool
         self._futures: list[Future] = []
 
