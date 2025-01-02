@@ -1057,7 +1057,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertRaises(FileNotFoundError),
             patch.object(umu_proton, "_fetch_releases", return_value=None),
             patch.object(umu_proton, "_get_latest", return_value=None),
-            patch.object(umu_proton, "_get_from_steamcompat", return_value=None),
+            patch.object(umu_proton, "_get_from_compat", return_value=None),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
@@ -1084,7 +1084,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertRaises(FileNotFoundError),
             patch.object(umu_proton, "_fetch_releases", return_value=None),
             patch.object(umu_proton, "_get_latest", return_value=None),
-            patch.object(umu_proton, "_get_from_steamcompat", return_value=None),
+            patch.object(umu_proton, "_get_from_compat", return_value=None),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
@@ -1280,20 +1280,22 @@ class TestGameLauncher(unittest.TestCase):
         Path(f"{latest}.sha512sum").unlink()
 
     def test_steamcompat_nodir(self):
-        """Test _get_from_steamcompat when Proton doesn't exist in compat dir.
+        """Test _get_from_compat when Proton doesn't exist in compat dir.
 
         In this case, None should be returned to signal that we should
         continue with downloading the latest Proton
         """
         result = None
 
-        result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
+        result = umu_proton._get_from_compat(
+            self.env, (self.test_umu_compat, self.test_compat)
+        )
 
-        self.assertFalse(result, "Expected None after calling _get_from_steamcompat")
+        self.assertFalse(result, "Expected None after calling _get_from_compat")
         self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to not be set")
 
     def test_steamcompat(self):
-        """Test _get_from_steamcompat.
+        """Test _get_from_compat.
 
         When a Proton exist in .local/share/Steam/compatibilitytools.d, use it
         when PROTONPATH is unset
@@ -1303,7 +1305,9 @@ class TestGameLauncher(unittest.TestCase):
         umu_util.extract_tarfile(self.test_archive, self.test_archive.parent)
         move(str(self.test_archive).removesuffix(".tar.gz"), self.test_compat)
 
-        result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
+        result = umu_proton._get_from_compat(
+            self.env, (self.test_umu_compat, self.test_compat)
+        )
 
         self.assertTrue(result is self.env, "Expected the same reference")
         self.assertEqual(
