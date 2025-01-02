@@ -391,11 +391,7 @@ def _get_latest(
 
             # Extract the archive then move the directory
             _install_proton(tarball, session_caches, compat_tools)
-    except (
-        ValueError,
-        KeyboardInterrupt,
-        HTTPError,
-    ) as e:
+    except (ValueError, KeyboardInterrupt, HTTPError) as e:
         log.exception(e)
         return None
     except FileExistsError:
@@ -456,9 +452,7 @@ def _install_proton(
     # $XDG_DATA_HOME/umu/compatibilitytools
     if os.environ.get("PROTONPATH") in latest_candidates:
         log.info(
-            "%s -> %s",
-            cache.joinpath(tarball.removesuffix(".tar.gz")),
-            umu_compat,
+            "%s -> %s", cache.joinpath(tarball.removesuffix(".tar.gz")), umu_compat
         )
         move(
             cache.joinpath(tarball.removesuffix(".tar.gz")),
@@ -466,9 +460,7 @@ def _install_proton(
         )
     else:
         log.info(
-            "%s -> %s",
-            cache.joinpath(tarball.removesuffix(".tar.gz")),
-            steam_compat,
+            "%s -> %s", cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat
         )
         move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
 
@@ -485,17 +477,17 @@ def _get_delta(
         "GE-Latest" if os.environ.get("PROTONPATH") == "GE-Latest" else "UMU-Latest"
     )
     proton: Path = umu_compat.joinpath(version)
-    cbor: ContentContainer
     lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
+    cbor: ContentContainer
+
+    if not assets:
+        return None
 
     if os.environ.get("PROTONPATH") not in {
         ProtonVersion.GELatest.value,
         ProtonVersion.UMULatest.value,
     }:
         log.debug("PROTONPATH not *-Latest, skipping")
-        return None
-
-    if not assets:
         return None
 
     if not patch:
@@ -541,7 +533,7 @@ def _get_delta(
             # OWC maintainer forgot to add digest to whitelist, a different public key
             # was accidentally used or patch was created by a 3rd party
             log.error(
-                "Digest mismatched for public key '%s', skipping update",
+                "Digest mismatched for public key '%s', skipping",
                 cbor.get("public_key"),
             )
             return None
@@ -552,7 +544,7 @@ def _get_delta(
             dumps(cbor["contents"], canonical=True),
             cbor["signature"],
         ):
-            log.error("Digital signature verification failed, skipping update")
+            log.error("Digital signature verification failed, skipping")
             return None
 
         patchers: list[CustomPatcher | None] = []
