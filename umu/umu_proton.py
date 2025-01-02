@@ -383,18 +383,18 @@ def _get_latest(
             if steam_compat.joinpath(proton).is_dir():
                 raise FileExistsError
 
-        # Once acquiring the lock check if Proton hasn't been installed
-        if (
-            steam_compat.joinpath(proton).is_dir()
-            or umu_compat.joinpath(version).is_dir()
-        ):
-            raise FileExistsError
+            # Once acquiring the lock check if Proton hasn't been installed
+            if (
+                steam_compat.joinpath(proton).is_dir()
+                or umu_compat.joinpath(version).is_dir()
+            ):
+                raise FileExistsError
 
-        # Download the archive to a temporary directory
-        _fetch_proton(env, session_caches, assets, session_pools)
+            # Download the archive to a temporary directory
+            _fetch_proton(env, session_caches, assets, session_pools)
 
-        # Extract the archive then move the directory
-        _install_proton(tarball, session_caches, compat_tools)
+            # Extract the archive then move the directory
+            _install_proton(tarball, session_caches, compat_tools)
     except (
         ValueError,
         KeyboardInterrupt,
