@@ -380,10 +380,6 @@ def _get_latest(
         log.debug("Acquiring file lock '%s'...", lockfile)
         with unix_flock(lockfile):
             # Once acquiring the lock check if Proton hasn't been installed
-            if steam_compat.joinpath(proton).is_dir():
-                raise FileExistsError
-
-            # Once acquiring the lock check if Proton hasn't been installed
             if (
                 steam_compat.joinpath(proton).is_dir()
                 or umu_compat.joinpath(version).is_dir()
