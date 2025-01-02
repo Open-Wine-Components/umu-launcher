@@ -297,20 +297,16 @@ def _fetch_proton(
 def _get_from_compat(
     env: dict[str, str], compats: tuple[Path, Path]
 ) -> dict[str, str] | None:
-    """Refer to Steam's compatibilitytools.d folder for any existing Protons.
+    """Refer to any 'compatibilitytools' folders for any existing Protons.
 
     When an error occurs in the process of using the latest Proton build either
     from a digest mismatch, request failure or unreachable network, the latest
     existing Proton build of that same version will be used
     """
-    version: str = os.environ.get("PROTONPATH", "")
-    proton_versions: set[str] = {member.value for member in ProtonVersion}
+    version: str = os.environ.get("PROTONPATH", ProtonVersion.UMU.value)
 
-    if version not in proton_versions:
-        return None
-
-    try:
-        for compat in compats:
+    for compat in compats:
+        try:
             latest: Path = max(
                 filter(
                     lambda proton: proton.name.startswith(version), compat.glob("*")
@@ -324,11 +320,11 @@ def _get_from_compat(
             log.info("Using %s", latest.name)
             os.environ["PROTONPATH"] = str(latest)
             env["PROTONPATH"] = os.environ["PROTONPATH"]
-            break
-    except ValueError:
-        return None
+            return env
+        except ValueError:
+            continue
 
-    return env
+    return None
 
 
 def _get_latest(
