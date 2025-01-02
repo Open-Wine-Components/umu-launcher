@@ -1,14 +1,15 @@
-From 2c492c01f5ece3e6bc6bc433b6f6630244353a74 Mon Sep 17 00:00:00 2001
+From 0c938fb23479d7d7a95f83850572089c446026e8 Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Wed, 1 Jan 2025 14:00:55 -0800
+Date: Thu, 2 Jan 2025 09:31:31 -0800
 Subject: [PATCH] debian: fix build by using rustup
 
 ---
- Makefile.in | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ Makefile.in                  | 8 +++++++-
+ packaging/deb/debian/control | 1 +
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 03b18fc4..bf018f7f 100644
+index 03b18fc4..bbb7d5bf 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -3,6 +3,8 @@ PROJECT := umu-launcher
@@ -36,6 +37,18 @@ index 03b18fc4..bf018f7f 100644
  	cp -a ./target/release/libumu_delta.so $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
  
  .PHONY: umu-delta
+diff --git a/packaging/deb/debian/control b/packaging/deb/debian/control
+index 98ab7a4a..eec2c26f 100644
+--- a/packaging/deb/debian/control
++++ b/packaging/deb/debian/control
+@@ -14,6 +14,7 @@ Build-Depends:
+  python3-installer,
+  python3-build,
+  python3-pip,
++ curl,
+ Standards-Version: 4.6.2
+ Homepage: https://github.com/Open-Wine-Components/umu-launcher
+ Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
 -- 
 2.47.1
 
