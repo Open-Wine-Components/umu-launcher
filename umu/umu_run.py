@@ -132,15 +132,20 @@ def check_env(
     if os.environ.get("UMU_NO_PROTON") == "1":
         return env
 
+    path: Path = STEAM_COMPAT.joinpath(os.environ.get("PROTONPATH", ""))
+    if os.environ.get("PROTONPATH") and path.name == "UMU-Latest":
+        path.unlink(missing_ok=True)
+
     # Proton Version
-    if (
-        os.environ.get("PROTONPATH")
-        and Path(STEAM_COMPAT, os.environ["PROTONPATH"]).is_dir()
-    ):
+    if os.environ.get("PROTONPATH") and path.is_dir():
         os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
 
     # GE-Proton
-    if os.environ.get("PROTONPATH") == "GE-Proton":
+    if os.environ.get("PROTONPATH") in {
+        "GE-Proton",
+        "GE-Latest",
+        "UMU-Latest",
+    }:
         get_umu_proton(env, session_pools)
 
     if "PROTONPATH" not in os.environ:

@@ -66,9 +66,9 @@ umu-dist-install: umu-dist
 	$(PYTHON_INTERPRETER)  -m installer --destdir=$(DESTDIR) $(OBJDIR)/*.whl
 
 ifeq ($(FLATPAK), xtrue)
-umu-install: umu-dist-install
+umu-install: umu-dist-install umu-delta-install
 else
-umu-install: umu-dist-install umu-docs-install
+umu-install: umu-dist-install umu-delta-install umu-docs-install 
 endif
 
 ifeq ($(FLATPAK), xtrue)
@@ -102,6 +102,7 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
 	python3 -m pip install urllib3 -t $(OBJDIR)
+	python3 -m pip install pyzstd  --config-settings="--build-option=--dynamic-link-zstd" -t $(OBJDIR)
 
 .PHONY: umu-vendored
 umu-vendored: $(OBJDIR)/.build-umu-vendored
@@ -110,6 +111,7 @@ umu-vendored-install: umu-vendored
 	$(info :: Installing subprojects )
 	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 	cp      -r $(OBJDIR)/urllib3 $(DESTDIR)$(PYTHONDIR)/umu/_vendor
+	cp      -r $(OBJDIR)/pyzstd  $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 
 $(OBJDIR):
 	@mkdir -p $(@)
@@ -166,5 +168,19 @@ zipapp-install: zipapp
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -Dm755 -p $(ZIPAPP) $(DESTDIR)$(BINDIR)
 	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
+
+PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
+
+$(OBJDIR)/.build-umu-delta: | $(OBJDIR)
+	$(info :: Building delta dependencies )
+	cargo build -r
+	cp -a ./target/release/libumu_delta.so $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
+
+.PHONY: umu-delta
+umu-delta: $(OBJDIR)/.build-umu-delta
+
+umu-delta-install: umu-delta
+	$(info :: Installing delta dependencies )
+	install -Dm755 $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG) $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
 
 # vim: ft=make
