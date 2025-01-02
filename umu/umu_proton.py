@@ -485,7 +485,7 @@ def _get_delta(
     env: dict[str, str],
     umu_compat: Path,
     patch: bytes,
-    assets: tuple[tuple[str, str], tuple[str, str]],
+    assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()],
     session_pools: SessionPools,
 ) -> dict[str, str] | None:
     thread_pool, _ = session_pools
@@ -532,7 +532,8 @@ def _get_delta(
         try:
             with vdf.open(encoding="utf-8") as file:
                 # We're up to date if the internal tool is the GH asset name w/o suffix
-                if any(filter(lambda line: build in line, file)):
+                # Ignore. See https://github.com/python/mypy/issues/12682
+                if any(filter(lambda line: build in line, file)):  # type: ignore
                     log.info("%s is up to date", version)
                     os.environ["PROTONPATH"] = str(umu_compat.joinpath(version))
                     env["PROTONPATH"] = os.environ["PROTONPATH"]

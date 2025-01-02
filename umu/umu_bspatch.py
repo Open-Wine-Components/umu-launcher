@@ -238,7 +238,11 @@ class CustomPatcher:
                     return None
                 if stats.st_size > MMAP_MIN:
                     with mmap(fp.fileno(), length=0, access=ACCESS_READ) as mm:
-                        xxhash = xxh3_64_intdigest(mm)
+                        # Ignore. According to the docs:
+                        # "Memory-mapped file objects behave like both bytearray and
+                        # like file objects. You can use mmap objects in most places
+                        # where bytearray are expected;"
+                        xxhash = xxh3_64_intdigest(mm)  # type: ignore
                         mm.madvise(MADV_DONTNEED, 0, stats.st_size)
                 else:
                     xxhash = xxh3_64_intdigest(fp.read())
@@ -305,7 +309,8 @@ class CustomPatcher:
                     if size < stats.st_size:
                         mm.resize(size)
 
-                    xxhash = xxh3_64_intdigest(mm)
+                    # Ignore. Passing an mmap is valid
+                    xxhash = xxh3_64_intdigest(mm)  # type: ignore
 
                     if xxhash != digest:
                         err: str = (
@@ -337,7 +342,8 @@ class CustomPatcher:
             # Decompress our data and write to our file
             with mmap(fp.fileno(), length=0, access=ACCESS_WRITE) as mm:
                 mm[:] = decompress(data)
-                xxhash = xxh3_64_intdigest(mm)
+                # Ignore. Passing an mmap is valid
+                xxhash = xxh3_64_intdigest(mm)  # type: ignore
 
                 if xxhash != digest:
                     err: str = (
