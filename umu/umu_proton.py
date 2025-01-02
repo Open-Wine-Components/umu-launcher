@@ -517,7 +517,8 @@ def _get_delta(
             with vdf.open(encoding="utf-8") as file:
                 # We're up to date if the internal tool is the GH asset name w/o suffix
                 # Ignore. See https://github.com/python/mypy/issues/12682
-                if any(filter(lambda line: build in line, file)):  # type: ignore
+                is_updated: bool = any(filter(lambda line: build in line, file))  # type: ignore
+                if is_updated:
                     log.info("%s is up to date", version)
                     os.environ["PROTONPATH"] = str(umu_compat.joinpath(version))
                     env["PROTONPATH"] = os.environ["PROTONPATH"]
