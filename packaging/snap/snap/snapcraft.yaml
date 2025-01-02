@@ -246,6 +246,9 @@ parts:
     plugin: nil
     stage-packages:
       - python3-xlib
+      - python3-xxhash
+      - python3-cbor2
+      - libzstd
     prime:
       - usr/lib/python3
 

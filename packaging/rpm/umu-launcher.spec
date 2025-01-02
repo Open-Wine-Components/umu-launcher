@@ -40,6 +40,10 @@ Requires:	python
 Requires:	python3
 Requires:	python3-xlib
 
+Recommends:	python3-cbor2
+Recommends:	python3-xxhash
+Recommends:	libzstd
+
 
 %description
 %{name} A tool for launching non-steam games with proton
