@@ -70,8 +70,10 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
     ):
         tmpdirs: SessionCaches = (Path(tmp), Path(tmpcache))
         if _get_latest(env, STEAM_COMPAT, tmpdirs, assets, session_pools) is env:
+        compatdirs = (UMU_COMPAT, STEAM_COMPAT)
             return env
         if _get_from_steamcompat(env, STEAM_COMPAT) is env:
+        if _get_from_compat(env, compatdirs) is env:
             return env
 
     os.environ["PROTONPATH"] = ""
@@ -299,39 +301,37 @@ def _fetch_proton(
     return env
 
 
-def _get_from_steamcompat(
-    env: dict[str, str], steam_compat: Path
+def _get_from_compat(
+    env: dict[str, str], compats: tuple[Path, Path]
 ) -> dict[str, str] | None:
-    """Refer to Steam's compatibilitytools.d folder for any existing Protons.
+    """Refer to any 'compatibilitytools' folders for any existing Protons.
 
     When an error occurs in the process of using the latest Proton build either
     from a digest mismatch, request failure or unreachable network, the latest
     existing Proton build of that same version will be used
     """
-    version: str = (
-        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
-    )
+    version: str = os.environ.get("PROTONPATH", ProtonVersion.UMU.value)
 
-    try:
-        latest: Path = max(
-            (
-                proton
-                for proton in steam_compat.glob("*")
-                if proton.name.startswith(version)
-            ),
-            key=lambda proton: [
-                int(text) if text.isdigit() else text.lower()
-                for text in resplit(r"(\d+)", proton.name)
-            ],
-        )
-        log.info("%s found in '%s'", latest.name, steam_compat)
-        log.info("Using %s", latest.name)
-        os.environ["PROTONPATH"] = str(latest)
-        env["PROTONPATH"] = os.environ["PROTONPATH"]
-    except ValueError:
-        return None
+    for compat in compats:
+        try:
+            latest: Path = max(
+                filter(
+                    lambda proton: proton.name.startswith(version), compat.glob("*")
+                ),
+                key=lambda proton: [
+                    int(text) if text.isdigit() else text.lower()
+                    for text in resplit(r"(\d+)", proton.name)
+                ],
+            )
+            log.info("%s found in '%s'", latest.name, compat)
+            log.info("Using %s", latest.name)
+            os.environ["PROTONPATH"] = str(latest)
+            env["PROTONPATH"] = os.environ["PROTONPATH"]
+            return env
+        except ValueError:
+            continue
 
-    return env
+    return None
 
 
 def _get_latest(
