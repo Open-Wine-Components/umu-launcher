@@ -389,9 +389,6 @@ def _get_latest(
             _fetch_proton(env, session_caches, assets, session_pools)
 
             # Extract the archive then move the directory
-            _install_proton(
-                tarball, session_caches, steam_compat, session_pools
-            )
     except (
         ValueError,
         KeyboardInterrupt,
