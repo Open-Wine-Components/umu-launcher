@@ -412,35 +412,23 @@ def _get_latest(
 def _install_proton(
     tarball: str,
     session_caches: SessionCaches,
-    steam_compat: Path,
-    session_pools: SessionPools,
+    compat_tools: tuple[Path, Path],
 ) -> None:
     """Install a Proton directory to Steam's compatibilitytools.d.
 
     An installation is primarily composed of two steps: extract and move. A
     UMU-Proton or GE-Proton build will first be extracted to a secure temporary
     directory then moved to compatibilitytools.d, which is expected to be in
-    $HOME. In the case of UMU-Proton, an installation will include a remove
-    step, where old builds will be removed in parallel.
+    $HOME.
     """
-    future: Future | None = None
+    umu_compat, steam_compat = compat_tools
     tmpfs, cache = session_caches
-    thread_pool, _ = session_pools
     parts: str = f"{tarball}.parts"
     cached_parts: Path = cache.parent.joinpath(f"{tarball}.parts")
-    version: str = (
-        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
-    )
-
-    # TODO: Refactor when differential updates are implemented.
-    # Remove all previous builds when the build is UMU-Proton
-    if version == "UMU-Proton":
-        protons: list[Path] = [
-            file
-            for file in steam_compat.glob("*")
-            if file.name.startswith(("UMU-Proton", "ULWGL-Proton"))
-        ]
-        future = thread_pool.submit(_update_proton, protons, thread_pool)
+    latest_candidates: set[str] = {
+        ProtonVersion.GELatest.value,
+        ProtonVersion.UMULatest.value,
+    }
 
     # Move our file and extract within our cache
     if cached_parts.is_file():
@@ -460,11 +448,21 @@ def _install_proton(
         log.info("Extracting %s...", tarball)
         extract_tarfile(cache.joinpath(tarball), cache.joinpath(tarball).parent)
 
-    # Move decompressed archive to compatibilitytools.d
-    log.info(
-        "%s -> %s",
-        cache.joinpath(tarball.removesuffix(".tar.gz")),
-        steam_compat,
+    # Move decompressed archive to compatibilitytools.d or
+    # $XDG_DATA_HOME/umu/compatibilitytools
+    if os.environ.get("PROTONPATH") in latest_candidates:
+        log.info(
+            "%s -> %s", cache.joinpath(tarball.removesuffix(".tar.gz")), umu_compat
+        )
+        move(
+            cache.joinpath(tarball.removesuffix(".tar.gz")),
+            umu_compat / os.environ["PROTONPATH"],
+        )
+    else:
+        log.info(
+            "%s -> %s", cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat
+        )
+        move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
     )
     move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
 
