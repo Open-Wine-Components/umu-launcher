@@ -2,6 +2,7 @@ import os
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha512
 from http import HTTPStatus
+from importlib.util import find_spec
 from pathlib import Path
 from re import split as resplit
 from shutil import move, rmtree
@@ -13,7 +14,7 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
-from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_LOCAL, HTTPMethod
+from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_COMPAT, UMU_LOCAL, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
@@ -50,12 +51,16 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
     # First element is the digest asset, second is the Proton asset. Each asset
     # will contain the asset's name and the URL that hosts it.
     assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()] = ()
+    patch: bytes = b""
+
     STEAM_COMPAT.mkdir(exist_ok=True, parents=True)
     UMU_CACHE.mkdir(parents=True, exist_ok=True)
 
     try:
         log.debug("Sending request to 'api.github.com'...")
         assets = _fetch_releases(session_pools)
+        # TODO: Refactor this function later. It's basically the same as _fetch_releases
+        patch = _fetch_patch(session_pools)
     except HTTPError:
         log.debug("Network is unreachable")
 
@@ -72,6 +77,45 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
     os.environ["PROTONPATH"] = ""
 
     return env
+
+
+def _fetch_patch(session_pools: SessionPools) -> bytes:
+    resp: BaseHTTPResponse
+    releases: list[dict[str, Any]]
+    _, http_pool = session_pools
+    url: str = "https://api.github.com"
+    repo: str = "/repos/Open-Wine-Components/umu-mkpatch/releases/latest"
+    headers: dict[str, str] = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "",
+    }
+    durl: str = ""
+
+    if not find_spec("cbor2") and not find_spec("xxhash"):
+        return b""
+
+    resp = http_pool.request(HTTPMethod.GET.value, f"{url}{repo}", headers=headers)
+    if resp.status != HTTPStatus.OK:
+        return b""
+
+    releases = resp.json().get("assets", [])
+    for release in filter(
+        lambda item: item["name"].endswith("cbor")
+        and item["name"].startswith(os.environ["PROTONPATH"]),
+        releases,
+    ):
+        durl = release["browser_download_url"]
+        break
+
+    if not durl:
+        return b""
+
+    resp = http_pool.request(HTTPMethod.GET.value, durl, headers=headers)
+    if resp.status != HTTPStatus.OK:
+        return b""
+
+    return resp.data
 
 
 def _fetch_releases(
