@@ -27,6 +27,7 @@ PYTHONDIR = /usr/lib/python3/dist-packages
 	dh $@
 
 override_dh_auto_configure:
+	patch -p1 < packaging/deb/0001-deb-fix-build-by-using-rustup.patch
 	./configure.sh --prefix=/usr
 	
 override_dh_auto_build:
