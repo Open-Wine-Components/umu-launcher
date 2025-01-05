@@ -117,12 +117,16 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     releases = resp.json() or []
     for release in releases:
         for asset in release.get("assets", []):
-            if not asset["name"].endswith("cbor") and not asset["name"].startswith(
-                (ProtonVersion.GELatest.value, ProtonVersion.UMULatest.value)
-            ):
+            if not asset["name"].endswith("cbor"):
                 continue
-            durl = asset["browser_download_url"]
-            break
+            if asset["name"].startswith(os.environ["PROTONPATH"]):
+                durl = asset["browser_download_url"]
+                log.info("URL: %s", durl)
+                break
+            if asset["name"].startswith(os.environ["PROTONPATH"]):
+                durl = asset["browser_download_url"]
+                log.info("URL: %s", durl)
+                break
 
     if not durl:
         return b""
