@@ -135,7 +135,8 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     if resp.status != HTTPStatus.OK:
         return b""
 
-    return resp.data
+    # Typing. False negative in mypy and urllib3's (v2) API guarantees the type
+    return resp.data  # type: ignore
 
 
 def _fetch_releases(
