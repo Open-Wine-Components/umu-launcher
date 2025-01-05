@@ -419,13 +419,16 @@ def _get_latest(
         # Proton was installed by another proc, continue
         pass
 
-    os.environ["PROTONPATH"] = (
-        str(umu_compat.joinpath(version))
-        if version in latest_candidates
-        else str(steam_compat.joinpath(proton))
-    )
+    # At this point, Proton is installed
+    # Now depending on the codename, use a different base path
+    if version in latest_candidates:
+        os.environ["PROTONPATH"] = str(umu_compat.joinpath(version))
+        log.info("Using %s", version)
+    else:
+        os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
+        log.info("Using %s", proton)
+
     env["PROTONPATH"] = os.environ["PROTONPATH"]
-    log.info("Using %s", proton)
 
     return env
 
