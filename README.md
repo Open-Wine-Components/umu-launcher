@@ -81,6 +81,8 @@ Borderlands 3 from EGS store.
 
 Building umu-launcher currently requires `bash`, `make`, and `scdoc` for distribution, as well as the following Python build tools: [build](https://github.com/pypa/build), [hatchling](https://github.com/pypa/hatch), [installer](https://github.com/pypa/installer), and [pip](https://github.com/pypa/pip).
 
+Additionally, [cargo](https://github.com/rust-lang/cargo) will be required with the minimum MSRV being the latest stable versions of it's direct dependencies.
+
 To build umu-launcher, after downloading and extracting the source code from this repository, change into the newly extracted directory
 ```shell
 cd umu-launcher
@@ -159,6 +161,7 @@ let
   umu = inputs.umu.packages.${system}.umu.override {
     version = inputs.umu.shortRev;
     truststore = true;
+    cbor2 = true;
   };
 in
 {
@@ -166,7 +169,7 @@ in
 }
 ```
 > [!NOTE]
-> truststore is an optional dependency that is enabled by default if you want to keep it that way you can remove the `truststore = true;` part
+> truststore and cbor2 (for delta updates) are optional dependency which are enabled by default if you want to keep it that way you can remove the `truststore = true; cbor2 = true;` part
 
 > [!NOTE]
 > The example above relies on having your flake's `inputs` passed through to your nixos configuration.
