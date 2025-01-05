@@ -87,6 +87,9 @@ UMU_LOCAL: Path = XDG_DATA_HOME.joinpath("umu")
 # Temporary directory for downloaded resources moved from tmpfs
 UMU_CACHE: Path = XDG_CACHE_HOME.joinpath("umu")
 
+# Directory storing Proton and other compatibility tools built against the SLR
+UMU_COMPAT: Path = XDG_DATA_HOME.joinpath("umu", "compatibilitytools")
+
 # Constant defined in prctl.h
 # See prctl(2) for more details
 PR_SET_CHILD_SUBREAPER = 36
