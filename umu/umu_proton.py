@@ -97,10 +97,9 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
 
 def _fetch_patch(session_pools: SessionPools) -> bytes:
     resp: BaseHTTPResponse
-    releases: list[dict[str, Any]]
     _, http_pool = session_pools
     url: str = "https://api.github.com"
-    repo: str = "/repos/Open-Wine-Components/umu-mkpatch/releases/latest"
+    repo: str = "/repos/Open-Wine-Components/umu-mkpatch/releases"
     headers: dict[str, str] = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
@@ -115,14 +114,15 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     if resp.status != HTTPStatus.OK:
         return b""
 
-    releases = resp.json().get("assets", [])
-    for release in filter(
-        lambda item: item["name"].endswith("cbor")
-        and item["name"].startswith(os.environ["PROTONPATH"]),
-        releases,
-    ):
-        durl = release["browser_download_url"]
-        break
+    releases = resp.json() or []
+    for release in releases:
+        for asset in release.get("assets", []):
+            if not asset["name"].endswith("cbor") and not asset["name"].startswith(
+                (ProtonVersion.GELatest.value, ProtonVersion.UMULatest.value)
+            ):
+                continue
+            durl = asset["browser_download_url"]
+            break
 
     if not durl:
         return b""
