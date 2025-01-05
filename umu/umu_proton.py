@@ -368,32 +368,6 @@ def _get_latest(
     return env
 
 
-def _update_proton(
-    protons: list[Path],
-    thread_pool: ThreadPoolExecutor,
-) -> None:
-    """Remove previous stable UMU-Proton builds.
-
-    Assumes that the directories that are named ULWGL/UMU-Proton are ours and
-    will be removed, so users should not be storing important files there.
-    """
-    futures: list[Future] = []
-    log.debug("Updating UMU-Proton")
-    log.debug("Previous builds: %s", protons)
-
-    if not protons:
-        return
-
-    for stable in protons:
-        if stable.is_dir():
-            log.debug("Previous stable build found")
-            log.debug("Removing: %s", stable)
-            futures.append(thread_pool.submit(rmtree, str(stable)))
-
-    for future in futures:
-        future.result()
-
-
 def _install_proton(
     tarball: str,
     session_caches: SessionCaches,
