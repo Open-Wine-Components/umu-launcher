@@ -540,13 +540,14 @@ def _get_delta(
         build: str = tarball.removesuffix(".tar.gz")
         buildid: Path = umu_compat.joinpath(version, "compatibilitytool.vdf")
 
+        log.info("Build: %s", build)
         log.debug("Acquired lock '%s'", lockfile)
 
         # Check if we're up to date by doing a simple file check
         # Avoids the cost of creating threads and memory-mapped IO
         try:
             with buildid.open(encoding="utf-8") as file:
-                is_updated: bool = any(filter(lambda line: build in line, file))
+                is_updated: bool = any(filter(lambda line: build in line, file))  # type: ignore
                 if is_updated:
                     log.info("%s is up to date", version)
                     os.environ["PROTONPATH"] = str(umu_compat.joinpath(version))
