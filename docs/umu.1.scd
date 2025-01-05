@@ -142,10 +142,13 @@ _GAMEID_
 	Required. Can be an arbitrary value or a valid id in the *umu-database*[4].
 
 _PROTONPATH_
-	Optional. Path to a Proton directory, version name (e.g., GE-Proton9-5) or codename (e.g., GE-Proton).
+	Optional. Path to a Proton directory, version name (e.g., GE-Proton9-5) or
+	codename (e.g., GE-Proton).
 	
 	Otherwise, defaults to using UMU-Proton.
 
+	Valid codenames include: _GE-Proton_, _UMU-Latest_, and _GE-Latest_.
+	
 _WINEPREFIX_
 	Optional. Path to a WINE prefix directory. Otherwise defaults to _$HOME/Games/umu/$GAMEID_.
 
