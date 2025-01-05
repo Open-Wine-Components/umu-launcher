@@ -385,8 +385,7 @@ def _get_latest(
         ProtonVersion.UMULatest.value,
     }
 
-    proton_versions: set[str] = {member.value for member in ProtonVersion}
-    if os.environ.get("PROTONPATH") in proton_versions:
+    if os.environ.get("PROTONPATH") in {member.value for member in ProtonVersion}:
         version = os.environ["PROTONPATH"]
 
     # Return if the latest Proton is already installed
@@ -401,10 +400,10 @@ def _get_latest(
         log.debug("Acquiring file lock '%s'...", lockfile)
         with unix_flock(lockfile):
             # Once acquiring the lock check if Proton hasn't been installed
-            if (
-                steam_compat.joinpath(proton).is_dir()
-                or umu_compat.joinpath(version).is_dir()
-            ):
+            if steam_compat.joinpath(proton).is_dir():
+                raise FileExistsError
+
+            if umu_compat.joinpath(version).is_dir():
                 raise FileExistsError
 
             # Download the archive to a temporary directory
