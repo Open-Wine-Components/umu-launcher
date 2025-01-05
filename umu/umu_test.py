@@ -16,7 +16,6 @@ from tempfile import (
     NamedTemporaryFile,
     TemporaryDirectory,
     TemporaryFile,
-    mkdtemp,
 )
 from unittest.mock import MagicMock, Mock, patch
 
@@ -85,6 +84,8 @@ class TestGameLauncher(unittest.TestCase):
         self.test_cache = Path("./tmp.5HYdpddgvs")
         # Steam compat dir
         self.test_compat = Path("./tmp.ZssGZoiNod")
+        # umu compat dir
+        self.test_umu_compat = Path("./tmp/tmp.tu692WxQHH")
         # umu-proton dir
         self.test_proton_dir = Path("UMU-Proton-5HYdpddgvs")
         # umu-proton release
@@ -186,6 +187,8 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_cache_home.exists():
             rmtree(self.test_cache_home.as_posix())
 
+        if self.test_umu_compat.exists():
+            rmtree(self.test_umu_compat.as_posix())
     def test_main_nomusl(self):
         """Test __main__.main to ensure an exit when on a musl-based system."""
         os.environ["LD_LIBRARY_PATH"] = f"{os.environ['LD_LIBRARY_PATH']}:musl"
@@ -1043,31 +1046,6 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected tuple with len, received len {result_len}",
         )
 
-    def test_update_proton(self):
-        """Test _update_proton."""
-        mock_protons = [Path(mkdtemp()), Path(mkdtemp())]
-        thread_pool = ThreadPoolExecutor()
-        result = []
-
-        for mock in mock_protons:
-            self.assertTrue(mock.is_dir(), f"Directory '{mock}' does not exist")
-
-        result = umu_proton._update_proton(mock_protons, thread_pool)
-
-        self.assertTrue(result is None, f"Expected None, received '{result}'")
-
-        # The directories should be removed after the update
-        for mock in mock_protons:
-            self.assertFalse(mock.is_dir(), f"Directory '{mock}' still exist")
-
-    def test_update_proton_empty(self):
-        """Test _update_proton when passed an empty list."""
-        # In the real usage, an empty list means that there were no
-        # UMU/ULWGL-Proton found in compatibilitytools.d
-        result = umu_proton._update_proton([], None)
-
-        self.assertTrue(result is None, "Expected None when passed an empty list")
-
     def test_ge_proton(self):
         """Test check_env when the code name GE-Proton is set for PROTONPATH.
 
@@ -1081,7 +1059,7 @@ class TestGameLauncher(unittest.TestCase):
             self.assertRaises(FileNotFoundError),
             patch.object(umu_proton, "_fetch_releases", return_value=None),
             patch.object(umu_proton, "_get_latest", return_value=None),
-            patch.object(umu_proton, "_get_from_steamcompat", return_value=None),
+            patch.object(umu_proton, "_get_from_compat", return_value=None),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
@@ -1103,17 +1081,17 @@ class TestGameLauncher(unittest.TestCase):
         Tests the case when the user has no internet connection or GE-Proton
         wasn't found in local system.
         """
+        mock_session_pools = (MagicMock(), MagicMock())
         with (
             self.assertRaises(FileNotFoundError),
             patch.object(umu_proton, "_fetch_releases", return_value=None),
             patch.object(umu_proton, "_get_latest", return_value=None),
-            patch.object(umu_proton, "_get_from_steamcompat", return_value=None),
-            ThreadPoolExecutor() as thread_pool,
+            patch.object(umu_proton, "_get_from_compat", return_value=None),
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["PROTONPATH"] = "GE-Proton"
-            umu_run.check_env(self.env, thread_pool)
+            umu_run.check_env(self.env, mock_session_pools)
             self.assertFalse(os.environ.get("PROTONPATH"), "Expected empty string")
 
     def test_latest_interrupt(self):
@@ -1130,6 +1108,7 @@ class TestGameLauncher(unittest.TestCase):
         # In this case, assume the test variable will be downloaded
         files = (("", ""), (self.test_archive.name, ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
+        compats = (self.test_umu_compat, self.test_compat)
 
         # Mock the context manager object that creates the file lock
         mock_ctx = MagicMock()
@@ -1146,7 +1125,7 @@ class TestGameLauncher(unittest.TestCase):
             mock_function.side_effect = KeyboardInterrupt
             result = umu_proton._get_latest(
                 self.env,
-                self.test_compat,
+                compats,
                 tmpdirs,
                 files,
                 self.test_session_pools,
@@ -1169,6 +1148,7 @@ class TestGameLauncher(unittest.TestCase):
         # internet)
         files = (("", ""), (self.test_archive.name, ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
+        compats = (self.test_umu_compat, self.test_compat)
 
         # Mock the context manager object that creates the file lock
         mock_ctx = MagicMock()
@@ -1189,7 +1169,7 @@ class TestGameLauncher(unittest.TestCase):
             mock_function.side_effect = ValueError
             result = umu_proton._get_latest(
                 self.env,
-                self.test_compat,
+                compats,
                 tmpdirs,
                 files,
                 self.test_session_pools,
@@ -1206,6 +1186,7 @@ class TestGameLauncher(unittest.TestCase):
         # internet)
         files = ()
         tmpdirs = (self.test_cache, self.test_cache_home)
+        compats = (self.test_umu_compat, self.test_compat)
 
         # Mock the context manager object that creates the file lock
         mock_ctx = MagicMock()
@@ -1221,82 +1202,13 @@ class TestGameLauncher(unittest.TestCase):
         ):
             result = umu_proton._get_latest(
                 self.env,
-                self.test_compat,
+                compats,
                 tmpdirs,
                 files,
                 self.test_session_pools,
             )
             self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to be empty")
             self.assertFalse(result, "Expected None to be returned from _get_latest")
-
-    def test_link_umu(self):
-        """Test _get_latest for recreating the UMU-Latest link.
-
-        This link should always be recreated to ensure clients can reliably
-        kill the wineserver process for the current prefix
-
-        In the real usage, this will fail if the user already has a UMU-Latest
-        directory for some reason or the link somehow gets deleted after it
-        gets recreated by the launcher
-        """
-        result = None
-        latest = Path("UMU-Proton-9.0-beta15")
-        latest.mkdir()
-        Path(f"{latest}.sha512sum").touch()
-        files = ((f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", ""))
-        tmpdirs = (self.test_cache, self.test_cache_home)
-
-        # Mock the context manager object that creates the file lock
-        mock_ctx = MagicMock()
-        mock_ctx.__enter__ = MagicMock(return_value=None)
-        mock_ctx.__exit__ = MagicMock(return_value=None)
-
-        # Mock the latest Proton in /tmp
-        test_archive = self.test_cache.joinpath(f"{latest}.tar.gz")
-        with tarfile.open(test_archive.as_posix(), "w:gz") as tar:
-            tar.add(latest.as_posix(), arcname=latest.as_posix())
-
-        # UMU-Latest will not exist in this installation
-        self.test_compat.joinpath("UMU-Proton-9.0-beta15").mkdir()
-
-        os.environ["PROTONPATH"] = ""
-
-        self.assertFalse(
-            self.test_compat.joinpath("UMU-Latest").exists(),
-            "Expected UMU-Latest link to not exist",
-        )
-        with (
-            patch("umu.umu_proton._fetch_proton"),
-            ThreadPoolExecutor(),
-            patch.object(umu_proton, "unix_flock", return_value=mock_ctx),
-        ):
-            result = umu_proton._get_latest(
-                self.env,
-                self.test_compat,
-                tmpdirs,
-                files,
-                self.test_session_pools,
-            )
-            self.assertTrue(result is self.env, "Expected the same reference")
-            # Verify the latest was set
-            self.assertEqual(
-                self.env.get("PROTONPATH"),
-                self.test_compat.joinpath(latest).as_posix(),
-                "Expected latest to be set",
-            )
-            self.assertTrue(
-                self.test_compat.joinpath("UMU-Latest").is_symlink(),
-                "Expected UMU-Latest symlink",
-            )
-            # Verify link
-            self.assertEqual(
-                self.test_compat.joinpath("UMU-Latest").readlink(),
-                latest,
-                f"Expected UMU-Latest link to be ./{latest}",
-            )
-
-        latest.rmdir()
-        Path(f"{latest}.sha512sum").unlink()
 
     def test_latest_umu(self):
         """Test _get_latest when online and when an empty PROTONPATH is set.
@@ -1310,6 +1222,7 @@ class TestGameLauncher(unittest.TestCase):
         Path(f"{latest}.sha512sum").touch()
         files = ((f"{latest}.sha512sum", ""), (f"{latest}.tar.gz", ""))
         tmpdirs = (self.test_cache, self.test_cache_home)
+        compats = (self.test_umu_compat, self.test_compat)
 
         # Mock the context manager object that creates the file lock
         mock_ctx = MagicMock()
@@ -1343,7 +1256,7 @@ class TestGameLauncher(unittest.TestCase):
         ):
             result = umu_proton._get_latest(
                 self.env,
-                self.test_compat,
+                compats,
                 tmpdirs,
                 files,
                 (thread_pool, MagicMock()),
@@ -1355,19 +1268,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_compat.joinpath(latest).as_posix(),
                 "Expected latest to be set",
             )
-            # Verify that the old versions were deleted
-            self.assertFalse(
-                self.test_compat.joinpath("UMU-Proton-9.0-beta15").exists(),
-                "Expected old version to be removed",
-            )
-            self.assertFalse(
-                self.test_compat.joinpath("UMU-Proton-9.0-beta14").exists(),
-                "Expected old version to be removed",
-            )
-            self.assertFalse(
-                self.test_compat.joinpath("ULWGL-Proton-8.0-5-2").exists(),
-                "Expected old version to be removed",
-            )
             # Verify foo files survived
             self.assertTrue(
                 self.test_compat.joinpath("foo").exists(),
@@ -1377,35 +1277,27 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_compat.joinpath("GE-Proton9-2").exists(),
                 "Expected GE-Proton9-2 to survive",
             )
-            self.assertTrue(
-                self.test_compat.joinpath("UMU-Latest").is_symlink(),
-                "Expected UMU-Latest symlink",
-            )
-            # Verify link
-            self.assertEqual(
-                self.test_compat.joinpath("UMU-Latest").readlink(),
-                latest,
-                f"Expected UMU-Latest link to be ./{latest}",
-            )
 
         latest.rmdir()
         Path(f"{latest}.sha512sum").unlink()
 
     def test_steamcompat_nodir(self):
-        """Test _get_from_steamcompat when Proton doesn't exist in compat dir.
+        """Test _get_from_compat when Proton doesn't exist in compat dir.
 
         In this case, None should be returned to signal that we should
         continue with downloading the latest Proton
         """
         result = None
 
-        result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
+        result = umu_proton._get_from_compat(
+            self.env, (self.test_umu_compat, self.test_compat)
+        )
 
-        self.assertFalse(result, "Expected None after calling _get_from_steamcompat")
+        self.assertFalse(result, "Expected None after calling _get_from_compat")
         self.assertFalse(self.env["PROTONPATH"], "Expected PROTONPATH to not be set")
 
     def test_steamcompat(self):
-        """Test _get_from_steamcompat.
+        """Test _get_from_compat.
 
         When a Proton exist in .local/share/Steam/compatibilitytools.d, use it
         when PROTONPATH is unset
@@ -1415,7 +1307,9 @@ class TestGameLauncher(unittest.TestCase):
         umu_util.extract_tarfile(self.test_archive, self.test_archive.parent)
         move(str(self.test_archive).removesuffix(".tar.gz"), self.test_compat)
 
-        result = umu_proton._get_from_steamcompat(self.env, self.test_compat)
+        result = umu_proton._get_from_compat(
+            self.env, (self.test_umu_compat, self.test_compat)
+        )
 
         self.assertTrue(result is self.env, "Expected the same reference")
         self.assertEqual(
