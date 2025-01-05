@@ -427,9 +427,7 @@ def _install_proton(
     )
     move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
 
-    steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
-    steam_compat.joinpath("UMU-Latest").symlink_to(tarball.removesuffix(".tar.gz"))
-    log.debug("Linking: UMU-Latest -> %s", tarball.removesuffix(".tar.gz"))
+    patcher.update_binaries()
 
     if future:
         future.result()
