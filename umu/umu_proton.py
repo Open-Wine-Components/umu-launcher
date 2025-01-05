@@ -624,7 +624,11 @@ def _apply_delta(
     # this so we can ensure the result of each binary patch isn't garbage
     patcher.verify_integrity()
 
-    is_updated = any(filter(lambda result: result is None, patcher.result()))
+    for item in patcher.result():
+        if item.result() is None:
+            is_updated = True
+            break
+
     if is_updated:
         log.debug("%s (latest) validation failed, skipping", os.environ["PROTONPATH"])
         return None
