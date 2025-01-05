@@ -1,0 +1,69 @@
+From 01a6b1c6e545fab6d01d24dfe1e240d327e77c3d Mon Sep 17 00:00:00 2001
+From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
+Date: Fri, 3 Jan 2025 22:58:17 -0800
+Subject: [PATCH] deb: fix build by using rustup
+
+---
+ Makefile.in                  | 10 +++++++++-
+ packaging/deb/debian/control |  1 +
+ packaging/deb/ubuntu/control |  1 +
+ 3 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 03b18fc4..b9cfeb10 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -3,6 +3,8 @@ PROJECT := umu-launcher
+ # Define the interpreters to use to prevent shebang complaints
+ PYTHON_INTERPRETER = /usr/bin/env python3
+ 
++SHELL_INTERPRETER = /usr/bin/env sh
++
+ # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
+ INSTALLDIR ?= umu
+ 
+@@ -170,10 +172,16 @@ zipapp-install: zipapp
+ 	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
+ 
+ PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
++CARGO_BIN := $(HOME)/.cargo/bin/cargo
++RUSTUP_BIN := $(HOME)/.cargo/bin/rustup
+ 
+ $(OBJDIR)/.build-umu-delta: | $(OBJDIR)
+ 	$(info :: Building delta dependencies )
+-	cargo build -r
++	curl -LJO https://sh.rustup.rs
++	chmod u+x ./rustup-init.sh
++	$(SHELL_INTERPRETER) rustup-init.sh --default-toolchain none -y
++	$(RUSTUP_BIN) toolchain install 1.83
++	$(CARGO_BIN) build -r
+ 	cp -a ./target/release/libumu_delta.so $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
+ 
+ .PHONY: umu-delta
+diff --git a/packaging/deb/debian/control b/packaging/deb/debian/control
+index 243d1771..5372875d 100644
+--- a/packaging/deb/debian/control
++++ b/packaging/deb/debian/control
+@@ -14,6 +14,7 @@ Build-Depends:
+  python3-installer,
+  python3-build,
+  python3-pip,
++ curl,
+ Standards-Version: 4.6.2
+ Homepage: https://github.com/Open-Wine-Components/umu-launcher
+ Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
+diff --git a/packaging/deb/ubuntu/control b/packaging/deb/ubuntu/control
+index 243d1771..5372875d 100644
+--- a/packaging/deb/ubuntu/control
++++ b/packaging/deb/ubuntu/control
+@@ -14,6 +14,7 @@ Build-Depends:
+  python3-installer,
+  python3-build,
+  python3-pip,
++ curl,
+ Standards-Version: 4.6.2
+ Homepage: https://github.com/Open-Wine-Components/umu-launcher
+ Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
+-- 
+2.47.1
+

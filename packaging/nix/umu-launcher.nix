@@ -1,4 +1,4 @@
-{lib, pyth1 ,python3Packages , umu-launcher, pkgs,version, truststore ? true, ...}:
+{lib, pyth1 ,python3Packages , umu-launcher, pkgs,version, truststore ? true, deltaUpdates ? { cbor2 = true; xxhash = true; zstd = true; }, rustPlatform, ...}:
 python3Packages.buildPythonPackage {
   pname = "umu-launcher";
   version = "${version}";
@@ -13,13 +13,21 @@ python3Packages.buildPythonPackage {
     pkgs.python3Packages.installer
     pkgs.hatch
     pkgs.python3Packages.build
+    pkgs.cargo
   ];
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ../../Cargo.lock;
+  };
+  nativeBuildInputs = with rustPlatform; [ cargoSetupHook ];
   propagatedBuildInputs = [
     pyth1
     pkgs.bubblewrap
     pkgs.python3Packages.xlib
     pkgs.python3Packages.urllib3
-  ] ++ lib.optional truststore pkgs.python3Packages.truststore;
+  ] ++ lib.optional truststore pkgs.python3Packages.truststore
+    ++ lib.optional deltaUpdates.cbor2 pkgs.python3Packages.cbor2
+    ++ lib.optional deltaUpdates.xxhash pkgs.python3Packages.xxhash
+    ++ lib.optional deltaUpdates.zstd pkgs.zstd;
   makeFlags = [ "PYTHON_INTERPRETER=${pyth1}/bin/python" "SHELL_INTERPRETER=/run/current-system/sw/bin/bash" "DESTDIR=${placeholder "out"}" ];
   dontUseMesonConfigure = true;
   dontUseNinjaBuild = true;

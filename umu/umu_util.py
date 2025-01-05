@@ -1,17 +1,19 @@
 import os
 import sys
+from collections.abc import Generator
 from contextlib import contextmanager
 from ctypes.util import find_library
 from fcntl import LOCK_EX, LOCK_UN, flock
 from functools import lru_cache
 from hashlib import new as hashnew
-from io import BufferedIOBase
+from io import BufferedIOBase, BufferedRandom
 from pathlib import Path
 from re import Pattern
 from re import compile as re_compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 from tarfile import open as taropen
+from typing import Any
 
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
@@ -34,6 +36,21 @@ def unix_flock(path: str):
         if fd is not None:
             flock(fd, LOCK_UN)
             os.close(fd)
+
+
+@contextmanager
+def memfdfile(name: str) -> Generator[BufferedRandom, Any, None]:
+    """Create an anonymous file."""
+    fp: BufferedRandom | None = None
+
+    try:
+        fd = os.memfd_create(name, os.MFD_CLOEXEC)
+        os.set_inheritable(fd, True)
+        fp = os.fdopen(fd, mode="rb+")
+        yield fp
+    finally:
+        if fp is not None:
+            fp.close()
 
 
 @lru_cache

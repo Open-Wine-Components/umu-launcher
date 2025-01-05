@@ -1,0 +1,19 @@
+[package]
+name = "umu"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "umu_delta"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.23.3", features = ["extension-module"] }
+ssh-key = { version = "0.6.7", default-features = false, features = [
+    "ed25519",
+    "alloc",
+] }
+sha2 = "0.10.8"
+base16ct = { version = "0.2.0", features = ["alloc"] }
