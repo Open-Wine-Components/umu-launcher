@@ -1,11 +1,13 @@
 import os
-from concurrent.futures import Future, ThreadPoolExecutor
+import time
+from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
 from hashlib import sha512
 from http import HTTPStatus
 from importlib.util import find_spec
 from pathlib import Path
 from re import split as resplit
-from shutil import move, rmtree
+from shutil import move
 from tempfile import TemporaryDirectory
 from typing import Any
 
@@ -14,6 +16,7 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
+from umu.umu_bspatch import Content, ContentContainer, CustomPatcher
 from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_COMPAT, UMU_LOCAL, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
@@ -33,6 +36,15 @@ CacheTmpfs = Path
 CacheSubdir = Path
 
 SessionCaches = tuple[CacheTmpfs, CacheSubdir]
+
+
+class ProtonVersion(Enum):
+    """Represent valid version keywords for Proton."""
+
+    GE = "GE-Proton"
+    UMU = "UMU-Proton"
+    GELatest = "GE-Latest"
+    UMULatest = "UMU-Latest"
 
 
 def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str, str]:
@@ -64,15 +76,17 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
     except HTTPError:
         log.debug("Network is unreachable")
 
-    with (
-        TemporaryDirectory() as tmp,
-        TemporaryDirectory(dir=UMU_CACHE) as tmpcache,
-    ):
+    with TemporaryDirectory() as tmp, TemporaryDirectory(dir=UMU_CACHE) as tmpcache:
         tmpdirs: SessionCaches = (Path(tmp), Path(tmpcache))
-        if _get_latest(env, STEAM_COMPAT, tmpdirs, assets, session_pools) is env:
         compatdirs = (UMU_COMPAT, STEAM_COMPAT)
+        if _get_delta(env, UMU_COMPAT, patch, assets, session_pools) is env:
+            log.info("%s is up to date", os.environ["PROTONPATH"])
+            os.environ["PROTONPATH"] = str(
+                UMU_COMPAT.joinpath(os.environ["PROTONPATH"])
+            )
             return env
-        if _get_from_steamcompat(env, STEAM_COMPAT) is env:
+        if _get_latest(env, compatdirs, tmpdirs, assets, session_pools) is env:
+            return env
         if _get_from_compat(env, compatdirs) is env:
             return env
 
@@ -470,10 +484,147 @@ def _install_proton(
             "%s -> %s", cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat
         )
         move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
+
+
+def _get_delta(
+    env: dict[str, str],
+    umu_compat: Path,
+    patch: bytes,
+    assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()],
+    session_pools: SessionPools,
+) -> dict[str, str] | None:
+    thread_pool, _ = session_pools
+    version: str = (
+        "GE-Latest" if os.environ.get("PROTONPATH") == "GE-Latest" else "UMU-Latest"
     )
-    move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
+    proton: Path = umu_compat.joinpath(version)
+    lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
+    cbor: ContentContainer
+
+    if not assets:
+        return None
+
+    if os.environ.get("PROTONPATH") not in {
+        ProtonVersion.GELatest.value,
+        ProtonVersion.UMULatest.value,
+    }:
+        log.debug("PROTONPATH not *-Latest, skipping")
+        return None
+
+    if not patch:
+        log.debug("Received empty byte string for patch, skipping")
+        return None
+
+    from cbor2 import CBORDecodeError, dumps, loads
+
+    from .umu_delta import valid_key, valid_signature
+
+    try:
+        cbor = loads(patch)
+    except CBORDecodeError as e:
+        log.exception(e)
+        return None
+
+    log.debug("Acquiring lock '%s'", lockfile)
+    with unix_flock(lockfile):
+        tarball, _ = assets[1]
+        build: str = tarball.removesuffix(".tar.gz")
+        buildid: Path = umu_compat.joinpath(version, "compatibilitytool.vdf")
+
+        log.debug("Acquired lock '%s'", lockfile)
+
+        # Check if we're up to date by doing a simple file check
+        # Avoids the cost of creating threads and memory-mapped IO
+        try:
+            with buildid.open(encoding="utf-8") as file:
+                is_updated: bool = any(filter(lambda line: build in line, file))
+                if is_updated:
+                    log.info("%s is up to date", version)
+                    os.environ["PROTONPATH"] = str(umu_compat.joinpath(version))
+                    env["PROTONPATH"] = os.environ["PROTONPATH"]
+                    return env
+        except (UnicodeDecodeError, FileNotFoundError):
+            # Case when the VDF file DNE/or has non-utf-8 chars
+            log.error(
+                "Failed opening file '%s', unable to determine latest build", buildid
+            )
+            return None
+
+        # Validate the integrity of the embedded public key. Use RustCrypto's SHA2
+        # implementation to keep the security boundary consistent
+        public_key, _ = cbor["public_key"]
+        if not valid_key(public_key):
+            # OWC maintainer forgot to add digest to whitelist, a different public key
+            # was accidentally used or patch was created by a 3rd party
+            log.error(
+                "Digest mismatched for public key '%s', skipping", cbor["public_key"]
+            )
+            return None
+
+        # With the public key, verify the signature and data
+        signature, _ = cbor["signature"]
+        if not valid_signature(
+            public_key, dumps(cbor["contents"], canonical=True), signature
+        ):
+            log.error("Digital signature verification failed, skipping")
+            return None
+
+        patchers: list[CustomPatcher | None] = []
+        renames: list[tuple[Path, Path]] = []
+
+        # Apply the patch
+        for content in cbor["contents"]:
+            src: str = content["source"]
+
+            if src.startswith((ProtonVersion.GE.value, ProtonVersion.UMU.value)):
+                patchers.append(_apply_delta(proton, content, thread_pool))
+                continue
+
+            subdir: Path | None = next(umu_compat.joinpath(version).rglob(src), None)
+            if not subdir:
+                log.error("Could not find subdirectory '%s', skipping", subdir)
+                continue
+
+            patchers.append(_apply_delta(subdir, content, thread_pool))
+            renames.append((subdir, subdir.parent / content["target"]))
+
+        # Wait for results and rename versioned subdirectories
+        start: float = time.time_ns()
+        for patcher in filter(None, patchers):
+            for future in filter(None, patcher.result()):
+                future.result()
+
+        for rename in renames:
+            orig, new = rename
+            orig.rename(new)
+        log.debug("Update time (ns): %s", time.time_ns() - start)
+
+    return env
+
+
+def _apply_delta(
+    path: Path,
+    content: Content,
+    thread_pool: ThreadPoolExecutor,
+) -> CustomPatcher | None:
+    patcher: CustomPatcher = CustomPatcher(content, path, thread_pool)
+    is_updated: bool = False
+
+    # Verify the identity of the build. At this point the patch file is authenticated.
+    # Note, this will skip the update if the user had tinkered with their build. We do
+    # this so we can ensure the result of each binary patch isn't garbage
+    patcher.verify_integrity()
+
+    is_updated = any(filter(lambda result: result is None, patcher.result()))
+    if is_updated:
+        log.debug("%s (latest) validation failed, skipping", os.environ["PROTONPATH"])
+        return None
+
+    # Patch the current build, upgrading proton to the latest
+    log.info("%s is OK, applying partial update...", os.environ["PROTONPATH"])
 
     patcher.update_binaries()
+    patcher.add_binaries()
+    patcher.delete_binaries()
 
-    if future:
-        future.result()
+    return patcher
