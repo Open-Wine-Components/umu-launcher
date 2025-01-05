@@ -336,7 +336,7 @@ def _get_from_compat(
 
 def _get_latest(
     env: dict[str, str],
-    steam_compat: Path,
+    compat_tools: tuple[Path, Path],
     session_caches: SessionCaches,
     assets: tuple[tuple[str, str], tuple[str, str]] | tuple[()],
     session_pools: SessionPools,
@@ -351,28 +351,33 @@ def _get_latest(
     When the digests mismatched or when interrupted, an old build will in
     $HOME/.local/share/Steam/compatibilitytool.d will be used.
     """
+    umu_compat, steam_compat = compat_tools
     # Name of the Proton archive (e.g., GE-Proton9-7.tar.gz)
     tarball: str
     # Name of the Proton directory (e.g., GE-Proton9-7)
     proton: str
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
-    version: str
+    version: str = ProtonVersion.UMU.value
     lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
+    latest_candidates: set[str]
 
     if not assets:
         return None
 
     tarball = assets[1][0]
     proton = tarball.removesuffix(".tar.gz")
-    version = (
-        "GE-Proton" if os.environ.get("PROTONPATH") == "GE-Proton" else "UMU-Proton"
-    )
+    latest_candidates = {
+        ProtonVersion.GELatest.value,
+        ProtonVersion.UMULatest.value,
+    }
+
+    proton_versions: set[str] = {member.value for member in ProtonVersion}
+    if os.environ.get("PROTONPATH") in proton_versions:
+        version = os.environ["PROTONPATH"]
 
     # Return if the latest Proton is already installed
     if steam_compat.joinpath(proton).is_dir():
         log.info("%s is up to date", version)
-        steam_compat.joinpath("UMU-Latest").unlink(missing_ok=True)
-        steam_compat.joinpath("UMU-Latest").symlink_to(proton)
         os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
         env["PROTONPATH"] = os.environ["PROTONPATH"]
         return env
@@ -382,28 +387,30 @@ def _get_latest(
         log.debug("Acquiring file lock '%s'...", lockfile)
         with unix_flock(lockfile):
             # Once acquiring the lock check if Proton hasn't been installed
-            if steam_compat.joinpath(proton).is_dir():
+            if (
+                steam_compat.joinpath(proton).is_dir()
+                or umu_compat.joinpath(version).is_dir()
+            ):
                 raise FileExistsError
 
             # Download the archive to a temporary directory
             _fetch_proton(env, session_caches, assets, session_pools)
 
             # Extract the archive then move the directory
-    except (
-        ValueError,
-        KeyboardInterrupt,
-        HTTPError,
-    ) as e:
+            _install_proton(tarball, session_caches, compat_tools)
+    except (ValueError, KeyboardInterrupt, HTTPError) as e:
         log.exception(e)
         return None
     except FileExistsError:
         # Proton was installed by another proc, continue
         pass
 
-    log.debug("Released file lock '%s'", lockfile)
-    os.environ["PROTONPATH"] = str(steam_compat.joinpath(proton))
+    os.environ["PROTONPATH"] = (
+        str(umu_compat.joinpath(version))
+        if version in latest_candidates
+        else str(steam_compat.joinpath(proton))
+    )
     env["PROTONPATH"] = os.environ["PROTONPATH"]
-    log.debug("Removing: %s", tarball)
     log.info("Using %s", proton)
 
     return env
