@@ -156,7 +156,10 @@ def _fetch_releases(
         "User-Agent": "",
     }
 
-    if os.environ.get("PROTONPATH") == "GE-Proton":
+    if os.environ.get("PROTONPATH") in {
+        ProtonVersion.GE.value,
+        ProtonVersion.GELatest.value,
+    }:
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
 
     resp = http_pool.request(HTTPMethod.GET.value, f"{url}{repo}", headers=headers)
