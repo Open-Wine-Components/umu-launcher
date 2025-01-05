@@ -19,7 +19,7 @@ jobs:
         fetch-depth: 0
     - name: Install dependencies
       run: |
-        sudo apt-get install meson shellcheck scdoc python3-hatchling python3-build python3-installer python3-filelock
+        sudo apt-get install meson shellcheck scdoc python3-hatchling python3-build python3-installer python3-filelock cargo
     - name: Initialize submodules
       run: |
         git submodule update --init --recursive

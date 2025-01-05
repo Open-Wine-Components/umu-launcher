@@ -23,7 +23,7 @@ jobs:
       run: apt update -y
 
     - name: Install build dependencies
-      run: apt install -y python3-venv python3-all bash make scdoc python3-hatchling python3-installer python3-build
+      run: apt install -y python3-venv python3-all bash make scdoc python3-hatchling python3-installer python3-build cargo
 
     - name: Configure
       run: ./configure.sh --user-install

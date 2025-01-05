@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
       - name: Install dependencies
         run: |
-          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck bubblewrap
+          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck bubblewrap cargo
           python3 -m pip install --upgrade pip
           pip install uv
       - name: Initialize submodules
