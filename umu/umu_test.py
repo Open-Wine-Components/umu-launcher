@@ -8,6 +8,7 @@ import unittest
 from argparse import Namespace
 from array import array
 from concurrent.futures import ThreadPoolExecutor
+from importlib.util import find_spec
 from pathlib import Path
 from pwd import getpwuid
 from shutil import copy, copytree, move, rmtree
@@ -189,6 +190,268 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_umu_compat.exists():
             rmtree(self.test_umu_compat.as_posix())
+
+    def test_get_delta_invalid_sig(self):
+        """Test get_delta when patch signature is invalid."""
+        mock_assets = (("foo", "foo"), ("foo.tar.gz", "foo"))
+        os.environ["PROTONPATH"] = umu_proton.ProtonVersion.UMULatest.value
+        result = None
+
+        # If either cbor2 or the Rust module DNE, skip
+        try:
+            from cbor2 import dumps
+        except ModuleNotFoundError:
+            err = "python3-cbor2 not installed"
+            self.skipTest(err)
+
+        if find_spec("umu_delta") is None:
+            err = "umu_delta module not compiled"
+            self.skipTest(err)
+
+        mock_patch = dumps(
+            {"public_key": "foo", "signature": b"bar", "contents": ["baz"]}
+        )
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=None)
+        mock_ctx.__exit__ = MagicMock(return_value=None)
+
+        self.test_umu_compat.joinpath(os.environ["PROTONPATH"]).mkdir(
+            parents=True, exist_ok=True
+        )
+
+        self.test_umu_compat.joinpath(
+            os.environ["PROTONPATH"], "compatibilitytool.vdf"
+        ).touch(exist_ok=True)
+
+        # When the value within the vdf file and GH asset Proton value differ, we update.
+        # Change the value here, to simulate a latest update scenario
+        self.test_umu_compat.joinpath(
+            os.environ["PROTONPATH"], "compatibilitytool.vdf"
+        ).write_text("bar")
+
+        with (
+            patch.object(umu_proton, "unix_flock", return_value=mock_ctx),
+            patch("umu.umu_delta.valid_key", lambda _: True),
+        ):
+            result = umu_proton._get_delta(
+                self.env,
+                self.test_umu_compat,
+                mock_patch,
+                mock_assets,
+                self.test_session_pools,
+            )
+
+        self.assertTrue(result is None, f"Expected None, received {result}")
+
+    def test_get_delta_invalid_key(self):
+        """Test get_delta when public key is invalid."""
+        mock_assets = (("foo", "foo"), ("foo.tar.gz", "foo"))
+        os.environ["PROTONPATH"] = umu_proton.ProtonVersion.UMULatest.value
+        result = None
+
+        # If either cbor2 or the Rust module DNE, skip
+        try:
+            from cbor2 import dumps
+        except ModuleNotFoundError:
+            err = "python3-cbor2 not installed"
+            self.skipTest(err)
+
+        if find_spec("umu_delta") is None:
+            err = "umu_delta module not compiled"
+            self.skipTest(err)
+
+        mock_patch = dumps({"public_key": "foo"})
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=None)
+        mock_ctx.__exit__ = MagicMock(return_value=None)
+
+        self.test_umu_compat.joinpath(os.environ["PROTONPATH"]).mkdir(
+            parents=True, exist_ok=True
+        )
+
+        self.test_umu_compat.joinpath(
+            os.environ["PROTONPATH"], "compatibilitytool.vdf"
+        ).touch(exist_ok=True)
+
+        # When the value within the vdf file and GH asset Proton value differ, we update.
+        # Change the value here, to simulate a latest update scenario
+        self.test_umu_compat.joinpath(
+            os.environ["PROTONPATH"], "compatibilitytool.vdf"
+        ).write_text("bar")
+
+        with patch.object(umu_proton, "unix_flock", return_value=mock_ctx):
+            result = umu_proton._get_delta(
+                self.env,
+                self.test_umu_compat,
+                mock_patch,
+                mock_assets,
+                self.test_session_pools,
+            )
+
+        self.assertTrue(result is None, f"Expected None, received {result}")
+
+    def test_get_delta_check_update(self):
+        """Test get_delta when checking if latest is installed."""
+        mock_assets = (("foo", "foo"), ("foo.tar.gz", "foo"))
+        os.environ["PROTONPATH"] = umu_proton.ProtonVersion.UMULatest.value
+        result = None
+
+        # If either cbor2 or the Rust module DNE, skip
+        try:
+            from cbor2 import dumps
+        except ModuleNotFoundError:
+            err = "python3-cbor2 not installed"
+            self.skipTest(err)
+
+        if find_spec("umu_delta") is None:
+            err = "umu_delta module not compiled"
+            self.skipTest(err)
+
+        mock_patch = dumps({"foo": "foo"})
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=None)
+        mock_ctx.__exit__ = MagicMock(return_value=None)
+
+        self.test_umu_compat.joinpath(os.environ["PROTONPATH"]).mkdir(
+            parents=True, exist_ok=True
+        )
+
+        self.test_umu_compat.joinpath(
+            os.environ["PROTONPATH"], "compatibilitytool.vdf"
+        ).touch(exist_ok=True)
+
+        self.test_umu_compat.joinpath(
+            os.environ["PROTONPATH"], "compatibilitytool.vdf"
+        ).write_text("foo")
+
+        with patch.object(umu_proton, "unix_flock", return_value=mock_ctx):
+            result = umu_proton._get_delta(
+                self.env,
+                self.test_umu_compat,
+                mock_patch,
+                mock_assets,
+                self.test_session_pools,
+            )
+
+        self.assertTrue(result is self.env, f"Expected None, received {result}")
+
+        mock_val = str(
+            self.test_umu_compat.joinpath(umu_proton.ProtonVersion.UMULatest.value)
+        )
+        self.assertEqual(
+            os.environ["PROTONPATH"],
+            mock_val,
+            f"Expected {mock_val}, received {os.environ['PROTONPATH']}",
+        )
+        self.assertEqual(
+            self.env["PROTONPATH"],
+            mock_val,
+            f"Expected {mock_val}, received {self.env['PROTONPATH']}",
+        )
+
+    def test_get_delta_cbor(self):
+        """Test get_delta when parsing CBOR."""
+        mock_assets = (("foo", "foo"), ("foo.tar.gz", "foo"))
+        os.environ["PROTONPATH"] = umu_proton.ProtonVersion.UMULatest.value
+
+        # If either cbor2 or the Rust module DNE, skip
+        try:
+            from cbor2 import dumps
+        except ModuleNotFoundError:
+            err = "python3-cbor2 not installed"
+            self.skipTest(err)
+
+        if find_spec("umu_delta") is None:
+            err = "umu_delta module not compiled"
+            self.skipTest(err)
+
+        mock_patch = dumps({"foo": "foo"})
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=None)
+        mock_ctx.__exit__ = MagicMock(return_value=None)
+
+        self.test_umu_compat.joinpath(os.environ["PROTONPATH"]).mkdir(
+            parents=True, exist_ok=True
+        )
+
+        with patch.object(umu_proton, "unix_flock", return_value=mock_ctx):
+            result = umu_proton._get_delta(
+                self.env,
+                self.test_umu_compat,
+                mock_patch,
+                mock_assets,
+                self.test_session_pools,
+            )
+            self.assertTrue(result is None, f"Expected None, received {result}")
+
+    def test_get_delta_cbor_err(self):
+        """Test get_delta when parsing invalid CBOR."""
+        mock_patch = b"foo"
+        mock_assets = (("foo", "foo"), ("foo", "foo"))
+        os.environ["PROTONPATH"] = umu_proton.ProtonVersion.UMULatest.value
+
+        if find_spec("cbor2") is None:
+            err = "umu_delta module not compiled"
+            self.skipTest(err)
+
+        if find_spec("umu_delta") is None:
+            err = "umu_delta module not compiled"
+            self.skipTest(err)
+
+        result = umu_proton._get_delta(
+            self.env,
+            self.test_umu_compat,
+            mock_patch,
+            mock_assets,
+            self.test_session_pools,
+        )
+        self.assertTrue(result is None, f"Expected None, received {result}")
+
+    def test_get_delta_no_latest(self):
+        """Test get_delta when parsing invalid CBOR."""
+        mock_patch = b"foo"
+        mock_assets = (("foo", "foo"), ("foo", "foo"))
+        # Empty string is not a valid code name
+        os.environ["PROTONPATH"] = ""
+
+        result = umu_proton._get_delta(
+            self.env,
+            self.test_umu_compat,
+            mock_patch,
+            mock_assets,
+            self.test_session_pools,
+        )
+        self.assertTrue(result is None, f"Expected None, received {result}")
+
+    def test_get_delta_no_patch(self):
+        """Test get_delta for empty or absent patch data."""
+        mock_patch = b""
+        mock_assets = (("foo", "foo"), ("foo", "foo"))
+        os.environ["PROTONPATH"] = umu_proton.ProtonVersion.UMULatest.value
+
+        result = umu_proton._get_delta(
+            self.env,
+            self.test_umu_compat,
+            mock_patch,
+            mock_assets,
+            self.test_session_pools,
+        )
+        self.assertTrue(result is None, f"Expected None, received {result}")
+
+    def test_get_delta_no_assets(self):
+        """Test get_delta when no GH assets are returned."""
+        mock_patch = b""
+        mock_assets = ()
+
+        result = umu_proton._get_delta(
+            self.env,
+            self.test_umu_compat,
+            mock_patch,
+            mock_assets,
+            self.test_session_pools,
+        )
+        self.assertTrue(result is None, f"Expected None, received {result}")
+
     def test_main_nomusl(self):
         """Test __main__.main to ensure an exit when on a musl-based system."""
         os.environ["LD_LIBRARY_PATH"] = f"{os.environ['LD_LIBRARY_PATH']}:musl"
