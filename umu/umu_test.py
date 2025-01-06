@@ -209,7 +209,11 @@ class TestGameLauncher(unittest.TestCase):
             self.skipTest(err)
 
         mock_patch = dumps(
-            {"public_key": "foo", "signature": b"bar", "contents": ["baz"]}
+            {
+                "public_key": ["foo", "bar"],
+                "signature": [b"bar", b"foo"],
+                "contents": ["baz"],
+            }
         )
         mock_ctx = MagicMock()
         mock_ctx.__enter__ = MagicMock(return_value=None)
@@ -260,7 +264,7 @@ class TestGameLauncher(unittest.TestCase):
             err = "umu_delta module not compiled"
             self.skipTest(err)
 
-        mock_patch = dumps({"public_key": "foo"})
+        mock_patch = dumps({"public_key": ["foo", "bar"]})
         mock_ctx = MagicMock()
         mock_ctx.__enter__ = MagicMock(return_value=None)
         mock_ctx.__exit__ = MagicMock(return_value=None)
