@@ -107,6 +107,7 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     }
     durl: str = ""
 
+    # Skip if the opt dependencies are not installed
     if not find_spec("cbor2") and not find_spec("xxhash"):
         return b""
 
@@ -218,9 +219,6 @@ def _fetch_proton(
         err: str = f"Scheme in URLs is not 'https:': {(tar_url, proton_hash_url)}"
         raise ValueError(err)
 
-    # Digest file
-    # Since the URLs are not hardcoded links, Ruff will flag the urlopen call
-    # See https://github.com/astral-sh/ruff/issues/7918
     log.info("Downloading %s...", proton_hash)
 
     resp = http_pool.request(
@@ -242,7 +240,6 @@ def _fetch_proton(
 
     resp.release_conn()
 
-    # Proton
     # Create a popup with zenity when the env var is set
     if os.environ.get("UMU_ZENITY") == "1":
         curl: str = "curl"
@@ -365,13 +362,15 @@ def _get_latest(
 ) -> dict[str, str] | None:
     """Download the latest Proton for new installs.
 
-    Either GE-Proton or UMU-Proton can be downloaded. When download the latest
-    UMU-Proton build, previous stable versions of that build will be deleted
-    automatically. Previous GE-Proton builds will remain on the system because
-    regressions are likely to occur in bleeding-edge based builds.
+    Either GE-Proton or UMU-Proton will be downloaded if they do not exist.
+    Depending on the codename, the installation path for those builds will
+    be different.
 
-    When the digests mismatched or when interrupted, an old build will in
-    $HOME/.local/share/Steam/compatibilitytool.d will be used.
+    When the digests mismatched or when the download is interrupted,
+    an existing build in either $HOME/.local/share/Steam/compatibilitytool.d
+    or $HOME/.local/share/umu/compatibilitytools will be used. The download
+    state until the interrupt event will be persisted at $HOME/.cache/umu
+    and resumed at next launch.
     """
     umu_compat, steam_compat = compat_tools
     # Name of the Proton archive (e.g., GE-Proton9-7.tar.gz)
