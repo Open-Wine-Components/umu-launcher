@@ -107,6 +107,13 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     }
     durl: str = ""
 
+    # Skip the patch if a Latest codename is not set
+    if os.environ.get("PROTONPATH") not in {
+        ProtonVersion.GELatest.value,
+        ProtonVersion.UMULatest.value,
+    }:
+        return b""
+
     # Skip if the opt dependencies are not installed
     if not find_spec("cbor2") and not find_spec("xxhash"):
         return b""
