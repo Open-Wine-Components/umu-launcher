@@ -41,6 +41,9 @@ jobs:
           uv venv --python $pyver
           source .venv/bin/activate
           uv pip install -r requirements.in
+          uv sync --all-extras
+          maturin develop -r
+          mv target/release/libumu_delta.so umu/umu_delta.so
         env:
           pyver: ${{ matrix.version }}
       - name: Test with unittest
