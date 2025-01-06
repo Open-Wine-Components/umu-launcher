@@ -282,10 +282,7 @@ def _fetch_proton(
             log.info("Downloading %s...", tarball)
 
         resp = http_pool.request(
-            HTTPMethod.GET.value,
-            tar_url,
-            preload_content=False,
-            headers=headers,
+            HTTPMethod.GET.value, tar_url, preload_content=False, headers=headers
         )
 
         # Bail out for unexpected status codes

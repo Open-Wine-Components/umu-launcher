@@ -131,8 +131,7 @@ def _install_umu(
         digest: str = ""
         buildid: str = ""
         endpoint: str = (
-            f"/steamrt-images-{codename}"
-            "/snapshots/latest-container-runtime-public-beta"
+            f"/steamrt-images-{codename}/snapshots/latest-container-runtime-public-beta"
         )
         hashsum = sha256()
         headers: dict[str, str] | None = None
@@ -331,7 +330,7 @@ def _update_umu(
     _, http_pool = session_pools
     codename, variant = runtime_ver
     endpoint: str = (
-        f"/steamrt-images-{codename}" "/snapshots/latest-container-runtime-public-beta"
+        f"/steamrt-images-{codename}/snapshots/latest-container-runtime-public-beta"
     )
     # Create a token and append it to the URL to avoid the Cloudflare cache
     # Avoids infinite updates to the runtime each launch
@@ -513,7 +512,7 @@ def _restore_umu_platformid(
             if line.startswith("BUILD_ID"):
                 # Get the value after 'BUILD_ID=' and strip the quotes
                 build_id: str = line.removeprefix("BUILD_ID=").rstrip().strip('"')
-                url = f"/steamrt-images-{codename}" f"/snapshots/{build_id}"
+                url = f"/steamrt-images-{codename}/snapshots/{build_id}"
                 break
 
     if not url:

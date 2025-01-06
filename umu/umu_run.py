@@ -140,12 +140,8 @@ def check_env(
     if os.environ.get("PROTONPATH") and path.is_dir():
         os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
 
-    # GE-Proton
-    if os.environ.get("PROTONPATH") in {
-        "GE-Proton",
-        "GE-Latest",
-        "UMU-Latest",
-    }:
+    # Proton Codename
+    if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest", "UMU-Latest"}:
         get_umu_proton(env, session_pools)
 
     if "PROTONPATH" not in os.environ:
@@ -343,14 +339,7 @@ def build_command(
     # Ideally, for reliability, executables should be compiled within
     # the Steam Runtime
     if env.get("UMU_NO_PROTON") == "1":
-        return (
-            entry_point,
-            "--verb",
-            env["PROTON_VERB"],
-            "--",
-            env["EXE"],
-            *opts,
-        )
+        return (entry_point, "--verb", env["PROTON_VERB"], "--", env["EXE"], *opts)
 
     # Will run the game outside the Steam Runtime w/ Proton
     if env.get("UMU_NO_RUNTIME") == "1":
@@ -627,10 +616,7 @@ def run_in_steammode(proc: Popen) -> int:
     # TODO: Find a robust way to get gamescope displays both in a container
     # and outside a container
     try:
-        with (
-            xdisplay(":0") as d_primary,
-            xdisplay(":1") as d_secondary,
-        ):
+        with xdisplay(":0") as d_primary, xdisplay(":1") as d_secondary:
             gamescope_baselayer_sequence = get_gamescope_baselayer_appid(d_primary)
             # Dont do window fuckery if we're not inside gamescope
             if (
@@ -643,8 +629,7 @@ def run_in_steammode(proc: Popen) -> int:
 
                 # Monitor for new windows for the DISPLAY associated with game
                 window_thread = threading.Thread(
-                    target=monitor_windows,
-                    args=(d_secondary,),
+                    target=monitor_windows, args=(d_secondary,)
                 )
                 window_thread.daemon = True
                 window_thread.start()
@@ -705,11 +690,7 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     prctl_ret = prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0)
     log.debug("prctl exited with status: %s", prctl_ret)
 
-    with Popen(
-        command,
-        start_new_session=True,
-        cwd=cwd,
-    ) as proc:
+    with Popen(command, start_new_session=True, cwd=cwd) as proc:
         ret = run_in_steammode(proc) if is_steammode else proc.wait()
         log.debug("Child %s exited with wait status: %s", proc.pid, ret)
 
@@ -795,6 +776,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             raise RuntimeError(err)
         log.debug("Network is unreachable")
         prereq = True
+
     if not prereq:
         err: str = (
             "umu has not been setup for the user\n"
@@ -849,14 +831,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
         try:
             future.result()
-        except (
-            # Network errors
-            MaxRetryError,
-            NewConnectionError,
-            TimeoutErrorUrllib3,
-            # Digest mismatched for runtime
-            ValueError,
-        ):
+        except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3, ValueError):
             if not has_umu_setup():
                 err: str = (
                     "umu has not been setup for the user\n"

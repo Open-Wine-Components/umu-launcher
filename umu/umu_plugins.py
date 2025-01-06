@@ -99,9 +99,7 @@ def _check_env_toml(toml: dict[str, Any]) -> dict[str, Any]:
         if (key == "proton" and not path.is_dir()) or (
             key == "prefix" and not path.is_dir()
         ):
-            err: str = (
-                f"Value for key '{key}' " f"is not a directory: '{toml[table][key]}'"
-            )
+            err: str = f"Value for key '{key}' is not a directory: '{toml[table][key]}'"
             raise NotADirectoryError(err)
 
     # Raise an error for empty values
