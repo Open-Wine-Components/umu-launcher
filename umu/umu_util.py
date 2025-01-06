@@ -393,13 +393,17 @@ class CompatibilityTool(SteamBase):
 
     def __init__(self, tool_path: str, shim: Path, runtime: SteamRuntime | None) -> None:  # noqa: D107
         super().__init__(tool_path)
+        _tool_path = Path(tool_path)
         self.shim = shim
         self.runtime = runtime if self.required_tool_appid is not None else None
-        with Path(tool_path).joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
-            # There can be multiple tools definitions in `compatibilitytools.vdf`
-            # Take the first one and hope it is the one with the correct display_name
-            compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
-            self.compatibility_tool = compat_tools[0]
+        if _tool_path.joinpath("compatibilitytool.vdf").exists():
+            with _tool_path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
+                # There can be multiple tools definitions in `compatibilitytools.vdf`
+                # Take the first one and hope it is the one with the correct display_name
+                compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
+                self.compatibility_tool = compat_tools[0]
+        else:
+            self.compatibility_tool = {"display_name": _tool_path.name}
 
     @property
     def display_name(self) -> str | None:  # noqa: D102
