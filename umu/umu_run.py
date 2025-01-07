@@ -435,6 +435,12 @@ def rearrange_gamescope_baselayer_appid(
     log.debug("%s: %s", GamescopeAtom.BaselayerAppId.value, sequence)
 
     if not steam_appid:
+        # Case when the app ID can't be found from environment variables
+        # See https://github.com/Open-Wine-Components/umu-launcher/issues/318
+        log.error(
+            "Failed to acquire app ID, skipping %s rearrangement",
+            GamescopeAtom.BaselayerAppId.value,
+        )
         return None
 
     try:
