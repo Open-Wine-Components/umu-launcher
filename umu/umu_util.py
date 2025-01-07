@@ -378,6 +378,9 @@ class SteamBase:
         """Return the tool specific entry point."""
         tool_path = os.path.normpath(self.tool_path)
         cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
+        # Temporary override for backwards compatibility
+        if self.tool_path == str(UMU_LOCAL):
+            cmd = cmd.replace("_v2-entry-point", "umu")
         cmd = cmd.replace("%verb%", verb)
         return shlex.split(cmd)
 
