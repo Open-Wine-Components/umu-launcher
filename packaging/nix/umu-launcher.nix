@@ -26,7 +26,8 @@ python3Packages.buildPythonPackage {
     pkgs.scdoc
     pkgs.git
     pkgs.python3Packages.installer
-    pkgs.hatch
+    # temporary fix, tracking https://github.com/NixOS/nixpkgs/issues/366359
+    (pkgs.hatch.overridePythonAttrs {doCheck = false;})
     pkgs.python3Packages.build
     pkgs.cargo
   ];
