@@ -241,6 +241,9 @@ class UmuRuntime:
             return
         if self.path is None:
             self.path = UMU_LOCAL.joinpath(self.name)
+        # Temporary override for backwards compatibility
+        if self.version == "steamrt3":
+            self.path = UMU_LOCAL
 
 
 RUNTIME_VERSIONS = {
