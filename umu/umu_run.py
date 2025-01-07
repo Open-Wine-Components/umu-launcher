@@ -39,6 +39,8 @@ from umu import __runtime_version__, __version__
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
+    RUNTIME_NAMES,
+    RUNTIME_VERSIONS,
     STEAM_COMPAT,
     STEAM_WINDOW_ID,
     UMU_LOCAL,
@@ -50,7 +52,6 @@ from umu.umu_proton import get_umu_proton
 from umu.umu_runtime import setup_umu
 from umu.umu_util import (
     CompatibilityTool,
-    SteamRuntime,
     get_libc,
     get_library_paths,
     has_umu_setup,
@@ -149,6 +150,11 @@ def check_env(
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
         get_umu_proton(env, session_pools)
+
+    if (key := os.environ.get("PROTONPATH")) in RUNTIME_NAMES:
+        os.environ["PROTONPATH"] = str(
+            RUNTIME_VERSIONS[RUNTIME_NAMES[key]].path
+        )
 
     env["PROTONPATH"] = os.environ["PROTONPATH"]
 
@@ -318,11 +324,11 @@ def build_command(
         )
         raise FileNotFoundError(err)
 
-    runtime = SteamRuntime(local.as_posix())
-    # Will run the game within the Steam Runtime w/o Proton
-    # Ideally, for reliability, executables should be compiled within
-    # the Steam Runtime
     if env.get("UMU_NO_TOOL") == "1":
+        runtime = CompatibilityTool(str(RUNTIME_VERSIONS[RUNTIME_NAMES["sniper"]].path), shim)
+        # Will run the game within the Steam Runtime w/o Proton
+        # Ideally, for reliability, executables should be compiled within
+        # the Steam Runtime
         log.debug(
             "Compatibility tool disabled. Executing linux-native executable %s", env["EXE"]
         )
@@ -335,11 +341,9 @@ def build_command(
     # Setup compatibility tool
     # If the user explicitly requested to run without the runtime,
     # force runtime to None
-    compat_tool = CompatibilityTool(
-        env["PROTONPATH"],
-        shim,
-        None if env["UMU_NO_RUNTIME"] == "1" else runtime
-    )
+    compat_tool = CompatibilityTool(env["PROTONPATH"], shim)
+    if env["UMU_NO_RUNTIME"] == "1":
+        compat_tool.runtime = None
     log.info("Using compatibility tool %s", compat_tool.display_name)
     # Will run the game outside the Steam Runtime w/ Proton
     if not compat_tool.runtime_enabled:
