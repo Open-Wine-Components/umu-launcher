@@ -20,7 +20,7 @@ import vdf
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
-from umu.umu_consts import RUNTIME_VERSIONS, UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
+from umu.umu_consts import RUNTIME_VERSIONS, UMU_LOCAL, UmuRuntime, WINETRICKS_SETTINGS_VERBS
 from umu.umu_log import log
 
 
@@ -359,10 +359,10 @@ class SteamBase:
         return str(ret) if (ret := self.tool_manifest.get("require_tool_appid")) else None
 
     @property
-    def required_tool_name(self) -> tuple:
-        """Map the required tool's appid to a tuple of commonly used names."""
+    def required_runtime(self) -> UmuRuntime:
+        """Map the required tool's appid to a runtime known by umu."""
         if self.required_tool_appid is None:
-            return None, None
+            return RUNTIME_VERSIONS["host"]
         return RUNTIME_VERSIONS[self.required_tool_appid]
 
     @property
@@ -373,8 +373,7 @@ class SteamBase:
         """Return the tool specific entry point."""
         tool_path = os.path.normpath(self.tool_path)
         cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
-        cmd = cmd.replace("_v2-entry-point", "umu")
-        cmd = cmd.replace("%verb%", str(verb))
+        cmd = cmd.replace("%verb%", verb)
         return shlex.split(cmd)
 
     def as_str(self, verb: str):  # noqa: D102
@@ -386,24 +385,20 @@ class SteamRuntime(SteamBase):
 
     def __init__(self, path: str) -> None:  # noqa: D107
         super().__init__(path)
-
-
-class CompatibilityTool(SteamBase):
-    """A compatibility tool (Proton, luxtorpeda, etc)."""
-
-    def __init__(self, tool_path: str, shim: Path, runtime: SteamRuntime | None) -> None:  # noqa: D107
-        super().__init__(tool_path)
-        _tool_path = Path(tool_path)
-        self.shim = shim
-        self.runtime = runtime if self.required_tool_appid is not None else None
-        if _tool_path.joinpath("compatibilitytool.vdf").exists():
-            with _tool_path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
+        self.runtime = (
+            SteamRuntime(str(self.required_runtime.path))
+            if self.required_tool_appid is not None
+            else None
+        )
+        _path = Path(path)
+        if _path.joinpath("compatibilitytool.vdf").exists():
+            with _path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
                 # There can be multiple tools definitions in `compatibilitytools.vdf`
                 # Take the first one and hope it is the one with the correct display_name
                 compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
                 self.compatibility_tool = compat_tools[0]
         else:
-            self.compatibility_tool = {"display_name": _tool_path.name}
+            self.compatibility_tool = {"display_name": _path.name}
 
     @property
     def display_name(self) -> str | None:  # noqa: D102
@@ -415,12 +410,34 @@ class CompatibilityTool(SteamBase):
         return self.runtime is not None
 
     def command(self, verb: str) -> list[str]:
-        """Return the fully qualified command for the tool .
+        """Return the fully qualified command for the runtime.
+
+        If the runtime uses another runtime, its entry point is prepended to the local command.
+        """
+        log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
+        cmd = self.runtime.command(verb) if self.runtime is not None else []
+        cmd.extend(super().command(verb))
+        return cmd
+
+
+class CompatibilityTool(SteamRuntime):
+    """A compatibility tool (Proton, luxtorpeda, etc)."""
+
+    def __init__(self, path: str, shim: Path) -> None:  # noqa: D107
+        super().__init__(path)
+        self.shim = shim
+
+    def command(self, verb: str) -> list[str]:
+        """Return the fully qualified command for the tool.
 
         If the tool uses a runtime, its entry point is prepended to the tool's command.
         """
+        log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
         cmd = self.runtime.command(verb) if self.runtime is not None else []
-        cmd.append(self.shim.as_posix())
-        cmd.extend(super().command(verb))
+        target = super(SteamRuntime, self).command(verb)
+        if self.layer in {"container-runtime", "scout-in-container"}:
+            cmd.extend([*target, self.shim.as_posix()])
+        else:
+            cmd.extend([self.shim.as_posix(), *target])
         return cmd
 
