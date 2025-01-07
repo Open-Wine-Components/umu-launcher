@@ -63,7 +63,7 @@ umu-dist: $(OBJDIR)/.build-umu-dist
 umu-dist-install: umu-dist
 	$(info :: Installing umu )
 	install -d $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
-	$(PYTHON_INTERPRETER)  -m installer --destdir=$(DESTDIR) $(OBJDIR)/*.whl
+	$(PYTHON_INTERPRETER)  -m installer --destdir=$(DESTDIR) $(OBJDIR)/umu_launcher*.whl
 
 ifeq ($(FLATPAK), xtrue)
 umu-install: umu-dist-install umu-delta-install
@@ -102,7 +102,7 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
 	python3 -m pip install urllib3 -t $(OBJDIR)
-	python3 -m pip install pyzstd  --config-settings="--build-option=--dynamic-link-zstd" -t $(OBJDIR)
+	sed -i 's/setuptools>=64,<74/setuptools/' subprojects/pyzstd/pyproject.toml && python -m build --wheel --no-isolation -C=--build-option=--dynamic-link-zstd subprojects/pyzstd --outdir=$(OBJDIR)
 
 .PHONY: umu-vendored
 umu-vendored: $(OBJDIR)/.build-umu-vendored
@@ -111,7 +111,7 @@ umu-vendored-install: umu-vendored
 	$(info :: Installing subprojects )
 	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 	cp      -r $(OBJDIR)/urllib3 $(DESTDIR)$(PYTHONDIR)/umu/_vendor
-	cp      -r $(OBJDIR)/pyzstd  $(DESTDIR)$(PYTHONDIR)/umu/_vendor
+	$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/pyzstd*.whl && mv $(DESTDIR)$(PYTHONDIR)/umu/_vendor/$(PYTHONDIR)/pyzstd $(DESTDIR)$(PYTHONDIR)/umu/_vendor && rm -r $(DESTDIR)$(PYTHONDIR)/umu/_vendor/$(PREFIX)
 
 $(OBJDIR):
 	@mkdir -p $(@)
