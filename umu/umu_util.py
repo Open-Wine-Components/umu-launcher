@@ -209,12 +209,14 @@ def is_winetricks_verb(
 @contextmanager
 def xdisplay(no: str):
     """Create a Display."""
-    d: display.Display = display.Display(no)
+    d: display.Display | None = None
 
     try:
+        d = display.Display(no)
         yield d
     finally:
-        d.close()
+        if d is not None:
+            d.close()
 
 
 def write_file_chunks(
