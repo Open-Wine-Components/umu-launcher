@@ -1,5 +1,6 @@
 {
   description = "umu universal game launcher";
+
   inputs = {
     nixpkgs = {
       type = "github";
@@ -8,19 +9,46 @@
       ref = "nixpkgs-unstable";
     };
   };
-  outputs = { self, nixpkgs }:
-  let
-  umu-launcher-src=builtins.toPath "${self}/../../";
-  nixpk=nixpkgs.legacyPackages.x86_64-linux;
-  in
-  let
-  pyth = nixpk.pkgs.python3;
-  version = "1.1.4";
-  in
-  let
-    umu-launcher = nixpk.callPackage ./umu-launcher.nix { umu-launcher=umu-launcher-src; pyth1=pyth; version = "${version}"; };
-    umu-run = nixpk.callPackage ./umu-run.nix { package=umu-launcher; version = "${version}"; };
-  in{
-    packages.x86_64-linux.umu = nixpk.callPackage ./combine.nix { env=umu-run; package=umu-launcher; version = "${version}"; truststore = true; cbor2 = true; };
+
+  outputs = {
+    self,
+    nixpkgs,
+  }: let
+    umu-launcher-src = builtins.toPath "${self}/../../";
+
+    pkgs = import nixpkgs {
+      system = "x86_64-linux";
+      overlays = [self.overlays.default];
+    };
+
+    version = "1.1.4";
+  in {
+    overlays.default = final: prev: let
+      py = prev.python3;
+    in {
+      umu-launcher = final.callPackage ./umu-launcher.nix {
+        inherit version;
+        umu-launcher = umu-launcher-src;
+        pyth1 = py;
+      };
+
+      umu-run = final.callPackage ./umu-run.nix {
+        inherit version;
+        package = final.umu-launcher;
+      };
+
+      umu = final.callPackage ./combine.nix {
+        inherit version;
+        env = final.umu-run;
+        package = final.umu-launcher;
+        truststore = true;
+        cbor2 = true;
+      };
+    };
+
+    packages.x86_64-linux = {
+      inherit (pkgs) umu;
+      default = self.packages.x86_64-linux.umu;
+    };
   };
 }
