@@ -1,0 +1,3 @@
+[submodule "subprojects/pyzstd"]
+	path = subprojects/pyzstd
+	url = https://github.com/Rogdham/pyzstd.git
