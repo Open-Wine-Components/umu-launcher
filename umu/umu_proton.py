@@ -124,16 +124,11 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
 
     releases = resp.json() or []
     for release in releases:
-        for asset in release.get("assets", []):
+        for asset in release["assets"]:
             if not asset["name"].endswith("cbor"):
                 continue
             if asset["name"].startswith(os.environ["PROTONPATH"]):
                 durl = asset["browser_download_url"]
-                log.info("URL: %s", durl)
-                break
-            if asset["name"].startswith(os.environ["PROTONPATH"]):
-                durl = asset["browser_download_url"]
-                log.info("URL: %s", durl)
                 break
 
     if not durl:
@@ -156,7 +151,6 @@ def _fetch_releases(
     proton_asset: tuple[str, str]
     releases: list[dict[str, Any]]
     _, http_pool = session_pools
-    asset_count: int = 0
     url: str = "https://api.github.com"
     repo: str = "/repos/Open-Wine-Components/umu-proton/releases/latest"
     headers: dict[str, str] = {
@@ -175,28 +169,25 @@ def _fetch_releases(
     if resp.status != HTTPStatus.OK:
         return ()
 
-    releases = resp.json().get("assets", [])
+    releases = resp.json()["assets"]
+
+    asset_count: int = 0
+    asset_max: int = 2
     for release in releases:
         if release["name"].endswith("sum"):
-            digest_asset = (
-                release["name"],
-                release["browser_download_url"],
-            )
+            digest_asset = (release["name"], release["browser_download_url"])
             asset_count += 1
             continue
         if release["name"].endswith("tar.gz") and release["name"].startswith(
             ("UMU-Proton", "GE-Proton")
         ):
-            proton_asset = (
-                release["name"],
-                release["browser_download_url"],
-            )
+            proton_asset = (release["name"], release["browser_download_url"])
             asset_count += 1
             continue
-        if asset_count == 2:  # noqa: PLR2004
+        if asset_count == asset_max:
             break
 
-    if asset_count != 2:  # noqa: PLR2004
+    if asset_count != asset_max:
         log.warning("Failed to acquire release assets from '%s'", url)
         log.debug("'%' returned: %s", url, releases)
         return ()
