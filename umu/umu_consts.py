@@ -36,8 +36,6 @@ class GamescopeAtom(Enum):
     BaselayerAppId = "GAMESCOPECTRL_BASELAYER_APPID"
 
 
-CONFIG = "umu_version.json"
-
 STEAM_COMPAT: Path = Path.home().joinpath(
     ".local", "share", "Steam", "compatibilitytools.d"
 )
