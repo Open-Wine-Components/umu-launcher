@@ -544,7 +544,6 @@ def _get_delta(
         build: str = tarball.removesuffix(".tar.gz")
         buildid: Path = umu_compat.joinpath(version, "compatibilitytool.vdf")
 
-        log.info("Build: %s", build)
         log.debug("Acquired lock '%s'", lockfile)
 
         # Check if we're up to date by doing a simple file check
