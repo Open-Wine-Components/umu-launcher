@@ -532,7 +532,7 @@ def _restore_umu_platformid(
         )
         return None
 
-    return resp.data.decode(encoding="utf-8")
+    return resp.data.decode(encoding="utf-8")  # type: ignore
 
 
 def _update_umu_platform(

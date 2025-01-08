@@ -138,7 +138,7 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     if resp.status != HTTPStatus.OK:
         return b""
 
-    return resp.data
+    return resp.data  # type: ignore
 
 
 def _fetch_releases(
