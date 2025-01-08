@@ -138,8 +138,7 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     if resp.status != HTTPStatus.OK:
         return b""
 
-    # Typing. False negative in mypy and urllib3's (v2) API guarantees the type
-    return resp.data  # type: ignore
+    return resp.data
 
 
 def _fetch_releases(
@@ -541,6 +540,8 @@ def _get_delta(
         # Avoids the cost of creating threads and memory-mapped IO
         try:
             with buildid.open(encoding="utf-8") as file:
+                # Ignore. Upstream issue in mypy and this operation is safe
+                # See https://github.com/python/mypy/issues/12682
                 is_updated: bool = any(filter(lambda line: build in line, file))  # type: ignore
                 if is_updated:
                     log.info("%s is up to date", version)

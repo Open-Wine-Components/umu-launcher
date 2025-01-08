@@ -532,8 +532,7 @@ def _restore_umu_platformid(
         )
         return None
 
-    # False positive from mypy.
-    return resp.data.decode(encoding="utf-8")  # type: ignore
+    return resp.data.decode(encoding="utf-8")
 
 
 def _update_umu_platform(
