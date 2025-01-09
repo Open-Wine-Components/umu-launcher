@@ -80,10 +80,6 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
         tmpdirs: SessionCaches = (Path(tmp), Path(tmpcache))
         compatdirs = (UMU_COMPAT, STEAM_COMPAT)
         if _get_delta(env, UMU_COMPAT, patch, assets, session_pools) is env:
-            log.info("%s is up to date", os.environ["PROTONPATH"])
-            os.environ["PROTONPATH"] = str(
-                UMU_COMPAT.joinpath(os.environ["PROTONPATH"])
-            )
             return env
         if _get_latest(env, compatdirs, tmpdirs, assets, session_pools) is env:
             return env
@@ -603,6 +599,12 @@ def _get_delta(
             orig, new = rename
             orig.rename(new)
         log.debug("Update time (ns): %s", time.time_ns() - start)
+
+    # At this point, the update was successful. Assuming no bugs, this
+    # statement is expected to be incorrect if the user tampered with the build
+    log.info("%s is up to date", version)
+    os.environ["PROTONPATH"] = str(umu_compat.joinpath(version))
+    env["PROTONPATH"] = os.environ["PROTONPATH"]
 
     return env
 
