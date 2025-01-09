@@ -264,6 +264,22 @@ select = [
     "RUF021",
     # When importing modules, ensure we do not shadow built-ins
     "A004",
+    # Ensure we do not shadow built-ins in lambda expressions
+    "A006",
+    # Enforce simpler boolean expressions
+    # Example:
+    # d = a < b and b < c
+    #
+    # Use instead:
+    # d = a < b < c
+    "PLR1716",
+    # Check for useless if-else conditionals
+    "RUF034",
+    # Check for duplicate union members for both variables and parameters
+    # Example:
+    # def foo(bar: int | int):
+    #   pass
+    "PYI016",
 ]
 ignore = [
     # Format
