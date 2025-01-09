@@ -84,7 +84,6 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
             os.environ["PROTONPATH"] = str(
                 UMU_COMPAT.joinpath(os.environ["PROTONPATH"])
             )
-            env["PROTONPATH"] = os.environ["PROTONPATH"]
             return env
         if _get_latest(env, compatdirs, tmpdirs, assets, session_pools) is env:
             return env
@@ -545,6 +544,9 @@ def _get_delta(
                 # See https://github.com/python/mypy/issues/12682
                 is_updated: bool = any(filter(lambda line: build in line, file))  # type: ignore
                 if is_updated:
+                    log.info("%s is up to date", version)
+                    os.environ["PROTONPATH"] = str(umu_compat.joinpath(version))
+                    env["PROTONPATH"] = os.environ["PROTONPATH"]
                     return env
         except (UnicodeDecodeError, FileNotFoundError):
             # Case when the VDF file DNE/or has non-utf-8 chars
