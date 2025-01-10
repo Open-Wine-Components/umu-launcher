@@ -1,16 +1,15 @@
-From 01a6b1c6e545fab6d01d24dfe1e240d327e77c3d Mon Sep 17 00:00:00 2001
+From 6df92e1bf3138a119c47187011cd9217d153206e Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Fri, 3 Jan 2025 22:58:17 -0800
+Date: Fri, 10 Jan 2025 10:16:40 -0800
 Subject: [PATCH] deb: fix build by using rustup
 
 ---
  Makefile.in                  | 10 +++++++++-
  packaging/deb/debian/control |  1 +
- packaging/deb/ubuntu/control |  1 +
- 3 files changed, 11 insertions(+), 1 deletion(-)
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 03b18fc4..b9cfeb10 100644
+index 03b18fc4..069fa83f 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -3,6 +3,8 @@ PROJECT := umu-launcher
@@ -35,7 +34,7 @@ index 03b18fc4..b9cfeb10 100644
 +	curl -LJO https://sh.rustup.rs
 +	chmod u+x ./rustup-init.sh
 +	$(SHELL_INTERPRETER) rustup-init.sh --default-toolchain none -y
-+	$(RUSTUP_BIN) toolchain install 1.83
++	$(RUSTUP_BIN) toolchain install 1.65
 +	$(CARGO_BIN) build -r
  	cp -a ./target/release/libumu_delta.so $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
  
@@ -44,18 +43,6 @@ diff --git a/packaging/deb/debian/control b/packaging/deb/debian/control
 index 243d1771..5372875d 100644
 --- a/packaging/deb/debian/control
 +++ b/packaging/deb/debian/control
-@@ -14,6 +14,7 @@ Build-Depends:
-  python3-installer,
-  python3-build,
-  python3-pip,
-+ curl,
- Standards-Version: 4.6.2
- Homepage: https://github.com/Open-Wine-Components/umu-launcher
- Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
-diff --git a/packaging/deb/ubuntu/control b/packaging/deb/ubuntu/control
-index 243d1771..5372875d 100644
---- a/packaging/deb/ubuntu/control
-+++ b/packaging/deb/ubuntu/control
 @@ -14,6 +14,7 @@ Build-Depends:
   python3-installer,
   python3-build,
