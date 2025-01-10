@@ -14,7 +14,6 @@ Build-Depends:
  python3-installer,
  python3-build,
  python3-pip,
- cargo,
 Standards-Version: 4.6.2
 Homepage: https://github.com/Open-Wine-Components/umu-launcher
 Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
