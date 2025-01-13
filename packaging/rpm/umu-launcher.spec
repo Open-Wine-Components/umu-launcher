@@ -13,7 +13,7 @@
 %global rel_build 1.%{build_timestamp}.%{shortcommit}%{?dist}
 
 Name:           umu-launcher
-Version:        1.2.0
+Version:        1.1.4
 Release:        %{rel_build}
 Summary:        A tool for launching non-steam games with proton
 
