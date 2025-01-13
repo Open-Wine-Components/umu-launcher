@@ -51,7 +51,6 @@ Recommends:	libzstd
 %prep
 git clone --single-branch --branch main https://github.com/Open-Wine-Components/umu-launcher.git
 cd umu-launcher
-git checkout %{tag}
 git submodule update --init --recursive
 
 %build
