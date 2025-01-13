@@ -2,7 +2,6 @@
 %define manual_commit e9cb4d764013d4c8c3d1166f59581da8f56a3d83
 
 # Optionally define the tag
-# %define tag 1.1.4
 # Check if tag is defined and get the commit hash for the tag, otherwise use manual commit
 %{!?tag: %global commit %{manual_commit}}
 %{?tag: %global commit %(git rev-list -n 1 %{tag} 2>/dev/null || echo %{manual_commit})}
