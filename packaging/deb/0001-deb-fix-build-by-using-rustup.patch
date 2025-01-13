@@ -1,15 +1,15 @@
-From 6df92e1bf3138a119c47187011cd9217d153206e Mon Sep 17 00:00:00 2001
+From 3f8cc61ad86e7fd1710026376e04ef9cd32b78e3 Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Fri, 10 Jan 2025 10:16:40 -0800
+Date: Sun, 12 Jan 2025 20:33:55 -0800
 Subject: [PATCH] deb: fix build by using rustup
 
 ---
- Makefile.in                  | 10 +++++++++-
+ Makefile.in                  | 11 ++++++++++-
  packaging/deb/debian/control |  1 +
- 2 files changed, 10 insertions(+), 1 deletion(-)
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 03b18fc4..069fa83f 100644
+index 03b18fc4..b4a99913 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -3,6 +3,8 @@ PROJECT := umu-launcher
@@ -21,17 +21,18 @@ index 03b18fc4..069fa83f 100644
  # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
  INSTALLDIR ?= umu
  
-@@ -170,10 +172,16 @@ zipapp-install: zipapp
+@@ -170,10 +172,17 @@ zipapp-install: zipapp
  	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
  
  PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
 +CARGO_BIN := $(HOME)/.cargo/bin/cargo
 +RUSTUP_BIN := $(HOME)/.cargo/bin/rustup
++RUSTUP_URL := https://raw.githubusercontent.com/rust-lang/rustup/refs/tags/1.27.1/rustup-init.sh
  
  $(OBJDIR)/.build-umu-delta: | $(OBJDIR)
  	$(info :: Building delta dependencies )
 -	cargo build -r
-+	curl -LJO https://sh.rustup.rs
++	curl -LJO --tlsv1.3 $(RUSTUP_URL)
 +	chmod u+x ./rustup-init.sh
 +	$(SHELL_INTERPRETER) rustup-init.sh --default-toolchain none -y
 +	$(RUSTUP_BIN) toolchain install 1.65
@@ -52,5 +53,5 @@ index 243d1771..5372875d 100644
  Homepage: https://github.com/Open-Wine-Components/umu-launcher
  Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
 -- 
-2.47.1
+2.48.0
 
