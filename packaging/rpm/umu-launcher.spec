@@ -35,6 +35,7 @@ BuildRequires:  python3-installer
 BuildRequires:  python3-hatchling
 BuildRequires:  python
 BuildRequires:  python3
+BuildRequires:  python3-pip
 
 Requires:	python
 Requires:	python3
