@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
       - name: Install dependencies
         run: |
-          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck bubblewrap cargo
+          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck bubblewrap cargo flatpak-builder
           python3 -m pip install --upgrade pip
           pip install uv
       - name: Initialize submodules
@@ -35,6 +35,14 @@ jobs:
       - name: Setup venv
         run: |
           uv venv --python 3.10
+      - name: Test Flatpak
+        run: |
+          source .venv/bin/activate
+          cd packaging/flatpak
+          flatpak-builder --force-clean --user --install-deps-from=flathub --repo=umu-repo --install umu-launcher org.openwinecomponents.umu.umu-launcher.yml
+          flatpak run --command=sh --devel org.openwinecomponents.umu.umu-launcher
+          GAMEID=umu-0 UMU_LOG=1 "$HOME/.local/bin/umu-run" ""
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test steamrt install
         run: |
           source .venv/bin/activate
