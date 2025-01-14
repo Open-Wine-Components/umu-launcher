@@ -38,4 +38,4 @@ jobs:
           git config --global protocol.file.allow always
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak-builder --force-clean --user --install-deps-from=flathub --repo=umu-repo --install umu-launcher org.openwinecomponents.umu.umu-launcher.yml
-          flatpak run --command=sh --devel --filesystem=$(pwd) org.openwinecomponents.umu.umu-launcher && GAMEID=umu-0 UMU_LOG=1 "$HOME/.local/bin/umu-run" wineboot -u
+          flatpak -v run --command=sh --devel --filesystem=$(pwd) org.openwinecomponents.umu.umu-launcher && GAMEID=umu-0 UMU_LOG=1 "$HOME/.local/bin/umu-run" wineboot -u
