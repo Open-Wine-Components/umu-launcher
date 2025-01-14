@@ -39,7 +39,7 @@ jobs:
         run: |
           source .venv/bin/activate
           cd packaging/flatpak
-          flatpak remote-add --user --if-not-exists flathub
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak-builder --force-clean --user --install-deps-from=flathub --repo=umu-repo --install umu-launcher org.openwinecomponents.umu.umu-launcher.yml
           flatpak run --command=sh --devel org.openwinecomponents.umu.umu-launcher
           GAMEID=umu-0 UMU_LOG=1 "$HOME/.local/bin/umu-run" ""
