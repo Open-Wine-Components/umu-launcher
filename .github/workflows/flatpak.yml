@@ -32,12 +32,8 @@ jobs:
       - name: Run shellcheck
         run: |
           shellcheck tests/*.sh
-      - name: Setup venv
-        run: |
-          uv venv --python 3.10
       - name: Test Flatpak
         run: |
-          source .venv/bin/activate
           cd packaging/flatpak
           git config --global protocol.file.allow always
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
