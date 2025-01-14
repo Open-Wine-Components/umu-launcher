@@ -1,0 +1,46 @@
+name: flatpak
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: |
+          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck bubblewrap cargo flatpak-builder
+          python3 -m pip install --upgrade pip
+          pip install uv
+      - name: Initialize submodules
+        run: |
+          git submodule update --init --recursive
+      - name: Make user install
+        run: |
+          ./configure.sh --user-install
+          make install
+      - name: Run shellcheck
+        run: |
+          shellcheck tests/*.sh
+      - name: Setup venv
+        run: |
+          uv venv --python 3.10
+      - name: Test Flatpak
+        run: |
+          source .venv/bin/activate
+          cd packaging/flatpak
+          git config --global protocol.file.allow always
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak-builder --force-clean --user --install-deps-from=flathub --repo=umu-repo --install umu-launcher org.openwinecomponents.umu.umu-launcher.yml
+          flatpak run --command=sh --devel org.openwinecomponents.umu.umu-launcher
+          GAMEID=umu-0 UMU_LOG=1 "$HOME/.local/bin/umu-run" wineboot -u
