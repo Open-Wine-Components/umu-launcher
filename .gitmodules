@@ -1,0 +1,3 @@
+[submodule "subprojects/python-xlib"]
+	path = subprojects/python-xlib
+	url = git@github.com:python-xlib/python-xlib.git
