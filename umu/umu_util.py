@@ -89,7 +89,7 @@ def get_library_paths() -> set[str]:
                 return library_paths
             for line in proc.stdout:
                 lines = line.split()
-                if not line:
+                if not lines:
                     continue
                 line = lines[-1]
                 prefix = line[: line.rfind(root)]
