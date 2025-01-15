@@ -88,10 +88,10 @@ def get_library_paths() -> set[str]:
             if not proc.stdout:
                 return library_paths
             for line in proc.stdout:
-                line = line.split()
+                lines = line.split()
                 if not line:
                     continue
-                line = line[-1]
+                line = lines[-1]
                 prefix = line[: line.rfind(root)]
                 if not line.startswith(root) or prefix in paths:
                     continue
