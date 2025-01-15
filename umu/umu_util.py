@@ -63,7 +63,9 @@ def get_libc() -> str:
 def get_library_paths() -> set[str]:
     """Find the shared library paths from the user's system."""
     library_paths: set[str] = set()
+    paths: set[str] = set()
     ldconfig: str = which("ldconfig") or ""
+    root = "/"
 
     if not ldconfig:
         log.warning("ldconfig not found in $PATH, cannot find library paths")
@@ -81,15 +83,20 @@ def get_library_paths() -> set[str]:
             text=True,
             encoding="utf-8",
             stdout=PIPE,
-            stderr=PIPE,
             env={"LC_ALL": "C", "LANG": "C"},
         ) as proc:
-            stdout, _ = proc.communicate()
-            library_paths |= {
-                os.path.realpath(line[: line.rfind("/")])
-                for line in stdout.split()
-                if line.startswith("/")
-            }
+            if not proc.stdout:
+                return library_paths
+            for line in proc.stdout:
+                lines = line.split()
+                if not line:
+                    continue
+                line = lines[-1]
+                prefix = line[: line.rfind(root)]
+                if not line.startswith(root) or prefix in paths:
+                    continue
+                paths.add(prefix)
+                library_paths.add(os.path.realpath(prefix))
     except OSError as e:
         log.exception(e)
 
