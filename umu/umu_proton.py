@@ -126,6 +126,8 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
             if asset["name"].startswith(os.environ["PROTONPATH"]):
                 durl = asset["browser_download_url"]
                 break
+        if durl:
+            break
 
     if not durl:
         return b""
