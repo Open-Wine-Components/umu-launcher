@@ -1,0 +1,6 @@
+[submodule "subprojects/urllib3"]
+	path = subprojects/urllib3
+	url = https://github.com/urllib3/urllib3.git
+[submodule "subprojects/pyzstd"]
+	path = subprojects/pyzstd
+	url = https://github.com/Rogdham/pyzstd.git
