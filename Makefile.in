@@ -19,6 +19,14 @@ DESTDIR ?=
 USERINSTALL ?= xfalse
 FLATPAK ?= xfalse
 
+INSTALLER_ARGS := -m installer $(OBJDIR)/*.whl
+ifdef DESTDIR
+	INSTALLER_ARGS += --destdir=$(DESTDIR)
+endif
+ifdef PREFIX
+	INSTALLER_ARGS += --prefix=$(PREFIX)
+endif
+
 .PHONY: all
 ifeq ($(FLATPAK), xtrue)
 all: umu-dist umu-launcher umu-vendored
@@ -63,7 +71,7 @@ umu-dist: $(OBJDIR)/.build-umu-dist
 umu-dist-install: umu-dist
 	$(info :: Installing umu )
 	install -d $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)
-	$(PYTHON_INTERPRETER)  -m installer --destdir=$(DESTDIR) $(OBJDIR)/*.whl
+	$(PYTHON_INTERPRETER) $(INSTALLER_ARGS)
 
 ifeq ($(FLATPAK), xtrue)
 umu-install: umu-dist-install umu-delta-install
