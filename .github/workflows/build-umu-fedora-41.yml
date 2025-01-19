@@ -36,7 +36,7 @@ jobs:
         rpmbuild -ba packaging/rpm/umu-launcher.spec
 
     - name: Fedora-41
-      uses: actions/upload-artifact@v4.0.0
+      uses: actions/upload-artifact@v4.6.0
       with:
         name: umu-launcher-rpm-41
         path: ~/rpmbuild/RPMS/x86_64/*.rpm
