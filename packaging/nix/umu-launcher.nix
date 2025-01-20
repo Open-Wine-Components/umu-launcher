@@ -46,7 +46,7 @@ python3Packages.buildPythonPackage {
     ++ lib.optional deltaUpdates.cbor2 pkgs.python3Packages.cbor2
     ++ lib.optional deltaUpdates.xxhash pkgs.python3Packages.xxhash
     ++ lib.optional deltaUpdates.zstd pkgs.zstd;
-  makeFlags = ["PYTHON_INTERPRETER=${pyth1}/bin/python" "SHELL_INTERPRETER=/run/current-system/sw/bin/bash" "DESTDIR=${placeholder "out"}"];
+  makeFlags = ["PYTHON_INTERPRETER=${pyth1}/bin/python" "SHELL_INTERPRETER=/run/current-system/sw/bin/bash" "DESTDIR=build"];
   dontUseMesonConfigure = true;
   dontUseNinjaBuild = true;
   dontUseNinjaInstall = true;
@@ -54,9 +54,8 @@ python3Packages.buildPythonPackage {
   configureScript = "./configure.sh";
   configureFlags = ["--prefix=${placeholder "out"}"];
   postInstall = ''
-    mv -fv $out${pyth1}/* $out
-    mv -fv $out$out/* $out
-    rm -vrf $out/nix
+    cp -r build${pyth1}/* $out
+    cp -r build$out/* $out
     mv $out/bin/umu-run $out/bin/umu
   '';
 }
