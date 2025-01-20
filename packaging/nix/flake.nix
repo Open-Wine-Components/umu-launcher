@@ -9,43 +9,44 @@
     self,
     nixpkgs,
   }: let
-    umu-launcher-src = builtins.toPath "${self}/../../";
+    inherit (nixpkgs) lib;
 
-    pkgs = import nixpkgs {
-      system = "x86_64-linux";
-      overlays = [self.overlays.default];
-    };
+    # Utility function for producing consistent rename warning messages
+    rename = old: new: lib.warn "`${old}` has been renamed to `${new}`";
 
-    version = "1.1.4";
+    # Supported platforms & package sets
+    platforms = lib.platforms.linux;
+    supportedPkgs = lib.filterAttrs (system: _: builtins.elem system platforms) nixpkgs.legacyPackages;
+
+    # Use the current revision for the default version
+    version = self.dirtyShortRev or self.shortRev or self.lastModifiedDate;
   in {
-    overlays.default = final: prev: let
-      py = prev.python3;
-    in {
-      umu-launcher = final.callPackage ./umu-launcher.nix {
-        inherit version;
-        umu-launcher = umu-launcher-src;
-        pyth1 = py;
+    overlays.default = final: prev: {
+      umu-launcher = final.callPackage ./package.nix {
+        inherit (prev) umu-launcher;
       };
-
-      umu-run = final.callPackage ./umu-run.nix {
+      umu-launcher-unwrapped = final.callPackage ./unwrapped.nix {
+        inherit (prev) umu-launcher-unwrapped;
         inherit version;
-        package = final.umu-launcher;
       };
-
-      umu = final.callPackage ./combine.nix {
-        inherit version;
-        env = final.umu-run;
-        package = final.umu-launcher;
-        truststore = true;
-        cbor2 = true;
-      };
+      # Deprecated in https://github.com/Open-Wine-Components/umu-launcher/pull/345 (2025-01-31)
+      umu = rename "umu" "umu-launcher" final.umu-launcher;
+      umu-run = rename "umu-run" "umu-launcher" final.umu-launcher;
     };
 
     formatter = builtins.mapAttrs (system: pkgs: pkgs.alejandra) nixpkgs.legacyPackages;
 
-    packages.x86_64-linux = {
-      inherit (pkgs) umu;
-      default = self.packages.x86_64-linux.umu;
-    };
+    packages =
+      builtins.mapAttrs (system: pkgs: rec {
+        default = umu-launcher;
+        inherit
+          (pkgs.extend self.overlays.default)
+          umu-launcher
+          umu-launcher-unwrapped
+          ;
+        # Deprecated in https://github.com/Open-Wine-Components/umu-launcher/pull/345 (2025-01-31)
+        umu = rename "packages.${system}.umu" "packages.${system}.umu-launcher" umu-launcher;
+      })
+      supportedPkgs;
   };
 }
