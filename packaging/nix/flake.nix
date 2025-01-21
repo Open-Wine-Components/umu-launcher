@@ -46,6 +46,8 @@
       };
     };
 
+    formatter = builtins.mapAttrs (system: pkgs: pkgs.alejandra) nixpkgs.legacyPackages;
+
     packages.x86_64-linux = {
       inherit (pkgs) umu;
       default = self.packages.x86_64-linux.umu;
