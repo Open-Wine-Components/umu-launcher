@@ -191,6 +191,242 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_umu_compat.exists():
             rmtree(self.test_umu_compat.as_posix())
 
+    def test_fetch_patch_url_req(self):
+        """Test _fetch_patch when the second request fails.
+
+        Expects an empty byte string.
+        """
+        result = None
+        expected = "bar"
+        mock_gh_release = {
+            "assets": [
+                {"name": "GE-Latest.cbor", "browser_download_url": "foo"},
+                {"name": "UMU-Latest.cbor", "browser_download_url": "foo"},
+            ]
+        }
+
+        if find_spec("cbor2") is None or find_spec("xxhash") is None:
+            err = "delta dependencies not installed"
+            self.skipTest(err)
+
+        os.environ["PROTONPATH"] = "GE-Latest"
+
+        # Mock the response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json.return_value = mock_gh_release
+        mock_resp.data = expected
+
+        # Mock 2nd response
+        mock_resp2 = MagicMock()
+        mock_resp2.status = 400
+        mock_resp2.json.return_value = mock_gh_release
+        mock_resp2.data = expected
+
+        # Mock the thread pool
+        mock_tp = MagicMock()
+
+        # Mock the call to http pool
+        mock_hp = MagicMock()
+        mock_hp.request.side_effect = [mock_resp, mock_resp2]
+
+        result = umu_proton._fetch_patch((mock_tp, mock_hp))
+        self.assertEqual(b"", result, f"Expected {expected}, receieved {result}")
+
+        # UMU-Latest codename
+        result = None
+        os.environ["PROTONPATH"] = "UMU-Latest"
+
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json.return_value = mock_gh_release
+        mock_resp.data = expected
+
+        mock_resp2 = MagicMock()
+        mock_resp2.status = 400
+        mock_resp2.json.return_value = mock_gh_release
+        mock_resp2.data = expected
+
+        mock_tp = MagicMock()
+
+        mock_hp = MagicMock()
+        mock_hp.request.side_effect = [mock_resp, mock_resp2]
+
+        result = umu_proton._fetch_patch((mock_tp, mock_hp))
+        self.assertEqual(b"", result, f"Expected {expected}, receieved {result}")
+
+    def test_fetch_patch(self):
+        """Test _fetch_patch on success.
+
+        Expects a non-empty byte string to be returned. In practice, the return
+        value is the CBOR data.
+        """
+        result = None
+        expected = "bar"
+        mock_gh_release = {
+            "assets": [
+                {"name": "GE-Latest.cbor", "browser_download_url": "foo"},
+                {"name": "UMU-Latest.cbor", "browser_download_url": "foo"},
+            ]
+        }
+
+        if find_spec("cbor2") is None or find_spec("xxhash") is None:
+            err = "delta dependencies not installed"
+            self.skipTest(err)
+
+        os.environ["PROTONPATH"] = "GE-Latest"
+
+        # Mock the response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json.return_value = mock_gh_release
+        mock_resp.data = expected
+
+        # Mock the thread pool
+        mock_tp = MagicMock()
+
+        # Mock the call to http pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        result = umu_proton._fetch_patch((mock_tp, mock_hp))
+        self.assertEqual(expected, result, f"Expected {expected}, receieved {result}")
+
+        # UMU-Latest codename
+        result = None
+        os.environ["PROTONPATH"] = "UMU-Latest"
+
+        result = umu_proton._fetch_patch((mock_tp, mock_hp))
+        self.assertEqual(expected, result, f"Expected {expected}, receieved {result}")
+
+    def test_fetch_patch_no_names(self):
+        """Test _fetch_patch for invalid GitHub assets.
+
+        Expects empty byte string to be returned when unable to find
+        assets that do not have a .cbor suffix or do not begin with a
+        codename (e.g., GE-Latest).
+        """
+        result = None
+        mock_gh_release = {
+            "assets": [
+                {"name": "", "browser_download_url": "foo"},
+                {"name": "", "browser_download_url": ""},
+            ]
+        }
+
+        if find_spec("cbor2") is None or find_spec("xxhash") is None:
+            err = "delta dependencies not installed"
+            self.skipTest(err)
+
+        os.environ["PROTONPATH"] = "GE-Latest"
+
+        # Mock the response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json.return_value = mock_gh_release
+
+        # Mock the thread pool
+        mock_tp = MagicMock()
+
+        # Mock the call to http pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        result = umu_proton._fetch_patch((mock_tp, mock_hp))
+        self.assertEqual(b"", result, f"Expected empty bytes, receieved {result}")
+
+        # UMU-Latest codename
+        result = None
+        os.environ["PROTONPATH"] = "UMU-Latest"
+
+        result = umu_proton._fetch_patch((mock_tp, mock_hp))
+        self.assertEqual(b"", result, f"Expected empty bytes, receieved {result}")
+
+    def test_fetch_patch_none(self):
+        """Test _fetch_patch on request failure.
+
+        Expects an empty byte string.
+        """
+        result = None
+        mock_gh_release = {
+            "assets": [
+                {"name": "", "browser_download_url": ""},
+                {"name": "", "browser_download_url": ""},
+            ]
+        }
+
+        if find_spec("cbor2") is None or find_spec("xxhash") is None:
+            err = "delta dependencies not installed"
+            self.skipTest(err)
+
+        os.environ["PROTONPATH"] = "GE-Latest"
+
+        # Mock the failed response
+        mock_resp = MagicMock()
+        mock_resp.status = 404
+        mock_resp.json.return_value = mock_gh_release
+
+        # Mock the thread pool
+        mock_tp = MagicMock()
+
+        # Mock the call to http pool
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        result = umu_proton._fetch_patch((mock_tp, mock_hp))
+        self.assertEqual(b"", result, f"Expected empty bytes, receieved {result}")
+
+        # UMU-Latest codename
+        result = None
+        os.environ["PROTONPATH"] = "UMU-Latest"
+
+        result = umu_proton._fetch_patch((mock_tp, mock_hp))
+        self.assertEqual(b"", result, f"Expected empty bytes, receieved {result}")
+
+    def test_fetch_patch_missing_deps(self):
+        """Test _fetch_patch when optional deps are missing.
+
+        Expects an empty byte string.
+        """
+        result = None
+        os.environ["PROTONPATH"] = "GE-Latest"
+
+        if find_spec("cbor2") is None or find_spec("xxhash") is None:
+            err = "delta dependencies not installed"
+            self.skipTest(err)
+
+        with patch.object(umu_proton, "find_spec", return_value=False):
+            result = umu_proton._fetch_patch(self.test_session_pools)
+        self.assertEqual(b"", result, f"Expected empty bytes, receieved {result}")
+
+        # UMU-Latest codename
+        result = None
+        os.environ["PROTONPATH"] = "UMU-Latest"
+
+        with patch.object(umu_proton, "find_spec", return_value=False):
+            result = umu_proton._fetch_patch(self.test_session_pools)
+        self.assertEqual(b"", result, f"Expected empty bytes, receieved {result}")
+
+    def test_fetch_patch_no_latest(self):
+        """Test _fetch_patch when PROTONPATH is not set or invalid.
+
+        Expects an empty byte string.
+        """
+        result = None
+
+        # PROTONPATH unset
+        if find_spec("cbor2") is None or find_spec("xxhash") is None:
+            err = "delta dependencies not installed"
+            self.skipTest(err)
+        result = umu_proton._fetch_patch(self.test_session_pools)
+        self.assertEqual(b"", result, f"Expected empty bytes, receieved {result}")
+
+        # PROTONPATH set
+        result = None
+        os.environ["PROTONPATH"] = "foo-Latest"
+        result = umu_proton._fetch_patch(self.test_session_pools)
+        self.assertEqual(b"", result, f"Expected empty bytes, receieved {result}")
+
     def test_get_delta_invalid_sig(self):
         """Test get_delta when patch signature is invalid."""
         mock_assets = (("foo", "foo"), ("foo.tar.gz", "foo"))
