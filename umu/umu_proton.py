@@ -95,7 +95,7 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     resp: BaseHTTPResponse
     _, http_pool = session_pools
     url: str = "https://api.github.com"
-    repo: str = "/repos/Open-Wine-Components/umu-mkpatch/releases"
+    repo: str = "/repos/Open-Wine-Components/umu-mkpatch/releases/latest"
     headers: dict[str, str] = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
@@ -118,15 +118,12 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     if resp.status != HTTPStatus.OK:
         return b""
 
-    releases = resp.json() or []
+    releases = resp.json()["assets"]
     for release in releases:
-        for asset in release["assets"]:
-            if not asset["name"].endswith("cbor"):
-                continue
-            if asset["name"].startswith(os.environ["PROTONPATH"]):
-                durl = asset["browser_download_url"]
-                break
-        if durl:
+        if not release["name"].endswith("cbor"):
+            continue
+        if release["name"].startswith(os.environ["PROTONPATH"]):
+            durl = release["browser_download_url"]
             break
 
     if not durl:
