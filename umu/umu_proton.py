@@ -1,10 +1,12 @@
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ALL_COMPLETED, FIRST_EXCEPTION, ThreadPoolExecutor
+from concurrent.futures import wait as futures_wait
 from enum import Enum
 from hashlib import sha512
 from http import HTTPStatus
 from importlib.util import find_spec
+from itertools import chain
 from pathlib import Path
 from re import split as resplit
 from shutil import move
@@ -575,24 +577,21 @@ def _get_delta(
         # Apply the patch
         for content in cbor["contents"]:
             src: str = content["source"]
-
             if src.startswith((ProtonVersion.GE.value, ProtonVersion.UMU.value)):
                 patchers.append(_apply_delta(proton, content, thread_pool))
                 continue
-
             subdir: Path | None = next(umu_compat.joinpath(version).rglob(src), None)
             if not subdir:
                 log.error("Could not find subdirectory '%s', skipping", subdir)
                 continue
-
             patchers.append(_apply_delta(subdir, content, thread_pool))
             renames.append((subdir, subdir.parent / content["target"]))
 
         # Wait for results and rename versioned subdirectories
         start: float = time.time_ns()
         for patcher in filter(None, patchers):
-            for future in filter(None, patcher.result()):
-                future.result()
+            _, *futures = patcher.result()
+            futures_wait(list(chain.from_iterable(futures)), return_when=ALL_COMPLETED)
 
         for rename in renames:
             orig, new = rename
@@ -614,25 +613,28 @@ def _apply_delta(
     thread_pool: ThreadPoolExecutor,
 ) -> CustomPatcher | None:
     patcher: CustomPatcher = CustomPatcher(content, path, thread_pool)
-    is_updated: bool = False
 
     # Verify the identity of the build. At this point the patch file is authenticated.
     # Note, this will skip the update if the user had tinkered with their build. We do
     # this so we can ensure the result of each binary patch isn't garbage
     patcher.verify_integrity()
 
-    for item in patcher.result():
-        if item.result() is None:
-            is_updated = True
-            break
+    # Handle tasks that failed metadata validation. On success, skip waiting for results
+    futures, *_ = patcher.result()
+    done, not_done = futures_wait(futures, return_when=FIRST_EXCEPTION)
+    for future in done:
+        try:
+            future.result()
+        except (FileNotFoundError, ValueError) as e:
+            log.exception(e)
+            for future in not_done:
+                future.cancel()
+            return None
 
-    if is_updated:
-        log.debug("%s (latest) validation failed, skipping", os.environ["PROTONPATH"])
-        return None
+    futures_wait(not_done, return_when=ALL_COMPLETED)
 
     # Patch the current build, upgrading proton to the latest
     log.info("%s is OK, applying partial update...", os.environ["PROTONPATH"])
-
     patcher.update_binaries()
     patcher.add_binaries()
     patcher.delete_binaries()

@@ -115,7 +115,12 @@ class CustomPatcher:
         self._arc_manifest: list[ManifestEntry] = self._arc_contents["manifest"]
         self._compat_tool = compat_tool
         self._thread_pool = thread_pool
-        self._futures: list[Future] = []
+        # Collection where each task creates a new file within an existing compatibility tool
+        self._add: list[Future] = []
+        # Collection where each task updates an existing file
+        self._update: list[Future] = []
+        # Collection where each task verifies an existing file
+        self._verify: list[Future] = []
 
     def add_binaries(self) -> None:
         """Add binaries within a compatibility tool.
@@ -131,7 +136,7 @@ class CustomPatcher:
             build_file: Path = self._compat_tool.joinpath(item["name"])
             if item["type"] == FileType.File.value:
                 # Decompress the zstd data and write the file
-                self._futures.append(
+                self._add.append(
                     self._thread_pool.submit(self._write_proton_file, build_file, item)
                 )
                 continue
@@ -160,7 +165,7 @@ class CustomPatcher:
             build_file: Path = self._compat_tool.joinpath(item["name"])
             if item["type"] == FileType.File.value:
                 # For files, apply a binary patch
-                self._futures.append(
+                self._update.append(
                     self._thread_pool.submit(self._patch_proton_file, build_file, item)
                 )
                 continue
@@ -209,17 +214,15 @@ class CustomPatcher:
     def verify_integrity(self) -> None:
         """Verify the expected mode, size, file and digest of the compatibility tool."""
         for item in self._arc_manifest:
-            self._futures.append(
+            self._verify.append(
                 self._thread_pool.submit(self._check_binaries, self._compat_tool, item)
             )
 
-    def result(self) -> list[Future]:
-        """Return the currently submitted tasks."""
-        return self._futures
+    def result(self) -> tuple[list[Future], list[Future], list[Future]]:
+        """Return all the currently submitted tasks."""
+        return (self._verify, self._add, self._update)
 
-    def _check_binaries(
-        self, proton: Path, item: ManifestEntry
-    ) -> ManifestEntry | None:
+    def _check_binaries(self, proton: Path, item: ManifestEntry) -> ManifestEntry:
         rpath: Path = proton.joinpath(item["name"])
 
         try:
@@ -227,15 +230,11 @@ class CustomPatcher:
                 stats: os.stat_result = os.fstat(fp.fileno())
                 xxhash: int = 0
                 if item["size"] != stats.st_size:
-                    log.error(
-                        "Expected size %s, received %s", item["size"], stats.st_size
-                    )
-                    return None
+                    err: str = f"Expected size {item['size']}, received {stats.st_size}"
+                    raise ValueError(err)
                 if item["mode"] != stats.st_mode:
-                    log.error(
-                        "Expected mode %s, received %s", item["mode"], stats.st_mode
-                    )
-                    return None
+                    err: str = f"Expected mode {item['mode']}, received {stats.st_mode}"
+                    raise ValueError(err)
                 if stats.st_size > MMAP_MIN:
                     with mmap(fp.fileno(), length=0, access=ACCESS_READ) as mm:
                         # Ignore. Passing an mmap is valid here
@@ -245,11 +244,11 @@ class CustomPatcher:
                 else:
                     xxhash = xxh3_64_intdigest(fp.read())
                 if item["xxhash"] != xxhash:
-                    log.error("Expected xxhash %s, received %s", item["xxhash"], xxhash)
-                    return None
+                    err: str = f"Expected xxhash {item['xxhash']}, received {xxhash}"
+                    raise ValueError(err)
         except FileNotFoundError:
             log.debug("Aborting partial update, file not found: %s", rpath)
-            return None
+            raise
 
         return item
 
