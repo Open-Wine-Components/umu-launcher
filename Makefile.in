@@ -19,7 +19,7 @@ DESTDIR ?=
 USERINSTALL ?= xfalse
 FLATPAK ?= xfalse
 
-INSTALLER_ARGS := -m installer $(OBJDIR)/*.whl
+INSTALLER_ARGS := -m installer $(OBJDIR)/umu_launcher*.whl
 ifdef DESTDIR
 	INSTALLER_ARGS += --destdir=$(DESTDIR)
 endif
