@@ -217,9 +217,7 @@ class CustomPatcher:
         """Return the currently submitted tasks."""
         return self._futures
 
-    def _check_binaries(
-        self, proton: Path, item: ManifestEntry
-    ) -> ManifestEntry | None:
+    def _check_binaries(self, proton: Path, item: ManifestEntry) -> ManifestEntry:
         rpath: Path = proton.joinpath(item["name"])
 
         try:
@@ -227,15 +225,11 @@ class CustomPatcher:
                 stats: os.stat_result = os.fstat(fp.fileno())
                 xxhash: int = 0
                 if item["size"] != stats.st_size:
-                    log.error(
-                        "Expected size %s, received %s", item["size"], stats.st_size
-                    )
-                    return None
+                    err: str = f"Expected size {item['size']}, received {stats.st_size}"
+                    raise ValueError(err)
                 if item["mode"] != stats.st_mode:
-                    log.error(
-                        "Expected mode %s, received %s", item["mode"], stats.st_mode
-                    )
-                    return None
+                    err: str = f"Expected mode {item['mode']}, received {stats.st_mode}"
+                    raise ValueError(err)
                 if stats.st_size > MMAP_MIN:
                     with mmap(fp.fileno(), length=0, access=ACCESS_READ) as mm:
                         # Ignore. Passing an mmap is valid here
@@ -245,11 +239,11 @@ class CustomPatcher:
                 else:
                     xxhash = xxh3_64_intdigest(fp.read())
                 if item["xxhash"] != xxhash:
-                    log.error("Expected xxhash %s, received %s", item["xxhash"], xxhash)
-                    return None
+                    err: str = f"Expected xxhash {item['xxhash']}, received {xxhash}"
+                    raise ValueError(err)
         except FileNotFoundError:
             log.debug("Aborting partial update, file not found: %s", rpath)
-            return None
+            raise
 
         return item
 
