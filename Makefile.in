@@ -38,8 +38,8 @@ SOURCE_DATE_EPOCH = $(shell LC_ALL=C date --date='@1580601600')
 all: zipapp
 install: zipapp-install
 else
-all: umu-dist umu-docs umu-launcher umu-vendored
-install: umu-install umu-launcher-install umu-vendored-install
+all: umu-dist umu-docs umu-launcher umu-vendored umu-delta
+install: umu-install umu-launcher-install umu-vendored-install umu-delta-install
 endif
 
 
