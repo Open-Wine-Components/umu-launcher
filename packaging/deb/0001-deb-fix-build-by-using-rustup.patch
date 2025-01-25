@@ -1,15 +1,15 @@
-From 3f8cc61ad86e7fd1710026376e04ef9cd32b78e3 Mon Sep 17 00:00:00 2001
+From 215202d22835b9abcf9625db1b04651475a4166c Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Sun, 12 Jan 2025 20:33:55 -0800
-Subject: [PATCH] deb: fix build by using rustup
+Date: Sat, 25 Jan 2025 14:05:06 -0800
+Subject: [PATCH] deb: update rustup patch
 
 ---
- Makefile.in                  | 11 ++++++++++-
+ Makefile.in                  | 16 +++++++++++++---
  packaging/deb/debian/control |  1 +
- 2 files changed, 11 insertions(+), 1 deletion(-)
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 03b18fc4..b4a99913 100644
+index 3b3e1f02..15525fdb 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -3,6 +3,8 @@ PROJECT := umu-launcher
@@ -21,7 +21,24 @@ index 03b18fc4..b4a99913 100644
  # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
  INSTALLDIR ?= umu
  
-@@ -170,10 +172,17 @@ zipapp-install: zipapp
+@@ -106,13 +108,14 @@ umu-launcher-dist-install:
+ 
+ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
+ 
++URLLIB3_URL := https://github.com/urllib3/urllib3/releases/download/2.3.0/urllib3-2.3.0-py3-none-any.whl
+ 
+ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
+ 	$(info :: Building vendored dependencies )
+-	cd subprojects/urllib3 && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR)
++	curl -LJO --tlsv1.3 $(URLLIB3_URL) --output-dir $(OBJDIR)
+ 	sed -i 's/setuptools>=64,<74/setuptools/' subprojects/pyzstd/pyproject.toml
+ 	cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn -C=--build-option=--dynamic-link-zstd --outdir=$(OBJDIR)
+-	cp -a subprojects/pyzstd/$(OBJDIR)/*.whl subprojects/urllib3/$(OBJDIR)/*.whl $(OBJDIR)
++	cp -a subprojects/pyzstd/$(OBJDIR)/*.whl $(OBJDIR)
+ 	touch $(@)
+ 
+ .PHONY: umu-vendored
+@@ -183,10 +186,17 @@ zipapp-install: zipapp
  	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
  
  PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
@@ -31,27 +48,27 @@ index 03b18fc4..b4a99913 100644
  
  $(OBJDIR)/.build-umu-delta: | $(OBJDIR)
  	$(info :: Building delta dependencies )
--	cargo build -r
+-	cargo build -r --target-dir $(OBJDIR)
 +	curl -LJO --tlsv1.3 $(RUSTUP_URL)
 +	chmod u+x ./rustup-init.sh
 +	$(SHELL_INTERPRETER) rustup-init.sh --default-toolchain none -y
 +	$(RUSTUP_BIN) toolchain install 1.65
-+	$(CARGO_BIN) build -r
- 	cp -a ./target/release/libumu_delta.so $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
++	$(CARGO_BIN) build -r --target-dir $(OBJDIR)
+ 	touch $(@)
  
  .PHONY: umu-delta
 diff --git a/packaging/deb/debian/control b/packaging/deb/debian/control
-index 243d1771..5372875d 100644
+index f8e47298..75e9fd63 100644
 --- a/packaging/deb/debian/control
 +++ b/packaging/deb/debian/control
-@@ -14,6 +14,7 @@ Build-Depends:
-  python3-installer,
-  python3-build,
-  python3-pip,
+@@ -17,6 +17,7 @@ Build-Depends:
+  python3-wheel,
+  python3-hatch-vcs,
+  libzstd-dev,
 + curl,
+  python3-dev,
  Standards-Version: 4.6.2
  Homepage: https://github.com/Open-Wine-Components/umu-launcher
- Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
 -- 
-2.48.0
+2.48.1
 
