@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import shutil
 import ssl
 import subprocess
@@ -96,7 +97,12 @@ def main():  # noqa: D103
 
     return subprocess.run(
         (exe, "wineboot", "-u"),
-        env={"PROTONPATH": "UMU-Latest", "GAMEID": "umu-0", "UMU_LOG": "1"},
+        env={
+            "PROTONPATH": "UMU-Latest",
+            "GAMEID": "umu-0",
+            "UMU_LOG": "1",
+            "PATH": os.environ["PATH"],
+        },
         check=False,
     ).returncode
 
