@@ -37,9 +37,9 @@ override_dh_auto_install:
 	make -j$(nproc) DESTDIR=debian/tmp PYTHONDIR=$(PYTHONDIR) install
 ### PYTHON TOPLEVEL WORKAROUND (REMOVE ONCE the umu install process properly respects PYTHONPATH)
  ifneq ($(toplevel_sitepackage), $(PYTHONDIR))
-	cp -rvf debian/tmp/$(toplevel_sitepackage)/* debian/tmp/$(PYTHONDIR)/
+	cp -av debian/tmp/$(toplevel_sitepackage)/* debian/tmp/$(PYTHONDIR)/
 	rm -rvf debian/tmp/$(toplevel_sitepackage)/*
-	cp -rvf debian/tmp/$(toplevel_sitepackage)/../../../* debian/tmp/usr/
+	cp -av debian/tmp/$(toplevel_sitepackage)/../../../* debian/tmp/usr/
 	rm -rvf debian/tmp/$(toplevel_sitepackage)/../../../*
  endif
 ###
