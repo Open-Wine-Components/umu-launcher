@@ -195,5 +195,6 @@ umu-delta: $(OBJDIR)/.build-umu-delta
 umu-delta-install: umu-delta
 	$(info :: Installing delta dependencies )
 	install -m755 $(OBJDIR)/release/libumu_delta.so $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
+	chmod 755 $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
 
 # vim: ft=make
