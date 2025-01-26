@@ -47,4 +47,8 @@ override_dh_auto_install:
 	cp -av debian/tmp/$(toplevel_sitepackage)/../../../* debian/tmp/usr/
 	rm -rvf debian/tmp/$(toplevel_sitepackage)/../../../*
  endif
+
+override_dh_fixperms:
+	dh_fixperms
+	find debian/tmp/$(PYTHONDIR) -name "*.so" -exec chmod 0755 {} \;
 ###
