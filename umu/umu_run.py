@@ -10,6 +10,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
+from mmap import ACCESS_READ, mmap
 from zipfile import Path as ZipPath
 
 try:
@@ -220,6 +221,17 @@ def set_env(
         env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
         env["STORE"] = env.get("STORE", "")
 
+    # STORE
+    stores: set[str] | None = None
+    umu_db: Path = protonpath.joinpath("protonfixes", "umu-database.csv")
+    if os.environ.get("GAMEID") == "none" and os.environ.get("STORE"):
+        stores = {
+            store.name.removeprefix("gamefixes-")
+            for store in protonpath.joinpath("protonfixes").glob("gamefixes-*")
+        }
+    if stores and umu_db.is_file() and os.environ.get("STORE") in stores:
+        set_umu_id(umu_db, env)
+
     # UMU_ID
     env["UMU_ID"] = env["GAMEID"]
     env["STEAM_COMPAT_APP_ID"] = "0"
@@ -260,6 +272,27 @@ def set_env(
         env["WINEDEBUG"] = os.environ.get("WINEDEBUG") or "+fixme"
         env["DXVK_LOG_LEVEL"] = os.environ.get("DXVK_LOG_LEVEL") or "info"
         env["VKD3D_DEBUG"] = os.environ.get("VKD3D_DEBUG") or "fixme"
+
+    return env
+
+
+def set_umu_id(umu_db: Path, env: dict[str, str]) -> dict[str, str]:
+    """Set the GAMEID given the current title."""
+    parts: set[bytes] = {path.encode() for path in Path(env["EXE"]).parts}
+    store: bytes = env["STORE"].encode()
+
+    with (
+        umu_db.open(mode="rb") as fp,
+        mmap(fp.fileno(), length=0, access=ACCESS_READ) as mm,
+    ):
+        while row := mm.readline():
+            columns = row.split(b",")
+            if store not in columns[1]:
+                row = b""
+                continue
+            if columns[0] in parts:
+                env["GAMEID"] = columns[3].decode()
+                break
 
     return env
 
