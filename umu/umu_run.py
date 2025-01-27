@@ -288,7 +288,6 @@ def set_umu_id(umu_db: Path, env: dict[str, str]) -> dict[str, str]:
         while row := mm.readline():
             columns = row.split(b",")
             if store not in columns[1]:
-                row = b""
                 continue
             if columns[0] in parts:
                 env["GAMEID"] = columns[3].decode()
