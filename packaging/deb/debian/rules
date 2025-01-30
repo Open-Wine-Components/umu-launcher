@@ -46,7 +46,6 @@ override_dh_auto_install:
  endif
 
 override_dh_fixperms:
-	dh_fixperms
-	find debian/tmp/$(PYTHONDIR) -name "*.so" -exec chmod 0755 {} \;
+	# Don't let dh fix permissions
 
 ###

@@ -33,8 +33,7 @@ override_dh_auto_build:
 	true
 
 override_dh_fixperms:
-	dh_fixperms
-	find debian/tmp/$(toplevel_sitepackage) -name "*.so" -exec chmod 0755 {} \;
+	# Don't let dh fix permissions
 
 override_dh_auto_install:
 	make -j$(nproc) DESTDIR=debian/tmp PYTHONDIR=$(PYTHONDIR) install
