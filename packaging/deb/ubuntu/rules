@@ -33,7 +33,7 @@ override_dh_auto_build:
 	true
 
 override_dh_fixperms:
-	# Don't let dh fix permissions
+	dh_fixperms --exclude debian/umu-launcher
 
 override_dh_auto_install:
 	make -j$(nproc) DESTDIR=debian/tmp PYTHONDIR=$(PYTHONDIR) install
