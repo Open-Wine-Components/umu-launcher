@@ -17,16 +17,22 @@ jobs:
       options: --privileged -it
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Copy debian packaging folder to the repository root
-      run: cp -rvf ./packaging/deb/debian ./debian
-
     - name: Update APT Cache
       run: apt update -y
 
     - name: Install build dependencies
-      run: apt install -y dh-make dpkg-dev
+      run: apt install -y dh-make dpkg-dev git
+
+    - uses: actions/checkout@v4
+
+    - name: Configure Git safe directory
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+    - name: Initialize submodules
+      run: git submodule update --init --recursive
+
+    - name: Copy debian packaging folder to the repository root
+      run: cp -rvf ./packaging/deb/debian ./debian
 
     - name: Setup dh_make quilt files
       run: LOGNAME=root dh_make --createorig -y -l -p umu-launcher_1.1.4 || true

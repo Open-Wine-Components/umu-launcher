@@ -19,7 +19,7 @@ DESTDIR ?=
 USERINSTALL ?= xfalse
 FLATPAK ?= xfalse
 
-INSTALLER_ARGS := -m installer $(OBJDIR)/*.whl
+INSTALLER_ARGS := -m installer $(OBJDIR)/umu_launcher*.whl
 ifdef DESTDIR
 	INSTALLER_ARGS += --destdir=$(DESTDIR)
 endif
@@ -38,8 +38,8 @@ SOURCE_DATE_EPOCH = $(shell LC_ALL=C date --date='@1580601600')
 all: zipapp
 install: zipapp-install
 else
-all: umu-dist umu-docs umu-launcher umu-vendored
-install: umu-install umu-launcher-install umu-vendored-install
+all: umu-dist umu-docs umu-launcher umu-vendored umu-delta
+install: umu-install umu-launcher-install umu-vendored-install umu-delta-install
 endif
 
 
@@ -109,8 +109,11 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
-	python3 -m pip install urllib3 -t $(OBJDIR)
-	python3 -m pip install pyzstd  --config-settings="--build-option=--dynamic-link-zstd" -t $(OBJDIR)
+	cd subprojects/urllib3 && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR)
+	sed -i 's/setuptools>=64,<74/setuptools/' subprojects/pyzstd/pyproject.toml
+	cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn -C=--build-option=--dynamic-link-zstd --outdir=$(OBJDIR)
+	cp -a subprojects/pyzstd/$(OBJDIR)/*.whl subprojects/urllib3/$(OBJDIR)/*.whl $(OBJDIR)
+	touch $(@)
 
 .PHONY: umu-vendored
 umu-vendored: $(OBJDIR)/.build-umu-vendored
@@ -118,8 +121,10 @@ umu-vendored: $(OBJDIR)/.build-umu-vendored
 umu-vendored-install: umu-vendored
 	$(info :: Installing subprojects )
 	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
-	cp      -r $(OBJDIR)/urllib3 $(DESTDIR)$(PYTHONDIR)/umu/_vendor
-	cp      -r $(OBJDIR)/pyzstd  $(DESTDIR)$(PYTHONDIR)/umu/_vendor
+	$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/pyzstd*.whl && $(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/urllib3*.whl
+	find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name pyzstd | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor
+	find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name urllib3 | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor
+	rm -r $(DESTDIR)$(PYTHONDIR)/umu/_vendor/$(PREFIX)
 
 $(OBJDIR):
 	@mkdir -p $(@)
@@ -181,14 +186,14 @@ PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(
 
 $(OBJDIR)/.build-umu-delta: | $(OBJDIR)
 	$(info :: Building delta dependencies )
-	cargo build -r
-	cp -a ./target/release/libumu_delta.so $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
+	cargo build -r --target-dir $(OBJDIR)
+	touch $(@)
 
 .PHONY: umu-delta
 umu-delta: $(OBJDIR)/.build-umu-delta
 
 umu-delta-install: umu-delta
 	$(info :: Installing delta dependencies )
-	install -Dm755 $(OBJDIR)/umu_delta$(PYTHON_PLATFORM_TAG) $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
+	install -m755 $(OBJDIR)/release/libumu_delta.so $(DESTDIR)$(PYTHONDIR)/$(INSTALLDIR)/umu_delta$(PYTHON_PLATFORM_TAG)
 
 # vim: ft=make

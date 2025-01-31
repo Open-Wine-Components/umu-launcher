@@ -19,7 +19,7 @@ jobs:
         fetch-depth: 0
     - name: Install dependencies
       run: |
-        sudo apt-get install meson shellcheck scdoc python3-hatchling python3-build python3-installer python3-filelock cargo
+        sudo apt-get install meson shellcheck scdoc python3-hatchling python3-build python3-installer python3-filelock cargo python3-hatch-vcs python3-wheel libzstd-dev
     - name: Initialize submodules
       run: |
         git submodule update --init --recursive

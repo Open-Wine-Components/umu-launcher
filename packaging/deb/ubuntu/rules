@@ -41,4 +41,8 @@ override_dh_auto_install:
 	cp -rvf debian/tmp/$(toplevel_sitepackage)/../../../* debian/tmp/usr/
 	rm -rvf debian/tmp/$(toplevel_sitepackage)/../../../*
  endif
+
+override_dh_fixperms:
+	dh_fixperms --exclude debian/python3-umu-launcher
+
 ###

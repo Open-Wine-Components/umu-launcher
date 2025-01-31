@@ -35,6 +35,9 @@ BuildRequires:  python3-hatchling
 BuildRequires:  python
 BuildRequires:  python3
 BuildRequires:  python3-pip
+BuildRequires:  libzstd-devel
+BuildRequires:  python3-hatch-vcs
+BuildRequires:  python3-wheel
 
 Requires:	python
 Requires:	python3
