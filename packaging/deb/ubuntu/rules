@@ -32,9 +32,6 @@ override_dh_auto_configure:
 override_dh_auto_build:
 	true
 
-override_dh_fixperms:
-	dh_fixperms --exclude debian/python3-umu-launcher
-
 override_dh_auto_install:
 	make -j$(nproc) DESTDIR=debian/tmp PYTHONDIR=$(PYTHONDIR) install
 ### PYTHON TOPLEVEL WORKAROUND (REMOVE ONCE the umu install process properly respects PYTHONPATH)
@@ -48,6 +45,6 @@ override_dh_auto_install:
  endif
 
 override_dh_fixperms:
-	dh_fixperms
-	find debian/tmp/$(PYTHONDIR) -name "*.so" -exec chmod 0755 {} \;
+	dh_fixperms --exclude debian/python3-umu-launcher
+
 ###
