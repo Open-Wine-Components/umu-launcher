@@ -36,6 +36,9 @@ umu-launcher-unwrapped.overridePythonAttrs (prev: {
 
   propagatedBuildInputs =
     (prev.propagatedBuildInputs or [])
+    ++ [
+      python3Packages.urllib3
+    ]
     ++ lib.optionals withTruststore [
       python3Packages.truststore
     ]
