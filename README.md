@@ -155,21 +155,30 @@ and in your `configuration.nix`
 {inputs, pkgs, ... }:
 let
   inherit (pkgs.stdenv.hostPlatform) system;
-  umu = inputs.umu.packages.${system}.umu.override {
-    version = inputs.umu.shortRev;
-    truststore = true;
-    cbor2 = true;
-  };
+  umu-launcher = inputs.umu.packages.${system}.default;
 in
 {
-  environment.systemPackages = [ umu ];
+  environment.systemPackages = [ umu-launcher ];
 }
 ```
-> [!NOTE]
-> truststore and cbor2 (for delta updates) are optional dependency which are enabled by default if you want to keep it that way you can remove the `truststore = true; cbor2 = true;` part
+
+> [!TIP]
+> You can override `withTruststore` and/or `withDeltaUpdates` to disable optional dependencies.
+>
+> ```nix
+>  umu-launcher = inputs.umu.packages.${system}.default.override {
+>    withTruststore = false;
+>    withDeltaUpdates = false;
+>  };
+> ```
+>
+> - `withTruststore` adds dependencies that allow using the system trust store
+> - `withDeltaUpdates` adds dependencies that enable "delta updates" to Proton builds
+>
+> Both options are true by default.
 
 > [!NOTE]
-> The example above relies on having your flake's `inputs` passed through to your nixos configuration.
+> The examples above rely on having your flake's `inputs` passed through to your nixos configuration.
 > This can be done with `specialArgs` or `_module.args`, e.g:
 > ```nix
 > {
