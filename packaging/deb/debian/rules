@@ -46,6 +46,6 @@ override_dh_auto_install:
  endif
 
 override_dh_fixperms:
-	dh_fixperms --exclude debian/umu-launcher
+	dh_fixperms --exclude debian/python3-umu-launcher
 
 ###
