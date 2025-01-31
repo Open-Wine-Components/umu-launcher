@@ -92,6 +92,8 @@ MMAP_MIN = 16 * 1024
 
 ZSTD_WINDOW_LOG_MIN = 10
 
+ZSTD_WINDOW_LOG_MAX = 31
+
 
 class CustomPatcher:
     """Class for updating the contents within a compatibility tool directory.
@@ -291,7 +293,7 @@ class CustomPatcher:
                 with mmap(fp.fileno(), length=0, access=ACCESS_WRITE) as mm:
                     # Prepare the zst dictionary and opt
                     zst_dict = ZstdDict(mm, is_raw=True)
-                    zst_opt = {DParameter.windowLogMax: 31}
+                    zst_opt = {DParameter.windowLogMax: ZSTD_WINDOW_LOG_MAX}
 
                     # If file will become large, increase
                     if stats.st_size < size:
