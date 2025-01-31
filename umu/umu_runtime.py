@@ -31,11 +31,10 @@ from umu.umu_util import (
     write_file_chunks,
 )
 
-Codename = str
-
-Variant = str
-
-RuntimeVersion = tuple[Codename, Variant]
+# umu uses some metadata to dynamically construct the runtime's URL and for logging
+# First element is the runtime's codename, second is the variant
+# e.g., (sniper, steamrt3)
+RuntimeVersion = tuple[str, str]
 
 SessionPools = tuple[ThreadPoolExecutor, PoolManager]
 

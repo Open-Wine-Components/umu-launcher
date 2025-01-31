@@ -31,13 +31,9 @@ from umu.umu_util import (
 
 SessionPools = tuple[ThreadPoolExecutor, PoolManager]
 
-# Unique subdir in /tmp
-CacheTmpfs = Path
-
-# Unique subdir in $XDG_CACHE_HOME/umu
-CacheSubdir = Path
-
-SessionCaches = tuple[CacheTmpfs, CacheSubdir]
+# umu will download and extract fetched resources in separate directories
+# First element is a subdir in /tmp which is to download, while second in $XDG_CACHE_HOME
+SessionCaches = tuple[Path, Path]
 
 
 class ProtonVersion(Enum):
