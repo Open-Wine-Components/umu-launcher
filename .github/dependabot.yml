@@ -6,9 +6,6 @@ updates:
       interval: "daily"
     allow:
       - dependency-type: "direct"
-    commit-message:
-      include: "scope"
-      prefix: "chore"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
