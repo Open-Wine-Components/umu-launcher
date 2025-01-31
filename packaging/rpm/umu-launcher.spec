@@ -38,8 +38,6 @@ BuildRequires:  python3-pip
 BuildRequires:  libzstd-devel
 BuildRequires:  python3-hatch-vcs
 BuildRequires:  python3-wheel
-BuildRequires:  libzstd
-BuildRequires:  libzstd-devel
 
 Requires:	python
 Requires:	python3
