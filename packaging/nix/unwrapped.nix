@@ -5,7 +5,6 @@
   python3Packages,
   rustPlatform,
   umu-launcher-unwrapped,
-  zstd,
   # Public API
   version,
   withTruststore ? true,
@@ -43,7 +42,7 @@ umu-launcher-unwrapped.overridePythonAttrs (prev: {
     ++ lib.optionals withDeltaUpdates [
       python3Packages.cbor2
       python3Packages.xxhash
-      zstd
+      (python3Packages.callPackage ./pyzstd.nix {})
     ];
 
   cargoDeps = rustPlatform.importCargoLock {
