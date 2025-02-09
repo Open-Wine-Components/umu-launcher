@@ -260,6 +260,12 @@ class CustomPatcher:
         mode: int = item["mode"]
         size: int = item["size"]
 
+        if (item["type"] == FileType.File.value) and path.is_symlink():
+            path.unlink(missing_ok=True)
+            path.write_bytes(bdiff)
+            path.chmod(mode, follow_symlinks=False)
+            return
+
         try:
             # Since some wine binaries are missing the writable bit and
             # we're memory mapping files. Before applying a binary patch,
