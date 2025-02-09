@@ -261,9 +261,9 @@ class CustomPatcher:
         size: int = item["size"]
 
         if (item["type"] == FileType.File.value) and path.is_symlink():
+            build_file: Path = self._compat_tool.joinpath(item["name"])
             path.unlink(missing_ok=True)
-            path.write_bytes(bdiff)
-            path.chmod(mode, follow_symlinks=False)
+            self._write_proton_file(build_file, item)
             return
 
         try:
