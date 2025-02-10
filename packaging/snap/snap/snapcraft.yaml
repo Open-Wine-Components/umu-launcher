@@ -171,7 +171,7 @@ parts:
   umu-run:
     plugin: dump
     source: https://github.com/Open-Wine-Components/umu-launcher.git
-    source-tag: 1.1.4
+    source-branch: main
     build-packages:
       - git
       - make
