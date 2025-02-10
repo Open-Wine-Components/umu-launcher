@@ -1,0 +1,30 @@
+name: UMU Nix Flake Build
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # TODO: setup binary cache
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install nix
+        uses: cachix/install-nix-action@v30
+        with:
+          github_access_token: ${{ github.token }}
+      - name: Check flake inputs
+        uses: DeterminateSystems/flake-checker-action@v9
+        with:
+          flake-lock-path: packaging/nix/flake.lock
+      - name: Check flake outputs
+        run: nix flake check ./packaging/nix
+      - name: Build
+        run: nix build ./packaging/nix
+

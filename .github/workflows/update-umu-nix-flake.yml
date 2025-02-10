@@ -1,0 +1,53 @@
+name: UMU Update flake.lock
+on:
+  workflow_dispatch:
+  schedule:
+    # Every Saturday at noon
+    - cron: '0 12 * * sat'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  flake_lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install nix
+        uses: cachix/install-nix-action@v30
+        with:
+          github_access_token: ${{ github.token }}
+      - name: Update flake lockfile
+        id: update
+        uses: DeterminateSystems/update-flake-lock@main
+        with:
+          # NOTE: PR pushes by @github-actions don't trigger CI.
+          # One workaround is to provide a Personal Access Token,
+          # but then the PAT-owner is marked as the PR author.
+          # TODO: Consider providing a PAT. Maybe of a "bot account"?
+          path-to-flake-dir: packaging/nix
+          branch: update_flake/${{ github.ref_name }}
+          pr-labels: |
+            dependencies
+            github_actions
+          pr-reviewers: |
+            beh-10257
+            MattSturgeon
+            LovingMelody
+      - name: Print summary
+        env:
+          num: ${{ steps.update.outputs.pull-request-number }}
+          url: ${{ steps.update.outputs.pull-request-url }}
+          operation: ${{ steps.update.outputs.pull-request-operation }}
+        run: |
+          echo "Pull request #$num was $operation."
+          echo "$url"
+          (
+            echo "Pull request"
+            echo
+            echo "[#$num]($url) was $operation."
+            echo
+          ) >> $GITHUB_STEP_SUMMARY
+
