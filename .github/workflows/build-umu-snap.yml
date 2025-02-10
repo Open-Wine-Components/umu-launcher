@@ -1,9 +1,9 @@
 name: UMU Snap Build
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   release:
     types: [published]
 
@@ -20,10 +20,10 @@ jobs:
       - name: 🧪 Build snap on amd64
         uses: snapcrafters/ci/test-snap-build@5d324dfd09955a81a018be6d7544d07770552644
         with:
-              snapcraft-project-root: ./packaging/snap
+          snapcraft-project-root: ./packaging/snap
 
-    name: Upload artifact
-      uses: actions/upload-artifact@v4.6.0
-      with:
-        name: Snap
-        path: ./packaging/snap/*.snap
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: Snap
+          path: ./packaging/snap/*.snap
