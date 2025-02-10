@@ -182,8 +182,8 @@ parts:
       - python3-build
       - python3-hatchling
       - python3-installer
-      - python3-devel
-      - libzstd-devel
+      - python3-dev
+      - libzstd-dev
       - python3-hatch-vcs
       - python3-wheel
       - cargo
