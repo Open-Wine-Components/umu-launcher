@@ -1,5 +1,5 @@
 name: umu-launcher
-version: '1.1.4' # You can set this to the appropriate version
+version: "1.1.4" # You can set this to the appropriate version
 summary: UMU Launcher
 description: |
   UMU Launcher is a tool for managing and launching applications.
@@ -27,6 +27,8 @@ package-repositories:
     components: [steam]
     architectures: [amd64, i386]
     key-id: BA1816EF8E75005FCF5E27A1F24AEA9FB05498B7
+  - type: apt
+    ppa: snappy-dev/snapcraft-daily
 
 layout:
   /usr/share/drirc.d:
