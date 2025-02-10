@@ -182,6 +182,11 @@ parts:
       - python3-build
       - python3-hatchling
       - python3-installer
+      - python3-devel
+      - libzstd-devel
+      - python3-hatch-vcs
+      - python3-wheel
+      - cargo
     stage-packages:
       - libappindicator3-1
       - libxcb-dri3-0:amd64
@@ -246,7 +251,7 @@ parts:
     plugin: nil
     stage-packages:
       - python3-xlib
-      - python3-xxhash
+      - python-xxhash
       - python3-cbor2
       - libzstd
     prime:
