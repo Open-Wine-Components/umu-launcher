@@ -18,7 +18,7 @@ from typing import Any
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
-from umu.umu_consts import UMU_LOCAL
+from umu.umu_consts import UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
 from umu.umu_log import log
 
 
@@ -183,10 +183,10 @@ def is_installed_verb(verb: list[str], pfx: Path) -> bool:
 
     with wt_log.open(mode="r", encoding="utf-8") as file:
         for line in file:
-            _: str = line.strip()
-            if _ in verbs:
+            line: str = line.strip()
+            if line in verbs and line not in WINETRICKS_SETTINGS_VERBS:
                 is_installed = True
-                err: str = f"winetricks verb '{_}' is already installed in '{pfx}'"
+                err: str = f"winetricks verb '{line}' is already installed in '{pfx}'"
                 log.error(err)
                 break
 
