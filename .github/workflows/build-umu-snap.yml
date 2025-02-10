@@ -17,6 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get install cargo python3-hatch-vcs
+
       - name: 🧪 Build snap on amd64
         uses: snapcrafters/ci/test-snap-build@5d324dfd09955a81a018be6d7544d07770552644
         with:
