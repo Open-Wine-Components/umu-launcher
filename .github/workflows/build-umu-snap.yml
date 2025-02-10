@@ -17,11 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Install dependencies
-          run: |
-            sudo apt-get update
-            echo "deb http://archive.ubuntu.com/ubuntu/ noble noble-updates noble-backports main universe restricted multiverse" | sudo tee -a /etc/apt/sources.list
-            sudo apt-get install cargo python3-hatch-vcs python3-wheel libzstd-dev python3-devel python3-xxhash python3-wheel
+        run: |
+          sudo apt-get update
+          echo "deb http://archive.ubuntu.com/ubuntu/ noble noble-updates noble-backports main universe restricted multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo apt-get install cargo python3-hatch-vcs python3-wheel libzstd-dev python3-devel python3-xxhash python3-wheel
 
       - name: 🧪 Build snap on amd64
         uses: snapcrafters/ci/test-snap-build@5d324dfd09955a81a018be6d7544d07770552644
