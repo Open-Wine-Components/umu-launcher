@@ -164,7 +164,7 @@ pacman -S umu-launcher
 
 #### From nixpkgs
 
-[Available in nixpkgs][nixos search] since 25.05 (currently unstable). Simply add `pkgs.umu-launcer` to your configuration.
+[Available in nixpkgs][nixos search] since 25.05 (currently unstable). Simply add `pkgs.umu-launcher` to your configuration.
 
 <details><summary><strong>NixOS example</strong></summary>
 
