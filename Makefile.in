@@ -114,6 +114,7 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
 	@if [ "$${USE_NATIVE_PYZSTD}" != "xtrue" ]; then \
+		sed -i 's/setuptools>=64,<74/setuptools/' subprojects/pyzstd/pyproject.toml; \
 		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 	fi
 	@if [ "$${USE_NATIVE_URLLIB}" != "xtrue" ]; then \
