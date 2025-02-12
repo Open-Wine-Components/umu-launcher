@@ -4,12 +4,12 @@ Date: Sat, 25 Jan 2025 14:05:06 -0800
 Subject: [PATCH] deb: update rustup patch
 
 ---
- Makefile.in                  | 16 +++++++++++++---
+ Makefile.in                  | 18 +++++++++++++---
  packaging/deb/debian/control |  1 +
- 2 files changed, 14 insertions(+), 3 deletions(-)
+ 2 files changed, 16 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 3b3e1f02..15525fdb 100644
+index e4160cc..b554053 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -3,6 +3,8 @@ PROJECT := umu-launcher
@@ -21,24 +21,27 @@ index 3b3e1f02..15525fdb 100644
  # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
  INSTALLDIR ?= umu
  
-@@ -106,13 +108,14 @@ umu-launcher-dist-install:
+@@ -111,15 +113,17 @@ umu-launcher-dist-install:
  
  umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
  
 +URLLIB3_URL := https://github.com/urllib3/urllib3/releases/download/2.3.0/urllib3-2.3.0-py3-none-any.whl
- 
++
  $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  	$(info :: Building vendored dependencies )
--	cd subprojects/urllib3 && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR)
-+	curl -LJO --tlsv1.3 $(URLLIB3_URL) --output-dir $(OBJDIR)
- 	sed -i 's/setuptools>=64,<74/setuptools/' subprojects/pyzstd/pyproject.toml
- 	cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn -C=--build-option=--dynamic-link-zstd --outdir=$(OBJDIR)
+ 	@if [ "$${USE_NATIVE_PYZSTD}" != "xtrue" ]; then \
+ 		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
+ 	fi
+ 	@if [ "$${USE_NATIVE_URLLIB}" != "xtrue" ]; then \
+-		cd subprojects/urllib3 && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
++		curl -LJO --tlsv1.3 $(URLLIB3_URL) --output-dir $(OBJDIR); \
+ 	fi
 -	cp -a subprojects/pyzstd/$(OBJDIR)/*.whl subprojects/urllib3/$(OBJDIR)/*.whl $(OBJDIR)
 +	cp -a subprojects/pyzstd/$(OBJDIR)/*.whl $(OBJDIR)
  	touch $(@)
  
  .PHONY: umu-vendored
-@@ -183,10 +186,17 @@ zipapp-install: zipapp
+@@ -197,10 +201,17 @@ zipapp-install: zipapp
  	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
  
  PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
