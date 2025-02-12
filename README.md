@@ -136,7 +136,9 @@ First, create the script within the project directory.
 touch umu-run
 ```
 
-Then, assuming you have `uv` installed, create the virtual environment and install the [project's dependencies](https://github.com/Open-Wine-Components/umu-launcher/blob/main/pyproject.toml). For example
+Then, assuming you have `uv` installed, create the virtual environment and install the [project's dependencies](https://github.com/Open-Wine-Components/umu-launcher/blob/main/pyproject.toml).
+
+For example
 ```shell
 uv add --script umu-run 'python-xlib' 'urllib3' 'truststore'
 ```
