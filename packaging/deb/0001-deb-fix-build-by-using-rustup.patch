@@ -1,27 +1,26 @@
-From 215202d22835b9abcf9625db1b04651475a4166c Mon Sep 17 00:00:00 2001
+From 52d4c7b073433986b64a417e88d6e5454e3759bc Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Sat, 25 Jan 2025 14:05:06 -0800
-Subject: [PATCH] deb: update rustup patch
+Date: Wed, 12 Feb 2025 13:13:35 -0800
+Subject: [PATCH] deb: fix build by using rustup
 
 ---
- Makefile.in                  | 18 +++++++++++++---
+ Makefile.in                  | 16 +++++++++++++---
  packaging/deb/debian/control |  1 +
- 2 files changed, 16 insertions(+), 3 deletions(-)
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index e4160cc..b554053 100644
+index 188b5212..8a0bac88 100644
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -3,6 +3,8 @@ PROJECT := umu-launcher
+@@ -2,6 +2,7 @@ PROJECT := umu-launcher
+ 
  # Define the interpreters to use to prevent shebang complaints
  PYTHON_INTERPRETER = /usr/bin/env python3
- 
 +SHELL_INTERPRETER = /usr/bin/env sh
-+
+ 
  # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
  INSTALLDIR ?= umu
- 
-@@ -111,15 +113,17 @@ umu-launcher-dist-install:
+@@ -111,6 +112,8 @@ umu-launcher-dist-install:
  
  umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
  
@@ -30,6 +29,7 @@ index e4160cc..b554053 100644
  $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  	$(info :: Building vendored dependencies )
  	@if [ "$${USE_NATIVE_PYZSTD}" != "xtrue" ]; then \
+@@ -118,9 +121,9 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
  	fi
  	@if [ "$${USE_NATIVE_URLLIB}" != "xtrue" ]; then \
@@ -41,7 +41,7 @@ index e4160cc..b554053 100644
  	touch $(@)
  
  .PHONY: umu-vendored
-@@ -197,10 +201,17 @@ zipapp-install: zipapp
+@@ -198,10 +201,17 @@ zipapp-install: zipapp
  	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
  
  PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
@@ -61,17 +61,17 @@ index e4160cc..b554053 100644
  
  .PHONY: umu-delta
 diff --git a/packaging/deb/debian/control b/packaging/deb/debian/control
-index f8e47298..75e9fd63 100644
+index f8e47298..fef5e082 100644
 --- a/packaging/deb/debian/control
 +++ b/packaging/deb/debian/control
-@@ -17,6 +17,7 @@ Build-Depends:
-  python3-wheel,
+@@ -18,6 +18,7 @@ Build-Depends:
   python3-hatch-vcs,
   libzstd-dev,
-+ curl,
   python3-dev,
++ curl,
  Standards-Version: 4.6.2
  Homepage: https://github.com/Open-Wine-Components/umu-launcher
+ Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
 -- 
 2.48.1
 
