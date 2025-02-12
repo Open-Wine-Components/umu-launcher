@@ -128,6 +128,24 @@ make install
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
+### Installing through uv
+Alternatively, [uv](https://github.com/astral-sh/uv) can be used to quickly setup umu-launcher. For more detail on how this feature works, see the [documentation](https://docs.astral.sh/uv/guides/scripts/).
+
+First, create the script within the project directory.
+```shell
+touch umu-run
+```
+
+Then, assuming you have `uv` installed, create the virtual environment and install the [project's dependencies](https://github.com/Open-Wine-Components/umu-launcher/blob/main/pyproject.toml). For example
+```shell
+uv add --script umu-run 'python-xlib' 'urllib3' 'truststore'
+```
+
+Afterwards, run the script through `uv`
+```shell
+uv run umu-run -h
+```
+
 ## Packaging
 
 ### Nobara
