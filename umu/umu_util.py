@@ -20,7 +20,12 @@ import vdf
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
-from umu.umu_consts import RUNTIME_VERSIONS, UMU_LOCAL, UmuRuntime, WINETRICKS_SETTINGS_VERBS
+from umu.umu_consts import (
+    RUNTIME_VERSIONS,
+    UMU_LOCAL,
+    WINETRICKS_SETTINGS_VERBS,
+    UmuRuntime,
+)
 from umu.umu_log import log
 
 
