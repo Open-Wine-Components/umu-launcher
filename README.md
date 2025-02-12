@@ -160,60 +160,126 @@ dnf install umu-launcher
 pacman -S umu-launcher
 ```
 
-### NixOS
-If there is any problem with the flake feel free to open a bug report and tag any of the maintainers
-> maintainers: @beh-10257 @MattSturgeon @LovingMelody
+### Nix
 
-If you want to add umu-launcher as a flake add this to your inputs in `flake.nix`
+#### From nixpkgs
+
+[Available in nixpkgs][nixos search] since 25.05 (currently unstable). Simply add `pkgs.umu-launcer` to your configuration.
+
+<details><summary><strong>NixOS example</strong></summary>
+
 ```nix
-  inputs = {
-    umu.url = "github:Open-Wine-Components/umu-launcher?dir=packaging/nix";
-  }
-```
-and in your `configuration.nix`
-```nix
-{inputs, pkgs, ... }:
-let
-  inherit (pkgs.stdenv.hostPlatform) system;
-  umu-launcher = inputs.umu.packages.${system}.default;
-in
-{
-  environment.systemPackages = [ umu-launcher ];
+# configuration.nix
+{pkgs, ...}: {
+  environment.systemPackages = [
+    pkgs.umu-launcher
+  ];
 }
 ```
 
-> [!TIP]
-> You can override `withTruststore` and/or `withDeltaUpdates` to disable optional dependencies.
->
-> ```nix
->  umu-launcher = inputs.umu.packages.${system}.default.override {
->    withTruststore = false;
->    withDeltaUpdates = false;
->  };
-> ```
->
-> - `withTruststore` adds dependencies that allow using the system trust store
-> - `withDeltaUpdates` adds dependencies that enable "delta updates" to Proton builds
->
-> Both options are true by default.
+</details>
+
+<details><summary><strong>home-manager example</strong></summary>
+
+```nix
+# home.nix
+{pkgs, ...}: {
+  home.packages = [
+    pkgs.umu-launcher
+  ];
+}
+```
+
+</details>
+
+If you're using an older nixpkgs channel, such as `nixos-24.11`, you could consider [using multiple nixpkgs channels] or using our flake (see below).
+
+[nixos search]: https://search.nixos.org/packages?channel=unstable&type=packages&query=umu-launcher&show=umu-launcher
+[using multiple nixpkgs channels]: https://wiki.nixos.org/wiki/Flakes#Importing_packages_from_multiple_nixpkgs_branches
+
+#### From our flake
 
 > [!NOTE]
-> The examples above rely on having your flake's `inputs` passed through to your nixos configuration.
-> This can be done with `specialArgs` or `_module.args`, e.g:
-> ```nix
-> {
->   # inputs omitted ...
+> If there is any problem with the flake, please [open a bug report] and tag at lease one of the maintainers: \
+> @beh-10257, @MattSturgeon, & @LovingMelody
+
+[open a bug report]: https://github.com/Open-Wine-Components/umu-launcher/issues/new
+
+If the version in nixpkgs is not up-to-date enough for you, the latest git snapshot can be installed using the flake in this repo.
+
+<details><summary><strong>Example flake</strong> (NixOS)</summary>
+
+```nix
+# flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    umu.url = "github:Open-Wine-Components/umu-launcher?dir=packaging/nix";
+    umu.inputs.nixpkgs.follows = "nixpkgs";
+  };
+  outputs = {nixpkgs, ...} @ inputs: {
+    nixosConfigurations.desktop = nixpkgs.lib.nixosSystem {
+      # Pass `inputs` to the nixos configuration,
+      # allowing it to be used as a module arg
+      specialArgs = {inherit inputs;};
+      modules = [./configuration.nix];
+    };
+  };
+}
+```
+
+```nix
+# configuration.nix
+{
+  inputs,
+  pkgs,
+  ...
+}: let
+  # Get `system` from `pkgs`
+  inherit (pkgs.stdenv.hostPlatform) system;
+in {
+  environment.systemPackages = [
+    # Install the `default` package from the umu input
+    inputs.umu.packages.${system}.default;
+  ];
+}
+```
+
+</details>
+
+#### Nix package overrides
+
+You can view the [`nixpkgs` source code] to see the package args that can be overridden.
+Currently, they include:
+
+- `extraPkgs` allows adding extra packages to the FHS environment (default `pkgs: []`)
+- `extraLibraries` allows adding extra library packages to the FHS environment (default `pkgs: []`)
+- `withMultiArch` whether to add 32-bit libraries to the FHS environment (default `true`)
+
+[`nixpkgs` source code]: https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/by-name/um/umu-launcher/package.nix
+
+If you're using our flake, you can also configure the following optional dependencies:
+
+- `withTruststore` adds dependencies that allow using the system trust store (default `true`)
+- `withDeltaUpdates` adds dependencies that enable "delta updates" to Proton builds (default `true`)
+
+<details><summary><strong>Example override</strong></summary>
+
+```nix
+environment.systemPackages = [
+  (inputs.umu.packages.${system}.default.override {
+    withTruststore = false;
+    withDeltaUpdates = false;
+  })
+];
+```
+
+</details>
+
+> [!NOTE]
+> If you're using our flake in an unconventional way, you may also need to provide a `version`. E.g. if you're fetching our repo manually, _without_ using nix flakes.
 >
->   # Assign a name to the input args using @inputs
->   outputs = { self, nixpkgs, ... }@inputs: {
->     nixosConfiurations."your-hostname" = nixpkgs.lib.nixosSystem {
->       system = "x86_64-linux";
->       specialArgs = { inherit self inputs; };
->       # modules omitted ...
->     };
->   };
-> }
-> ```
+> By default, we set `version` to our flake's `sourceInfo.shortRev`. This is equivalent to `substring 0 7 rev`, where `rev` is the commit hash being fetched.
 
 ## Contributing
 
