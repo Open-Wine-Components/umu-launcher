@@ -136,6 +136,13 @@ $ GAMEID=0 PROTONPATH=GE-Proton umu-run winetricks quartz wmp11 qasf
 $ GAMEID=umu-1228964594 PROTONPATH=GE-Proton PROTONFIXES_DISABLE=1 umu-run foo.exe
 ```
 
+*Example 13. Run a game and automatically use the latest GE-Proton, but apply a
+delta update to it*
+
+```
+$ GAMEID=0 PROTONPATH=GE-Latest umu-run foo.exe
+```
+
 # ENVIRONMENT VARIABLES
 
 _GAMEID_
