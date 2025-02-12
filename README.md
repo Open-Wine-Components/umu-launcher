@@ -247,6 +247,80 @@ in {
 
 </details>
 
+<details><summary><strong>Example flake</strong> (using overlays)</summary>
+
+If you pass your flake inputs to `specialArgs`, you can apply the overlay within your `configuration.nix`:
+
+```nix
+# flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    umu.url = "github:Open-Wine-Components/umu-launcher?dir=packaging/nix";
+    umu.inputs.nixpkgs.follows = "nixpkgs";
+  };
+  outputs = {nixpkgs, ...} @ inputs: {
+    nixosConfigurations.desktop = nixpkgs.lib.nixosSystem {
+      # Pass `inputs` to the nixos configuration,
+      # allowing it to be used as a module arg
+      specialArgs = {inherit inputs;};
+      modules = [./configuration.nix];
+    };
+  };
+}
+```
+
+```nix
+# configuration.nix
+{
+  inputs,
+  pkgs,
+  ...
+}: {
+  nixpkgs.overlays = [
+    inputs.umu.overlays.default
+  ];
+  environment.systemPackages = [
+    pkgs.umu-launcher
+  ];
+}
+```
+
+Alternatively, you can avoid `specialArgs` by applying the overlay directly within `flake.nix`:
+
+```nix
+# flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    umu.url = "github:Open-Wine-Components/umu-launcher?dir=packaging/nix";
+    umu.inputs.nixpkgs.follows = "nixpkgs";
+  };
+  outputs = {nixpkgs, ...} @ inputs: {
+    nixosConfigurations.desktop = nixpkgs.lib.nixosSystem {
+      modules = [
+        ./configuration.nix
+        {
+          # Use the umu overlay
+          nixpkgs.overlays = [inputs.umu.overlays.default];
+        }
+      ];
+    };
+  };
+}
+```
+
+```nix
+# configuration.nix
+{pkgs, ...}: {
+  environment.systemPackages = [
+    pkgs.umu-launcher
+  ];
+}
+```
+
+</details>
+
 #### Nix package overrides
 
 You can view the [`nixpkgs` source code] to see the package args that can be overridden.
