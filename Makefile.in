@@ -131,19 +131,16 @@ umu-vendored-install: umu-vendored
 	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
 		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/pyzstd*.whl; \
-	fi
-	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
-		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/urllib3*.whl; \
-	fi
-	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name pyzstd | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
 	fi
 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
+		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/urllib3*.whl; \
 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name urllib3 | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
 	fi
 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ] || [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 		rm -r $(DESTDIR)$(PYTHONDIR)/umu/_vendor/$(PREFIX); \
 	fi
+
 $(OBJDIR):
 	@mkdir -p $(@)
 
