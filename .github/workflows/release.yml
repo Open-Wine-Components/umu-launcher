@@ -17,8 +17,8 @@ jobs:
     uses: ./.github/workflows/build-umu-publish-release.yml
     with:
       version: ${{ github.ref_name }}
-      file1: umu-launcher-${{ github.ref_name }}.fc40.noarch.rpm
-      name1: umu-launcher-${{ github.ref_name }}.fc40.noarch.rpm
+      file1: umu-launcher-${{ github.ref_name }}.fc40.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc40.rpm
 
   fedora41-build:
     name: Fedora 41 Build
@@ -32,8 +32,8 @@ jobs:
     uses: ./.github/workflows/build-umu-publish-release.yml
     with:
       version: ${{ github.ref_name }}
-      file1: umu-launcher-${{ github.ref_name }}.fc41.noarch.rpm
-      name1: umu-launcher-${{ github.ref_name }}.fc41.noarch.rpm
+      file1: umu-launcher-${{ github.ref_name }}.fc41.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc41.rpm
 
   debian12-build:
     name: Debian 12 Build
@@ -80,4 +80,3 @@ jobs:
       version: ${{ github.ref_name }}
       file1: umu-launcher-${{ github.ref_name }}-zipapp.tar.gz
       name1: umu-launcher-${{ github.ref_name }}-zipapp.tar.gz
-
