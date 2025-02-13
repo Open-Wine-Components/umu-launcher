@@ -70,10 +70,10 @@ function configure() {
     fi
 
     if [[ -n "$arg_use_system_pyzstd" ]]; then
-      echo "USE_NATIVE_PYZSTD := xtrue"
+      echo "USE_SYSTEM_PYZSTD := xtrue"
     fi
     if [[ -n "$arg_use_system_urllib" ]]; then
-      echo "USE_NATIVE_URLLIB := xtrue"
+      echo "USE_SYSTEM_URLLIB := xtrue"
     fi
 
     # Prefix was specified, baking it into the Makefile
