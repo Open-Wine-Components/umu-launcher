@@ -6,70 +6,69 @@ on:
         required: true
         type: string
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-      attestations: write
     container:
       image: ubuntu:noble
       volumes:
         - /proc:/proc
       options: --privileged -it
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
 
     steps:
-    - name: Update APT Cache
-      run: apt update -y
+      - name: Update APT Cache
+        run: apt update -y
 
-    - name: Install build dependencies
-      run: apt install -y dh-make dpkg-dev git
+      - name: Install build dependencies
+        run: apt install -y dh-make dpkg-dev git
 
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Configure Git safe directory
-      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-    - name: Initialize submodules
-      run: git submodule update --init --recursive
-      
-    - name: Copy debian packaging folder to the repository root
-      run: cp -rvf ./packaging/deb/ubuntu ./debian
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
 
-    - name: Setup dh_make quilt files
-      run: |
-        sed -re 's|(umu-launcher \()[1-9.]+(-1\).*$)|\1${{ inputs.version }}\2|' -i ./debian/changelog
-        LOGNAME=root dh_make --createorig -y -l -p umu-launcher_${{ inputs.version }} || true
+      - name: Copy debian packaging folder to the repository root
+        run: cp -rvf ./packaging/deb/ubuntu ./debian
 
-    - name: Install apt build dependencies
-      run: apt build-dep -y ./ 
+      - name: Setup dh_make quilt files
+        run: |
+          sed -re 's|(umu-launcher \()[1-9.]+(-1\).*$)|\1${{ inputs.version }}\2|' -i ./debian/changelog
+          LOGNAME=root dh_make --createorig -y -l -p umu-launcher_${{ inputs.version }} || true
 
-    - name: Build
-      run: dpkg-buildpackage --no-sign 
+      - name: Install apt build dependencies
+        run: apt build-dep -y ./
 
-    - name: Move and rename DEB files to upload artifact path
-      run: |
-        mkdir -p results
-        mv ../python3-umu-launcher_${{ inputs.version }}-1_amd64.deb \
-           results/python3-umu-launcher_${{ inputs.version }}-1_amd64_ubuntu-noble.deb
-        mv ../umu-launcher_${{ inputs.version }}-1_all.deb \
-           results/umu-launcher_${{ inputs.version }}-1_all_ubuntu-noble.deb
+      - name: Build
+        run: dpkg-buildpackage --no-sign
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: python3-umu-launcher_${{ inputs.version }}-1_amd64_ubuntu-noble.deb
-        path: results/python3-umu-launcher_${{ inputs.version }}-1_amd64_ubuntu-noble.deb
+      - name: Move and rename DEB files to upload artifact path
+        run: |
+          mkdir -p results
+          mv ../python3-umu-launcher_${{ inputs.version }}-1_amd64.deb \
+             results/python3-umu-launcher_${{ inputs.version }}-1_amd64_ubuntu-noble.deb
+          mv ../umu-launcher_${{ inputs.version }}-1_all.deb \
+             results/umu-launcher_${{ inputs.version }}-1_all_ubuntu-noble.deb
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: umu-launcher_${{ inputs.version }}-1_all_ubuntu-noble.deb
-        path: results/umu-launcher_${{ inputs.version }}-1_all_ubuntu-noble.deb
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python3-umu-launcher_${{ inputs.version }}-1_amd64_ubuntu-noble.deb
+          path: results/python3-umu-launcher_${{ inputs.version }}-1_amd64_ubuntu-noble.deb
 
-    - name: Generate artifact attestation
-      uses: actions/attest-build-provenance@v2
-      with:
-        subject-path: results/umu-launcher_${{ inputs.version }}-1_all_ubuntu-noble.deb
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: umu-launcher_${{ inputs.version }}-1_all_ubuntu-noble.deb
+          path: results/umu-launcher_${{ inputs.version }}-1_all_ubuntu-noble.deb
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: results/umu-launcher_${{ inputs.version }}-1_all_ubuntu-noble.deb

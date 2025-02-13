@@ -10,51 +10,50 @@ on:
         required: true
         type: string
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: fedora:41
     permissions:
       id-token: write
       contents: read
       attestations: write
-    container:
-      image: fedora:41
 
     steps:
-    - name: Install Git
-      run: dnf install -y git
+      - name: Install Git
+        run: dnf install -y git
 
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Configure Git safe directory
-      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-    - name: Install build dependencies
-      run: dnf install -y rpm-build meson ninja-build cmake g++ gcc-c++ scdoc git python3-devel python3-build python3-installer python3-hatchling python python3 cargo python3-hatch-vcs python3-wheel libzstd-devel
+      - name: Install build dependencies
+        run: dnf install -y rpm-build meson ninja-build cmake g++ gcc-c++ scdoc git python3-devel python3-build python3-installer python3-hatchling python python3 cargo python3-hatch-vcs python3-wheel libzstd-devel
 
-    - name: Build the project
-      run: |
-        git submodule update --init --recursive
-        ./configure.sh --prefix=/usr
-        make
-        mkdir -p ~/rpmbuild/SOURCES
-        cp -r . ~/rpmbuild/SOURCES/umu-launcher
-        sed -re 's|(Version:\s+)[1-9.]+|\1${{ inputs.version }}|g' -i packaging/rpm/umu-launcher.spec
-        sed -re 's|(%define tag\s+)[1-9.]+|\1${{ inputs.version }}|g' -i packaging/rpm/umu-launcher.spec
-        sed -re 's|(%define manual_commit\s+)\w+|\1${{ inputs.shasum }}|g' -i packaging/rpm/umu-launcher.spec
-        rpmbuild -ba packaging/rpm/umu-launcher.spec
-        mv ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}*.rpm \
-           ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc41.noarch.rpm
+      - name: Build the project
+        run: |
+          git submodule update --init --recursive
+          ./configure.sh --prefix=/usr
+          make
+          mkdir -p ~/rpmbuild/SOURCES
+          cp -r . ~/rpmbuild/SOURCES/umu-launcher
+          sed -re 's|(Version:\s+)[1-9.]+|\1${{ inputs.version }}|g' -i packaging/rpm/umu-launcher.spec
+          sed -re 's|(%define tag\s+)[1-9.]+|\1${{ inputs.version }}|g' -i packaging/rpm/umu-launcher.spec
+          sed -re 's|(%define manual_commit\s+)\w+|\1${{ inputs.shasum }}|g' -i packaging/rpm/umu-launcher.spec
+          rpmbuild -ba packaging/rpm/umu-launcher.spec
+          mv ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}*.rpm \
+             ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc41.noarch.rpm
 
-    - name: Fedora-41
-      uses: actions/upload-artifact@v4
-      with:
-        name: umu-launcher-${{ inputs.version }}.fc41.noarch.rpm
-        path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc41.noarch.rpm
+      - name: Fedora-41
+        uses: actions/upload-artifact@v4
+        with:
+          name: umu-launcher-${{ inputs.version }}.fc41.noarch.rpm
+          path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc41.noarch.rpm
 
-    - name: Generate artifact attestation
-      uses: actions/attest-build-provenance@v2
-      with:
-        subject-path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc41.noarch.rpm
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc41.noarch.rpm
