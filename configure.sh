@@ -69,6 +69,13 @@ function configure() {
       echo "INSTALLDIR      := umu-launcher"
     fi
 
+    if [[ -n "$arg_use_system_pyzstd" ]]; then
+      echo "USE_NATIVE_PYZSTD := xtrue"
+    fi
+    if [[ -n "$arg_use_system_urllib" ]]; then
+      echo "USE_NATIVE_URLLIB := xtrue"
+    fi
+
     # Prefix was specified, baking it into the Makefile
     if [[ -n $arg_prefix ]]; then
       echo "PREFIX          := $(escape_for_make "$arg_prefix")"
@@ -89,6 +96,8 @@ function configure() {
 arg_prefix=""
 arg_user_install=""
 arg_help=""
+arg_use_system_pyzstd=""
+arg_use_system_urllib=""
 function parse_args() {
   local arg;
   local val;
@@ -134,6 +143,10 @@ function parse_args() {
         die "--user-install cannot be used with --prefix"
       fi
       arg_user_install="1"
+    elif [[ $arg = --use-system-pyzstd ]]; then
+      arg_use_system_pyzstd="1"
+    elif [[ $arg = --use-system-urllib ]]; then
+      arg_use_system_urllib="1"
     else
       err "Unrecognized option $arg"
       return 1
@@ -179,6 +192,10 @@ usage() {
   "$1" "                      [/usr]"
   "$1" "    --user-install    Install under user-only location. Incompatible with --prefix"
   "$1" "                      [$HOME/.local]"
+  "$1" "    --use-system-pystd"
+  "$1" "                      Do not use vendored pyzstd"
+  "$1" "    --use-system-urllib"
+  "$1" "                      Do not use vendored urllib"
   "$1" ""
   exit 1;
 }
