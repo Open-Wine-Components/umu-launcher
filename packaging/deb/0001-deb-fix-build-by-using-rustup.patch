@@ -1,4 +1,4 @@
-From 52d4c7b073433986b64a417e88d6e5454e3759bc Mon Sep 17 00:00:00 2001
+From 848d894b9713ae145d00696e7a328c8346dfc3a9 Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
 Date: Wed, 12 Feb 2025 13:13:35 -0800
 Subject: [PATCH] deb: fix build by using rustup
@@ -9,7 +9,7 @@ Subject: [PATCH] deb: fix build by using rustup
  2 files changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 188b5212..8a0bac88 100644
+index da2431d..5e4fa5e 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -2,6 +2,7 @@ PROJECT := umu-launcher
@@ -28,20 +28,26 @@ index 188b5212..8a0bac88 100644
 +
  $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  	$(info :: Building vendored dependencies )
- 	@if [ "$${USE_NATIVE_PYZSTD}" != "xtrue" ]; then \
-@@ -118,9 +121,9 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
+ 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
+@@ -118,7 +121,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
  	fi
- 	@if [ "$${USE_NATIVE_URLLIB}" != "xtrue" ]; then \
+ 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 -		cd subprojects/urllib3 && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 +		curl -LJO --tlsv1.3 $(URLLIB3_URL) --output-dir $(OBJDIR); \
  	fi
--	cp -a subprojects/pyzstd/$(OBJDIR)/*.whl subprojects/urllib3/$(OBJDIR)/*.whl $(OBJDIR)
-+	cp -a subprojects/pyzstd/$(OBJDIR)/*.whl $(OBJDIR)
  	touch $(@)
  
- .PHONY: umu-vendored
-@@ -198,10 +201,17 @@ zipapp-install: zipapp
+@@ -133,7 +136,7 @@ umu-vendored-install: umu-vendored
+ 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name pyzstd | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
+ 	fi
+ 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
+-		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/urllib3/$(OBJDIR)/urllib3*.whl; \
++		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/urllib3*.whl; \
+ 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name urllib3 | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
+ 	fi
+ 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ] || [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
+@@ -197,10 +200,17 @@ zipapp-install: zipapp
  	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
  
  PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
@@ -61,7 +67,7 @@ index 188b5212..8a0bac88 100644
  
  .PHONY: umu-delta
 diff --git a/packaging/deb/debian/control b/packaging/deb/debian/control
-index f8e47298..fef5e082 100644
+index f8e4729..fef5e08 100644
 --- a/packaging/deb/debian/control
 +++ b/packaging/deb/debian/control
 @@ -18,6 +18,7 @@ Build-Depends:
