@@ -21,8 +21,8 @@ FLATPAK ?= xfalse
 
 # For vendors that prefer to use native pyzstd and urllib3.
 # Ex. Arch and Fedora have pyzstd but ubuntu and debian don't
-USE_NATIVE_PYZSTD ?= xfalse
-USE_NATIVE_URLLIB ?= xfalse
+USE_SYSTEM_PYZSTD ?= xfalse
+USE_SYSTEM_URLLIB ?= xfalse
 
 INSTALLER_ARGS := -m installer $(OBJDIR)/umu_launcher*.whl
 ifdef DESTDIR
@@ -113,14 +113,13 @@ umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
-	@if [ "$${USE_NATIVE_PYZSTD}" != "xtrue" ]; then \
+	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
 		sed -i 's/setuptools>=64,<74/setuptools/' subprojects/pyzstd/pyproject.toml; \
 		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 	fi
-	@if [ "$${USE_NATIVE_URLLIB}" != "xtrue" ]; then \
+	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 		cd subprojects/urllib3 && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 	fi
-	cp -a subprojects/pyzstd/$(OBJDIR)/*.whl subprojects/urllib3/$(OBJDIR)/*.whl $(OBJDIR)
 	touch $(@)
 
 .PHONY: umu-vendored
@@ -129,21 +128,18 @@ umu-vendored: $(OBJDIR)/.build-umu-vendored
 umu-vendored-install: umu-vendored
 	$(info :: Installing subprojects )
 	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
-	@if [ "$${USE_NATIVE_PYZSTD}" != "xtrue" ]; then \
-		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/pyzstd*.whl; \
-	fi
-	@if [ "$${USE_NATIVE_URLLIB}" != "xtrue" ]; then \
-		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/urllib3*.whl; \
-	fi
-	@if [ "$${USE_NATIVE_PYZSTD}" != "xtrue" ]; then \
+	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
+		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/pyzstd/$(OBJDIR)/pyzstd*.whl; \
 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name pyzstd | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
 	fi
-	@if [ "$${USE_NATIVE_URLLIB}" != "xtrue" ]; then \
+	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
+		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/urllib3/$(OBJDIR)/urllib3*.whl; \
 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name urllib3 | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
 	fi
-	@if [ "$${USE_NATIVE_PYZSTD}" != "xtrue" ] || [ "$${USE_NATIVE_URLLIB}" != "xtrue" ]; then \
+	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ] || [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 		rm -r $(DESTDIR)$(PYTHONDIR)/umu/_vendor/$(PREFIX); \
 	fi
+
 $(OBJDIR):
 	@mkdir -p $(@)
 
