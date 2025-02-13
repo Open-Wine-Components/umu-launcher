@@ -2,9 +2,9 @@ name: Build and upload development artifacts
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   version:
@@ -12,6 +12,10 @@ jobs:
     uses: ./.github/workflows/build-umu-version.yml
 
   fedora40-build:
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     name: Fedora 40 Build
     uses: ./.github/workflows/build-umu-fedora-40.yml
     needs: version
@@ -20,6 +24,10 @@ jobs:
       shasum: ${{ github.sha }}
 
   fedora41-build:
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     name: Fedora 41 Build
     uses: ./.github/workflows/build-umu-fedora-41.yml
     needs: version
@@ -28,6 +36,10 @@ jobs:
       shasum: ${{ github.sha }}
 
   debian12-build:
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     name: Debian 12 Build
     uses: ./.github/workflows/build-umu-debian-12.yml
     needs: version
@@ -35,6 +47,10 @@ jobs:
       version: ${{ needs.version.outputs.version }}
 
   ubuntu-noble-build:
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     name: Ubuntu 24.04 Build
     uses: ./.github/workflows/build-umu-ubuntu-noble.yml
     needs: version
@@ -47,4 +63,3 @@ jobs:
     needs: version
     with:
       version: ${{ needs.version.outputs.version }}
-
