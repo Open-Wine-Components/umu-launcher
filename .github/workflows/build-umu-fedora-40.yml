@@ -14,6 +14,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     container:
       image: fedora:40
 
@@ -49,3 +53,8 @@ jobs:
       with:
         name: umu-launcher-${{ inputs.version }}.fc40.noarch.rpm
         path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc40.noarch.rpm
+
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc40.noarch.rpm

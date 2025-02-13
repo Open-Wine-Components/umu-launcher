@@ -10,6 +10,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     container:
       image: debian:bookworm
       volumes:
@@ -64,3 +68,8 @@ jobs:
       with:
         name: umu-launcher_${{ inputs.version }}-1_all_debian-12.deb
         path: results/umu-launcher_${{ inputs.version }}-1_all_debian-12.deb
+
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: results/umu-launcher_${{ inputs.version }}-1_all_debian-12.deb
