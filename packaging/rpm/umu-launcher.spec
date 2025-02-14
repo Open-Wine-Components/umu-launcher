@@ -1,7 +1,8 @@
 # Define the manual commit as a fallback
-%define manual_commit e9cb4d764013d4c8c3d1166f59581da8f56a3d83
+%define manual_commit 757cd45eddca9b9c8c900f96854bad63e60936fe
 
 # Optionally define the tag
+%define tag 1.2.2
 # Check if tag is defined and get the commit hash for the tag, otherwise use manual commit
 %{!?tag: %global commit %{manual_commit}}
 %{?tag: %global commit %(git rev-list -n 1 %{tag} 2>/dev/null || echo %{manual_commit})}
@@ -12,8 +13,11 @@
 
 %global rel_build 1.%{build_timestamp}.%{shortcommit}%{?dist}
 
+# Can't use these yet, F41 doesn't ship urllib3 > 2.0 needed
+#%global makeargs "USE_SYSTEM_PYZSTD=xtrue USE_SYSTEM_URLLIB=xtrue"
+
 Name:           umu-launcher
-Version:        1.1.4
+Version:        1.2.2
 Release:        %{rel_build}
 Summary:        A tool for launching non-steam games with proton
 
@@ -38,22 +42,38 @@ BuildRequires:  python3-pip
 BuildRequires:  libzstd-devel
 BuildRequires:  python3-hatch-vcs
 BuildRequires:  python3-wheel
+BuildRequires:  cargo
+
+# Can't use these yet, F41 doesn't ship urllib3 >= 2.0 needed
+#BuildRequires:  python3-urllib3
+#BuildRequires:  python3-pyzstd
 
 Requires:	python
 Requires:	python3
 Requires:	python3-xlib
+Requires:	python3-filelock
+
+# Can't use these yet, F41 doesn't ship urllib3 >= 2.0 needed
+#Requires:  python3-urllib3
+#Requires:  python3-pyzstd
 
 Recommends:	python3-cbor2
 Recommends:	python3-xxhash
 Recommends:	libzstd
+
+# We need this for now to allow umu's builtin urllib3 version to be used.
+# Can be removed when python3-urllib3 version is bumped >= 2.0
+AutoReqProv: no
 
 
 %description
 %{name} A tool for launching non-steam games with proton
 
 %prep
-git clone https://github.com/Open-Wine-Components/umu-launcher.git
+git clone --single-branch --branch main https://github.com/Open-Wine-Components/umu-launcher.git
 cd umu-launcher
+git checkout %{tag}
+#git checkout %{manual_commit}
 git submodule update --init --recursive
 
 %build
