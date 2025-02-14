@@ -36,9 +36,7 @@ jobs:
           make
           mkdir -p ~/rpmbuild/SOURCES
           cp -r . ~/rpmbuild/SOURCES/umu-launcher
-          sed -re 's|(Version:\s+)[1-9.]+|\1${{ inputs.version }}|g' -i packaging/rpm/umu-launcher.spec
-          sed -re 's|(%define tag\s+)[1-9.]+|\1${{ inputs.version }}|g' -i packaging/rpm/umu-launcher.spec
-          sed -re 's|(%define manual_commit\s+)\w+|\1${{ inputs.shasum }}|g' -i packaging/rpm/umu-launcher.spec
+          sed -re 's|(%global manual_commit\s+)\w+|\1${{ inputs.shasum }}|g' -i packaging/rpm/umu-launcher.spec
           rpmbuild -ba packaging/rpm/umu-launcher.spec
           mv ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}*.rpm \
              ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc40.rpm
