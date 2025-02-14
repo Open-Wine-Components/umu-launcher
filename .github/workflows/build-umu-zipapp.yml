@@ -36,10 +36,10 @@ jobs:
     - name: Create symlink for launchers
       # To preserve file mode bits and link file, use a tar archive.
       # See https://github.com/actions/upload-artifact?tab=readme-ov-file#permission-loss
-      run: cd results && ln -s umu-run umu_run.py && mkdir umu && mv umu-run umu/ && mv umu_run.py umu/ && tar cvf umu-launcher-${{ inputs.version }}-zipapp.tar.gz umu/
+      run: cd results && ln -s umu-run umu_run.py && mkdir umu && mv umu-run umu/ && mv umu_run.py umu/ && tar cvf umu-launcher-${{ inputs.version }}-zipapp.tar umu/
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: umu-launcher-${{ inputs.version }}-zipapp.tar.gz
-        path: results/umu-launcher-${{ inputs.version }}-zipapp.tar.gz
+        name: umu-launcher-${{ inputs.version }}-zipapp.tar
+        path: results/umu-launcher-${{ inputs.version }}-zipapp.tar
