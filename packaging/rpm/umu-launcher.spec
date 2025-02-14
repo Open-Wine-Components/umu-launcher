@@ -1,8 +1,10 @@
-# Define the manual commit as a fallback
-%global manual_commit 757cd45eddca9b9c8c900f96854bad63e60936fe
+# Define the tag
+%global tag %(git describe --abbrev=0 --tags)
 
-# Optionally define the tag
-%global tag 1.2.2
+# Define manual commit for tag
+# This can be used to instead build from a manual commit.
+%global manual_commit %(git rev-list -n 1 %{tag})
+
 # Check if tag is defined and get the commit hash for the tag, otherwise use manual commit
 %{!?tag: %global commit %{manual_commit}}
 %{?tag: %global commit %(git rev-list -n 1 %{tag} 2>/dev/null || echo %{manual_commit})}
@@ -69,8 +71,13 @@ AutoReqProv: no
 %prep
 git clone https://github.com/Open-Wine-Components/umu-launcher.git
 cd umu-launcher
-git checkout %{tag}
-#git checkout %{manual_commit}
+
+if  %(git rev-list -n 1 %{tag}) == %{manual_commit}
+ git checkout %{tag}
+else
+ git checkout %{manual_commit}
+fi
+
 git submodule update --init --recursive
 
 %build
