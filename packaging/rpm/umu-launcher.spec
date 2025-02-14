@@ -72,11 +72,16 @@ AutoReqProv: no
 git clone https://github.com/Open-Wine-Components/umu-launcher.git
 cd umu-launcher
 
-if  %(git rev-list -n 1 %{tag}) == %{manual_commit}
- git checkout %{tag}
-else
- git checkout %{manual_commit}
-fi
+# Get both commits into variables
+%global tag_commit %(git rev-parse --verify %{tag}^{commit})
+%global manual_commit_hash %(git rev-parse --verify %{manual_commit})
+
+# Compare the commits and checkout accordingly
+%if "%{tag_commit}" == "%{manual_commit_hash}"
+    git checkout %{manual_commit}
+%else
+    git checkout %{tag}
+%endif
 
 git submodule update --init --recursive
 
