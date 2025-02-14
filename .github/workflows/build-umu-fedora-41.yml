@@ -36,6 +36,7 @@ jobs:
           make
           mkdir -p ~/rpmbuild/SOURCES
           cp -r . ~/rpmbuild/SOURCES/umu-launcher
+          echo ${{ inputs.shasum }}
           sed -re '/^#%global manual_commit/s|^# ?(.*)|\1|' packaging/rpm/umu-launcher.spec \
               -e 's|(manual_commit\s+\w+)|manual_commit ${{ inputs.shasum }}|g' \
               -i
