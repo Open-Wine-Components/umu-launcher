@@ -29,10 +29,21 @@ jobs:
       - name: Install build dependencies
         run: dnf install -y rpm-build meson ninja-build cmake g++ gcc-c++ scdoc git python3-devel python3-build python3-installer python3-hatchling python python3 cargo python3-hatch-vcs python3-wheel libzstd-devel
 
+      - name: Extract Version and SHA
+        run: |
+          # Get version from git tags (assuming semantic versioning format)
+          VERSION=$(git describe --tags --abbrev=0 || echo "unknown")
+
+          # Get current commit SHA
+          COMMIT_SHA=$(git rev-parse HEAD)
+
+          # Store values in environment file
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+
       - name: Build the project
         run: |
           git submodule update --init --recursive
-          git checkout ${{ inputs.shasum }}
           ./configure.sh --prefix=/usr
           make
           mkdir -p ~/rpmbuild/SOURCES
