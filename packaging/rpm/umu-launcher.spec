@@ -13,9 +13,6 @@
 
 %global rel_build 1.%{build_timestamp}.%{shortcommit}%{?dist}
 
-# Can't use these yet, F41 doesn't ship urllib3 > 2.0 needed
-#%global makeargs "USE_SYSTEM_PYZSTD=xtrue USE_SYSTEM_URLLIB=xtrue"
-
 Name:           umu-launcher
 Version:        1.2.2
 Release:        %{rel_build}
@@ -78,6 +75,8 @@ git submodule update --init --recursive
 
 %build
 cd umu-launcher
+# Update this when fedora ships urllib3 >= 2.0
+#./configure.sh --prefix=/usr --use-system-pyzstd --use-system-urllib
 ./configure.sh --prefix=/usr
 make
 
