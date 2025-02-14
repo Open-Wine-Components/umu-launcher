@@ -1,7 +1,7 @@
 %global tag %(git describe --abbrev=0 --tags)
 
 # Manual commit is auto-inserted by workflow
-%global manual_commit
+#%global manual_commit
 
 %{!?manual_commit: %global commit %(git rev-list -n 1 %{tag} 2>/dev/null)}
 %{?manual_commit: %global commit %{manual_commit}}
