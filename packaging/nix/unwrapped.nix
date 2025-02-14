@@ -47,29 +47,10 @@ in
       #   https://github.com/Open-Wine-Components/umu-launcher/pull/343
       patches = [];
 
-      # The `umu-vendored` target needs submodules. However, we don't actually need
-      # this target or those submodules anyway, since we add `pyzstd` as a nix package
-      #
-      # As a temporary solution, we explicitly specify the supported build targets:
-      buildFlags =
-        (prev.buildFlags or [])
-        ++ [
-          "umu-dist"
-          "umu-launcher"
-        ];
-
-      # Same issue for install targets
-      installTargets =
-        (prev.installTargets or [])
-        ++ [
-          "umu-dist"
-          "umu-docs"
-          "umu-launcher"
-          "umu-delta"
-          "umu-install"
-          "umu-launcher-install"
-          "umu-delta-install"
-        ];
+      configureFlags = [
+        "--use-system-pyzstd"
+        "--use-system-urllib"
+      ];
 
       nativeBuildInputs =
         (prev.nativeBuildInputs or [])
