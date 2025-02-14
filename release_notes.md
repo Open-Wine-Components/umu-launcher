@@ -1,0 +1,121 @@
+# 🎁 Release notes (`1.2.0`)
+
+## Changes
+- Merge pull request #311 from R1kaB3rN/bump-version-1.2
+- Merge pull request #373 from loathingKernel/build-update
+- packaging: update debian makefile patch
+- Makefile.in: use subproject build paths instead of copying vendored wheels
+- Makefile.in: group install and steps for vendored dependencies
+- Makefile.in: replace '_NATIVE_' with '_SYSTEM_'
+- configure.sh: Add command line option to configure script
+- Bump version to 1.2.0
+- workflows: fix noarch (#372)
+- makefile: fix some grouping issues for pyzstd and urllib
+- docs(readme): add overlay example to nix section (#365)
+- docs(readme): fix typo `launcer` -> `launcher` (#369)
+- build: fix setuptools version (#368)
+- docs(readme): improve nix section & now in nixpkgs (#364)
+- style: fix format
+- docs: add new install section
+- docs: add example of new usage
+- Merge pull request #363 from Open-Wine-Components/makefile_use_native_pyzstd_urllib
+- make: add options to allow disabling of builtin pyzstd and urllib in favor of native system versions
+- Merge pull request #306 from loathingKernel/winetricks_settings_verbs
+- Merge pull request #276 from loathingKernel/main
+- workflows: update fedora paths
+- umu_util: do not check if winetricks settings verbs are installed
+- workflows: fix some names
+- packaging: clone the whole repository for RPM
+- Add release workflow
+- ci: add nix flake workflows (#360)
+- refactor: write decompressed data for links on delta update
+- fix: handle symlink to file change on delta update
+- Add nix maintainers (#351)
+- Refactor nix flake, based on overriding nixpkgs (#345)
+- refactor: simplify type aliases
+- refactor: prefer constant for zstd max window log
+- ci: remove commit-message key from dependabot
+- build: fix packaging (#330)
+- test: ensure the patch target matches proton (#356)
+- refactor: improve task submission and handling on delta update (#355)
+- tests: add delta update test (#354)
+- refactor: request delta patch from latest endpoint (#353)
+- Specify alejandra as the nix formatter (#350)
+- build(nix): fix `postInstall` (#347)
+- build: add pyzstd, urllib3 and python-xlib (#344)
+- build(deps): bump actions/upload-artifact from 4.0.0 to 4.6.0 (#342)
+- build(installer): pass `--destdir` and `--prefix` conditionally (#343)
+- chore: update pyo3 (#341)
+- fix: properly terminate GH asset search after acquiring URL
+- fix: update logic in shared library path search
+- perf: improve shared library path search (#337)
+- deb: update rustup patch (#333)
+- build: fix missing urllib3 in RPM (#332)
+- fix: guide for nixos install (#327)
+- build: downgrade MSRV (#328)
+- Revert "fix: fallback to $XDG_DATA_HOME instead of $HOME/.local/share for Fla…" (#326)
+- feat: extend lint rules
+- refactor: log update info once
+- Revert "fix: log update info once"
+- fix: log update info once
+- ci: ignore the type for now (#325)
+- refactor: add comment to constant
+- refactor: remove unused constant
+- docs: update type ignore statements
+- refactor: update logic when processing GH assets
+- refactor: remove log statement
+- improv: log error when cannot get app ID
+- refactor: remove assignment of u32 array conversion
+- refactor: guarantee the Display is closed
+- Nix fixes (#322)
+- style: update format
+- improv: check codename before downloading delta
+- chore: update comments
+- test: fix exception in delta tests (#319)
+- feat: add initial support for delta updates (#308)
+- fix: fallback to $XDG_DATA_HOME instead of $HOME/.local/share for Flatpak (#290)
+- chore: remove python-xlib as submodule
+- refactor: use custom file lock functionality (#314)
+- style: update format
+- improv: read data incrementally when finding digests
+- fix: maintain previous py310 requirement (#310)
+- docs(nix): pkgs.system -> pkgs.stdenv.hostPlatform.system (#309)
+- tests: assert log statement of exit status (#303)
+- fix: skip prefix creation when running native Linux executables (#302)
+- expose truststore to users and update README to show users that there is the option to remove it if they want (to make it optional) (#300)
+- packaging: add truststore as optional nixos dependency (#298)
+- Patch makefile to not vendor on nix (#297)
+- test: add more e2e tests (#294)
+- test: add tests for __main__.py (#295)
+- fix: add missing __main__.py but remove the bin subdir
+- Revert "chore: remove extraneous bin subdir for zipapp build"
+- improv: preserve timestamps on install for zipapp build
+- chore: remove extraneous bin subdir for zipapp build
+- feat: add urllib3 v2 as network backend (#292)
+- test: add tests for gamesccope/x server functionality (#291)
+- refactor: get runtime metadata from package init file (#289)
+- fix: let env or hatch resolve system interpreter paths (#288)
+- refactor: update symbols and logging for gamesecope functionality (#286)
+- refactor: remove function deleting obsolete ULWGL files on launch
+- fix: enable network debug output when setting UMU_LOG=1
+- chore: remove setting ULWGL environment variable
+- chore: remove log statements of wine prefix user directories
+- improv: update error message for empty PROTONPATH
+- improv: prefer selectively importing from zipfile
+- fix: enable winetricks debug output for UMU_LOG=1
+- refactor: don't raise runtime error on failure getting gh assets (#285)
+- refactor: simplify version printing when parsing arguments (#284)
+- refactor: change logging formats and move argument parsing functionality (#282)
+- chore: enforce more lint rules (#281)
+- Add support for Proton logging to stdout (#279)
+- fix: remove leading spaces in shim (#275)
+- tests: add more unit tests (#274)
+- chore: update format
+- Added -v, --version command line option (#273)
+
+## Metadata
+```
+This version -------- 1.2.0
+Previous version ---- 1.1.4
+Total commits ------- 111
+```
