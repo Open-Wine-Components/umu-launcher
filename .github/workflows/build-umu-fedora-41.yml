@@ -36,6 +36,10 @@ jobs:
           make
           mkdir -p ~/rpmbuild/SOURCES
           cp -r . ~/rpmbuild/SOURCES/umu-launcher
+          echo ${{ inputs.version }}
+          sed -re '/^#%global tag/s|^# ?(.*)|\1|' packaging/rpm/umu-launcher.spec -i
+          sed -i 's/%global tag/%global tag ${{ inputs.version }}/' packaging/rpm/umu-launcher.spec
+          cat packaging/rpm/umu-launcher.spec | grep tag
           echo ${{ inputs.shasum }}
           sed -re '/^#%global manual_commit/s|^# ?(.*)|\1|' packaging/rpm/umu-launcher.spec -i
           sed -i 's/%global manual_commit/%global manual_commit ${{ inputs.shasum }}/' packaging/rpm/umu-launcher.spec

@@ -1,4 +1,5 @@
-%global tag %(git describe --abbrev=0 --tags)
+# Tag is auto-inserted by workflow
+#%global tag
 
 # Manual commit is auto-inserted by workflow
 #%global manual_commit
