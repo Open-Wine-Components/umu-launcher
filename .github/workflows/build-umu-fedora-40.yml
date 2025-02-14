@@ -32,6 +32,7 @@ jobs:
       - name: Build the project
         run: |
           git submodule update --init --recursive
+          git checkout ${{ inputs.shasum }}
           ./configure.sh --prefix=/usr
           make
           mkdir -p ~/rpmbuild/SOURCES

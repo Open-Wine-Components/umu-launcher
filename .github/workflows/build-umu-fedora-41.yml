@@ -31,11 +31,13 @@ jobs:
 
       - name: Build the project
         run: |
+          git checkout ${{ inputs.shasum }}
           git submodule update --init --recursive
           ./configure.sh --prefix=/usr
           make
           mkdir -p ~/rpmbuild/SOURCES
           cp -r . ~/rpmbuild/SOURCES/umu-launcher
+
           echo ${{ inputs.version }}
           sed -re '/^#%global tag/s|^# ?(.*)|\1|' packaging/rpm/umu-launcher.spec -i
           sed -i 's/%global tag/%global tag ${{ inputs.version }}/' packaging/rpm/umu-launcher.spec
