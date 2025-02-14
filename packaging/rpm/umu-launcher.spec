@@ -1,15 +1,12 @@
-# Define the tag
 %global tag %(git describe --abbrev=0 --tags)
 
-# Define manual commit for tag
-# This can be used to instead build from a manual commit.
-%global manual_commit %(git rev-list -n 1 %{tag})
+# Manual commit is auto-inserted by workflow
+%global manual_commit
 
-# Check if tag is defined and get the commit hash for the tag, otherwise use manual commit
-%{!?tag: %global commit %{manual_commit}}
-%{?tag: %global commit %(git rev-list -n 1 %{tag} 2>/dev/null || echo %{manual_commit})}
+%{!?manual_commit: %global commit %(git rev-list -n 1 %{tag} 2>/dev/null)}
+%{?manual_commit: %global commit %{manual_commit}}
 
-%global shortcommit %(c=%{commit}; echo ${c:0:7})
+%global shortcommit %(c=%{manual_commit}; echo ${c:0:7})
 
 %global build_timestamp %(date +"%Y%m%d")
 
@@ -71,17 +68,9 @@ AutoReqProv: no
 %prep
 git clone https://github.com/Open-Wine-Components/umu-launcher.git
 cd umu-launcher
+# Check if tag exists and is valid
+git checkout %{commit}
 
-# Get both commits into variables
-%global tag_commit %(git rev-parse --verify %{tag}^{commit})
-%global manual_commit_hash %(git rev-parse --verify %{manual_commit})
-
-# Compare the commits and checkout accordingly
-%if "%{tag_commit}" == "%{manual_commit_hash}"
-    git checkout %{manual_commit}
-%else
-    git checkout %{tag}
-%endif
 
 git submodule update --init --recursive
 
