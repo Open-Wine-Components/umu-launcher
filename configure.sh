@@ -192,7 +192,7 @@ usage() {
   "$1" "                      [/usr]"
   "$1" "    --user-install    Install under user-only location. Incompatible with --prefix"
   "$1" "                      [$HOME/.local]"
-  "$1" "    --use-system-pystd"
+  "$1" "    --use-system-pyzstd"
   "$1" "                      Do not use vendored pyzstd"
   "$1" "    --use-system-urllib"
   "$1" "                      Do not use vendored urllib"

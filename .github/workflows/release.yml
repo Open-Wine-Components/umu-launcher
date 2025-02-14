@@ -78,5 +78,5 @@ jobs:
     uses: ./.github/workflows/build-umu-publish-release.yml
     with:
       version: ${{ github.ref_name }}
-      file1: umu-launcher-${{ github.ref_name }}-zipapp.tar.gz
-      name1: umu-launcher-${{ github.ref_name }}-zipapp.tar.gz
+      file1: umu-launcher-${{ github.ref_name }}-zipapp.tar
+      name1: umu-launcher-${{ github.ref_name }}-zipapp.tar
