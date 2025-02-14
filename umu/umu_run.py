@@ -104,8 +104,7 @@ def check_env(
     created as $HOME/Games/umu/$GAMEID.
     """
     if not os.environ.get("GAMEID"):
-        err: str = "Environment variable not set or is empty: GAMEID"
-        raise ValueError(err)
+        os.environ["GAMEID"] = "umu-default"
 
     env["GAMEID"] = os.environ["GAMEID"]
 
