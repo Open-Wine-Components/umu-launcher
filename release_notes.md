@@ -1,13 +1,15 @@
-# 🎁 Release notes (`1.2.1`)
+# 🎁 Release notes (`1.2.2`)
 
 ## Changes
-- Bump version to 1.2.1
-- hotfix: modify zipapp tarball to be distributable with lutris directly
-- add changelog generator script and release_notes.md created from it
+- bump version (again)
+- Merge pull request #377 from loathingKernel/fixes
+- workflows: fix zipapp package extension
+- configure.sh: fix typo
+- update 1.2.1 hotfix release notes
 
 ## Metadata
 ```
-This version -------- 1.2.1
-Previous version ---- 1.2.0
-Total commits ------- 3
+This version -------- 1.2.2
+Previous version ---- 1.2.1
+Total commits ------- 5
 ```
