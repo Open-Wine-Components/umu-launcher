@@ -20,7 +20,7 @@ Summary:        A tool for launching non-steam games with proton
 
 License:        GPLv3
 URL:            https://github.com/Open-Wine-Components/umu-launcher
-Source0:        %{url}/archive/%{commit}.tar.gz
+Source0:        umu-launcher-%{tag}.tar.gz
 
 BuildArch:  x86_64
 BuildRequires:  meson >= 0.54.0
