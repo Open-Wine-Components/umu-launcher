@@ -6,7 +6,7 @@
 %{!?manual_commit: %global commit %(git rev-list -n 1 %{tag} 2>/dev/null)}
 %{?manual_commit: %global commit %{manual_commit}}
 
-%global shortcommit %(c=%{manual_commit}; echo ${c:0:7})
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global build_timestamp %(date +"%Y%m%d")
 
