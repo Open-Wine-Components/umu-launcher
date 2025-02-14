@@ -104,6 +104,7 @@ def check_env(
     created as $HOME/Games/umu/$GAMEID.
     """
     if not os.environ.get("GAMEID"):
+        log.info("No GAMEID set, using umu-default")
         os.environ["GAMEID"] = "umu-default"
 
     env["GAMEID"] = os.environ["GAMEID"]
