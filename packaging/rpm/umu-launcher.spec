@@ -20,6 +20,7 @@ Summary:        A tool for launching non-steam games with proton
 
 License:        GPLv3
 URL:            https://github.com/Open-Wine-Components/umu-launcher
+Source0:        %{url}/archive/%{commit}.tar.gz
 
 BuildArch:  x86_64
 BuildRequires:  meson >= 0.54.0
@@ -67,23 +68,15 @@ AutoReqProv: no
 %{name} A tool for launching non-steam games with proton
 
 %prep
-git clone https://github.com/Open-Wine-Components/umu-launcher.git
-cd umu-launcher
-# Check if tag exists and is valid
-git checkout %{commit}
-
-
-git submodule update --init --recursive
+%autosetup -p 1
 
 %build
-cd umu-launcher
 # Update this when fedora ships urllib3 >= 2.0
 #./configure.sh --prefix=/usr --use-system-pyzstd --use-system-urllib
 ./configure.sh --prefix=/usr
 make
 
 %install
-cd umu-launcher
 make DESTDIR=%{buildroot} PYTHONDIR=%{python3_sitelib} install
 
 %files

@@ -31,7 +31,6 @@ jobs:
 
       - name: Build the project
         run: |
-          git checkout ${{ inputs.shasum }}
           git submodule update --init --recursive
           ./configure.sh --prefix=/usr
           make
