@@ -1,8 +1,8 @@
 # Define the manual commit as a fallback
-%define manual_commit 757cd45eddca9b9c8c900f96854bad63e60936fe
+%global manual_commit 757cd45eddca9b9c8c900f96854bad63e60936fe
 
 # Optionally define the tag
-%define tag 1.2.2
+%global tag 1.2.2
 # Check if tag is defined and get the commit hash for the tag, otherwise use manual commit
 %{!?tag: %global commit %{manual_commit}}
 %{?tag: %global commit %(git rev-list -n 1 %{tag} 2>/dev/null || echo %{manual_commit})}
