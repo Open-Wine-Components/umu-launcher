@@ -3419,22 +3419,6 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             umu_run.check_env(self.env, thread_pool)
 
-    def test_env_gameid_empty(self):
-        """Test check_env when $GAMEID is empty.
-
-        When the GAMEID is empty in the non-config usage, no app ids will be
-        set. As a result, no fixes will be applied to the current prefix
-
-        An ValueError should be raised
-        """
-        with (
-            self.assertRaises(ValueError),
-            ThreadPoolExecutor() as thread_pool,
-        ):
-            os.environ["WINEPREFIX"] = ""
-            os.environ["GAMEID"] = ""
-            umu_run.check_env(self.env, thread_pool)
-
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
 
@@ -3553,23 +3537,21 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_env_vars_wine(self):
         """Test check_env when setting only $WINEPREFIX."""
-        with (
-            self.assertRaisesRegex(ValueError, "GAMEID"),
-            ThreadPoolExecutor() as thread_pool,
-        ):
+        with ThreadPoolExecutor() as thread_pool:
             os.environ["WINEPREFIX"] = self.test_file
-            umu_run.check_env(self.env, thread_pool)
+            result = umu_run.check_env(self.env, thread_pool)
+            self.assertTrue(result is self.env, "Expected the same reference")
+            self.assertEqual(
+                self.env["WINEPREFIX"],
+                self.test_file,
+                "Expected WINEPREFIX to be set",
+            )
 
     def test_env_vars_none(self):
-        """Tests check_env when setting no env vars.
-
-        GAMEID should be the only strictly required env var
-        """
-        with (
-            self.assertRaisesRegex(ValueError, "GAMEID"),
-            ThreadPoolExecutor() as thread_pool,
-        ):
-            umu_run.check_env(self.env, thread_pool)
+        """Tests check_env when setting no env vars."""
+        with ThreadPoolExecutor() as thread_pool:
+            result = umu_run.check_env(self.env, thread_pool)
+            self.assertTrue(result is self.env, "Expected the same reference")
 
 
 if __name__ == "__main__":
