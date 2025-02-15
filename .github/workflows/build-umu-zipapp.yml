@@ -16,13 +16,35 @@ jobs:
       options: --privileged -it
 
     steps:
-    - uses: actions/checkout@v4
-
     - name: Update APT Cache
       run: apt update -y
 
     - name: Install build dependencies
-      run: apt install -y python3-venv python3-all bash make scdoc python3-hatchling python3-installer python3-build cargo
+      run: apt install -y python3-venv python3-all bash make scdoc python3-hatchling python3-installer python3-build cargo git
+
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configure Git safe directory
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+    - name: Extract Version and SHA
+      run: |
+        ls -la
+        VERSION=$(git describe --tags --abbrev=0 || echo "unknown")
+        echo $VERSION
+
+        # Get current commit SHA
+        COMMIT_SHA=$(git rev-parse HEAD)
+        echo $COMMIT_SHA
+
+        # Store values in environment file
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+
+        # Always insert latest version into Makefile.in
+        sed -i "s|^VERSION := .*$|VERSION := ${VERSION}|g" Makefile.in
 
     - name: Configure
       run: ./configure.sh --user-install
@@ -36,10 +58,10 @@ jobs:
     - name: Create symlink for launchers
       # To preserve file mode bits and link file, use a tar archive.
       # See https://github.com/actions/upload-artifact?tab=readme-ov-file#permission-loss
-      run: cd results && ln -s umu-run umu_run.py && mkdir umu && mv umu-run umu/ && mv umu_run.py umu/ && tar cvf umu-launcher-${{ inputs.version }}-zipapp.tar umu/
+      run: cd results && ln -s umu-run umu_run.py && mkdir umu && mv umu-run umu/ && mv umu_run.py umu/ && tar cvf umu-launcher-${{ env.VERSION }}-zipapp.tar umu/
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: umu-launcher-${{ inputs.version }}-zipapp.tar
-        path: results/umu-launcher-${{ inputs.version }}-zipapp.tar
+        name: umu-launcher-${{ env.VERSION }}-zipapp.tar
+        path: results/umu-launcher-${{ env.VERSION }}-zipapp.tar

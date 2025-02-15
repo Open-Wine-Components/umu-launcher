@@ -35,48 +35,43 @@ jobs:
         run: |
           # Get version from git tags (assuming semantic versioning format)
           VERSION=$(git describe --tags --abbrev=0 || echo "unknown")
+          echo $VERSION
 
           # Get current commit SHA
           COMMIT_SHA=$(git rev-parse HEAD)
+          echo $COMMIT_SHA
 
           # Store values in environment file
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
 
       - name: Build the project
-        env:
-          VERSION: ${{ env.VERSION }}
         run: |
           # Use either provided input or extracted value
-          VERSION=${VERSION}
-          COMMIT_SHA=${COMMIT_SHA}
-
-          echo $VERSION
           git submodule update --init --recursive
-          sed -i "s|^VERSION := .*$|VERSION := ${VERSION}|g" Makefile.in
+          sed -i "s|^VERSION := .*$|VERSION := ${{ env.VERSION }}|g" Makefile.in
 
           cd ..
           mkdir -p ~/rpmbuild/SOURCES/
-          cp -R umu-launcher umu-launcher-$VERSION/
-          tar -cvzf umu-launcher-$VERSION.tar.gz umu-launcher-$VERSION
-          mv umu-launcher-$VERSION.tar.gz ~/rpmbuild/SOURCES/
-          rm -Rf umu-launcher-$VERSION/
+          cp -R umu-launcher umu-launcher-${{ env.VERSION }}/
+          tar -cvzf umu-launcher-${{ env.VERSION }}.tar.gz umu-launcher-${{ env.VERSION }}
+          mv umu-launcher-${{ env.VERSION }}.tar.gz ~/rpmbuild/SOURCES/
+          rm -Rf umu-launcher-${{ env.VERSION }}/
           wget https://github.com/urllib3/urllib3/releases/download/2.3.0/urllib3-2.3.0.tar.gz
           mv urllib3-2.3.0.tar.gz ~/rpmbuild/SOURCES/
           cd umu-launcher/
 
-          sed -i "s|^%global tag .*|%global tag ${VERSION}|g" packaging/rpm/umu-launcher.spec
+          sed -i "s|^%global tag .*|%global tag ${{ env.VERSION }}|g" packaging/rpm/umu-launcher.spec
           cat packaging/rpm/umu-launcher.spec | grep tag
 
-          echo $COMMIT_SHA
-          sed -i "s|^%global commit .*|%global commit ${COMMIT_SHA}|g" packaging/rpm/umu-launcher.spec
+          sed -i "s|^%global commit .*|%global commit ${{ env.COMMIT_SHA }}|g" packaging/rpm/umu-launcher.spec
           cat packaging/rpm/umu-launcher.spec | grep commit
 
           rpmbuild -ba packaging/rpm/umu-launcher.spec
-          mv ~/rpmbuild/RPMS/x86_64/umu-launcher-$VERSION*.rpm \
-             ~/rpmbuild/RPMS/x86_64/umu-launcher-$VERSION.fc41.rpm
+          mv ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}*.rpm \
+             ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc41.rpm
 
-      - name: Fedora-41
+      - name: Fedora-40
         uses: actions/upload-artifact@v4
         with:
           name: umu-launcher-${{ env.VERSION }}.fc41.rpm
