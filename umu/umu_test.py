@@ -3552,24 +3552,71 @@ class TestGameLauncher(unittest.TestCase):
                 self.assertFalse(os.environ["PROTONPATH"])
 
     def test_env_vars_wine(self):
-        """Test check_env when setting only $WINEPREFIX."""
-        with (
-            self.assertRaisesRegex(ValueError, "GAMEID"),
-            ThreadPoolExecutor() as thread_pool,
-        ):
+        """Test check_env when setting only $WINEPREFIX.
+
+        Expects GAMEID and PROTONPATH to be set for the command line:
+        """
+        result = None
+        mock_gameid = "umu-default"
+        mock_protonpath = str(self.test_proton_dir)
+
+        def mock_get_umu_proton():
+            os.environ["PROTONPATH"] = mock_protonpath
+            return self.env
+
+        # Mock setting the PROTONPATH
+        # When running `WINEPREFIX=/some/path umu-run foo.exe` Proton is installed
+        # and the GAMEID is 'umu-default'
+        with patch.object(umu_run, "get_umu_proton", new_callable=mock_get_umu_proton):
             os.environ["WINEPREFIX"] = self.test_file
-            umu_run.check_env(self.env, thread_pool)
+            result = umu_run.check_env(self.env, self.test_session_pools)
+            self.assertTrue(result, self.env)
+            self.assertEqual(os.environ["GAMEID"], mock_gameid)
+            self.assertEqual(os.environ["GAMEID"], self.env["GAMEID"])
+            self.assertEqual(os.environ["PROTONPATH"], mock_protonpath)
+            self.assertEqual(os.environ["PROTONPATH"], mock_protonpath)
+            self.assertTrue(
+                Path(os.environ["WINEPREFIX"]).is_dir(), "Expected WINEPREFIX to exist"
+            )
 
     def test_env_vars_none(self):
         """Tests check_env when setting no env vars.
 
-        GAMEID should be the only strictly required env var
+        Expects PROTONPATH, GAMEID, and WINEPREFIX to be set
         """
+        result = None
+        mock_gameid = "umu-default"
+        mock_protonpath = str(self.test_proton_dir)
+        mock_wineprefix = "/home/foo/Games/umu/umu-default"
+
+        def mock_get_umu_proton():
+            os.environ["PROTONPATH"] = mock_protonpath
+            return self.env
+
+        def mock_set_wineprefix():
+            os.environ["WINEPREFIX"] = mock_wineprefix
+            return
+
+        # Mock setting the PROTONPATH and the WINEPREFIX creation
+        # When running `umu-run foo.exe` Proton is installed WINE prefix is created
+        # where the directory is 'umu-default', and the GAMEID is 'umu-default'
         with (
-            self.assertRaisesRegex(ValueError, "GAMEID"),
-            ThreadPoolExecutor() as thread_pool,
+            patch.object(umu_run, "get_umu_proton", new_callable=mock_get_umu_proton),
+            patch.object(Path, "mkdir", return_value=mock_set_wineprefix()),
         ):
-            umu_run.check_env(self.env, thread_pool)
+            result = umu_run.check_env(self.env, self.test_session_pools)
+            self.assertTrue(result, self.env)
+            self.assertEqual(os.environ["GAMEID"], mock_gameid)
+            self.assertEqual(os.environ["GAMEID"], self.env["GAMEID"])
+            self.assertEqual(os.environ["PROTONPATH"], mock_protonpath)
+            self.assertEqual(os.environ["PROTONPATH"], self.env["PROTONPATH"])
+            self.assertEqual(os.environ["WINEPREFIX"], mock_wineprefix)
+            self.assertEqual(os.environ["WINEPREFIX"], self.env["WINEPREFIX"])
+
+            # Assert only PROTONPATH as WINEPREFIX involves $HOME
+            self.assertTrue(
+                self.test_proton_dir.is_dir(), "Expected PROTONPATH to exist"
+            )
 
 
 if __name__ == "__main__":
