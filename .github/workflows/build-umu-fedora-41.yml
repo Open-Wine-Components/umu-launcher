@@ -61,7 +61,6 @@ jobs:
           COMMIT_SHA=${COMMIT_SHA}
 
           echo $VERSION
-          sed -re '/^#%global tag/s|^# ?(.*)|\1|' packaging/rpm/umu-launcher.spec -i
           sed -i 's/%global tag/%global tag '"$VERSION"'/' packaging/rpm/umu-launcher.spec
           cat packaging/rpm/umu-launcher.spec | grep tag
 
