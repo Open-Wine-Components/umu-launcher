@@ -86,7 +86,7 @@ class TestGameLauncher(unittest.TestCase):
         # Steam compat dir
         self.test_compat = Path("./tmp.ZssGZoiNod")
         # umu compat dir
-        self.test_umu_compat = Path("./tmp/tmp.tu692WxQHH")
+        self.test_umu_compat = Path("./tmp.tu692WxQHH")
         # umu-proton dir
         self.test_proton_dir = Path("UMU-Proton-5HYdpddgvs")
         # umu-proton release
@@ -114,6 +114,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_proton_dir.mkdir(exist_ok=True)
         self.test_usr.mkdir(exist_ok=True)
         self.test_cache_home.mkdir(exist_ok=True)
+        self.test_umu_compat.mkdir(exist_ok=True)
 
         # Mock the launcher files
         Path(self.test_user_share, "umu_consts.py").touch()
@@ -455,10 +456,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_ctx.__enter__ = MagicMock(return_value=None)
         mock_ctx.__exit__ = MagicMock(return_value=None)
 
-        self.test_umu_compat.joinpath(os.environ["PROTONPATH"]).mkdir(
-            parents=True, exist_ok=True
-        )
-
+        self.test_umu_compat.joinpath(os.environ["PROTONPATH"]).mkdir(exist_ok=True)
         self.test_umu_compat.joinpath(
             os.environ["PROTONPATH"], "compatibilitytool.vdf"
         ).touch(exist_ok=True)
