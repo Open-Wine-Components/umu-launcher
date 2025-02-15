@@ -4,10 +4,10 @@ on:
   workflow_call:
     inputs:
       version:
-        required: true
+        required: false
         type: string
       shasum:
-        required: true
+        required: false
         type: string
 
 jobs:
@@ -22,30 +22,62 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configure Git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Install build dependencies
-        run: dnf install -y rpm-build meson ninja-build cmake g++ gcc-c++ scdoc git python3-devel python3-build python3-installer python3-hatchling python python3 cargo python3-hatch-vcs python3-wheel libzstd-devel
+        run: dnf install -y rpm-build meson ninja-build cmake g++ gcc-c++ scdoc git python3-devel python3-build python3-installer python3-hatchling python python3 cargo python3-hatch-vcs python3-wheel libzstd-devel python3-pyzstd python3-xlib wget
+
+      - name: Extract Version and SHA
+        run: |
+          # Get version from git tags (assuming semantic versioning format)
+          VERSION=$(git describe --tags --abbrev=0 || echo "unknown")
+
+          # Get current commit SHA
+          COMMIT_SHA=$(git rev-parse HEAD)
+
+          # Store values in environment file
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
 
       - name: Build the project
+        env:
+          VERSION: ${{ env.VERSION }}
         run: |
+          # Use either provided input or extracted value
+          VERSION=${VERSION}
+          COMMIT_SHA=${COMMIT_SHA}
+
+          echo $VERSION
           git submodule update --init --recursive
-          ./configure.sh --prefix=/usr
-          make
-          mkdir -p ~/rpmbuild/SOURCES
-          cp -r . ~/rpmbuild/SOURCES/umu-launcher
-          sed -re '/^#%global manual_commit/s|^# ?(.*)|\1|' packaging/rpm/umu-launcher.spec \
-              -e 's|(manual_commit\s+\w+)|manual_commit ${{ inputs.shasum }}|g' \
-              -i
-          cat packaging/rpm/umu-launcher.spec | grep manual_commit
+          sed -i "s|^VERSION := .*$|VERSION := ${VERSION}|g" Makefile.in
+
+          cd ..
+          mkdir -p ~/rpmbuild/SOURCES/
+          cp -R umu-launcher umu-launcher-$VERSION/
+          tar -cvzf umu-launcher-$VERSION.tar.gz umu-launcher-$VERSION
+          mv umu-launcher-$VERSION.tar.gz ~/rpmbuild/SOURCES/
+          rm -Rf umu-launcher-$VERSION/
+          wget https://github.com/urllib3/urllib3/releases/download/2.3.0/urllib3-2.3.0.tar.gz
+          mv urllib3-2.3.0.tar.gz ~/rpmbuild/SOURCES/
+          cd umu-launcher/
+
+          sed -i "s|^%global tag .*|%global tag ${VERSION}|g" packaging/rpm/umu-launcher.spec
+          cat packaging/rpm/umu-launcher.spec | grep tag
+
+          echo $COMMIT_SHA
+          sed -i "s|^%global commit .*|%global commit ${COMMIT_SHA}|g" packaging/rpm/umu-launcher.spec
+          cat packaging/rpm/umu-launcher.spec | grep commit
+
           rpmbuild -ba packaging/rpm/umu-launcher.spec
-          mv ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}*.rpm \
-             ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc40.rpm
+          mv ~/rpmbuild/RPMS/x86_64/umu-launcher-$VERSION*.rpm \
+             ~/rpmbuild/RPMS/x86_64/umu-launcher-$VERSION.fc40.rpm
 
       - name: Fedora-40
         uses: actions/upload-artifact@v4
         with:
-          name: umu-launcher-${{ inputs.version }}.fc40.rpm
-          path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ inputs.version }}.fc40.rpm
+          name: umu-launcher-${{ env.VERSION }}.fc40.rpm
+          path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc40.rpm
