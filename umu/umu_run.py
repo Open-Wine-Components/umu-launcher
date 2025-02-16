@@ -254,13 +254,6 @@ def set_env(
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
 
-    # Proton logging (to stdout)
-    # Check for PROTON_LOG because it redirects output to log file
-    if os.environ.get("PROTON_LOG", "0") == "0":
-        env["WINEDEBUG"] = os.environ.get("WINEDEBUG") or "+fixme"
-        env["DXVK_LOG_LEVEL"] = os.environ.get("DXVK_LOG_LEVEL") or "info"
-        env["VKD3D_DEBUG"] = os.environ.get("VKD3D_DEBUG") or "fixme"
-
     return env
 
 
