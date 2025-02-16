@@ -2,9 +2,9 @@ name: Build and upload development artifacts
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   version:
@@ -34,6 +34,13 @@ jobs:
     with:
       version: ${{ needs.version.outputs.version }}
 
+  debian13-build:
+    name: Debian 13 Build
+    uses: ./.github/workflows/build-umu-debian-13.yml
+    needs: version
+    with:
+      version: ${{ needs.version.outputs.version }}
+
   ubuntu-noble-build:
     name: Ubuntu 24.04 Build
     uses: ./.github/workflows/build-umu-ubuntu-noble.yml
@@ -47,4 +54,3 @@ jobs:
     needs: version
     with:
       version: ${{ needs.version.outputs.version }}
-
