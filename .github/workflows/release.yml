@@ -51,6 +51,22 @@ jobs:
       file2: umu-launcher_${{ github.ref_name }}-1_all_debian-12.deb
       name2: umu-launcher_${{ github.ref_name }}-1_all_debian-12.deb
 
+  debian12-build:
+    name: Debian 12 Build
+    uses: ./.github/workflows/build-umu-debian-13.yml
+    with:
+      version: ${{ github.ref_name }}
+  debian12-release:
+    name: Debian 13 Release ${{ github.ref_name }}
+    needs: debian13-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: python3-umu-launcher_${{ github.ref_name }}-1_amd64_debian-13.deb
+      name1: python3-umu-launcher_${{ github.ref_name }}-1_amd64_debian-13.deb
+      file2: umu-launcher_${{ github.ref_name }}-1_all_debian-13.deb
+      name2: umu-launcher_${{ github.ref_name }}-1_all_debian-13.deb
+
   ubuntu-noble-build:
     name: Ubuntu 24.04 Build
     uses: ./.github/workflows/build-umu-ubuntu-noble.yml
