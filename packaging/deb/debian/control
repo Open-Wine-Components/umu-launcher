@@ -29,7 +29,7 @@ Architecture: all
 Depends:
  python3-umu-launcher (= ${binary:Version}),
  ${misc:Depends},
-Recommends: fontconfig, fonts-liberation, libasound2-plugins, libegl1, libexpat1, libfontconfig1, libgbm1, libnm0, libsdl2-2.0-0, libusb-1.0-0, libva-drm2, libva-glx2, libx11-6, libx11-xcb1, libxau6, libxcb-dri2-0, libxcb-glx0, libxcb-present0, libxcb-sync1, libxdamage1, libxdmcp6, libxext6, libxfixes3, libxss1, libxxf86vm1, mesa-vulkan-drivers, steam-devices, va-driver-all | va-driver, xdg-desktop-portal, xdg-desktop-portal-gtk | xdg-desktop-portal-backend, xdg-utils, xterm | x-terminal-emulator, zenity | libzstd, python3-xxhash, python3-cbor2
+Recommends: fontconfig, fonts-liberation, libasound2-plugins, libegl1, libexpat1, libfontconfig1, libgbm1, libnm0, libsdl2-2.0-0, libusb-1.0-0, libva-drm2, libva-glx2, libx11-6, libx11-xcb1, libxau6, libxcb-dri2-0, libxcb-glx0, libxcb-present0, libxcb-sync1, libxdamage1, libxdmcp6, libxext6, libxfixes3, libxss1, libxxf86vm1, mesa-vulkan-drivers, steam-devices, va-driver-all | va-driver, xdg-desktop-portal, xdg-desktop-portal-gtk | xdg-desktop-portal-backend, xdg-utils, xterm | x-terminal-emulator, zenity | python3-xxhash, python3-cbor2
 Suggests: libudev0, nvidia-driver-libs, nvidia-vulkan-icd, pipewire
 Description: A tool for launching non-steam games with proton.
 
@@ -42,5 +42,6 @@ Depends:
  python3-xlib (>= 0.33),
  apparmor-profiles,
  libgl1-mesa-dri:i386,
- libglx-mesa0:i386
+ libglx-mesa0:i386,
+ libzstd1
 Description: A tool for launching non-steam games with proton.
