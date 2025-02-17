@@ -50,10 +50,11 @@ WINEPREFIX=$HOME/Games/epic-games-store GAMEID=umu-dauntless STORE=egs PROTONPAT
 ```
 
 Notes:
-`WINEPREFIX` designates where to create the wine prefix. If not specified it will default to /home/username/Games/umu/<gameid>  
-`GAMEID` designates a corresponding umu-id from the [umu-database](https://umu.openwinecomponents.org/) for games that have fixes that need to be applied. If not specified it defaults to umu-default  
-`PROTONPATH` designates the full path to a specific proton version. Alternatively you can use "GE-Proton" to auto-download and use the latest GE-Proton build. If not specified it defaults to UMU-Proton. (UMU-Proton is the latest stable version of Valve's proton tool with UMU compatibility added)  
-`STORE` designates what storefront to use. UMU uses GAMEID and STORE to search the [umu-database](https://umu.openwinecomponents.org/) for fixes to apply to a game. Defaults to "none".  
+
+- `WINEPREFIX` designates where to create the wine prefix. If not specified it will default to /home/username/Games/umu/GAMEID
+- `GAMEID` designates a corresponding umu-id from the [umu-database](https://umu.openwinecomponents.org/) for games that have fixes that need to be applied. Defaults to umu-default
+- `PROTONPATH` designates the full path to a specific proton version. Alternatively you can use value "GE-Proton" to auto-download and use the latest GE-Proton build. Defaults to UMU-Proton. (UMU-Proton is the latest stable version of Valve's proton tool with UMU compatibility added)
+- `STORE` designates what storefront to use. UMU uses GAMEID and STORE to search the [umu-database](https://umu.openwinecomponents.org/) for fixes to apply to a game. Defaults to "none".
 
 See the [documentation](https://github.com/Open-Wine-Components/umu-launcher/blob/main/docs/umu.1.scd) for more examples and the [project's wiki](https://github.com/Open-Wine-Components/umu-launcher/wiki/Frequently-asked-questions-(FAQ)) for Frequently Asked Questions.
 
