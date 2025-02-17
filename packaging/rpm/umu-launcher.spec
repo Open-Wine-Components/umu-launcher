@@ -2,7 +2,7 @@
 %global tag 1.2.5
 
 # Manual commit is auto-inserted by workflow
-%global commit e8c6b737f54b24d1ea61ff82f78aa326c3df10b6
+%global commit a11540cbf2221a5671c4ced97c0bf7e61c98d21e
 
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
