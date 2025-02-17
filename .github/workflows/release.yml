@@ -51,12 +51,12 @@ jobs:
       file2: umu-launcher_${{ github.ref_name }}-1_all_debian-12.deb
       name2: umu-launcher_${{ github.ref_name }}-1_all_debian-12.deb
 
-  debian12-build:
-    name: Debian 12 Build
+  debian13-build:
+    name: Debian 13 Build
     uses: ./.github/workflows/build-umu-debian-13.yml
     with:
       version: ${{ github.ref_name }}
-  debian12-release:
+  debian13-release:
     name: Debian 13 Release ${{ github.ref_name }}
     needs: debian13-build
     uses: ./.github/workflows/build-umu-publish-release.yml
