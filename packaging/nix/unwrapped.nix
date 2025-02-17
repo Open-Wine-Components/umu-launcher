@@ -14,6 +14,10 @@ umu-launcher-unwrapped.overridePythonAttrs (prev: {
   src = ../../.;
   inherit version;
 
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ../../Cargo.lock;
+  };
+
   # The nixpkgs patches (in `prev.patches`) are not needed anymore
   # - no-umu-version-json.patch was resolved in:
   #   https://github.com/Open-Wine-Components/umu-launcher/pull/289
@@ -21,28 +25,10 @@ umu-launcher-unwrapped.overridePythonAttrs (prev: {
   #   https://github.com/Open-Wine-Components/umu-launcher/pull/343
   patches = [];
 
-  # The `umu-vendored` target needs submodules. However, we don't actually need
-  # this target or those submodules anyway, since we add `pyzstd` as a nix package
-  #
-  # As a temporary solution, we explicitly specify the supported build targets:
-  buildFlags =
-    (prev.buildFlags or [])
+  nativeCheckInputs =
+    (prev.nativeCheckInputs or [])
     ++ [
-      "umu-dist"
-      "umu-launcher"
-    ];
-
-  # Same issue for install targets
-  installTargets =
-    (prev.installTargets or [])
-    ++ [
-      "umu-dist"
-      "umu-docs"
-      "umu-launcher"
-      "umu-delta"
-      "umu-install"
-      "umu-launcher-install"
-      "umu-delta-install"
+      python3Packages.pytestCheckHook
     ];
 
   nativeBuildInputs =
@@ -52,21 +38,42 @@ umu-launcher-unwrapped.overridePythonAttrs (prev: {
       cargo
     ];
 
-  propagatedBuildInputs =
-    (prev.propagatedBuildInputs or [])
+  pythonPath = with python3Packages;
+    (prev.pythonPath or [])
     ++ [
-      python3Packages.urllib3
+      urllib3
+      (callPackage ./pyzstd.nix {})
     ]
     ++ lib.optionals withTruststore [
-      python3Packages.truststore
+      truststore
     ]
     ++ lib.optionals withDeltaUpdates [
-      python3Packages.cbor2
-      python3Packages.xxhash
-      (python3Packages.callPackage ./pyzstd.nix {})
+      cbor2
+      xxhash
     ];
 
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ../../Cargo.lock;
-  };
+  configureFlags =
+    (prev.configureFlags or [])
+    ++ [
+      "--use-system-pyzstd"
+      "--use-system-urllib"
+    ];
+
+  disabledTests = [
+    # Broken? Asserts that $STEAM_RUNTIME_LIBRARY_PATH is non-empty
+    # Fails with AssertionError: '' is not true : Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS
+    "test_game_drive_empty"
+    "test_game_drive_libpath_empty"
+
+    # Broken? Tests parse_args with no options (./umu_run.py)
+    # Fails with AssertionError: SystemExit not raised
+    "test_parse_args_noopts"
+  ];
+
+  preCheck = ''
+    ${prev.preCheck or ""}
+
+    # Some tests require a writable HOME
+    export HOME=$(mktemp -d)
+  '';
 })
