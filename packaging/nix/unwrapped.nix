@@ -1,79 +1,57 @@
 {
   # Dependencies
+  callPackage,
   lib,
-  cargo,
-  python3Packages,
   rustPlatform,
   umu-launcher-unwrapped,
-  # Public API
   version,
-  withTruststore ? true,
-  withDeltaUpdates ? true,
-}:
-umu-launcher-unwrapped.overridePythonAttrs (prev: {
-  src = ../../.;
-  inherit version;
-
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ../../Cargo.lock;
-  };
-
-  # The nixpkgs patches (in `prev.patches`) are not needed anymore
-  # - no-umu-version-json.patch was resolved in:
-  #   https://github.com/Open-Wine-Components/umu-launcher/pull/289
-  # - The other is backporting:
-  #   https://github.com/Open-Wine-Components/umu-launcher/pull/343
-  patches = [];
-
-  nativeCheckInputs =
-    (prev.nativeCheckInputs or [])
-    ++ [
-      python3Packages.pytestCheckHook
-    ];
-
-  nativeBuildInputs =
-    (prev.nativeBuildInputs or [])
-    ++ [
-      rustPlatform.cargoSetupHook
-      cargo
-    ];
-
-  pythonPath = with python3Packages;
-    (prev.pythonPath or [])
-    ++ [
-      urllib3
-      (callPackage ./pyzstd.nix {})
-    ]
-    ++ lib.optionals withTruststore [
-      truststore
-    ]
-    ++ lib.optionals withDeltaUpdates [
-      cbor2
-      xxhash
-    ];
-
-  configureFlags =
-    (prev.configureFlags or [])
-    ++ [
-      "--use-system-pyzstd"
-      "--use-system-urllib"
-    ];
-
-  disabledTests = [
-    # Broken? Asserts that $STEAM_RUNTIME_LIBRARY_PATH is non-empty
-    # Fails with AssertionError: '' is not true : Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS
-    "test_game_drive_empty"
-    "test_game_drive_libpath_empty"
-
-    # Broken? Tests parse_args with no options (./umu_run.py)
-    # Fails with AssertionError: SystemExit not raised
-    "test_parse_args_noopts"
+  # Freeform overrides
+  ...
+} @ args: let
+  # Unknown args will be used to override the nixpkgs package
+  # NOTE: All known args must be removed here
+  overrideArgs = builtins.removeAttrs args [
+    "callPackage"
+    "lib"
+    "rustPlatform"
+    "umu-launcher-unwrapped"
+    "version"
   ];
 
-  preCheck = ''
-    ${prev.preCheck or ""}
+  # Remove unsupported args not accepted by old-unwrapped.nix
+  oldVersionArgs = builtins.removeAttrs args [
+    "callPackage"
+    "version"
+  ];
 
-    # Some tests require a writable HOME
-    export HOME=$(mktemp -d)
-  '';
-})
+  # Figure out and/or override the base package
+  package =
+    # Nixpkgs bumped 1.1.4 -> 1.2.3 on 2025-02-17
+    # https://github.com/NixOS/nixpkgs/pull/381975
+    if lib.versionOlder umu-launcher-unwrapped.version "1.2.0"
+    then callPackage ./old-unwrapped.nix oldVersionArgs
+    # Use the unwrapped package as-is or override it,
+    # based on whether we have any override args
+    else if overrideArgs == {}
+    then umu-launcher-unwrapped
+    else umu-launcher-unwrapped.override overrideArgs;
+in
+  package.overridePythonAttrs {
+    inherit version;
+    src = ../../.;
+    cargoDeps = rustPlatform.importCargoLock {
+      lockFile = ../../Cargo.lock;
+    };
+
+    # Specify ourselves which tests are disabled
+    disabledTests = [
+      # Broken? Asserts that $STEAM_RUNTIME_LIBRARY_PATH is non-empty
+      # Fails with AssertionError: '' is not true : Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS
+      "test_game_drive_empty"
+      "test_game_drive_libpath_empty"
+
+      # Broken? Tests parse_args with no options (./umu_run.py)
+      # Fails with AssertionError: SystemExit not raised
+      "test_parse_args_noopts"
+    ];
+  }
