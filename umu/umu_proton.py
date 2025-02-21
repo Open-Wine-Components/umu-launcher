@@ -19,7 +19,13 @@ from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
 from umu.umu_bspatch import Content, ContentContainer, CustomPatcher
-from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_COMPAT, UMU_LOCAL, HTTPMethod
+from umu.umu_consts import (
+    STEAM_COMPAT,
+    UMU_CACHE,
+    UMU_COMPAT,
+    UMU_LOCAL,
+    HTTPMethod,
+)
 from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
