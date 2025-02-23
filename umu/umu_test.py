@@ -726,7 +726,7 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu"),
         ):
             mock_local = Path(file)
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
                 mock_local, mock_runtime_ver, mock_session_pools, mock_cb
@@ -744,7 +744,7 @@ class TestGameLauncher(unittest.TestCase):
 
         with TemporaryDirectory() as file:
             mock_local = Path(file)
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
                 mock_local, mock_runtime_ver, mock_session_pools, mock_cb
@@ -764,7 +764,7 @@ class TestGameLauncher(unittest.TestCase):
             # Populate our fake $XDG_DATA_HOME/umu
             Path(file2, "umu").touch()
             # Mock the runtime ver
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
             mock_session_pools = (MagicMock(), MagicMock())
             with patch.object(umu_runtime, "_update_umu"):
@@ -786,7 +786,7 @@ class TestGameLauncher(unittest.TestCase):
             # Populate our fake $XDG_DATA_HOME/umu
             Path(file2, "umu").touch()
             # Mock the runtime ver
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
             mock_session_pools = (MagicMock(), MagicMock())
             with patch.object(umu_runtime, "_restore_umu"):
@@ -805,7 +805,7 @@ class TestGameLauncher(unittest.TestCase):
         # Mock a new install
         with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
             # Mock the runtime ver
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
             mock_session_pools = (MagicMock(), MagicMock())
             with patch.object(umu_runtime, "_restore_umu"):
@@ -850,7 +850,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_tp = MagicMock()
 
         # Mock runtime ver
-        mock_runtime_ver = ("sniper", "steamrt3")
+        mock_runtime_ver = ("sniper", "steamrt3", "1628350")
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
@@ -879,7 +879,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_tp = MagicMock()
 
         # Mock runtime ver
-        mock_runtime_ver = ("sniper", "steamrt3")
+        mock_runtime_ver = ("sniper", "steamrt3", "1628350")
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
@@ -920,7 +920,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_tp = MagicMock()
 
         # Mock runtime ver
-        mock_runtime_ver = ("sniper", "steamrt3")
+        mock_runtime_ver = ("sniper", "steamrt3", "1628350")
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
@@ -965,7 +965,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_tp = MagicMock()
 
         # Mock runtime ver
-        mock_runtime_ver = ("sniper", "steamrt3")
+        mock_runtime_ver = ("sniper", "steamrt3", "1628350")
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
