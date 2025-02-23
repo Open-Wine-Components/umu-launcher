@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import threading
 import time
@@ -10,6 +11,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
+from itertools import chain
 from zipfile import Path as ZipPath
 
 try:
@@ -35,7 +37,7 @@ from Xlib.protocol.request import GetProperty
 from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
 
-from umu import __runtime_version__, __version__
+from umu import __runtime_version__, __runtime_versions__, __version__
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
@@ -61,6 +63,8 @@ from umu.umu_util import (
 NET_TIMEOUT = 5.0
 
 NET_RETRIES = 1
+
+RuntimeVersion = tuple[str, str, str]
 
 
 def setup_pfx(path: str) -> None:
@@ -254,6 +258,9 @@ def set_env(
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
+    env["RUNTIMEPATH"] = (
+        "" if os.environ.get("UMU_NO_RUNTIME") else os.environ.get("RUNTIMEPATH", "")
+    )
 
     return env
 
@@ -695,6 +702,71 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     return ret
 
 
+def resolve_umu_version(
+    runtime: RuntimeVersion, runtimes: tuple[RuntimeVersion, ...]
+) -> RuntimeVersion | None:
+    """Resolve the required runtime of a compatibility tool."""
+    version: tuple[str, str, str] | None = None
+
+    if os.environ.get("RUNTIMEPATH") in set(chain.from_iterable(runtimes)):
+        # Skip the parsing and trust the client
+        log.debug("RUNTIMEPATH is codename, skipping version resolution")
+        return next(
+            member for member in runtimes if os.environ["RUNTIMEPATH"] in member
+        )
+
+    if not os.environ.get("PROTONPATH"):
+        log.debug("PROTONPATH unset, defaulting to '%s'", runtime[1])
+        return runtime
+
+    # Default to latest runtime for codenames
+    if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest", "UMU-Latest"}:
+        log.debug("PROTONPATH is codename, defaulting to '%s'", runtime[1])
+        return runtime
+
+    # Default to latest runtime for native Linux executables
+    if os.environ.get("UMU_NO_PROTON"):
+        log.debug("UMU_NO_PROTON set, defaulting to '%s'", runtime[1])
+        return runtime
+
+    # Solve the required runtime for PROTONPATH
+    log.debug("PROTONPATH set, resolving its required runtime")
+    path: Path = STEAM_COMPAT.joinpath(os.environ.get("PROTONPATH", ""))
+    if os.environ.get("PROTONPATH") and path.is_dir():
+        os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
+
+    path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf").resolve()
+    if path.is_file():
+        version = get_umu_version_from_manifest(path, runtimes)
+
+    return version
+
+
+def get_umu_version_from_manifest(
+    path: Path, runtimes: tuple[RuntimeVersion, ...]
+) -> RuntimeVersion | None:
+    """Find the required runtime from a compatibility tool's configuration file."""
+    key: str = "require_tool_appid"
+    appids: set[str] = {member[2] for member in runtimes}
+    appid: str = ""
+
+    with path.open(mode="r", encoding="utf-8") as file:
+        for line in file:
+            if key not in line:
+                continue
+            if match := re.search(r'"require_tool_appid"\s+"(\d+)', line):
+                appid = match.group(1)
+                break
+
+    if not appid:
+        return None
+
+    if appid not in appids:
+        return None
+
+    return next(member for member in runtimes if appid in member)
+
+
 def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     """Prepare and run an executable within the Steam Runtime.
 
@@ -730,9 +802,11 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
         "UMU_NO_PROTON": "",
+        "RUNTIMEPATH": "",
     }
     opts: list[str] = []
     prereq: bool = False
+    version: RuntimeVersion | None = None
     root: Traversable
 
     try:
@@ -782,6 +856,15 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         )
         raise RuntimeError(err)
 
+    # Resolve the runtime version for PROTONPATH
+    version = resolve_umu_version(__runtime_version__, __runtime_versions__)
+    if not version:
+        err: str = (
+            f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
+        )
+        raise ValueError(err)
+    os.environ["RUNTIMEPATH"] = version[1]
+
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
         import truststore
@@ -797,13 +880,10 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         ThreadPoolExecutor() as thread_pool,
         PoolManager(timeout=timeout, retries=retries) as http_pool,
     ):
-        session_pools: tuple[ThreadPoolExecutor, PoolManager] = (
-            thread_pool,
-            http_pool,
-        )
+        session_pools: tuple[ThreadPoolExecutor, PoolManager] = (thread_pool, http_pool)
         # Setup the launcher and runtime files
         future: Future = thread_pool.submit(
-            setup_umu, root, UMU_LOCAL, __runtime_version__, session_pools
+            setup_umu, root, UMU_LOCAL / version[1], version, session_pools
         )
 
         if isinstance(args, Namespace):
@@ -845,7 +925,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         sys.exit(1)
 
     # Build the command
-    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, opts)
+    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL / version[1], opts)
     log.debug("%s", command)
 
     # Run the command
