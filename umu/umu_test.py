@@ -99,7 +99,7 @@ class TestGameLauncher(unittest.TestCase):
         self.test_local_share = Path("./tmp.aDl73CbQCP")
         # Wine prefix
         self.test_winepfx = Path("./tmp.AlfLPDhDvA")
-        self.test_runtime_version = ("sniper", "steamrt3")
+        self.test_runtime_version = ("sniper", "steamrt3", "1628350")
         # Thread pool and connection pool instances
         self.test_session_pools = (MagicMock(), MagicMock())
 

@@ -65,7 +65,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         self.test_user_share = Path("./tmp.jl3W4MtO57")
         # ~/.local/share/Steam/compatibilitytools.d
         self.test_local_share = Path("./tmp.WUaQAk7hQJ")
-        self.test_runtime_version = ("sniper", "steamrt3")
+        self.test_runtime_version = ("sniper", "steamrt3", "1628350")
 
         self.test_user_share.mkdir(exist_ok=True)
         self.test_local_share.mkdir(exist_ok=True)
