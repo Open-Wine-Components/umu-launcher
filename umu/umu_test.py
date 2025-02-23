@@ -725,11 +725,12 @@ class TestGameLauncher(unittest.TestCase):
             TemporaryDirectory() as file,
             patch.object(umu_runtime, "_install_umu"),
         ):
-            mock_local = Path(file)
+            mock_subdir = Path(file).joinpath("steamrt3")
+            mock_subdir.mkdir(parents=True, exist_ok=True)
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
-                mock_local, mock_runtime_ver, mock_session_pools, mock_cb
+                mock_subdir.parent, mock_runtime_ver, mock_session_pools, mock_cb
             )
             self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
@@ -743,11 +744,12 @@ class TestGameLauncher(unittest.TestCase):
         result = MagicMock()
 
         with TemporaryDirectory() as file:
-            mock_local = Path(file)
+            mock_subdir = Path(file).joinpath("steamrt3")
+            mock_subdir.mkdir(parents=True, exist_ok=True)
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
-                mock_local, mock_runtime_ver, mock_session_pools, mock_cb
+                mock_subdir.parent, mock_runtime_ver, mock_session_pools, mock_cb
             )
             self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
