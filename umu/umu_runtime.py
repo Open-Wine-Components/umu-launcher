@@ -472,7 +472,7 @@ def _restore_umu(
     session_pools: SessionPools,
     callback_fn: Callable[[], bool],
 ) -> None:
-    lock: str = f"{UMU_LOCAL}/{FileLock.Runtime.value}"
+    lock: str = f"{local.parent}/{FileLock.Runtime.value}"
     with unix_flock(lock):
         log.debug("Acquired file lock '%s'...", lock)
         if callback_fn():
