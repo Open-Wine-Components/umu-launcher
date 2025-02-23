@@ -36,6 +36,14 @@ class GamescopeAtom(Enum):
     BaselayerAppId = "GAMESCOPECTRL_BASELAYER_APPID"
 
 
+class FileLock(Enum):
+    """Files placed with an exclusive lock via flock(2)."""
+
+    Runtime = "umu.lock"  # UMU_RUNTIME lock
+    Compat = "compatibilitytools.d.lock"  # PROTONPATH lock
+    Prefix = "pfx.lock"  # WINEPREFIX lock
+
+
 STEAM_COMPAT: Path = Path.home().joinpath(
     ".local", "share", "Steam", "compatibilitytools.d"
 )
