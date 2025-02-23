@@ -42,6 +42,7 @@ from umu.umu_consts import (
     STEAM_COMPAT,
     STEAM_WINDOW_ID,
     UMU_LOCAL,
+    FileLock,
     GamescopeAtom,
 )
 from umu.umu_log import log
@@ -814,7 +815,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
         # Prepare the prefix
-        with unix_flock(f"{UMU_LOCAL}/pfx.lock"):
+        with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
             setup_pfx(env["WINEPREFIX"])
 
         # Configure the environment

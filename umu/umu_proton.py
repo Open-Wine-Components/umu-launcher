@@ -19,7 +19,14 @@ from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
 from umu.umu_bspatch import Content, ContentContainer, CustomPatcher
-from umu.umu_consts import STEAM_COMPAT, UMU_CACHE, UMU_COMPAT, UMU_LOCAL, HTTPMethod
+from umu.umu_consts import (
+    STEAM_COMPAT,
+    UMU_CACHE,
+    UMU_COMPAT,
+    UMU_LOCAL,
+    FileLock,
+    HTTPMethod,
+)
 from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
@@ -366,7 +373,7 @@ def _get_latest(
     proton: str
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
     version: str = ProtonVersion.UMU.value
-    lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
+    lock: str = f"{UMU_LOCAL}/{FileLock.Compat.value}"
     latest_candidates: set[str]
 
     if not assets:
@@ -391,18 +398,15 @@ def _get_latest(
 
     # Use the latest UMU/GE-Proton
     try:
-        log.debug("Acquiring file lock '%s'...", lockfile)
-        with unix_flock(lockfile):
+        log.debug("Acquiring file lock '%s'...", lock)
+        with unix_flock(lock):
             # Once acquiring the lock check if Proton hasn't been installed
             if steam_compat.joinpath(proton).is_dir():
                 raise FileExistsError
-
             if umu_compat.joinpath(version).is_dir():
                 raise FileExistsError
-
             # Download the archive to a temporary directory
             _fetch_proton(env, session_caches, assets, session_pools)
-
             # Extract the archive then move the directory
             _install_proton(tarball, session_caches, compat_tools)
     except (ValueError, KeyboardInterrupt, HTTPError) as e:
@@ -494,7 +498,7 @@ def _get_delta(
         "GE-Latest" if os.environ.get("PROTONPATH") == "GE-Latest" else "UMU-Latest"
     )
     proton: Path = umu_compat.joinpath(version)
-    lockfile: str = f"{UMU_LOCAL}/compatibilitytools.d.lock"
+    lock: str = f"{UMU_LOCAL}/{FileLock.Compat.value}"
     cbor: ContentContainer
 
     if not assets:
@@ -521,13 +525,12 @@ def _get_delta(
         log.exception(e)
         return None
 
-    log.debug("Acquiring lock '%s'", lockfile)
-    with unix_flock(lockfile):
+    log.debug("Acquiring lock '%s'", lock)
+    with unix_flock(lock):
         tarball, _ = assets[1]
         build: str = tarball.removesuffix(".tar.gz")
         buildid: Path = umu_compat.joinpath(version, "compatibilitytool.vdf")
-
-        log.debug("Acquired lock '%s'", lockfile)
+        log.debug("Acquired lock '%s'", lock)
 
         # Check if we're up to date by doing a simple file check
         # Avoids the cost of creating threads and memory-mapped IO
