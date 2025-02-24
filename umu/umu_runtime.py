@@ -20,7 +20,7 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
-from umu.umu_consts import UMU_CACHE, UMU_LOCAL, FileLock, HTTPMethod
+from umu.umu_consts import UMU_CACHE, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
