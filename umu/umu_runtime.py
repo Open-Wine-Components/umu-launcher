@@ -20,7 +20,7 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
-from umu.umu_consts import UMU_CACHE, UMU_LOCAL, HTTPMethod
+from umu.umu_consts import UMU_CACHE, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
@@ -31,15 +31,12 @@ from umu.umu_util import (
     write_file_chunks,
 )
 
-# umu uses some metadata to dynamically construct the runtime's URL and for logging
-# First element is the runtime's codename, second is the variant
-# e.g., (sniper, steamrt3)
-RuntimeVersion = tuple[str, str]
+RuntimeVersion = tuple[str, str, str]
 
 SessionPools = tuple[ThreadPoolExecutor, PoolManager]
 
 
-def create_shim(file_path: Path | None = None):
+def create_shim(file_path: Path):
     """Create a shell script shim at the specified file path.
 
     This script sets the DISPLAY environment variable if certain conditions
@@ -47,13 +44,8 @@ def create_shim(file_path: Path | None = None):
 
     Args:
         file_path (Path, optional): The path where the shim script will be created.
-            Defaults to UMU_LOCAL.joinpath("umu-shim").
 
     """
-    # Set the default path if none is provided
-    if file_path is None:
-        file_path = UMU_LOCAL.joinpath("umu-shim")
-
     # Define the content of the shell script
     script_content = (
         "#!/bin/sh\n"
@@ -88,12 +80,13 @@ def create_shim(file_path: Path | None = None):
 def _install_umu(
     runtime_ver: RuntimeVersion,
     session_pools: SessionPools,
+    local: Path,
 ) -> None:
     resp: BaseHTTPResponse
     tmp: Path = Path(mkdtemp())
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
-    codename, variant = runtime_ver
+    codename, variant, _ = runtime_ver
     # Archive containing the runtime
     archive: str = f"SteamLinuxRuntime_{codename}.tar.xz"
     base_url: str = (
@@ -238,26 +231,26 @@ def _install_umu(
 
     with TemporaryDirectory(dir=UMU_CACHE) as tmpcache:
         futures: list[Future] = []
-        var: Path = UMU_LOCAL.joinpath("var")
+        var: Path = local.joinpath("var")
         log.debug("Created: %s", tmpcache)
         log.debug("Moving: %s -> %s", parts, tmpcache)
         move(parts, tmpcache)
 
         # Ensure the target directory exists
-        UMU_LOCAL.mkdir(parents=True, exist_ok=True)
+        local.mkdir(parents=True, exist_ok=True)
         log.debug("Extracting: %s -> %s", f"{tmpcache}/{archive}", tmpcache)
         extract_tarfile(Path(tmpcache, archive), Path(tmpcache))
 
         # Move the files to the correct location
         source_dir: Path = Path(tmpcache, f"SteamLinuxRuntime_{codename}")
-        var: Path = UMU_LOCAL.joinpath("var")
+        var: Path = local.joinpath("var")
         log.debug("Source: %s", source_dir)
-        log.debug("Destination: %s", UMU_LOCAL)
+        log.debug("Destination: %s", local)
 
         # Move each file to the dest dir, overwriting if exists
         futures.extend(
             [
-                thread_pool.submit(_move, file, source_dir, UMU_LOCAL)
+                thread_pool.submit(_move, file, source_dir, local)
                 for file in source_dir.glob("*")
             ]
         )
@@ -275,12 +268,12 @@ def _install_umu(
 
     # Rename _v2-entry-point
     log.debug("Renaming: _v2-entry-point -> umu")
-    UMU_LOCAL.joinpath("_v2-entry-point").rename(UMU_LOCAL.joinpath("umu"))
+    local.joinpath("_v2-entry-point").rename(local.joinpath("umu"))
 
-    create_shim()
+    create_shim(local / "umu-shim")
 
     # Validate the runtime after moving the files
-    check_runtime(UMU_LOCAL, runtime_ver)
+    check_runtime(local, runtime_ver)
 
 
 def setup_umu(
@@ -327,7 +320,7 @@ def _update_umu(
     runtime: Path
     resp: BaseHTTPResponse
     _, http_pool = session_pools
-    codename, variant = runtime_ver
+    codename, variant, _ = runtime_ver
     endpoint: str = (
         f"/steamrt-images-{codename}/snapshots/latest-container-runtime-public-beta"
     )
@@ -399,7 +392,7 @@ def _update_umu(
 
     # Restore shim if missing
     if not local.joinpath("umu-shim").is_file():
-        create_shim()
+        create_shim(local / "umu-shim")
 
     log.info("%s is up to date", variant)
 
@@ -431,7 +424,7 @@ def check_runtime(src: Path, runtime_ver: RuntimeVersion) -> int:
     home directory and used to run games.
     """
     runtime: Path
-    codename, variant = runtime_ver
+    codename, variant, _ = runtime_ver
     pv_verify: Path = src.joinpath("pressure-vessel", "bin", "pv-verify")
     ret: int = 1
 
@@ -474,15 +467,15 @@ def _restore_umu(
     session_pools: SessionPools,
     callback_fn: Callable[[], bool],
 ) -> None:
-    lockfile: str = f"{local}/umu.lock"
-    with unix_flock(lockfile):
-        log.debug("Acquired file lock '%s'...", lockfile)
+    lock: str = f"{local.parent}/{FileLock.Runtime.value}"
+    with unix_flock(lock):
+        log.debug("Acquired file lock '%s'...", lock)
         if callback_fn():
-            log.debug("Released file lock '%s'", lockfile)
+            log.debug("Released file lock '%s'", lock)
             log.info("%s was restored", runtime_ver[1])
             return
-        _install_umu(runtime_ver, session_pools)
-        log.debug("Released file lock '%s'", lockfile)
+        _install_umu(runtime_ver, session_pools, local)
+        log.debug("Released file lock '%s'", lock)
 
 
 def _restore_umu_platformid(
@@ -492,7 +485,7 @@ def _restore_umu_platformid(
 ) -> None | str:
     url: str = ""
     _, http_pool = session_pools
-    codename, _ = runtime_ver
+    codename, *_ = runtime_ver
     release: Path = runtime_base.joinpath("files", "lib", "os-release")
     versions: str = f"SteamLinuxRuntime_{codename}.VERSIONS.txt"
     host: str = "repo.steampowered.com"
@@ -541,24 +534,24 @@ def _update_umu_platform(
     session_pools: SessionPools,
     resp: BaseHTTPResponse,
 ) -> None:
-    _, variant = runtime_ver
+    _, variant, _ = runtime_ver
     latest: bytes = sha256(resp.data).digest()
     current: bytes = sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     versions: Path = local.joinpath("VERSIONS.txt")
-    lockfile: str = f"{local}/umu.lock"
+    lock: str = f"{local.parent}/{FileLock.Runtime.value}"
 
     # Compare our version file to upstream's, updating if different
     if latest != current:
         log.info("Updating %s to latest...", variant)
-        log.debug("Acquiring file lock '%s'...", lockfile)
-        with unix_flock(lockfile):
-            log.debug("Acquired file lock '%s'", lockfile)
+        log.debug("Acquiring file lock '%s'...", lock)
+        with unix_flock(lock):
+            log.debug("Acquired file lock '%s'", lock)
             # Once another process acquires the lock, check if the latest
             # runtime has already been downloaded
             if latest == sha256(versions.read_bytes()).digest():
-                log.debug("Released file lock '%s'", lockfile)
+                log.debug("Released file lock '%s'", lock)
                 return
-            _install_umu(runtime_ver, session_pools)
+            _install_umu(runtime_ver, session_pools, local)
             log.debug("Removing: %s", runtime)
             rmtree(str(runtime))
-            log.debug("Released file lock '%s'", lockfile)
+            log.debug("Released file lock '%s'", lock)

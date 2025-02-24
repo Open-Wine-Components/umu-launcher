@@ -70,6 +70,7 @@ class TestGameLauncher(unittest.TestCase):
             "STEAM_FOSSILIZE_DUMP_PATH": "",
             "DXVK_STATE_CACHE_PATH": "",
             "UMU_NO_PROTON": "",
+            "RUNTIMEPATH": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -96,10 +97,13 @@ class TestGameLauncher(unittest.TestCase):
         # /usr/share/umu
         self.test_user_share = Path("./tmp.BXk2NnvW2m")
         # ~/.local/share/Steam/compatibilitytools.d
-        self.test_local_share = Path("./tmp.aDl73CbQCP")
+        self.test_runtime_version = ("sniper", "steamrt3", "1628350")
+        self.test_local_share_parent = Path("./tmp.aDl73CbQCP")
+        self.test_local_share = self.test_local_share_parent.joinpath(
+            self.test_runtime_version[1]
+        )
         # Wine prefix
         self.test_winepfx = Path("./tmp.AlfLPDhDvA")
-        self.test_runtime_version = ("sniper", "steamrt3")
         # Thread pool and connection pool instances
         self.test_session_pools = (MagicMock(), MagicMock())
 
@@ -108,7 +112,7 @@ class TestGameLauncher(unittest.TestCase):
 
         self.test_winepfx.mkdir(exist_ok=True)
         self.test_user_share.mkdir(exist_ok=True)
-        self.test_local_share.mkdir(exist_ok=True)
+        self.test_local_share.mkdir(parents=True, exist_ok=True)
         self.test_cache.mkdir(exist_ok=True)
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
@@ -179,6 +183,9 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
+
+        if self.test_local_share_parent.exists():
+            rmtree(self.test_local_share_parent)
 
         if self.test_winepfx.exists():
             rmtree(self.test_winepfx.as_posix())
@@ -725,11 +732,12 @@ class TestGameLauncher(unittest.TestCase):
             TemporaryDirectory() as file,
             patch.object(umu_runtime, "_install_umu"),
         ):
-            mock_local = Path(file)
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_subdir = Path(file).joinpath("steamrt3")
+            mock_subdir.mkdir(parents=True, exist_ok=True)
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
-                mock_local, mock_runtime_ver, mock_session_pools, mock_cb
+                mock_subdir, mock_runtime_ver, mock_session_pools, mock_cb
             )
             self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
@@ -743,11 +751,12 @@ class TestGameLauncher(unittest.TestCase):
         result = MagicMock()
 
         with TemporaryDirectory() as file:
-            mock_local = Path(file)
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_subdir = Path(file).joinpath("steamrt3")
+            mock_subdir.mkdir(parents=True, exist_ok=True)
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
-                mock_local, mock_runtime_ver, mock_session_pools, mock_cb
+                mock_subdir, mock_runtime_ver, mock_session_pools, mock_cb
             )
             self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
@@ -762,15 +771,17 @@ class TestGameLauncher(unittest.TestCase):
         # Mock a new install
         with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
             # Populate our fake $XDG_DATA_HOME/umu
-            Path(file2, "umu").touch()
+            mock_subdir = Path(file2, self.test_runtime_version[1])
+            mock_subdir.mkdir()
+            mock_subdir.joinpath("umu").touch()
             # Mock the runtime ver
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
             mock_session_pools = (MagicMock(), MagicMock())
             with patch.object(umu_runtime, "_update_umu"):
                 result = umu_runtime.setup_umu(
                     Path(file1),
-                    Path(file2),
+                    mock_subdir,
                     mock_runtime_ver,
                     mock_session_pools,
                 )
@@ -784,15 +795,17 @@ class TestGameLauncher(unittest.TestCase):
         # Mock a new install
         with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
             # Populate our fake $XDG_DATA_HOME/umu
-            Path(file2, "umu").touch()
+            mock_subdir = Path(file2, self.test_runtime_version[1])
+            mock_subdir.mkdir()
+            mock_subdir.joinpath("umu").touch()
             # Mock the runtime ver
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
             mock_session_pools = (MagicMock(), MagicMock())
             with patch.object(umu_runtime, "_restore_umu"):
                 result = umu_runtime.setup_umu(
                     Path(file1),
-                    Path(file2),
+                    mock_subdir,
                     mock_runtime_ver,
                     mock_session_pools,
                 )
@@ -804,14 +817,17 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock a new install
         with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            mock_subdir = Path(file2, self.test_runtime_version[1])
+            mock_subdir.mkdir()
+            mock_subdir.joinpath("umu").touch()
             # Mock the runtime ver
-            mock_runtime_ver = ("sniper", "steamrt3")
+            mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
             mock_session_pools = (MagicMock(), MagicMock())
             with patch.object(umu_runtime, "_restore_umu"):
                 result = umu_runtime.setup_umu(
                     Path(file1),
-                    Path(file2),
+                    mock_subdir,
                     mock_runtime_ver,
                     mock_session_pools,
                 )
@@ -850,7 +866,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_tp = MagicMock()
 
         # Mock runtime ver
-        mock_runtime_ver = ("sniper", "steamrt3")
+        mock_runtime_ver = ("sniper", "steamrt3", "1628350")
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
@@ -879,7 +895,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_tp = MagicMock()
 
         # Mock runtime ver
-        mock_runtime_ver = ("sniper", "steamrt3")
+        mock_runtime_ver = ("sniper", "steamrt3", "1628350")
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
@@ -920,7 +936,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_tp = MagicMock()
 
         # Mock runtime ver
-        mock_runtime_ver = ("sniper", "steamrt3")
+        mock_runtime_ver = ("sniper", "steamrt3", "1628350")
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
@@ -965,7 +981,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_tp = MagicMock()
 
         # Mock runtime ver
-        mock_runtime_ver = ("sniper", "steamrt3")
+        mock_runtime_ver = ("sniper", "steamrt3", "1628350")
 
         with TemporaryDirectory() as file:
             mock_runtime_base = Path(file)
@@ -1145,26 +1161,6 @@ class TestGameLauncher(unittest.TestCase):
             umu_runtime.create_shim(shim)
             self.assertTrue(
                 os.access(shim, os.X_OK), f"Expected '{shim}' to be executable"
-            )
-
-    def test_create_shim_none(self):
-        """Test create_shim when not passed a Path."""
-        shim = None
-
-        # When not passed a Path, the function should default to creating $HOME/.local/share/umu/umu-shim
-        with (
-            TemporaryDirectory() as tmp,
-            patch.object(Path, "joinpath", return_value=Path(tmp, "umu-shim")),
-        ):
-            umu_runtime.create_shim()
-            self.assertTrue(
-                Path(tmp, "umu-shim").is_file(),
-                f"Expected '{shim}' to be a file",
-            )
-            # Ensure there's data
-            self.assertTrue(
-                Path(tmp, "umu-shim").stat().st_size > 0,
-                f"Expected '{shim}' to have data",
             )
 
     def test_create_shim(self):
@@ -1885,6 +1881,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             args = __main__.parse_args()
             # Config
@@ -1948,6 +1945,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             args = __main__.parse_args()
             # Config
@@ -2044,6 +2042,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             args = __main__.parse_args()
             # Config
@@ -2119,6 +2118,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_PROTON"] = "1"
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result_args = __main__.parse_args()
             # Config
@@ -2206,6 +2206,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result_args = __main__.parse_args()
             # Config
@@ -2284,6 +2285,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "pressure-vessel"
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result_args = __main__.parse_args()
             # Config
@@ -2331,6 +2333,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result_args = __main__.parse_args()
             # Config
@@ -2423,6 +2426,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = test_str
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
@@ -2503,6 +2507,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = umu_id
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
@@ -2578,7 +2583,9 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                + Path.home()
+                .joinpath(".local", "share", "umu", self.test_runtime_version[1])
+                .as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -2608,6 +2615,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = test_str
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
@@ -2691,7 +2699,9 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                + Path.home()
+                .joinpath(".local", "share", "umu", self.test_runtime_version[1])
+                .as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -2721,6 +2731,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
             os.environ["UMU_RUNTIME_UPDATE"] = "0"
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
@@ -2809,7 +2820,9 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                + Path.home()
+                .joinpath(".local", "share", "umu", self.test_runtime_version[1])
+                .as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -2848,6 +2861,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = test_dir.as_posix()
             os.environ["GAMEID"] = test_str
             os.environ["PROTON_VERB"] = proton_verb
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
@@ -2940,7 +2954,9 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                + Path.home()
+                .joinpath(".local", "share", "umu", self.test_runtime_version[1])
+                .as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(

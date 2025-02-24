@@ -51,6 +51,11 @@ jobs:
           source .venv/bin/activate
           sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+      - name: Test obsolete steamrt install
+        run: |
+          source .venv/bin/activate
+          sh tests/test_install_obsolete.sh
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test steamrt update
         run: |
           source .venv/bin/activate
