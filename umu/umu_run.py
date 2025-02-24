@@ -894,7 +894,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             opts = args[1]  # Reference the executable options
             check_env(env, session_pools)
 
-        UMU_LOCAL.mkdir(parents=True, exist_ok=True)
+        UMU_LOCAL.joinpath(version[1]).mkdir(parents=True, exist_ok=True)
 
         # Prepare the prefix
         with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
