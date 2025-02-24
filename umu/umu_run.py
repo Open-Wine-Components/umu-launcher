@@ -260,9 +260,7 @@ def set_env(
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
-    env["RUNTIMEPATH"] = (
-        "" if os.environ.get("UMU_NO_RUNTIME") else os.environ.get("RUNTIMEPATH", "")
-    )
+    env["RUNTIMEPATH"] = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
 
     return env
 
