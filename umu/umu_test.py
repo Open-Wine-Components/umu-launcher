@@ -97,10 +97,13 @@ class TestGameLauncher(unittest.TestCase):
         # /usr/share/umu
         self.test_user_share = Path("./tmp.BXk2NnvW2m")
         # ~/.local/share/Steam/compatibilitytools.d
-        self.test_local_share = Path("./tmp.aDl73CbQCP")
+        self.test_runtime_version = ("sniper", "steamrt3", "1628350")
+        self.test_local_share_parent = Path("./tmp.aDl73CbQCP")
+        self.test_local_share = self.test_local_share_parent.joinpath(
+            self.test_runtime_version[1]
+        )
         # Wine prefix
         self.test_winepfx = Path("./tmp.AlfLPDhDvA")
-        self.test_runtime_version = ("sniper", "steamrt3", "1628350")
         # Thread pool and connection pool instances
         self.test_session_pools = (MagicMock(), MagicMock())
 
@@ -109,7 +112,7 @@ class TestGameLauncher(unittest.TestCase):
 
         self.test_winepfx.mkdir(exist_ok=True)
         self.test_user_share.mkdir(exist_ok=True)
-        self.test_local_share.mkdir(exist_ok=True)
+        self.test_local_share.mkdir(parents=True, exist_ok=True)
         self.test_cache.mkdir(exist_ok=True)
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
@@ -180,6 +183,9 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_local_share.exists():
             rmtree(self.test_local_share.as_posix())
+
+        if self.test_local_share_parent.exists():
+            rmtree(self.test_local_share_parent)
 
         if self.test_winepfx.exists():
             rmtree(self.test_winepfx.as_posix())
@@ -731,7 +737,7 @@ class TestGameLauncher(unittest.TestCase):
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
-                mock_subdir.parent, mock_runtime_ver, mock_session_pools, mock_cb
+                mock_subdir, mock_runtime_ver, mock_session_pools, mock_cb
             )
             self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
@@ -750,7 +756,7 @@ class TestGameLauncher(unittest.TestCase):
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
-                mock_subdir.parent, mock_runtime_ver, mock_session_pools, mock_cb
+                mock_subdir, mock_runtime_ver, mock_session_pools, mock_cb
             )
             self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
@@ -765,7 +771,9 @@ class TestGameLauncher(unittest.TestCase):
         # Mock a new install
         with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
             # Populate our fake $XDG_DATA_HOME/umu
-            Path(file2, "umu").touch()
+            mock_subdir = Path(file2, self.test_runtime_version[1])
+            mock_subdir.mkdir()
+            mock_subdir.joinpath("umu").touch()
             # Mock the runtime ver
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
@@ -773,7 +781,7 @@ class TestGameLauncher(unittest.TestCase):
             with patch.object(umu_runtime, "_update_umu"):
                 result = umu_runtime.setup_umu(
                     Path(file1),
-                    Path(file2),
+                    mock_subdir,
                     mock_runtime_ver,
                     mock_session_pools,
                 )
@@ -787,7 +795,9 @@ class TestGameLauncher(unittest.TestCase):
         # Mock a new install
         with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
             # Populate our fake $XDG_DATA_HOME/umu
-            Path(file2, "umu").touch()
+            mock_subdir = Path(file2, self.test_runtime_version[1])
+            mock_subdir.mkdir()
+            mock_subdir.joinpath("umu").touch()
             # Mock the runtime ver
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
@@ -795,7 +805,7 @@ class TestGameLauncher(unittest.TestCase):
             with patch.object(umu_runtime, "_restore_umu"):
                 result = umu_runtime.setup_umu(
                     Path(file1),
-                    Path(file2),
+                    mock_subdir,
                     mock_runtime_ver,
                     mock_session_pools,
                 )
@@ -807,6 +817,9 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock a new install
         with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            mock_subdir = Path(file2, self.test_runtime_version[1])
+            mock_subdir.mkdir()
+            mock_subdir.joinpath("umu").touch()
             # Mock the runtime ver
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
@@ -814,7 +827,7 @@ class TestGameLauncher(unittest.TestCase):
             with patch.object(umu_runtime, "_restore_umu"):
                 result = umu_runtime.setup_umu(
                     Path(file1),
-                    Path(file2),
+                    mock_subdir,
                     mock_runtime_ver,
                     mock_session_pools,
                 )
