@@ -543,7 +543,7 @@ def _update_umu_platform(
     latest: bytes = sha256(resp.data).digest()
     current: bytes = sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
     versions: Path = local.joinpath("VERSIONS.txt")
-    lock: str = f"{UMU_LOCAL}/{FileLock.Runtime.value}"
+    lock: str = f"{local.parent}/{FileLock.Runtime.value}"
 
     # Compare our version file to upstream's, updating if different
     if latest != current:
