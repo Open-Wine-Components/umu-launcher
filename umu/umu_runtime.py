@@ -36,7 +36,7 @@ RuntimeVersion = tuple[str, str, str]
 SessionPools = tuple[ThreadPoolExecutor, PoolManager]
 
 
-def create_shim(file_path: Path | None = None):
+def create_shim(file_path: Path):
     """Create a shell script shim at the specified file path.
 
     This script sets the DISPLAY environment variable if certain conditions
@@ -44,13 +44,8 @@ def create_shim(file_path: Path | None = None):
 
     Args:
         file_path (Path, optional): The path where the shim script will be created.
-            Defaults to UMU_LOCAL.joinpath("umu-shim").
 
     """
-    # Set the default path if none is provided
-    if file_path is None:
-        file_path = UMU_LOCAL.joinpath("umu-shim")
-
     # Define the content of the shell script
     script_content = (
         "#!/bin/sh\n"
