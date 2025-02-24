@@ -258,12 +258,9 @@ def set_env(
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
-    if not env.get("UMU_NO_RUNTIME") and os.environ.get("RUNTIMEPATH"):
-        env["RUNTIMEPATH"] = str(
-            UMU_LOCAL.joinpath(os.environ["RUNTIMEPATH"]).resolve(strict=True)
-        )
-    else:
-        env["RUNTIMEPATH"] = ""
+    env["RUNTIMEPATH"] = (
+        "" if os.environ.get("UMU_NO_RUNTIME") else os.environ.get("RUNTIMEPATH", "")
+    )
 
     return env
 
