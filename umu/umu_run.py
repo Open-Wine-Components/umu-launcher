@@ -702,9 +702,7 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     return ret
 
 
-def resolve_umu_version(
-    runtime: RuntimeVersion, runtimes: tuple[RuntimeVersion, ...]
-) -> RuntimeVersion | None:
+def resolve_umu_version(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion | None:
     """Resolve the required runtime of a compatibility tool."""
     version: tuple[str, str, str] | None = None
 
@@ -716,18 +714,18 @@ def resolve_umu_version(
         )
 
     if not os.environ.get("PROTONPATH"):
-        log.debug("PROTONPATH unset, defaulting to '%s'", runtime[1])
-        return runtime
+        log.debug("PROTONPATH unset, defaulting to '%s'", runtimes[0][1])
+        return runtimes[0]
 
     # Default to latest runtime for codenames
     if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest", "UMU-Latest"}:
-        log.debug("PROTONPATH is codename, defaulting to '%s'", runtime[1])
-        return runtime
+        log.debug("PROTONPATH is codename, defaulting to '%s'", runtimes[0][1])
+        return runtimes[0]
 
     # Default to latest runtime for native Linux executables
     if os.environ.get("UMU_NO_PROTON"):
-        log.debug("UMU_NO_PROTON set, defaulting to '%s'", runtime[1])
-        return runtime
+        log.debug("UMU_NO_PROTON set, defaulting to '%s'", runtimes[0][1])
+        return runtimes[0]
 
     # Solve the required runtime for PROTONPATH
     log.debug("PROTONPATH set, resolving its required runtime")
@@ -857,7 +855,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         raise RuntimeError(err)
 
     # Resolve the runtime version for PROTONPATH
-    version = resolve_umu_version(__runtime_version__, __runtime_versions__)
+    version = resolve_umu_version(__runtime_versions__)
     if not version:
         err: str = (
             f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
