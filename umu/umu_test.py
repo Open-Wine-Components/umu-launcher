@@ -70,6 +70,7 @@ class TestGameLauncher(unittest.TestCase):
             "STEAM_FOSSILIZE_DUMP_PATH": "",
             "DXVK_STATE_CACHE_PATH": "",
             "UMU_NO_PROTON": "",
+            "RUNTIMEPATH": "",
         }
         self.user = getpwuid(os.getuid()).pw_name
         self.test_opts = "-foo -bar"
@@ -2569,7 +2570,9 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                + Path.home()
+                .joinpath(".local", "share", "umu", self.test_runtime_version[1])
+                .as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -2683,7 +2686,9 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                + Path.home()
+                .joinpath(".local", "share", "umu", self.test_runtime_version[1])
+                .as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -2802,7 +2807,9 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                + Path.home()
+                .joinpath(".local", "share", "umu", self.test_runtime_version[1])
+                .as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
@@ -2934,7 +2941,9 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_TOOL_PATHS"],
                 self.env["PROTONPATH"]
                 + ":"
-                + Path.home().joinpath(".local", "share", "umu").as_posix(),
+                + Path.home()
+                .joinpath(".local", "share", "umu", self.test_runtime_version[1])
+                .as_posix(),
                 "Expected STEAM_COMPAT_TOOL_PATHS to be set",
             )
             self.assertEqual(
