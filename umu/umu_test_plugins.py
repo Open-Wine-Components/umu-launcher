@@ -181,6 +181,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Config
@@ -256,6 +257,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Config
@@ -337,6 +339,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             "parse_args",
             return_value=argparse.Namespace(config=toml_path),
         ):
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Config

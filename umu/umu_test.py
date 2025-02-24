@@ -1867,6 +1867,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             args = __main__.parse_args()
             # Config
@@ -1930,6 +1931,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             args = __main__.parse_args()
             # Config
@@ -2026,6 +2028,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             args = __main__.parse_args()
             # Config
@@ -2101,6 +2104,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_PROTON"] = "1"
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result_args = __main__.parse_args()
             # Config
@@ -2188,6 +2192,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result_args = __main__.parse_args()
             # Config
@@ -2266,6 +2271,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "pressure-vessel"
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result_args = __main__.parse_args()
             # Config
@@ -2313,6 +2319,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result_args = __main__.parse_args()
             # Config
@@ -2405,6 +2412,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = test_str
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
@@ -2485,6 +2493,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = umu_id
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
@@ -2590,6 +2599,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = test_str
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
@@ -2703,6 +2713,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["STORE"] = test_str
             os.environ["PROTON_VERB"] = self.test_verb
             os.environ["UMU_RUNTIME_UPDATE"] = "0"
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
@@ -2830,6 +2841,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["PROTONPATH"] = test_dir.as_posix()
             os.environ["GAMEID"] = test_str
             os.environ["PROTON_VERB"] = proton_verb
+            os.environ["RUNTIMEPATH"] = self.test_runtime_version[1]
             # Args
             result = __main__.parse_args()
             # Check
