@@ -1,38 +1,32 @@
 {
   # Dependencies
-  callPackage,
   lib,
   rustPlatform,
   umu-launcher-unwrapped,
   version,
   # Freeform overrides
   ...
-} @ args: let
+} @ args:
+# Nixpkgs bumped 1.1.4 -> 1.2.5 on 2025-02-20
+# Available in all unstable channels since 2025-02-24
+# https://github.com/NixOS/nixpkgs/pull/381975
+assert lib.assertMsg (lib.versionAtLeast umu-launcher-unwrapped.version "1.2.0") ''
+  You have updated your umu-launcher input, however you have an outdated nixpkgs input. A nixpkgs input with umu-launcher 1.2.0+ is required.
+  Please update your nixpkgs revision by running `nix flake lock --update-input nixpkgs` or `nix flake update`.
+''; let
   # Unknown args will be used to override the nixpkgs package
   # NOTE: All known args must be removed here
   overrideArgs = builtins.removeAttrs args [
-    "callPackage"
     "lib"
     "rustPlatform"
     "umu-launcher-unwrapped"
     "version"
   ];
 
-  # Remove unsupported args not accepted by old-unwrapped.nix
-  oldVersionArgs = builtins.removeAttrs args [
-    "callPackage"
-    "version"
-  ];
-
-  # Figure out and/or override the base package
+  # Use the unwrapped package as-is or override it,
+  # based on whether we have any override args
   package =
-    # Nixpkgs bumped 1.1.4 -> 1.2.3 on 2025-02-17
-    # https://github.com/NixOS/nixpkgs/pull/381975
-    if lib.versionOlder umu-launcher-unwrapped.version "1.2.0"
-    then callPackage ./old-unwrapped.nix oldVersionArgs
-    # Use the unwrapped package as-is or override it,
-    # based on whether we have any override args
-    else if overrideArgs == {}
+    if overrideArgs == {}
     then umu-launcher-unwrapped
     else umu-launcher-unwrapped.override overrideArgs;
 in
