@@ -10,7 +10,7 @@ name = "umu_delta"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.23.4", features = ["extension-module"] }
+pyo3 = { version = "0.23.5", features = ["extension-module"] }
 ssh-key = { version = "0.6.7", default-features = false, features = [
     "ed25519",
     "alloc",
