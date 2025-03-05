@@ -15,6 +15,7 @@ from itertools import chain
 from pathlib import Path
 from pwd import getpwuid
 from re import match
+from shutil import rmtree
 from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
 from typing import Any
@@ -845,6 +846,17 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         )
         raise ValueError(err)
     os.environ["RUNTIMEPATH"] = version[1]
+
+    # Related to https://github.com/Open-Wine-Components/umu-launcher/issues/394
+    compat_candidates: set[Path] = {
+        STEAM_COMPAT / "umu-launcher",
+        Path.home().joinpath(
+            ".local", "share", "Steam", "compatibilitytools.d", "umu-launcher"
+        ),
+    }
+    for compat in compat_candidates:
+        if compat.is_dir():
+            rmtree(compat)
 
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
