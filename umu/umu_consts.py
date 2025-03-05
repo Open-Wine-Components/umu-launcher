@@ -44,10 +44,6 @@ class FileLock(Enum):
     Prefix = "pfx.lock"  # WINEPREFIX lock
 
 
-STEAM_COMPAT: Path = Path.home().joinpath(
-    ".local", "share", "Steam", "compatibilitytools.d"
-)
-
 # Gamescope looks for the app ID 769 to determine if the window is Steam's
 # The app ID is expected to be in the atom GAMESCOPECTRL_BASELAYER_APPID and is
 # a required value in the sequence
@@ -98,6 +94,8 @@ UMU_CACHE: Path = XDG_CACHE_HOME.joinpath("umu")
 
 # Directory storing Proton and other compatibility tools built against the SLR
 UMU_COMPAT: Path = XDG_DATA_HOME.joinpath("umu", "compatibilitytools")
+
+STEAM_COMPAT: Path = XDG_DATA_HOME.joinpath("Steam", "compatibilitytools.d")
 
 # Constant defined in prctl.h
 # See prctl(2) for more details
