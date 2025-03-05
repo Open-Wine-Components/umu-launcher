@@ -42,7 +42,7 @@ from umu.umu_consts import (
 from umu.umu_log import log
 from umu.umu_plugins import set_env_toml
 from umu.umu_proton import get_umu_proton
-from umu.umu_runtime import setup_umu
+from umu.umu_runtime import create_shim, setup_umu
 from umu.umu_util import (
     get_libc,
     get_library_paths,
@@ -291,12 +291,17 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 def build_command(
     env: dict[str, str],
     local: Path,
-    opts: list[str] = [],
+    version: str,
+    opts: list[str] | None = None,
 ) -> tuple[Path | str, ...]:
     """Build the command to be executed."""
     shim: Path = local.joinpath("umu-shim")
     proton: Path = Path(env["PROTONPATH"], "proton")
-    entry_point: Path = local.joinpath("umu")
+    entry_point: tuple[Path, str, str, str] = (
+        local.joinpath(version, "umu"), "--verb", env["PROTON_VERB"], "--"
+    ) if version != "host" else ()
+    if opts is None:
+        opts = []
 
     if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
@@ -305,7 +310,7 @@ def build_command(
     # Exit if the entry point is missing
     # The _v2-entry-point script and container framework tools are included in
     # the same image, so this can happen if the image failed to download
-    if not entry_point.is_file():
+    if entry_point and not entry_point[0].is_file():
         err: str = (
             f"_v2-entry-point (umu) cannot be found in '{local}'\n"
             "Runtime Platform missing or download incomplete"
@@ -317,10 +322,7 @@ def build_command(
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         return (
-            entry_point,
-            "--verb",
-            env["PROTON_VERB"],
-            "--",
+            *entry_point,
             proton,
             env["PROTON_VERB"],
             env["EXE"],
@@ -332,7 +334,7 @@ def build_command(
     # Ideally, for reliability, executables should be compiled within
     # the Steam Runtime
     if env.get("UMU_NO_PROTON") == "1":
-        return (entry_point, "--verb", env["PROTON_VERB"], "--", env["EXE"], *opts)
+        return *entry_point, env["EXE"], *opts
 
     # Will run the game outside the Steam Runtime w/ Proton
     if env.get("UMU_NO_RUNTIME") == "1":
@@ -340,10 +342,7 @@ def build_command(
         return proton, env["PROTON_VERB"], env["EXE"], *opts
 
     return (
-        entry_point,
-        "--verb",
-        env["PROTON_VERB"],
-        "--",
+        *entry_point,
         shim,
         proton,
         env["PROTON_VERB"],
@@ -749,7 +748,7 @@ def get_umu_version_from_manifest(
                 break
 
     if not appid:
-        return None
+        return "host", "host", "host"
 
     if appid not in appids:
         return None
@@ -857,15 +856,19 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     # Default to a strict 5 second timeouts throughout
     timeout: Timeout = Timeout(connect=NET_TIMEOUT, read=NET_TIMEOUT)
 
+    # ensure base directory exists
+    UMU_LOCAL.mkdir(parents=True, exist_ok=True)
+
     with (
         ThreadPoolExecutor() as thread_pool,
         PoolManager(timeout=timeout, retries=retries) as http_pool,
     ):
         session_pools: tuple[ThreadPoolExecutor, PoolManager] = (thread_pool, http_pool)
         # Setup the launcher and runtime files
-        future: Future = thread_pool.submit(
-            setup_umu, UMU_LOCAL / version[1], version, session_pools
-        )
+        if version[1] != "host":
+            future: Future = thread_pool.submit(
+                setup_umu, UMU_LOCAL / version[1], version, session_pools
+            )
 
         if isinstance(args, Namespace):
             env, opts = set_env_toml(env, args)
@@ -873,7 +876,8 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             opts = args[1]  # Reference the executable options
             check_env(env, session_pools)
 
-        UMU_LOCAL.joinpath(version[1]).mkdir(parents=True, exist_ok=True)
+        if version[1] != "host":
+            UMU_LOCAL.joinpath(version[1]).mkdir(parents=True, exist_ok=True)
 
         # Prepare the prefix
         with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
@@ -882,22 +886,27 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         # Configure the environment
         set_env(env, args)
 
+        # Restore shim if missing
+        if not UMU_LOCAL.joinpath("umu-shim").is_file():
+            create_shim(UMU_LOCAL / "umu-shim")
+
         # Set all environment variables
         # NOTE: `env` after this block should be read only
         for key, val in env.items():
             log.debug("%s=%s", key, val)
             os.environ[key] = val
 
-        try:
-            future.result()
-        except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3, ValueError):
-            if not has_umu_setup():
-                err: str = (
-                    "umu has not been setup for the user\n"
-                    "An internet connection is required to setup umu"
-                )
-                raise RuntimeError(err)
-            log.debug("Network is unreachable")
+        if version[1] != "host":
+            try:
+                future.result()
+            except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3, ValueError):
+                if not has_umu_setup():
+                    err: str = (
+                        "umu has not been setup for the user\n"
+                        "An internet connection is required to setup umu"
+                    )
+                    raise RuntimeError(err)
+                log.debug("Network is unreachable")
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(
@@ -906,7 +915,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         sys.exit(1)
 
     # Build the command
-    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL / version[1], opts)
+    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, version[1], opts)
     log.debug("%s", command)
 
     # Run the command
