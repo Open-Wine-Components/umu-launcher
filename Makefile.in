@@ -44,7 +44,7 @@ all: zipapp
 install: zipapp-install
 else
 all: umu-dist umu-docs umu-launcher umu-vendored umu-delta
-install: umu-install umu-launcher-install umu-vendored-install umu-delta-install
+install: umu-install umu-vendored-install umu-delta-install
 endif
 
 
@@ -81,7 +81,7 @@ umu-dist-install: umu-dist
 ifeq ($(FLATPAK), xtrue)
 umu-install: umu-dist-install umu-delta-install
 else
-umu-install: umu-dist-install umu-delta-install umu-docs-install 
+umu-install: umu-dist-install umu-delta-install umu-docs-install
 endif
 
 ifeq ($(FLATPAK), xtrue)
@@ -98,18 +98,6 @@ $(OBJDIR)/.build-umu-launcher: | $(OBJDIR)
 
 .PHONY: umu-launcher
 umu-launcher: $(OBJDIR)/.build-umu-launcher
-
-umu-launcher-bin-install: umu-launcher
-	install -d $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
-	install -Dm 755 $(OBJDIR)/$(<)-run $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher/umu-run
-
-umu-launcher-dist-install:
-	$(info :: Installing umu-launcher )
-	install -d $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
-	install -Dm 644 umu/umu-launcher/compatibilitytool.vdf -t $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
-	install -Dm 644 umu/umu-launcher/toolmanifest.vdf      -t $(DESTDIR)$(DATADIR)/steam/compatibilitytools.d/umu-launcher
-
-umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
 
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
