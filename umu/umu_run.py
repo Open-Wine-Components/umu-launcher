@@ -12,6 +12,7 @@ from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
 from itertools import chain
+from shutil import rmtree
 from zipfile import Path as ZipPath
 
 try:
@@ -862,6 +863,17 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         )
         raise ValueError(err)
     os.environ["RUNTIMEPATH"] = version[1]
+
+    # Related to https://github.com/Open-Wine-Components/umu-launcher/issues/394
+    compat_candidates: set[Path] = {
+        STEAM_COMPAT / "umu-launcher",
+        Path.home().joinpath(
+            ".local", "share", "Steam", "compatibilitytools.d", "umu-launcher"
+        ),
+    }
+    for compat in compat_candidates:
+        if compat.is_dir():
+            rmtree(compat)
 
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
