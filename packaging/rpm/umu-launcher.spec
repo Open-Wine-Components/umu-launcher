@@ -91,7 +91,6 @@ make DESTDIR=%{buildroot} PYTHONDIR=%{python3_sitelib} install
 %files
 %{_bindir}/umu-run
 %{_datadir}/man/*
-%{_datadir}/steam/compatibilitytools.d/umu-launcher/
 %{python3_sitelib}/umu*
 
 %changelog
