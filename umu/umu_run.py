@@ -91,9 +91,7 @@ def setup_pfx(path: str) -> None:
         wineuser.symlink_to("steamuser")
 
 
-def check_env(
-    env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]
-) -> dict[str, str] | dict[str, Any]:
+def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], bool]:
     """Before executing a game, check for environment variables and set them.
 
     GAMEID is strictly required and the client is responsible for setting this.
@@ -125,9 +123,10 @@ def check_env(
 
     env["WINEPREFIX"] = os.environ.get("WINEPREFIX", "")
 
+    download_proton = False
     # Skip Proton if running a native Linux executable
     if os.environ.get("UMU_NO_PROTON") == "1":
-        return env
+        return env, download_proton
 
     path: Path = STEAM_COMPAT.joinpath(os.environ.get("PROTONPATH", ""))
     if os.environ.get("PROTONPATH") and path.name == "UMU-Latest":
@@ -139,24 +138,15 @@ def check_env(
 
     # Proton Codename
     if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest", "UMU-Latest"}:
-        get_umu_proton(env, session_pools)
+        download_proton = True
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
-        get_umu_proton(env, session_pools)
+        download_proton = True
 
     env["PROTONPATH"] = os.environ["PROTONPATH"]
 
-    # If download fails/doesn't exist in the system, raise an error
-    if not os.environ["PROTONPATH"]:
-        err: str = (
-            "Environment variable not set or is empty: PROTONPATH\n"
-            f"Possible reason: GE-Proton or UMU-Proton not found in '{STEAM_COMPAT}'"
-            " or network error"
-        )
-        raise FileNotFoundError(err)
-
-    return env
+    return env, download_proton
 
 
 def set_env(
@@ -297,7 +287,7 @@ def build_command(
     """Build the command to be executed."""
     shim: Path = local.joinpath("umu-shim")
     proton: Path = Path(env["PROTONPATH"], "proton")
-    entry_point: tuple[Path, str, str, str] = (
+    entry_point: tuple[Path, str, str, str] | tuple[()] = (
         local.joinpath(version, "umu"), "--verb", env["PROTON_VERB"], "--"
     ) if version != "host" else ()
     if opts is None:
@@ -865,19 +855,42 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     ):
         session_pools: tuple[ThreadPoolExecutor, PoolManager] = (thread_pool, http_pool)
         # Setup the launcher and runtime files
-        if version[1] != "host":
-            future: Future = thread_pool.submit(
-                setup_umu, UMU_LOCAL / version[1], version, session_pools
-            )
-
+        download_proton = False
         if isinstance(args, Namespace):
             env, opts = set_env_toml(env, args)
         else:
             opts = args[1]  # Reference the executable options
-            check_env(env, session_pools)
+            _, download_proton = check_env(env)
 
         if version[1] != "host":
             UMU_LOCAL.joinpath(version[1]).mkdir(parents=True, exist_ok=True)
+
+            future: Future = thread_pool.submit(
+                setup_umu, UMU_LOCAL / version[1], version, session_pools
+            )
+
+            if download_proton:
+                get_umu_proton(env, session_pools)
+
+            # If download fails/doesn't exist in the system, raise an error
+            if not os.environ["PROTONPATH"]:
+                err: str = (
+                    "Environment variable not set or is empty: PROTONPATH\n"
+                    f"Possible reason: GE-Proton or UMU-Proton not found in '{STEAM_COMPAT}'"
+                    " or network error"
+                )
+                raise FileNotFoundError(err)
+
+            try:
+                future.result()
+            except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3, ValueError) as e:
+                if not has_umu_setup():
+                    err: str = (
+                        "umu has not been setup for the user\n"
+                        "An internet connection is required to setup umu"
+                    )
+                    raise RuntimeError(err) from e
+                log.debug("Network is unreachable")
 
         # Prepare the prefix
         with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
@@ -895,18 +908,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         for key, val in env.items():
             log.debug("%s=%s", key, val)
             os.environ[key] = val
-
-        if version[1] != "host":
-            try:
-                future.result()
-            except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3, ValueError):
-                if not has_umu_setup():
-                    err: str = (
-                        "umu has not been setup for the user\n"
-                        "An internet connection is required to setup umu"
-                    )
-                    raise RuntimeError(err)
-                log.debug("Network is unreachable")
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(
