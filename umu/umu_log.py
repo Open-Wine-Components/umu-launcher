@@ -43,6 +43,8 @@ class CustomLogger(Logger):  # noqa: D101
 
 class CustomFormatter(Formatter):  # noqa: D101
     def format(self, record: LogRecord) -> str:  # noqa: D102
+        if not os.isatty(sys.stderr.fileno()):
+            return super().format(record)
         color: str
         match record.levelname:
             case "INFO":
@@ -61,8 +63,7 @@ class CustomFormatter(Formatter):  # noqa: D101
                 color = Color.WARNING
             case _:
                 color = Color.BOLD
-        if os.isatty(sys.stderr.fileno()):
-            record.levelname = f"{color}{Color.BOLD}{record.levelname}{Color.RESET}"
+        record.levelname = f"{color}{Color.BOLD}{record.levelname}{Color.RESET}"
         return super().format(record)
 
 
