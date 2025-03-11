@@ -1,3 +1,4 @@
+import os
 import sys
 from logging import (
     Formatter,
@@ -60,7 +61,8 @@ class CustomFormatter(Formatter):  # noqa: D101
                 color = Color.WARNING
             case _:
                 color = Color.BOLD
-        record.levelname = f"{color}{Color.BOLD}{record.levelname}{Color.RESET}"
+        if os.isatty(sys.stderr.fileno()):
+            record.levelname = f"{color}{Color.BOLD}{record.levelname}{Color.RESET}"
         return super().format(record)
 
 
