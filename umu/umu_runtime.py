@@ -2,12 +2,6 @@ import os
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha256
-
-try:
-    from importlib.resources.abc import Traversable
-except ModuleNotFoundError:
-    from importlib.abc import Traversable
-
 from http import HTTPStatus
 from pathlib import Path
 from secrets import token_urlsafe
@@ -277,13 +271,9 @@ def _install_umu(
 
 
 def setup_umu(
-    root: Traversable,
-    local: Path,
-    runtime_ver: RuntimeVersion,
-    session_pools: SessionPools,
+    local: Path, runtime_ver: RuntimeVersion, session_pools: SessionPools
 ) -> None:
     """Install or update the runtime for the current user."""
-    log.debug("Root: %s", root)
     log.debug("Local: %s", local)
 
     # New install or umu dir is empty
