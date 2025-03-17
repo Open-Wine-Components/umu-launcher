@@ -18,7 +18,7 @@ Build-Depends:
  python3-hatch-vcs,
  libzstd-dev,
  python3-dev,
- rust,
+ cargo,
 Standards-Version: 4.6.2
 Homepage: https://github.com/Open-Wine-Components/umu-launcher
 Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
