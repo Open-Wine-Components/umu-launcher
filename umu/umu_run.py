@@ -717,6 +717,9 @@ def resolve_umu_version(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion 
     path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf").resolve()
     if path.is_file():
         version = get_umu_version_from_manifest(path, runtimes)
+    else:
+        err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
+        raise ValueError(err)
 
     return version
 
