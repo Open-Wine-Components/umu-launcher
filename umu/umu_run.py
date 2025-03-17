@@ -847,7 +847,8 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         raise ValueError(err)
     os.environ["RUNTIMEPATH"] = version[1]
 
-    # Related to https://github.com/Open-Wine-Components/umu-launcher/issues/394
+    # Delete our umu-launcher compatibility tool due to Steam client bug
+    # See https://github.com/Open-Wine-Components/umu-launcher/issues/394
     compat_candidates: set[Path] = {
         STEAM_COMPAT / "umu-launcher",
         Path.home().joinpath(
