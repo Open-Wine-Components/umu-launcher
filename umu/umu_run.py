@@ -12,14 +12,6 @@ from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
 from itertools import chain
-from zipfile import Path as ZipPath
-
-try:
-    from importlib.resources.abc import Traversable
-except ModuleNotFoundError:
-    from importlib.abc import Traversable
-
-
 from pathlib import Path
 from pwd import getpwuid
 from re import match
@@ -805,15 +797,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     opts: list[str] = []
     prereq: bool = False
     version: RuntimeVersion | None = None
-    root: Traversable
-
-    try:
-        root = Path(__file__).resolve(strict=True).parent
-    except NotADirectoryError:
-        # Raised when within a zipapp. Try again in non-strict mode
-        root = ZipPath(
-            Path(__file__).resolve().parent.parent, Path(__file__).parent.name
-        )
 
     log.info("umu-launcher version %s (%s)", __version__, sys.version)
 
@@ -881,7 +864,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         session_pools: tuple[ThreadPoolExecutor, PoolManager] = (thread_pool, http_pool)
         # Setup the launcher and runtime files
         future: Future = thread_pool.submit(
-            setup_umu, root, UMU_LOCAL / version[1], version, session_pools
+            setup_umu, UMU_LOCAL / version[1], version, session_pools
         )
 
         if isinstance(args, Namespace):
