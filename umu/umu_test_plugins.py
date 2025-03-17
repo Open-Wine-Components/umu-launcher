@@ -622,23 +622,23 @@ class TestGameLauncherPlugins(unittest.TestCase):
             # prepare for building the command
             self.assertEqual(
                 self.env["EXE"],
-                unexpanded_exe,
-                "Expected path not to be expanded",
+                str(Path(unexpanded_exe).expanduser()),
+                "Expected path to be expanded",
             )
             self.assertEqual(
                 self.env["PROTONPATH"],
-                unexpanded_path,
-                "Expected path not to be expanded",
+                str(Path(unexpanded_path).expanduser()),
+                "Expected path to be expanded",
             )
             self.assertEqual(
                 self.env["WINEPREFIX"],
-                unexpanded_path,
-                "Expected path not to be expanded",
+                str(Path(unexpanded_path).expanduser()),
+                "Expected path to be expanded",
             )
             self.assertEqual(
                 self.env["GAMEID"],
                 unexpanded_path,
-                "Expectd path not to be expanded",
+                "Expected path to be expanded",
             )
 
     def test_set_env_toml_opts(self):
@@ -702,12 +702,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertTrue(self.env["EXE"], "Expected EXE to be set")
             self.assertEqual(
                 self.env["PROTONPATH"],
-                self.test_file,
+                str(Path(self.test_file).expanduser()),
                 "Expected PROTONPATH to be set",
             )
             self.assertEqual(
                 self.env["WINEPREFIX"],
-                self.test_file,
+                str(Path(self.test_file).expanduser()),
                 "Expected WINEPREFIX to be set",
             )
             self.assertEqual(
@@ -756,12 +756,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertTrue(self.env["EXE"], "Expected EXE to be set")
             self.assertEqual(
                 self.env["PROTONPATH"],
-                self.test_file,
+                str(Path(self.test_file).expanduser()),
                 "Expected PROTONPATH to be set",
             )
             self.assertEqual(
                 self.env["WINEPREFIX"],
-                self.test_file,
+                str(Path(self.test_file).expanduser()),
                 "Expected WINEPREFIX to be set",
             )
             self.assertEqual(
