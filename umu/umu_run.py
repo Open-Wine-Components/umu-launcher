@@ -848,6 +848,12 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         )
         raise RuntimeError(err)
 
+    if isinstance(args, Namespace):
+        env, opts = set_env_toml(env, args)
+        os.environ.update({k: v for k, v in env.items() if bool(v)})
+    else:
+        opts = args[1]  # Reference the executable options
+
     # Resolve the runtime version for PROTONPATH
     version = resolve_umu_version(__runtime_versions__)
     if not version:
@@ -877,12 +883,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     ):
         session_pools: tuple[ThreadPoolExecutor, PoolManager] = (thread_pool, http_pool)
         # Setup the launcher and runtime files
-        do_download = False
-        if isinstance(args, Namespace):
-            env, opts = set_env_toml(env, args)
-        else:
-            opts = args[1]  # Reference the executable options
-            _, do_download = check_env(env)
+        _, do_download = check_env(env)
 
         if version[1] != "host":
             UMU_LOCAL.joinpath(version[1]).mkdir(parents=True, exist_ok=True)
