@@ -1,0 +1,48 @@
+#!/usr/bin/make -f
+
+# See debhelper(7) (uncomment to enable).
+# Output every command that modifies files on the build system.
+export DH_VERBOSE = 1
+
+nproc = $(shell nproc)
+
+### PYTHON TOPLEVEL WORKAROUND (REMOVE ONCE the umu install process properly respects PYTHONPATH)
+toplevel_sitepackage = $(shell python3 -c "import site; print(site.getsitepackages()[0])")
+###
+
+PYTHONDIR = /usr/lib/python3/dist-packages
+
+
+# See FEATURE AREAS in dpkg-buildflags(1).
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# See ENVIRONMENT in dpkg-buildflags(1).
+# Package maintainers to append CFLAGS.
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# Package maintainers to append LDFLAGS.
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	./configure.sh --prefix=/usr --use-system-pyzstd --use-system-urllib
+	
+override_dh_auto_build:
+	true
+
+override_dh_auto_install:
+	make -j$(nproc) DESTDIR=debian/tmp PYTHONDIR=$(PYTHONDIR) install
+### PYTHON TOPLEVEL WORKAROUND (REMOVE ONCE the umu install process properly respects PYTHONPATH)
+ ifneq ($(toplevel_sitepackage), $(PYTHONDIR))
+	cp -rvf debian/tmp/$(toplevel_sitepackage)/* debian/tmp/$(PYTHONDIR)/
+	rm -rvf debian/tmp/$(toplevel_sitepackage)/*
+	cp -rvf debian/tmp/$(toplevel_sitepackage)/../../../* debian/tmp/usr/
+	rm -rvf debian/tmp/$(toplevel_sitepackage)/../../../*
+ endif
+
+override_dh_fixperms:
+	dh_fixperms --exclude debian/python3-umu-launcher
+
+###
