@@ -199,7 +199,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
                 (MagicMock(), MagicMock()),
@@ -274,7 +273,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
                 (MagicMock(), MagicMock()),
@@ -356,7 +354,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
                 (MagicMock(), MagicMock()),

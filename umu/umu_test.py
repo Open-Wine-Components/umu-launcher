@@ -769,9 +769,9 @@ class TestGameLauncher(unittest.TestCase):
         result = MagicMock()
 
         # Mock a new install
-        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+        with TemporaryDirectory() as file:
             # Populate our fake $XDG_DATA_HOME/umu
-            mock_subdir = Path(file2, self.test_runtime_version[1])
+            mock_subdir = Path(file, self.test_runtime_version[1])
             mock_subdir.mkdir()
             mock_subdir.joinpath("umu").touch()
             # Mock the runtime ver
@@ -780,7 +780,6 @@ class TestGameLauncher(unittest.TestCase):
             mock_session_pools = (MagicMock(), MagicMock())
             with patch.object(umu_runtime, "_update_umu"):
                 result = umu_runtime.setup_umu(
-                    Path(file1),
                     mock_subdir,
                     mock_runtime_ver,
                     mock_session_pools,
@@ -793,9 +792,9 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["UMU_RUNTIME_UPDATE"] = "0"
 
         # Mock a new install
-        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+        with TemporaryDirectory() as file:
             # Populate our fake $XDG_DATA_HOME/umu
-            mock_subdir = Path(file2, self.test_runtime_version[1])
+            mock_subdir = Path(file, self.test_runtime_version[1])
             mock_subdir.mkdir()
             mock_subdir.joinpath("umu").touch()
             # Mock the runtime ver
@@ -804,7 +803,6 @@ class TestGameLauncher(unittest.TestCase):
             mock_session_pools = (MagicMock(), MagicMock())
             with patch.object(umu_runtime, "_restore_umu"):
                 result = umu_runtime.setup_umu(
-                    Path(file1),
                     mock_subdir,
                     mock_runtime_ver,
                     mock_session_pools,
@@ -816,8 +814,8 @@ class TestGameLauncher(unittest.TestCase):
         result = MagicMock()
 
         # Mock a new install
-        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
-            mock_subdir = Path(file2, self.test_runtime_version[1])
+        with TemporaryDirectory() as file:
+            mock_subdir = Path(file, self.test_runtime_version[1])
             mock_subdir.mkdir()
             mock_subdir.joinpath("umu").touch()
             # Mock the runtime ver
@@ -826,7 +824,6 @@ class TestGameLauncher(unittest.TestCase):
             mock_session_pools = (MagicMock(), MagicMock())
             with patch.object(umu_runtime, "_restore_umu"):
                 result = umu_runtime.setup_umu(
-                    Path(file1),
                     mock_subdir,
                     mock_runtime_ver,
                     mock_session_pools,
@@ -2137,7 +2134,6 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
                 self.test_session_pools,
@@ -2223,7 +2219,6 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
                 self.test_session_pools,
@@ -2353,7 +2348,6 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_runtime, "_install_umu", return_value=None),
         ):
             umu_runtime.setup_umu(
-                self.test_user_share,
                 self.test_local_share,
                 self.test_runtime_version,
                 self.test_session_pools,
