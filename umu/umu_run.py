@@ -123,10 +123,10 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
 
     env["WINEPREFIX"] = os.environ.get("WINEPREFIX", "")
 
-    download_proton = False
+    do_download = False
     # Skip Proton if running a native Linux executable
     if os.environ.get("UMU_NO_PROTON") == "1":
-        return env, download_proton
+        return env, do_download
 
     path: Path = STEAM_COMPAT.joinpath(os.environ.get("PROTONPATH", ""))
     if os.environ.get("PROTONPATH") and path.name == "UMU-Latest":
@@ -138,15 +138,34 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
 
     # Proton Codename
     if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest", "UMU-Latest"}:
-        download_proton = True
+        do_download = True
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
-        download_proton = True
+        do_download = True
 
     env["PROTONPATH"] = os.environ["PROTONPATH"]
 
-    return env, download_proton
+    return env, do_download
+
+
+def download_proton(download: bool, env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]) -> None:
+    """Check if umu should download proton and check if PROTONPATH is set.
+
+    I am not gonna lie about it, this only exists to satisfy the tests, because downloading
+    was previously nested in `check_env()`
+    """
+    if download:
+        get_umu_proton(env, session_pools)
+
+    # If download fails/doesn't exist in the system, raise an error
+    if os.environ.get("UMU_NO_PROTON") != "1" and not os.environ["PROTONPATH"]:
+        err: str = (
+            "Environment variable not set or is empty: PROTONPATH\n"
+            f"Possible reason: GE-Proton or UMU-Proton not found in '{STEAM_COMPAT}'"
+            " or network error"
+        )
+        raise FileNotFoundError(err)
 
 
 def set_env(
@@ -719,7 +738,7 @@ def resolve_umu_version(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion 
         version = get_umu_version_from_manifest(path, runtimes)
     else:
         err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
-        raise ValueError(err)
+        raise FileNotFoundError(err)
 
     return version
 
@@ -858,12 +877,12 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     ):
         session_pools: tuple[ThreadPoolExecutor, PoolManager] = (thread_pool, http_pool)
         # Setup the launcher and runtime files
-        download_proton = False
+        do_download = False
         if isinstance(args, Namespace):
             env, opts = set_env_toml(env, args)
         else:
             opts = args[1]  # Reference the executable options
-            _, download_proton = check_env(env)
+            _, do_download = check_env(env)
 
         if version[1] != "host":
             UMU_LOCAL.joinpath(version[1]).mkdir(parents=True, exist_ok=True)
@@ -872,17 +891,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
                 setup_umu, UMU_LOCAL / version[1], version, session_pools
             )
 
-            if download_proton:
-                get_umu_proton(env, session_pools)
-
-            # If download fails/doesn't exist in the system, raise an error
-            if not os.environ["PROTONPATH"]:
-                err: str = (
-                    "Environment variable not set or is empty: PROTONPATH\n"
-                    f"Possible reason: GE-Proton or UMU-Proton not found in '{STEAM_COMPAT}'"
-                    " or network error"
-                )
-                raise FileNotFoundError(err)
+            download_proton(do_download, env, session_pools)
 
             try:
                 future.result()
