@@ -1,3 +1,4 @@
+import os
 import sys
 from logging import (
     Formatter,
@@ -42,6 +43,8 @@ class CustomLogger(Logger):  # noqa: D101
 
 class CustomFormatter(Formatter):  # noqa: D101
     def format(self, record: LogRecord) -> str:  # noqa: D102
+        if not os.isatty(sys.stderr.fileno()):
+            return super().format(record)
         color: str
         match record.levelname:
             case "INFO":
