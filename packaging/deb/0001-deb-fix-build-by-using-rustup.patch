@@ -1,15 +1,15 @@
-From 96df4b4c295a7d048a52290c21a61381e608bb3d Mon Sep 17 00:00:00 2001
+From ee0c68cca5c5f538e1add29aa40fc84264cd9748 Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Sun, 16 Mar 2025 19:45:01 -0700
-Subject: [PATCH] deb: fix build by using rustup
+Date: Sun, 16 Mar 2025 21:01:01 -0700
+Subject: [PATCH] deb: update rustup patch
 
 ---
- Makefile.in                  | 16 +++++++++++++---
- packaging/deb/debian/control |  1 +
+ Makefile.in                           | 16 +++++++++++++---
+ packaging/deb/debian/bookworm/control |  1 +
  2 files changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 4f0fc51d..cf4e972e 100644
+index 4f0fc51d..7d50a5b2 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -2,6 +2,7 @@ PROJECT := umu-launcher
@@ -53,7 +53,7 @@ index 4f0fc51d..cf4e972e 100644
  PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
 +CARGO_BIN := $(HOME)/.cargo/bin/cargo
 +RUSTUP_BIN := $(HOME)/.cargo/bin/rustup
-+RUSTUP_URL := https://raw.githubusercontent.com/rust-lang/rustup/refs/tags/1.28.1/rustup-init.sh
++RUSTUP_URL := https://raw.githubusercontent.com/rust-lang/rustup/refs/tags/1.27.1/rustup-init.sh
  
  $(OBJDIR)/.build-umu-delta: | $(OBJDIR)
  	$(info :: Building delta dependencies )
@@ -66,10 +66,10 @@ index 4f0fc51d..cf4e972e 100644
  	touch $(@)
  
  .PHONY: umu-delta
-diff --git a/packaging/deb/debian/control b/packaging/deb/debian/control
+diff --git a/packaging/deb/debian/bookworm/control b/packaging/deb/debian/bookworm/control
 index adfd8025..b725d9f5 100644
---- a/packaging/deb/debian/control
-+++ b/packaging/deb/debian/control
+--- a/packaging/deb/debian/bookworm/control
++++ b/packaging/deb/debian/bookworm/control
 @@ -18,6 +18,7 @@ Build-Depends:
   python3-hatch-vcs,
   libzstd-dev,

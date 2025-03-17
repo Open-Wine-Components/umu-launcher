@@ -49,7 +49,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Copy debian packaging folder to the repository root
-        run: cp -rvf ./packaging/deb/debian ./debian
+        run: cp -rvf ./packaging/deb/debian/trixie ./debian
 
       - name: Setup dh_make quilt files
         run: |
