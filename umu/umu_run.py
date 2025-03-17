@@ -856,7 +856,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         ),
     }
     for compat in compat_candidates:
-        if compat.is_dir():
+        if not compat.is_symlink() and compat.is_dir():
             rmtree(compat)
 
     # Opt to use the system's native CA bundle rather than certifi's
