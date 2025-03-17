@@ -280,6 +280,30 @@ select = [
     # def foo(bar: int | int):
     #   pass
     "PYI016",
+    # Ensure we're being smart when using the logging module
+    "LOG",
+    # Check for unnecessary len() calls on Sequence types in boolean expressions
+    # a = [1, 2]
+    # if len(a):
+    #   print(a)
+    #
+    # Use instead:
+    # if a:
+    #   print(a) 
+    "PLC1802",
+    # Check for shallow copies of os.environ
+    "PLW1507",
+    # Check if-key-in-dict-del logic when working with MutableMapping types
+    # if key in d:
+    #   del d[key]
+    #
+    # Use instead:
+    # d.pop(key, None)
+    "RUF051",
+    # Check invalid default values for os.getenv or similar
+    # Example:
+    # int(os.getenv("FOO", 1))
+    "PLW1508",
 ]
 ignore = [
     # Format
