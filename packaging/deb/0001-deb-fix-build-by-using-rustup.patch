@@ -1,6 +1,6 @@
-From 848d894b9713ae145d00696e7a328c8346dfc3a9 Mon Sep 17 00:00:00 2001
+From 96df4b4c295a7d048a52290c21a61381e608bb3d Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Wed, 12 Feb 2025 13:13:35 -0800
+Date: Sun, 16 Mar 2025 19:45:01 -0700
 Subject: [PATCH] deb: fix build by using rustup
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH] deb: fix build by using rustup
  2 files changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index da2431d..5e4fa5e 100644
+index 4f0fc51d..cf4e972e 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -2,6 +2,7 @@ PROJECT := umu-launcher
@@ -20,16 +20,16 @@ index da2431d..5e4fa5e 100644
  
  # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
  INSTALLDIR ?= umu
-@@ -111,6 +112,8 @@ umu-launcher-dist-install:
+@@ -85,6 +86,8 @@ umu-install: umu-dist-install umu-delta-install umu-docs-install
+ endif
  
- umu-launcher-install: umu-launcher-dist-install umu-launcher-bin-install
  
 +URLLIB3_URL := https://github.com/urllib3/urllib3/releases/download/2.3.0/urllib3-2.3.0-py3-none-any.whl
 +
  $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  	$(info :: Building vendored dependencies )
  	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
-@@ -118,7 +121,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
+@@ -92,7 +95,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
  	fi
  	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
@@ -38,7 +38,7 @@ index da2431d..5e4fa5e 100644
  	fi
  	touch $(@)
  
-@@ -133,7 +136,7 @@ umu-vendored-install: umu-vendored
+@@ -107,7 +110,7 @@ umu-vendored-install: umu-vendored
  		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name pyzstd | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
  	fi
  	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
@@ -47,13 +47,13 @@ index da2431d..5e4fa5e 100644
  		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name urllib3 | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
  	fi
  	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ] || [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
-@@ -197,10 +200,17 @@ zipapp-install: zipapp
+@@ -171,10 +174,17 @@ zipapp-install: zipapp
  	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
  
  PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
 +CARGO_BIN := $(HOME)/.cargo/bin/cargo
 +RUSTUP_BIN := $(HOME)/.cargo/bin/rustup
-+RUSTUP_URL := https://raw.githubusercontent.com/rust-lang/rustup/refs/tags/1.27.1/rustup-init.sh
++RUSTUP_URL := https://raw.githubusercontent.com/rust-lang/rustup/refs/tags/1.28.1/rustup-init.sh
  
  $(OBJDIR)/.build-umu-delta: | $(OBJDIR)
  	$(info :: Building delta dependencies )
@@ -67,7 +67,7 @@ index da2431d..5e4fa5e 100644
  
  .PHONY: umu-delta
 diff --git a/packaging/deb/debian/control b/packaging/deb/debian/control
-index f8e4729..fef5e08 100644
+index adfd8025..b725d9f5 100644
 --- a/packaging/deb/debian/control
 +++ b/packaging/deb/debian/control
 @@ -18,6 +18,7 @@ Build-Depends:
@@ -79,5 +79,5 @@ index f8e4729..fef5e08 100644
  Homepage: https://github.com/Open-Wine-Components/umu-launcher
  Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
 -- 
-2.48.1
+2.49.0
 
