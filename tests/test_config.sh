@@ -19,5 +19,6 @@ store = 'gog'
 " >> "$tmp"
 
 
+# This works only for an existing prefix, the prefix `~/Games/umu/umu-0` is created in the previous workflow steps
 RUNTIMEPATH=steamrt3 UMU_LOG=debug GAMEID=umu-1141086411 STORE=gog "$PWD/.venv/bin/python" "$HOME/.local/bin/umu-run" --config "$tmp" 2> /tmp/umu-log.txt && grep -E "INFO: Non-steam game Silent Hill 4: The Room \(umu-1141086411\)" /tmp/umu-log.txt
 # Run the 'game' using UMU-Proton9.0-3.2 and ensure the protonfixes module finds its fix in umu-database.csv
