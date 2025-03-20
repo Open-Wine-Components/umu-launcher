@@ -1893,7 +1893,8 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["PROTONPATH"] = "GE-Proton"
-            umu_run.check_env(self.env, self.test_session_pools)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, self.test_session_pools)
             self.assertEqual(
                 self.env["PROTONPATH"],
                 self.test_compat.joinpath(
@@ -1920,7 +1921,8 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
             os.environ["PROTONPATH"] = "GE-Proton"
-            umu_run.check_env(self.env, mock_session_pools)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, mock_session_pools)
             self.assertFalse(os.environ.get("PROTONPATH"), "Expected empty string")
 
     def test_latest_interrupt(self):
@@ -2219,7 +2221,7 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             args = __main__.parse_args()
             # Config
-            umu_run.check_env(self.env, self.test_session_pools)
+            result_env, result_dl = umu_run.check_env(self.env)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -2283,7 +2285,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             args = __main__.parse_args()
             # Config
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -2380,7 +2383,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             args = __main__.parse_args()
             # Config
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -2460,7 +2464,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result_args = __main__.parse_args()
             # Config
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -2499,7 +2504,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
         # Build
-        test_command = umu_run.build_command(self.env, self.test_local_share)
+        test_command = umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_version[1])
         self.assertIsInstance(
             test_command, tuple, "Expected a tuple from build_command"
         )
@@ -2547,7 +2552,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result_args = __main__.parse_args()
             # Config
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -2586,7 +2592,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ |= self.env
 
         # Build
-        test_command = umu_run.build_command(self.env, self.test_local_share)
+        test_command = umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_version[1])
         self.assertIsInstance(
             test_command, tuple, "Expected a tuple from build_command"
         )
@@ -2625,7 +2631,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result_args = __main__.parse_args()
             # Config
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -2640,7 +2647,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Since we didn't create the proton file, an exception should be raised
         with self.assertRaises(FileNotFoundError):
-            umu_run.build_command(self.env, self.test_local_share)
+            umu_run.build_command(self.env, self.test_local_share, self.test_runtime_version[1])
 
     def test_build_command(self):
         """Test build command.
@@ -2658,7 +2665,7 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_file, "proton").touch()
 
         # Mock the shim file
-        shim_path = Path(self.test_local_share, "umu-shim")
+        shim_path = Path(self.test_local_share_parent, "umu-shim")
         shim_path.touch()
 
         with (
@@ -2673,7 +2680,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result_args = __main__.parse_args()
             # Config
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -2713,7 +2721,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
         # Build
-        test_command = umu_run.build_command(self.env, self.test_local_share)
+        test_command = umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_version[1])
         self.assertIsInstance(
             test_command, tuple, "Expected a tuple from build_command"
         )
@@ -2765,7 +2773,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result = __main__.parse_args()
             # Check
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
 
@@ -2846,7 +2855,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result = __main__.parse_args()
             # Check
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -2954,7 +2964,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result = __main__.parse_args()
             # Check
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -3070,7 +3081,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result = __main__.parse_args()
             # Check
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -3200,7 +3212,8 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result = __main__.parse_args()
             # Check
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
             # Env
@@ -3684,12 +3697,11 @@ class TestGameLauncher(unittest.TestCase):
         Expects the directory $HOME/Games/umu/$GAMEID to not be created
         when UMU_NO_PROTON=1 and GAMEID is set in the host environment.
         """
-        result = None
+        result_env, result_dl = None, None
         # Mock $HOME
         mock_home = Path(self.test_file)
 
         with (
-            ThreadPoolExecutor() as thread_pool,
             # Mock the internal call to Path.home(). Otherwise, some of our
             # assertions may fail when running this test suite locally if
             # the user already has that dir
@@ -3697,8 +3709,8 @@ class TestGameLauncher(unittest.TestCase):
         ):
             os.environ["UMU_NO_PROTON"] = "1"
             os.environ["GAMEID"] = "foo"
-            result = umu_run.check_env(self.env, thread_pool)
-            self.assertTrue(result is self.env)
+            result_env, result_dl = umu_run.check_env(self.env)
+            self.assertTrue(result_env is self.env)
             path = mock_home.joinpath("Games", "umu", os.environ["GAMEID"])
             # Ensure we did not create the target nor its parents up to $HOME
             self.assertFalse(path.exists(), f"Expected {path} to not exist")
@@ -3717,20 +3729,17 @@ class TestGameLauncher(unittest.TestCase):
         Expects the WINE prefix directory to not be created when
         UMU_NO_PROTON=1 and WINEPREFIX is set in the host environment.
         """
-        result = None
+        result_env, result_dl = None, None
 
-        with (
-            ThreadPoolExecutor() as thread_pool,
-        ):
-            os.environ["WINEPREFIX"] = "123"
-            os.environ["UMU_NO_PROTON"] = "1"
-            os.environ["GAMEID"] = "foo"
-            result = umu_run.check_env(self.env, thread_pool)
-            self.assertTrue(result is self.env)
-            self.assertFalse(
-                Path(os.environ["WINEPREFIX"]).exists(),
-                f"Expected directory {os.environ['WINEPREFIX']} to not exist",
-            )
+        os.environ["WINEPREFIX"] = "123"
+        os.environ["UMU_NO_PROTON"] = "1"
+        os.environ["GAMEID"] = "foo"
+        result_env, result_dl = umu_run.check_env(self.env)
+        self.assertTrue(result_env is self.env)
+        self.assertFalse(
+            Path(os.environ["WINEPREFIX"]).exists(),
+            f"Expected directory {os.environ['WINEPREFIX']} to not exist",
+        )
 
     def test_env_proton_nodir(self):
         """Test check_env when $PROTONPATH in the case we failed to set it.
@@ -3745,7 +3754,8 @@ class TestGameLauncher(unittest.TestCase):
         ):
             os.environ["WINEPREFIX"] = self.test_file
             os.environ["GAMEID"] = self.test_file
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
 
     def test_env_wine_empty(self):
         """Test check_env when $WINEPREFIX is empty.
@@ -3761,7 +3771,8 @@ class TestGameLauncher(unittest.TestCase):
         ):
             os.environ["WINEPREFIX"] = ""
             os.environ["GAMEID"] = self.test_file
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
 
     def test_env_gameid_empty(self):
         """Test check_env when $GAMEID is empty.
@@ -3777,7 +3788,8 @@ class TestGameLauncher(unittest.TestCase):
         ):
             os.environ["WINEPREFIX"] = ""
             os.environ["GAMEID"] = ""
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
 
     def test_env_wine_dir(self):
         """Test check_env when $WINEPREFIX is not a directory.
@@ -3798,7 +3810,8 @@ class TestGameLauncher(unittest.TestCase):
         )
 
         with ThreadPoolExecutor() as thread_pool:
-            umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
 
         # After this, the WINEPREFIX and new dirs should be created
         self.assertTrue(
@@ -3827,15 +3840,16 @@ class TestGameLauncher(unittest.TestCase):
             path_to_tmp,
         )
 
-        result = None
+        result_env, result_dl = None, None
         os.environ["WINEPREFIX"] = unexpanded_path
         os.environ["GAMEID"] = self.test_file
         os.environ["PROTONPATH"] = unexpanded_path
 
         with ThreadPoolExecutor() as thread_pool:
-            result = umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
 
-        self.assertTrue(result is self.env, "Expected the same reference")
+        self.assertTrue(result_env is self.env, "Expected the same reference")
         self.assertEqual(
             self.env["WINEPREFIX"],
             unexpanded_path,
@@ -3852,15 +3866,16 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_env_vars(self):
         """Test check_env when setting $WINEPREFIX, $GAMEID and $PROTONPATH."""
-        result = None
+        result_env, result_dl = None, None
         os.environ["WINEPREFIX"] = self.test_file
         os.environ["GAMEID"] = self.test_file
         os.environ["PROTONPATH"] = self.test_file
 
         with ThreadPoolExecutor() as thread_pool:
-            result = umu_run.check_env(self.env, thread_pool)
+            result_env, result_dl = umu_run.check_env(self.env)
+            umu_run.download_proton(result_dl, result_env, thread_pool)
 
-        self.assertTrue(result is self.env, "Expected the same reference")
+        self.assertTrue(result_env is self.env, "Expected the same reference")
         self.assertEqual(
             self.env["WINEPREFIX"],
             self.test_file,
@@ -3891,8 +3906,9 @@ class TestGameLauncher(unittest.TestCase):
             ):
                 os.environ["WINEPREFIX"] = self.test_file
                 os.environ["GAMEID"] = self.test_file
-                result = umu_run.check_env(self.env, thread_pool)
-                self.assertTrue(result is self.env, "Expected the same reference")
+                result_env, result_dl = umu_run.check_env(self.env)
+                umu_run.download_proton(result_dl, result_env, thread_pool)
+                self.assertTrue(result_env is self.env, "Expected the same reference")
                 self.assertFalse(os.environ["PROTONPATH"])
 
     def test_env_vars_wine(self):
@@ -3900,7 +3916,7 @@ class TestGameLauncher(unittest.TestCase):
 
         Expects GAMEID and PROTONPATH to be set for the command line:
         """
-        result = None
+        result_env, result_dl = None, None
         mock_gameid = "umu-default"
         mock_protonpath = str(self.test_proton_dir)
 
@@ -3913,8 +3929,8 @@ class TestGameLauncher(unittest.TestCase):
         # and the GAMEID is 'umu-default'
         with patch.object(umu_run, "get_umu_proton", new_callable=mock_get_umu_proton):
             os.environ["WINEPREFIX"] = self.test_file
-            result = umu_run.check_env(self.env, self.test_session_pools)
-            self.assertTrue(result, self.env)
+            result_env, result_dl = umu_run.check_env(self.env)
+            self.assertTrue(result_env, self.env)
             self.assertEqual(os.environ["GAMEID"], mock_gameid)
             self.assertEqual(os.environ["GAMEID"], self.env["GAMEID"])
             self.assertEqual(os.environ["PROTONPATH"], mock_protonpath)
@@ -3928,7 +3944,7 @@ class TestGameLauncher(unittest.TestCase):
 
         Expects PROTONPATH, GAMEID, and WINEPREFIX to be set
         """
-        result = None
+        result_env, result_dl = None, None
         mock_gameid = "umu-default"
         mock_protonpath = str(self.test_proton_dir)
         mock_wineprefix = "/home/foo/Games/umu/umu-default"
@@ -3948,8 +3964,8 @@ class TestGameLauncher(unittest.TestCase):
             patch.object(umu_run, "get_umu_proton", new_callable=mock_get_umu_proton),
             patch.object(Path, "mkdir", return_value=mock_set_wineprefix()),
         ):
-            result = umu_run.check_env(self.env, self.test_session_pools)
-            self.assertTrue(result, self.env)
+            result_env, result_dl = umu_run.check_env(self.env)
+            self.assertTrue(result_env, self.env)
             self.assertEqual(os.environ["GAMEID"], mock_gameid)
             self.assertEqual(os.environ["GAMEID"], self.env["GAMEID"])
             self.assertEqual(os.environ["PROTONPATH"], mock_protonpath)
