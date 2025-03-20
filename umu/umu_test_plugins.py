@@ -64,14 +64,11 @@ class TestGameLauncherPlugins(unittest.TestCase):
         # /usr/share/umu
         self.test_user_share = Path("./tmp.jl3W4MtO57")
         # ~/.local/share/Steam/compatibilitytools.d
+        self.test_local_share = Path("./tmp.WUaQAk7hQJ")
         self.test_runtime_version = ("sniper", "steamrt3", "1628350")
-        self.test_local_share_parent = Path("./tmp.WUaQAk7hQJ")
-        self.test_local_share = self.test_local_share_parent.joinpath(
-            self.test_runtime_version[1]
-        )
 
         self.test_user_share.mkdir(exist_ok=True)
-        self.test_local_share.mkdir(parents=True, exist_ok=True)
+        self.test_local_share.mkdir(exist_ok=True)
         self.test_cache.mkdir(exist_ok=True)
         self.test_compat.mkdir(exist_ok=True)
         self.test_proton_dir.mkdir(exist_ok=True)
@@ -226,7 +223,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "_v2-entry-point"):
-            umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_version[1], test_command)
+            umu_run.build_command(self.env, self.test_local_share, test_command)
 
     def test_build_command_proton(self):
         """Test build_command.
@@ -304,7 +301,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_version[1], test_command)
+            umu_run.build_command(self.env, self.test_local_share, test_command)
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -329,7 +326,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         Path(toml_path).touch()
 
         # Mock the shim file
-        shim_path = Path(self.test_local_share_parent, "umu-shim")
+        shim_path = Path(self.test_local_share, "umu-shim")
         shim_path.touch()
 
         with Path(toml_path).open(mode="w", encoding="utf-8") as file:
@@ -384,7 +381,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             os.environ[key] = val
 
         # Build
-        test_command = umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_version[1])
+        test_command = umu_run.build_command(self.env, self.test_local_share)
 
         # Verify contents of the command
         entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [*test_command]
@@ -622,23 +619,23 @@ class TestGameLauncherPlugins(unittest.TestCase):
             # prepare for building the command
             self.assertEqual(
                 self.env["EXE"],
-                str(Path(unexpanded_exe).expanduser()),
-                "Expected path to be expanded",
+                unexpanded_exe,
+                "Expected path not to be expanded",
             )
             self.assertEqual(
                 self.env["PROTONPATH"],
-                str(Path(unexpanded_path).expanduser()),
-                "Expected path to be expanded",
+                unexpanded_path,
+                "Expected path not to be expanded",
             )
             self.assertEqual(
                 self.env["WINEPREFIX"],
-                str(Path(unexpanded_path).expanduser()),
-                "Expected path to be expanded",
+                unexpanded_path,
+                "Expected path not to be expanded",
             )
             self.assertEqual(
                 self.env["GAMEID"],
                 unexpanded_path,
-                "Expected path to be expanded",
+                "Expectd path not to be expanded",
             )
 
     def test_set_env_toml_opts(self):
@@ -702,12 +699,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertTrue(self.env["EXE"], "Expected EXE to be set")
             self.assertEqual(
                 self.env["PROTONPATH"],
-                str(Path(self.test_file).expanduser()),
+                self.test_file,
                 "Expected PROTONPATH to be set",
             )
             self.assertEqual(
                 self.env["WINEPREFIX"],
-                str(Path(self.test_file).expanduser()),
+                self.test_file,
                 "Expected WINEPREFIX to be set",
             )
             self.assertEqual(
@@ -756,12 +753,12 @@ class TestGameLauncherPlugins(unittest.TestCase):
             self.assertTrue(self.env["EXE"], "Expected EXE to be set")
             self.assertEqual(
                 self.env["PROTONPATH"],
-                str(Path(self.test_file).expanduser()),
+                self.test_file,
                 "Expected PROTONPATH to be set",
             )
             self.assertEqual(
                 self.env["WINEPREFIX"],
-                str(Path(self.test_file).expanduser()),
+                self.test_file,
                 "Expected WINEPREFIX to be set",
             )
             self.assertEqual(

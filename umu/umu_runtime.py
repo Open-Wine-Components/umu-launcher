@@ -264,6 +264,8 @@ def _install_umu(
     log.debug("Renaming: _v2-entry-point -> umu")
     local.joinpath("_v2-entry-point").rename(local.joinpath("umu"))
 
+    create_shim(local / "umu-shim")
+
     # Validate the runtime after moving the files
     check_runtime(local, runtime_ver)
 
@@ -377,6 +379,10 @@ def _update_umu(
 
     # Update our runtime
     _update_umu_platform(local, runtime, runtime_ver, session_pools, resp)
+
+    # Restore shim if missing
+    if not local.joinpath("umu-shim").is_file():
+        create_shim(local / "umu-shim")
 
     log.info("%s is up to date", variant)
 
