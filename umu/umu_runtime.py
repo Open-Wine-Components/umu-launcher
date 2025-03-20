@@ -226,7 +226,6 @@ def _install_umu(
         finally:
             log.debug("Linking: umu -> _v2-entry-point")
             local.joinpath("umu").symlink_to("_v2-entry-point")
-            create_shim(local.joinpath("umu-shim"))
 
 
 def setup_umu(
@@ -329,10 +328,6 @@ def _update_umu(
 
     # Update our runtime
     _update_umu_platform(local, runtime_ver, session_pools, resp)
-
-    # Restore shim if missing
-    if not local.joinpath("umu-shim").is_file():
-        create_shim(local / "umu-shim")
 
     log.info("%s is up to date", variant)
 

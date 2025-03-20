@@ -52,9 +52,9 @@ def set_env_toml(
     _check_env_toml(toml)
 
     # Required environment variables
-    env["WINEPREFIX"] = toml["umu"]["prefix"]
-    env["PROTONPATH"] = toml["umu"]["proton"]
-    env["EXE"] = toml["umu"]["exe"]
+    env["WINEPREFIX"] = str(Path(toml["umu"]["prefix"]).expanduser())
+    env["PROTONPATH"] = str(Path(toml["umu"]["proton"]).expanduser())
+    env["EXE"] = str(Path(toml["umu"]["exe"]).expanduser())
     # Optional
     env["GAMEID"] = toml["umu"].get("game_id", "")
     env["STORE"] = toml["umu"].get("store", "")
