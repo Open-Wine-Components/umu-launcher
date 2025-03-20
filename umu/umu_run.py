@@ -192,6 +192,8 @@ def set_env(
     else:
         env["PROTON_VERB"] = "waitforexitandrun"
 
+    env["STEAM_COMPAT_INSTALL_PATH"] = os.environ.get("STEAM_COMPAT_INSTALL_PATH", "")
+
     # EXE
     if is_createpfx:
         env["EXE"] = ""
@@ -203,7 +205,8 @@ def set_env(
         exe: Path = Path(protonpath, "protonfixes", "winetricks").resolve(strict=True)
         env["EXE"] = str(exe)
         args = (env["EXE"], args[1])  # type: ignore
-        env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
+        if not env["STEAM_COMPAT_INSTALL_PATH"]:
+            env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
     elif is_cmd:
         try:
             # Ensure executable path is absolute, otherwise Proton will fail
@@ -211,13 +214,11 @@ def set_env(
             # e.g., Games/umu/umu-0 -> $HOME/Games/umu/umu-0
             exe: Path = Path(args[0]).expanduser().resolve(strict=True)  # type: ignore
             env["EXE"] = str(exe)
-            env["STEAM_COMPAT_INSTALL_PATH"] = os.environ.get(
-                "STEAM_COMPAT_INSTALL_PATH"
-            ) or str(exe.parent)
+            if not env["STEAM_COMPAT_INSTALL_PATH"]:
+                env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
             env["EXE"] = args[0]  # type: ignore
-            env["STEAM_COMPAT_INSTALL_PATH"] = ""
             log.warning("Executable not found: %s", env["EXE"])
         env["STORE"] = os.environ.get("STORE", "")
     else:  # Configuration file usage
