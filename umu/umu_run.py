@@ -232,14 +232,16 @@ def set_env(
     env["SteamGameId"] = env["SteamAppId"]
     env["UMU_INVOCATION_ID"] = token_hex(16)
 
+    runtime_path = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}" if os.environ['RUNTIMEPATH'] != "host" else ""
+
     # PATHS
     env["WINEPREFIX"] = str(pfx)
     env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
-    env["STEAM_COMPAT_TOOL_PATHS"] = (
-        f"{env['PROTONPATH']}:{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
-    )
+    env["STEAM_COMPAT_TOOL_PATHS"] = ":".join(
+        [f"{env['PROTONPATH']}", runtime_path]
+    ) if runtime_path else f"{env['PROTONPATH']}"
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Zenity
@@ -258,7 +260,7 @@ def set_env(
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
-    env["RUNTIMEPATH"] = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
+    env["RUNTIMEPATH"] = runtime_path
 
     return env
 
@@ -780,7 +782,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     }
     opts: list[str] = []
     prereq: bool = False
-    version: RuntimeVersion | None = None
+    runtime_version: RuntimeVersion | None = None
 
     log.info("umu-launcher version %s (%s)", __version__, sys.version)
 
@@ -828,13 +830,13 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         opts = args[1]  # Reference the executable options
 
     # Resolve the runtime version for PROTONPATH
-    version = resolve_umu_version(__runtime_versions__)
-    if not version:
+    runtime_version = resolve_umu_version(__runtime_versions__)
+    if not runtime_version:
         err: str = (
             f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
         )
         raise ValueError(err)
-    os.environ["RUNTIMEPATH"] = version[1]
+    os.environ["RUNTIMEPATH"] = runtime_version[1]
 
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
@@ -878,11 +880,11 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         # Setup the launcher and runtime files
         _, do_download = check_env(env)
 
-        if version[1] != "host":
-            UMU_LOCAL.joinpath(version[1]).mkdir(parents=True, exist_ok=True)
+        if runtime_version[1] != "host":
+            UMU_LOCAL.joinpath(runtime_version[1]).mkdir(parents=True, exist_ok=True)
 
             future: Future = thread_pool.submit(
-                setup_umu, UMU_LOCAL / version[1], version, session_pools
+                setup_umu, UMU_LOCAL / runtime_version[1], runtime_version, session_pools
             )
 
             download_proton(do_download, env, session_pools)
@@ -924,7 +926,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         sys.exit(1)
 
     # Build the command
-    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, version[1], opts)
+    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, runtime_version[1], opts)
     log.debug("%s", command)
 
     # Run the command
