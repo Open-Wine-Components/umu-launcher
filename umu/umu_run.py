@@ -342,11 +342,6 @@ def build_command(
     if env.get("UMU_NO_PROTON") == "1":
         return *entry_point, env["EXE"], *opts
 
-    # Will run the game outside the Steam Runtime w/ Proton
-    if env.get("UMU_NO_RUNTIME") == "1":
-        log.warning("Runtime Platform disabled")
-        return proton, env["PROTON_VERB"], env["EXE"], *opts
-
     return (
         *entry_point,
         shim,
@@ -735,7 +730,10 @@ def get_umu_version_from_manifest(
                 break
 
     if not appid:
-        return "host", "host", "host"
+        if os.environ.get("UMU_NO_RUNTIME", None) == "1":
+            log.warning("Runtime Platform disabled")
+            return "host", "host", "host"
+        return None
 
     if appid not in appids:
         return None
