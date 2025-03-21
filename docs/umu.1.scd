@@ -176,6 +176,13 @@ _UMU_NO_PROTON_
 
 	Set _1_ to run the executable natively within the SLR.
 
+_UMU_NO_RUNTIME_
+	Optional. Allows for the configured compatibility tool to run outside of the Steam Linux Runtime.
+	This option is effective only if the compatibility tool doesn't require a runtime through its configuration.
+	On compatibility tools that require a runtime, this option is ignored.
+
+	Set _1_ to silence umu's error that it couldn't resolve a runtime to use, and run using the host's libraries.
+
 # SEE ALSO
 
 _umu_(5), _winetricks_(1)
