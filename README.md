@@ -84,6 +84,13 @@ Borderlands 3 from EGS store.
 3. In our umu unified database, we create a 'title' column, 'store' column, 'codename' column, 'umu-ID' column. We add a line for Borderlands 3 and fill in the details for each column.
 4. Now the launcher can search 'Catnip' and 'egs' as the codename and store in the database and correlate it with Borderlands 3 and umu-12345. It can then feed umu-12345 to the `umu-run` script.
 
+## Reporting issues
+
+When reporting issues for games that fail to run, be sure to attach a log with your issue report. To acquire a log from umu, add `UMU_LOG=1` to your environment variables for verbose logging. Furthermore, you can use `PROTON_LOG=1` for proton to create a verbose log in your `$HOME` directory. The log will be named `steam-<appid>.log`, where `<appid>` will be `default` if you haven't set a `GAMEID` or a number, depending on what you have set for `GAMEID`.
+
+Do **NOT** report issues when using `UMU_NO_RUNTIME=1`, this option is provided for convenience for compatibility tools that do not set their runtime requirements, such as Proton < `5.13`, and they do not work with any of the supported runtimes.
+This mode does not make use of a container runtime, and issues while using it are irrelevant to umu-launcher in general. Thus such issues will be automatically closed.
+
 ## Building
 
 Building umu-launcher currently requires `bash`, `make`, and `scdoc` for distribution, as well as the following Python build tools: [build](https://github.com/pypa/build), [hatchling](https://github.com/pypa/hatch), [installer](https://github.com/pypa/installer), and [pip](https://github.com/pypa/pip).
