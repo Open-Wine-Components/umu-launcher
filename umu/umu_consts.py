@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
@@ -100,6 +101,7 @@ STEAM_COMPAT: Path = XDG_DATA_HOME.joinpath("Steam", "compatibilitytools.d")
 # Constant defined in prctl.h
 # See prctl(2) for more details
 PR_SET_CHILD_SUBREAPER = 36
+
 
 # Winetricks settings verbs dumped from wintricks 20240105
 # Script:
@@ -230,3 +232,33 @@ WINETRICKS_SETTINGS_VERBS = {
     "winver=",
     "winxp",
 }
+
+
+@dataclass
+class UmuRuntime:
+    """Holds information about a runtime."""
+
+    name: str
+    version: str
+    path: Path | None = None
+
+    def __post_init__(self) -> None:  # noqa: D105
+        if self.version == "native":
+            return
+        if self.path is None:
+            self.path = UMU_LOCAL.joinpath(self.name)
+        # Temporary override for backwards compatibility
+        if self.version == "steamrt3":
+            self.path = UMU_LOCAL
+
+
+RUNTIME_VERSIONS = {
+    "host":    UmuRuntime("host",    "native"  ),
+    "1070560": UmuRuntime("scout",   "steamrt1"),
+    "1391110": UmuRuntime("soldier", "steamrt2"),
+    "1628350": UmuRuntime("sniper",  "steamrt3"),
+    # ""       : UmuRuntime("medic",   "steamrt4"),
+}
+
+RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}
+

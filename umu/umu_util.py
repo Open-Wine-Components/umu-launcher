@@ -1,4 +1,5 @@
 import os
+import shlex
 import sys
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -15,10 +16,16 @@ from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 from tarfile import open as taropen
 from typing import Any
 
+import vdf
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
-from umu.umu_consts import UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
+from umu.umu_consts import (
+    RUNTIME_VERSIONS,
+    UMU_LOCAL,
+    WINETRICKS_SETTINGS_VERBS,
+    UmuRuntime,
+)
 from umu.umu_log import log
 
 
@@ -342,3 +349,103 @@ def file_digest(fileobj, digest, /, *, _bufsize=2**18):  # noqa: ANN001
         digestobj.update(view[:size])
 
     return digestobj
+
+
+class SteamBase:
+    """Base class describing runtime and compat tool common features."""
+
+    def __init__(self, path: str) -> None:  # noqa: D107
+        self.tool_path = path
+        with Path(path).joinpath("toolmanifest.vdf").open(encoding="utf-8") as f:
+            self.tool_manifest = vdf.load(f)["manifest"]
+
+    @property
+    def required_tool_appid(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.tool_manifest.get("require_tool_appid")) else None
+
+    @property
+    def required_runtime(self) -> UmuRuntime:
+        """Map the required tool's appid to a runtime known by umu."""
+        if self.required_tool_appid is None:
+            return RUNTIME_VERSIONS["host"]
+        return RUNTIME_VERSIONS[self.required_tool_appid]
+
+    @property
+    def layer(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else None
+
+    def command(self, verb: str) -> list[str]:
+        """Return the tool specific entry point."""
+        tool_path = os.path.normpath(self.tool_path)
+        cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
+        # Temporary override for backwards compatibility
+        if self.tool_path == str(UMU_LOCAL):
+            cmd = cmd.replace("_v2-entry-point", "umu")
+        cmd = cmd.replace("%verb%", verb)
+        return shlex.split(cmd)
+
+    def as_str(self, verb: str):  # noqa: D102
+        return " ".join(map(shlex.quote, self.command(verb)))
+
+
+class SteamRuntime(SteamBase):
+    """A Steam Linux Runtime (soldier, sniper, medic etc)."""
+
+    def __init__(self, path: str) -> None:  # noqa: D107
+        super().__init__(path)
+        self.runtime = (
+            SteamRuntime(str(self.required_runtime.path))
+            if self.required_tool_appid is not None
+            else None
+        )
+        _path = Path(path)
+        if _path.joinpath("compatibilitytool.vdf").exists():
+            with _path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
+                # There can be multiple tools definitions in `compatibilitytools.vdf`
+                # Take the first one and hope it is the one with the correct display_name
+                compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
+                self.compatibility_tool = compat_tools[0]
+        else:
+            self.compatibility_tool = {"display_name": _path.name}
+
+    @property
+    def display_name(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.compatibility_tool.get("display_name")) else None
+
+    @property
+    def runtime_enabled(self) -> bool:
+        """Report if the compatibility tool has a configured runtime."""
+        return self.runtime is not None
+
+    def command(self, verb: str) -> list[str]:
+        """Return the fully qualified command for the runtime.
+
+        If the runtime uses another runtime, its entry point is prepended to the local command.
+        """
+        log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
+        cmd = self.runtime.command(verb) if self.runtime is not None else []
+        cmd.extend(super().command(verb))
+        return cmd
+
+
+class CompatibilityTool(SteamRuntime):
+    """A compatibility tool (Proton, luxtorpeda, etc)."""
+
+    def __init__(self, path: str, shim: Path) -> None:  # noqa: D107
+        super().__init__(path)
+        self.shim = shim
+
+    def command(self, verb: str) -> list[str]:
+        """Return the fully qualified command for the tool.
+
+        If the tool uses a runtime, its entry point is prepended to the tool's command.
+        """
+        log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
+        cmd = self.runtime.command(verb) if self.runtime is not None else []
+        target = super(SteamRuntime, self).command(verb)
+        if self.layer in {"container-runtime", "scout-in-container"}:
+            cmd.extend([*target, self.shim.as_posix()])
+        else:
+            cmd.extend([self.shim.as_posix(), *target])
+        return cmd
+
