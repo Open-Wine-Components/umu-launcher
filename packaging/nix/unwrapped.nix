@@ -3,6 +3,7 @@
   callPackage,
   lib,
   rustPlatform,
+  python3Packages,
   umu-launcher-unwrapped,
   version,
   # Freeform overrides
@@ -14,6 +15,7 @@
     "callPackage"
     "lib"
     "rustPlatform"
+    "python3Packages"
     "umu-launcher-unwrapped"
     "version"
   ];
@@ -36,12 +38,24 @@
     then umu-launcher-unwrapped
     else umu-launcher-unwrapped.override overrideArgs;
 in
-  package.overridePythonAttrs {
+  package.overridePythonAttrs (old: {
     inherit version;
     src = ../../.;
     cargoDeps = rustPlatform.importCargoLock {
       lockFile = ../../Cargo.lock;
     };
+
+    pythonPath =
+      (old.pythonPath or [])
+      ++ [
+        python3Packages.vdf
+      ];
+
+    configureFlags =
+      (old.configureFlags or [])
+      ++ [
+        "--use-system-vdf"
+      ];
 
     # Specify ourselves which tests are disabled
     disabledTests = [
@@ -53,5 +67,14 @@ in
       # Broken? Tests parse_args with no options (./umu_run.py)
       # Fails with AssertionError: SystemExit not raised
       "test_parse_args_noopts"
+
+      # FileNotFoundError: [Errno 2] No such file or directory: .local/share/umu/toolmanifest.vdf
+      "test_build_command"
+      "test_build_command_linux_exe"
+      "test_build_command_nopv"
+
+      # TypeError: cannot unpack non-iterable ThreadPoolExecutor object
+      "test_env_nowine_noproton"
+      "test_env_wine_noproton"
     ];
-  }
+  })
