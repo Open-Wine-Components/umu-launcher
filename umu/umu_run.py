@@ -839,7 +839,9 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
         )
         raise ValueError(err)
-    os.environ["RUNTIMEPATH"] = runtime_version[1]
+    # runtime_name, runtime_variant, runtime_appid
+    _, runtime_variant, _ = runtime_version
+    os.environ["RUNTIMEPATH"] = runtime_variant
 
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
@@ -883,11 +885,11 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         # Setup the launcher and runtime files
         _, do_download = check_env(env)
 
-        if runtime_version[1] != "host":
-            UMU_LOCAL.joinpath(runtime_version[1]).mkdir(parents=True, exist_ok=True)
+        if runtime_variant != "host":
+            UMU_LOCAL.joinpath(runtime_variant).mkdir(parents=True, exist_ok=True)
 
             future: Future = thread_pool.submit(
-                setup_umu, UMU_LOCAL / runtime_version[1], runtime_version, session_pools
+                setup_umu, UMU_LOCAL / runtime_variant, runtime_version, session_pools
             )
 
             download_proton(do_download, env, session_pools)
@@ -929,7 +931,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         sys.exit(1)
 
     # Build the command
-    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, runtime_version[1], opts)
+    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, runtime_variant, opts)
     log.debug("%s", command)
 
     # Run the command
