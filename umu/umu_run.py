@@ -77,6 +77,7 @@ def setup_pfx(path: str) -> None:
         pfx.symlink_to(Path(path).expanduser().resolve(strict=True))
 
     Path(path).joinpath("tracked_files").expanduser().touch()
+    Path(path).joinpath("creation_sync_guard").expanduser().touch()
 
     # Create a symlink of the current user to the steamuser dir or vice versa
     # Default for a new prefix is: unixuser -> steamuser
