@@ -1,15 +1,15 @@
-From ee0c68cca5c5f538e1add29aa40fc84264cd9748 Mon Sep 17 00:00:00 2001
+From e78b30b05387e8d45c01dae4b5c2bc7b3abdedb2 Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Sun, 16 Mar 2025 21:01:01 -0700
-Subject: [PATCH] deb: update rustup patch
+Date: Sun, 11 May 2025 13:28:47 -0700
+Subject: [PATCH] fix: update patch for bookworm
 
 ---
- Makefile.in                           | 16 +++++++++++++---
+ Makefile.in                           | 17 ++++++++++++-----
  packaging/deb/debian/bookworm/control |  1 +
- 2 files changed, 14 insertions(+), 3 deletions(-)
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 4f0fc51d..7d50a5b2 100644
+index fe2a529d..c173df3b 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -2,6 +2,7 @@ PROJECT := umu-launcher
@@ -20,34 +20,35 @@ index 4f0fc51d..7d50a5b2 100644
  
  # If this is changed to umu (uppercase), `uninstall` target will also remove the SLR directory
  INSTALLDIR ?= umu
-@@ -85,6 +86,8 @@ umu-install: umu-dist-install umu-delta-install umu-docs-install
+@@ -84,6 +85,7 @@ else
+ umu-install: umu-dist-install umu-delta-install umu-docs-install
  endif
  
++URLLIB3_URL := https://github.com/urllib3/urllib3/releases/download/2.4.0/urllib3-2.4.0-py3-none-any.whl
  
-+URLLIB3_URL := https://github.com/urllib3/urllib3/releases/download/2.3.0/urllib3-2.3.0-py3-none-any.whl
-+
  $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  	$(info :: Building vendored dependencies )
- 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
-@@ -92,7 +95,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
+@@ -92,9 +94,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
  	fi
  	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
--		cd subprojects/urllib3 && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
+-		cd subprojects/urllib3 && \
+-		sed -i 's/license-files = \["LICENSE.txt"\]//g' pyproject.toml && \
+-		$(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 +		curl -LJO --tlsv1.3 $(URLLIB3_URL) --output-dir $(OBJDIR); \
  	fi
  	touch $(@)
  
-@@ -107,7 +110,7 @@ umu-vendored-install: umu-vendored
+@@ -105,7 +105,7 @@ umu-vendored-install: umu-vendored
+ 	$(info :: Installing subprojects )
+ 	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
+ 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
+-		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/pyzstd/$(OBJDIR)/pyzstd*.whl; \
++		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/urllib3*.whl; \
  		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name pyzstd | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
  	fi
  	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
--		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/urllib3/$(OBJDIR)/urllib3*.whl; \
-+		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/urllib3*.whl; \
- 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name urllib3 | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
- 	fi
- 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ] || [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
-@@ -171,10 +174,17 @@ zipapp-install: zipapp
+@@ -173,10 +173,17 @@ zipapp-install: zipapp
  	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
  
  PYTHON_PLATFORM_TAG = $(shell $(PYTHON_INTERPRETER) -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')

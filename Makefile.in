@@ -92,7 +92,9 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 	fi
 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
-		cd subprojects/urllib3 && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
+		cd subprojects/urllib3 && \
+		sed -i 's/license-files = \["LICENSE.txt"\]//g' pyproject.toml && \
+		$(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 	fi
 	touch $(@)
 
