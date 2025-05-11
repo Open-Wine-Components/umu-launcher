@@ -89,7 +89,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
 		sed -i 's/setuptools>=64,<74/setuptools/' subprojects/pyzstd/pyproject.toml; \
-		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
+		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn -C=--build-option=--dynamic-link-zstd --outdir=$(OBJDIR); \
 	fi
 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 		cd subprojects/urllib3 && \
