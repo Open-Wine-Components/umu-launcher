@@ -188,11 +188,10 @@ def set_env(
         # Make an absolute path to winetricks within GE-Proton or UMU-Proton.
         # The launcher will change to the winetricks parent directory before
         # creating the subprocess
-        exe: Path = Path(protonpath, "protonfixes", "winetricks").resolve(strict=True)
-        env["EXE"] = str(exe)
+        exe: Path = Path(protonpath, "protonfixes", "winetricks")
+        # Handle older protons before winetricks was added to the PATH
+        env["EXE"] = str(exe.resolve(strict=True)) if exe.is_file() else "winetricks"
         args = (env["EXE"], args[1])  # type: ignore
-        if not env["STEAM_COMPAT_INSTALL_PATH"]:
-            env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
     elif is_cmd:
         try:
             # Ensure executable path is absolute, otherwise Proton will fail

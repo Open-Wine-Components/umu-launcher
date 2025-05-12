@@ -2743,11 +2743,6 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected EXE to be normalized and expanded",
             )
             self.assertEqual(
-                self.env["STEAM_COMPAT_INSTALL_PATH"],
-                Path(path_exe).parent.as_posix(),
-                "Expected STEAM_COMPAT_INSTALL_PATH to be set",
-            )
-            self.assertEqual(
                 self.env["PROTONPATH"],
                 Path(path_exe).parent.parent.as_posix(),
                 "Expected PROTONPATH to be normalized and expanded",
