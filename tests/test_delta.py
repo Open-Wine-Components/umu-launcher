@@ -43,10 +43,15 @@ def main():  # noqa: D103
         print(f"Could not find release with codename '{codename}', skipping")
         return 0
 
+    version = ""
+    target = ""
     with urlopen(durl) as resp:  # noqa: S310
         patch = cbor2.loads(resp.read())
-        version = patch.get("contents")[0].get("source")
-        target = patch.get("contents")[0].get("target")
+        for content in patch.get("contents"):
+            if content.get("source", "").startswith("UMU-Proton"):
+                version = content["source"]
+                target = content["target"]
+                break
 
     # Verify the latest release matches the patch's target
     url = "https://api.github.com/repos/Open-Wine-Components/umu-proton/releases/latest"
