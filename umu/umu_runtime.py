@@ -1,6 +1,8 @@
 import os
+import shlex
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from hashlib import sha256
 from http import HTTPStatus
 from pathlib import Path
@@ -9,11 +11,12 @@ from shutil import move
 from subprocess import run
 from tempfile import TemporaryDirectory, mkdtemp
 
+import vdf
 from urllib3.exceptions import HTTPError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
-from umu.umu_consts import UMU_CACHE, FileLock, HTTPMethod
+from umu.umu_consts import UMU_CACHE, UMU_LOCAL, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
     exchange,
@@ -419,3 +422,113 @@ def _update_umu_platform(
         log.info("Updating %s to latest...", variant)
         _install_umu(runtime_ver, session_pools, local)
         log.debug("Released file lock '%s'", lock)
+
+
+@dataclass
+class UmuRuntime:
+    """Holds information about a runtime."""
+
+    name: str
+    variant: str
+    path: Path | None = None
+
+    def __post_init__(self) -> None:  # noqa: D105
+        if not self.variant:
+            return
+        if self.path is None:
+            self.path = UMU_LOCAL.joinpath(self.variant)
+
+    def __bool__(self) -> bool:
+        """Return if the runtime's path has been populated."""
+        return self.path.is_dir() and self.path.joinpath("mtree.txt.gz").is_file()
+
+RUNTIME_VERSIONS = {
+    "host":    UmuRuntime("host",    ""        ),
+    "1070560": UmuRuntime("scout",   "steamrt1"),
+    "1391110": UmuRuntime("soldier", "steamrt2"),
+    "1628350": UmuRuntime("sniper",  "steamrt3"),
+    # ""       : UmuRuntime("medic",   "steamrt4"),
+}
+
+
+RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}
+
+
+class CompatLayer:
+    """Class to describe a Steam compatibility layer."""
+
+    def __init__(self, path: str, shim: Path) -> None:  # noqa: D107
+        self.tool_path = path
+        with Path(path).joinpath("toolmanifest.vdf").open(encoding="utf-8") as f:
+            self.tool_manifest = vdf.load(f)["manifest"]
+
+        self.runtime: CompatLayer = (
+            CompatLayer(str(self.required_runtime.path), shim)
+            if self.required_tool_appid is not None
+            else None
+        )
+        _path = Path(path)
+        if _path.joinpath("compatibilitytool.vdf").exists():
+            with _path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
+                # There can be multiple tools definitions in `compatibilitytools.vdf`
+                # Take the first one and hope it is the one with the correct display_name
+                compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
+                self.compatibility_tool = compat_tools[0]
+        else:
+            self.compatibility_tool = {"display_name": _path.name}
+
+        self.shim = shim
+
+    @property
+    def required_tool_appid(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.tool_manifest.get("require_tool_appid")) else None
+
+    @property
+    def required_runtime(self) -> UmuRuntime:
+        """Map the required tool's appid to a runtime known by umu."""
+        if self.required_tool_appid is None:
+            return RUNTIME_VERSIONS["host"]
+        return RUNTIME_VERSIONS[self.required_tool_appid]
+
+    @property
+    def layer_name(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else None
+
+    @property
+    def display_name(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.compatibility_tool.get("display_name")) else None
+
+    @property
+    def has_runtime(self) -> bool:
+        """Report if the compatibility tool has a configured runtime."""
+        return self.runtime is not None
+
+    def _command(self, verb: str) -> list[str]:
+        """Return the tool specific entry point."""
+        tool_path = os.path.normpath(self.tool_path)
+        cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
+        # # Temporary override for backwards compatibility
+        # if self.tool_path == str(UMU_LOCAL):
+        #     cmd = cmd.replace("_v2-entry-point", "umu")
+        cmd = cmd.replace("%verb%", verb)
+        cmd = shlex.split(cmd)
+        return cmd
+
+    def command(self, verb: str) -> list[str]:
+        """Return the fully qualified command for the runtime.
+
+        If the runtime uses another runtime, its entry point is prepended to the local command.
+        """
+        log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
+        cmd = self.runtime.command(verb) if self.runtime is not None else []
+        target = self._command(verb)
+        if self.layer_name in {"container-runtime"}:
+            cmd.extend([*target, self.shim.as_posix()])
+        elif self.runtime is None:
+            cmd.extend([self.shim.as_posix(), *target])
+        else:
+            cmd.extend(target)
+        return cmd
+
+    def as_str(self, verb: str):  # noqa: D102
+        return " ".join(map(shlex.quote, self.command(verb)))
