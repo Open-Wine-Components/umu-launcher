@@ -39,7 +39,7 @@ from umu.umu_consts import (
 from umu.umu_log import log
 from umu.umu_plugins import set_env_toml
 from umu.umu_proton import get_umu_proton
-from umu.umu_runtime import create_shim, setup_umu
+from umu.umu_runtime import CompatLayer, create_shim, setup_umu
 from umu.umu_util import (
     get_libc,
     get_library_paths,
@@ -298,57 +298,46 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 
 def build_command(
     env: dict[str, str],
-    local: Path,
-    version: str,
+    layer: CompatLayer,
     opts: list[str] | None = None,
 ) -> tuple[Path | str, ...]:
     """Build the command to be executed."""
-    shim: Path = local.joinpath("umu-shim")
-    proton: Path = Path(env["PROTONPATH"], "proton")
-    entry_point: tuple[Path, str, str, str] | tuple[()] = (
-        local.joinpath(version, "umu"), "--verb", env["PROTON_VERB"], "--"
-    ) if version != "host" else ()
     if opts is None:
         opts = []
 
-    if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
-        err: str = "The following file was not found in PROTONPATH: proton"
-        raise FileNotFoundError(err)
-
-    # Exit if the entry point is missing
-    # The _v2-entry-point script and container framework tools are included in
-    # the same image, so this can happen if the image failed to download
-    if entry_point and not entry_point[0].is_file():
-        err: str = (
-            f"_v2-entry-point (umu) cannot be found in '{local}'\n"
-            "Runtime Platform missing or download incomplete"
-        )
-        raise FileNotFoundError(err)
+    # if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
+    #     err: str = "The following file was not found in PROTONPATH: proton"
+    #     raise FileNotFoundError(err)
+    #
+    # # Exit if the entry point is missing
+    # # The _v2-entry-point script and container framework tools are included in
+    # # the same image, so this can happen if the image failed to download
+    # if entry_point and not entry_point[0].is_file():
+    #     err: str = (
+    #         f"_v2-entry-point (umu) cannot be found in '{local}'\n"
+    #         "Runtime Platform missing or download incomplete"
+    #     )
+    #     raise FileNotFoundError(err)
 
     # Winetricks
     if env.get("EXE", "").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         return (
-            *entry_point,
-            proton,
-            env["PROTON_VERB"],
+            *layer.command(env["PROTON_VERB"]),
             env["EXE"],
             "-q",
             *opts,
         )
 
-    # Will run the game within the Steam Runtime w/o Proton
-    # Ideally, for reliability, executables should be compiled within
-    # the Steam Runtime
-    if env.get("UMU_NO_PROTON") == "1":
-        return *entry_point, env["EXE"], *opts
+    # # Will run the game within the Steam Runtime w/o Proton
+    # # Ideally, for reliability, executables should be compiled within
+    # # the Steam Runtime
+    # if env.get("UMU_NO_PROTON") == "1":
+    #     return *entry_point, env["EXE"], *opts
 
     return (
-        *entry_point,
-        shim,
-        proton,
-        env["PROTON_VERB"],
+        *layer.command(env["PROTON_VERB"]),
         env["EXE"],
         *opts,
     )
@@ -674,7 +663,7 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     return ret
 
 
-def resolve_umu_version(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion | None:
+def resolve_runtime(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion | None:
     """Resolve the required runtime of a compatibility tool."""
     version: tuple[str, str, str] | None = None
 
@@ -705,7 +694,7 @@ def resolve_umu_version(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion 
     if os.environ.get("PROTONPATH") and path.is_dir():
         os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
 
-    path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf").resolve()
+    path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf").expanduser().resolve()
     if path.is_file():
         version = get_umu_version_from_manifest(path, runtimes)
     else:
@@ -833,7 +822,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         opts = args[1]  # Reference the executable options
 
     # Resolve the runtime version for PROTONPATH
-    runtime_version = resolve_umu_version(__runtime_versions__)
+    runtime_version = resolve_runtime(__runtime_versions__)
     if not runtime_version:
         err: str = (
             f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
@@ -930,8 +919,13 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     ):
         sys.exit(1)
 
+    layer = CompatLayer(
+        env["RUNTIMEPATH"] if env.get("UMU_NO_PROTON", False) else env["PROTONPATH"],
+        UMU_LOCAL.joinpath("umu-shim")
+    )
+
     # Build the command
-    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL, runtime_variant, opts)
+    command: tuple[Path | str, ...] = build_command(env, layer, opts)
     log.debug("%s", command)
 
     # Run the command
