@@ -562,6 +562,7 @@ class UmuRuntime:
         """Return if the runtime's path has been populated."""
         return self.path.is_dir() and self.path.joinpath("mtree.txt.gz").is_file()
 
+
 RUNTIME_VERSIONS = {
     "host":    UmuRuntime("host",    ""        ),
     "1070560": UmuRuntime("scout",   "steamrt1"),
@@ -587,6 +588,7 @@ class CompatLayer:
             if self.required_tool_appid is not None
             else None
         )
+
         _path = Path(path)
         if _path.joinpath("compatibilitytool.vdf").exists():
             with _path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
@@ -627,19 +629,18 @@ class CompatLayer:
         """Return the tool specific entry point."""
         tool_path = os.path.normpath(self.tool_path)
         cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
-        # # Temporary override for backwards compatibility
-        # if self.tool_path == str(UMU_LOCAL):
-        #     cmd = cmd.replace("_v2-entry-point", "umu")
+        # Temporary override entry point for backwards compatibility
+        if self.layer_name in {"container-runtime"}:
+            cmd = cmd.replace("_v2-entry-point", "umu")
         cmd = cmd.replace("%verb%", verb)
-        cmd = shlex.split(cmd)
-        return cmd
+        return shlex.split(cmd)
 
     def command(self, verb: str) -> list[str]:
         """Return the fully qualified command for the runtime.
 
         If the runtime uses another runtime, its entry point is prepended to the local command.
         """
-        log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
+        log.info("Running '%s' using runtime on '%s'", self.display_name, self.required_runtime.name)
         cmd = self.runtime.command(verb) if self.runtime is not None else []
         target = self._command(verb)
         if self.layer_name in {"container-runtime"}:
@@ -652,3 +653,18 @@ class CompatLayer:
 
     def as_str(self, verb: str):  # noqa: D102
         return " ".join(map(shlex.quote, self.command(verb)))
+
+
+if __name__ == "__main__":
+    for path in (
+        Path("~/.local/share/Steam/compatibilitytools.d/proton-cachyos-10.0-20250509-slr-x86_64_v3").expanduser().as_posix(),
+        Path("~/.local/share/Steam/compatibilitytools.d/luxtorpeda").expanduser().as_posix(),
+        Path("~/.local/share/Steam/steamapps/common/SteamLinuxRuntime").expanduser().as_posix(),
+        Path("~/.local/share/Steam/steamapps/common/Proton 3.16").expanduser().as_posix(),
+        Path("~/.local/share/umu/steamrt1").expanduser().as_posix(),
+        Path("~/.local/share/umu/steamrt2").expanduser().as_posix(),
+        Path("~/.local/share/umu/steamrt3").expanduser().as_posix(),
+        Path("/usr/share/steam/compatibilitytools.d/proton-cachyos").expanduser().as_posix(),
+    ):
+        layer = CompatLayer(path, Path("/aaa/bbb"))
+        print(layer.as_str("waitforexitandrun"))
