@@ -1,5 +1,6 @@
 python-xlib>=0.33
 urllib3>=2.0.0,<3.0.0
+vdf>=3.4
 xxhash>=3.2.0
 pyzstd>=0.16.2
 cbor2>=5.4.6
