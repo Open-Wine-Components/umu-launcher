@@ -2565,7 +2565,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
-            version = umu_run.resolve_umu_version(self.test_runtime_versions)
+            version = umu_run.resolve_runtime(self.test_runtime_versions)
             os.environ["RUNTIMEPATH"] = version[1]
             # Args
             result_args = __main__.parse_args()
@@ -2665,7 +2665,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
-            version = umu_run.resolve_umu_version(self.test_runtime_versions)
+            version = umu_run.resolve_runtime(self.test_runtime_versions)
             os.environ["RUNTIMEPATH"] = version[1]
             # Args
             result_args = __main__.parse_args()
