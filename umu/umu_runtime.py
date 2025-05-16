@@ -654,17 +654,3 @@ class CompatLayer:
     def as_str(self, verb: str):  # noqa: D102
         return " ".join(map(shlex.quote, self.command(verb)))
 
-
-if __name__ == "__main__":
-    for path in (
-        Path("~/.local/share/Steam/compatibilitytools.d/proton-cachyos-10.0-20250509-slr-x86_64_v3").expanduser().as_posix(),
-        Path("~/.local/share/Steam/compatibilitytools.d/luxtorpeda").expanduser().as_posix(),
-        Path("~/.local/share/Steam/steamapps/common/SteamLinuxRuntime").expanduser().as_posix(),
-        Path("~/.local/share/Steam/steamapps/common/Proton 3.16").expanduser().as_posix(),
-        Path("~/.local/share/umu/steamrt1").expanduser().as_posix(),
-        Path("~/.local/share/umu/steamrt2").expanduser().as_posix(),
-        Path("~/.local/share/umu/steamrt3").expanduser().as_posix(),
-        Path("/usr/share/steam/compatibilitytools.d/proton-cachyos").expanduser().as_posix(),
-    ):
-        layer = CompatLayer(path, Path("/aaa/bbb"))
-        print(layer.as_str("waitforexitandrun"))
