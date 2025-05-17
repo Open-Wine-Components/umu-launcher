@@ -1,12 +1,8 @@
 import os
 import re
 import sys
-import threading
-import time
 from _ctypes import CFuncPtr
 from argparse import Namespace
-from array import array
-from collections.abc import MutableMapping
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
@@ -23,33 +19,26 @@ from urllib3 import PoolManager, Retry
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.util import Timeout
-from Xlib import X, Xatom, display
-from Xlib.error import DisplayConnectionError
-from Xlib.protocol.request import GetProperty
-from Xlib.protocol.rq import Event
-from Xlib.xobject.drawable import Window
 
 from umu import __runtime_versions__, __version__
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
     STEAM_COMPAT,
-    STEAM_WINDOW_ID,
     UMU_LOCAL,
     FileLock,
-    GamescopeAtom,
 )
 from umu.umu_log import log
 from umu.umu_plugins import set_env_toml
 from umu.umu_proton import get_umu_proton
-from umu.umu_runtime import setup_umu
+from umu.umu_runtime import CompatLayer, create_shim, setup_umu
+from umu.umu_steammode import run_in_steammode
 from umu.umu_util import (
     get_libc,
     get_library_paths,
     has_umu_setup,
     is_installed_verb,
     unix_flock,
-    xdisplay,
 )
 
 NET_TIMEOUT = 5.0
@@ -91,9 +80,7 @@ def setup_pfx(path: str) -> None:
         wineuser.symlink_to("steamuser")
 
 
-def check_env(
-    env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]
-) -> dict[str, str] | dict[str, Any]:
+def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], bool]:
     """Before executing a game, check for environment variables and set them.
 
     GAMEID is strictly required and the client is responsible for setting this.
@@ -125,9 +112,10 @@ def check_env(
 
     env["WINEPREFIX"] = os.environ.get("WINEPREFIX", "")
 
+    do_download = False
     # Skip Proton if running a native Linux executable
     if os.environ.get("UMU_NO_PROTON") == "1":
-        return env
+        return env, do_download
 
     path: Path = STEAM_COMPAT.joinpath(os.environ.get("PROTONPATH", ""))
     if os.environ.get("PROTONPATH") and path.name == "UMU-Latest":
@@ -139,24 +127,34 @@ def check_env(
 
     # Proton Codename
     if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest", "UMU-Latest"}:
-        get_umu_proton(env, session_pools)
+        do_download = True
 
     if "PROTONPATH" not in os.environ:
         os.environ["PROTONPATH"] = ""
-        get_umu_proton(env, session_pools)
+        do_download = True
 
     env["PROTONPATH"] = os.environ["PROTONPATH"]
 
+    return env, do_download
+
+
+def download_proton(download: bool, env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]) -> None:
+    """Check if umu should download proton and check if PROTONPATH is set.
+
+    I am not gonna lie about it, this only exists to satisfy the tests, because downloading
+    was previously nested in `check_env()`
+    """
+    if download:
+        get_umu_proton(env, session_pools)
+
     # If download fails/doesn't exist in the system, raise an error
-    if not os.environ["PROTONPATH"]:
+    if os.environ.get("UMU_NO_PROTON") != "1" and not os.environ["PROTONPATH"]:
         err: str = (
             "Environment variable not set or is empty: PROTONPATH\n"
             f"Possible reason: GE-Proton or UMU-Proton not found in '{STEAM_COMPAT}'"
             " or network error"
         )
         raise FileNotFoundError(err)
-
-    return env
 
 
 def set_env(
@@ -227,14 +225,16 @@ def set_env(
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
 
+    runtime_path = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}" if os.environ['RUNTIMEPATH'] != "host" else ""
+
     # PATHS
     env["WINEPREFIX"] = str(pfx)
     env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
-    env["STEAM_COMPAT_TOOL_PATHS"] = (
-        f"{env['PROTONPATH']}:{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
-    )
+    env["STEAM_COMPAT_TOOL_PATHS"] = ":".join(
+        [f"{env['PROTONPATH']}", runtime_path]
+    ) if runtime_path else f"{env['PROTONPATH']}"
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Zenity
@@ -253,7 +253,7 @@ def set_env(
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
-    env["RUNTIMEPATH"] = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
+    env["RUNTIMEPATH"] = runtime_path
 
     return env
 
@@ -291,361 +291,49 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
 
 def build_command(
     env: dict[str, str],
-    local: Path,
-    opts: list[str] = [],
+    layer: CompatLayer,
+    opts: list[str] | None = None,
 ) -> tuple[Path | str, ...]:
     """Build the command to be executed."""
-    shim: Path = local.joinpath("umu-shim")
-    proton: Path = Path(env["PROTONPATH"], "proton")
-    entry_point: Path = local.joinpath("umu")
+    if opts is None:
+        opts = []
 
-    if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
-        err: str = "The following file was not found in PROTONPATH: proton"
-        raise FileNotFoundError(err)
-
-    # Exit if the entry point is missing
-    # The _v2-entry-point script and container framework tools are included in
-    # the same image, so this can happen if the image failed to download
-    if not entry_point.is_file():
-        err: str = (
-            f"_v2-entry-point (umu) cannot be found in '{local}'\n"
-            "Runtime Platform missing or download incomplete"
-        )
-        raise FileNotFoundError(err)
+    # if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
+    #     err: str = "The following file was not found in PROTONPATH: proton"
+    #     raise FileNotFoundError(err)
+    #
+    # # Exit if the entry point is missing
+    # # The _v2-entry-point script and container framework tools are included in
+    # # the same image, so this can happen if the image failed to download
+    # if entry_point and not entry_point[0].is_file():
+    #     err: str = (
+    #         f"_v2-entry-point (umu) cannot be found in '{local}'\n"
+    #         "Runtime Platform missing or download incomplete"
+    #     )
+    #     raise FileNotFoundError(err)
 
     # Winetricks
     if env.get("EXE", "").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         return (
-            entry_point,
-            "--verb",
-            env["PROTON_VERB"],
-            "--",
-            proton,
-            env["PROTON_VERB"],
+            *layer.command(env["PROTON_VERB"]),
             env["EXE"],
             "-q",
             *opts,
         )
 
-    # Will run the game within the Steam Runtime w/o Proton
-    # Ideally, for reliability, executables should be compiled within
-    # the Steam Runtime
-    if env.get("UMU_NO_PROTON") == "1":
-        return (entry_point, "--verb", env["PROTON_VERB"], "--", env["EXE"], *opts)
-
-    # Will run the game outside the Steam Runtime w/ Proton
-    if env.get("UMU_NO_RUNTIME") == "1":
-        log.warning("Runtime Platform disabled")
-        return proton, env["PROTON_VERB"], env["EXE"], *opts
+    # # Will run the game within the Steam Runtime w/o Proton
+    # # Ideally, for reliability, executables should be compiled within
+    # # the Steam Runtime
+    # if env.get("UMU_NO_PROTON") == "1":
+    #     return *entry_point, env["EXE"], *opts
 
     return (
-        entry_point,
-        "--verb",
-        env["PROTON_VERB"],
-        "--",
-        shim,
-        proton,
-        env["PROTON_VERB"],
+        *layer.command(env["PROTON_VERB"]),
         env["EXE"],
         *opts,
     )
-
-
-def get_window_ids(d: display.Display) -> set[str] | None:
-    """Get the list of window ids under the root window for a display."""
-    try:
-        event: Event = d.next_event()
-        if event.type == X.CreateNotify:
-            return {child.id for child in d.screen().root.query_tree().children}
-    except Exception as e:
-        log.exception(e)
-
-    return None
-
-
-def set_steam_game_property(
-    d: display.Display,
-    window_ids: set[str],
-    steam_assigned_appid: int,
-) -> display.Display:
-    """Set Steam's assigned app ID on a list of windows."""
-    log.debug("Steam app ID: %s", steam_assigned_appid)
-    for window_id in window_ids:
-        try:
-            window: Window = d.create_resource_object("window", int(window_id))
-            window.change_property(
-                d.get_atom(GamescopeAtom.SteamGame.value),
-                Xatom.CARDINAL,
-                32,
-                [steam_assigned_appid],
-            )
-            log.debug(
-                "Successfully set %s property for window ID: %s",
-                GamescopeAtom.SteamGame.value,
-                window_id,
-            )
-        except Exception as e:
-            log.error(
-                "Error setting %s property for window ID: %s",
-                GamescopeAtom.SteamGame.value,
-                window_id,
-            )
-            log.exception(e)
-
-    return d
-
-
-def get_gamescope_baselayer_appid(
-    d: display.Display,
-) -> list[int] | None:
-    """Get the GAMESCOPECTRL_BASELAYER_APPID value on the primary root window."""
-    try:
-        root_primary: Window = d.screen().root
-        # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.get_atom(GamescopeAtom.BaselayerAppId.value)
-        # Get the property value
-        prop: GetProperty | None = root_primary.get_full_property(atom, Xatom.CARDINAL)
-        # For GAMESCOPECTRL_BASELAYER_APPID, the value is a u32 array
-        if prop and prop.value and isinstance(prop.value, array):
-            # Ignore. Converting a u32 array to a list creates a list[int]
-            return prop.value.tolist()  # type: ignore
-        log.debug("%s property not found", GamescopeAtom.BaselayerAppId.value)
-    except Exception as e:
-        log.error("Error getting %s property", GamescopeAtom.BaselayerAppId.value)
-        log.exception(e)
-
-    return None
-
-
-def rearrange_gamescope_baselayer_appid(
-    sequence: list[int],
-) -> tuple[list[int], int] | None:
-    """Rearrange the GAMESCOPECTRL_BASELAYER_APPID value retrieved from a window."""
-    rearranged: list[int] = list(sequence)
-    steam_appid: int = get_steam_appid(os.environ)
-
-    log.debug("%s: %s", GamescopeAtom.BaselayerAppId.value, sequence)
-
-    if not steam_appid:
-        # Case when the app ID can't be found from environment variables
-        # See https://github.com/Open-Wine-Components/umu-launcher/issues/318
-        log.error(
-            "Failed to acquire app ID, skipping %s rearrangement",
-            GamescopeAtom.BaselayerAppId.value,
-        )
-        return None
-
-    try:
-        rearranged.remove(steam_appid)
-    except ValueError as e:
-        # Case when the app ID isn't in GAMESCOPECTRL_BASELAYER_APPID
-        # One case this can occur is if the client overrides Steam's env vars
-        # that we get the app ID from
-        log.exception(e)
-        return None
-
-    # Steam's window should be last, while assigned app id 2nd to last
-    rearranged = [*rearranged[:-1], steam_appid, STEAM_WINDOW_ID]
-    log.debug("Rearranging %s", GamescopeAtom.BaselayerAppId.value)
-    log.debug("'%s' -> '%s'", sequence, rearranged)
-
-    return rearranged, steam_appid
-
-
-def set_gamescope_baselayer_appid(
-    d: display.Display, rearranged: list[int]
-) -> display.Display | None:
-    """Set a new gamescope GAMESCOPECTRL_BASELAYER_APPID on the primary root window."""
-    try:
-        # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.get_atom(GamescopeAtom.BaselayerAppId.value)
-        # Set the property value
-        d.screen().root.change_property(atom, Xatom.CARDINAL, 32, rearranged)
-        log.debug(
-            "Successfully set %s property: %s",
-            GamescopeAtom.BaselayerAppId.value,
-            ", ".join(map(str, rearranged)),
-        )
-        return d
-    except Exception as e:
-        log.error("Error setting %s property", GamescopeAtom.BaselayerAppId.value)
-        log.exception(e)
-
-    return None
-
-
-def get_steam_appid(env: MutableMapping) -> int:
-    """Get the Steam app ID from the host environment variables."""
-    steam_appid: int = 0
-
-    if path := env.get("STEAM_COMPAT_TRANSCODED_MEDIA_PATH"):
-        # Suppress cases when value is not a number or empty tuple
-        with suppress(ValueError, IndexError):
-            return int(Path(path).parts[-1])
-
-    if path := env.get("STEAM_COMPAT_MEDIA_PATH"):
-        with suppress(ValueError, IndexError):
-            return int(Path(path).parts[-2])
-
-    if path := env.get("STEAM_FOSSILIZE_DUMP_PATH"):
-        with suppress(ValueError, IndexError):
-            return int(Path(path).parts[-3])
-
-    if path := env.get("DXVK_STATE_CACHE_PATH"):
-        with suppress(ValueError, IndexError):
-            return int(Path(path).parts[-2])
-
-    return steam_appid
-
-
-def monitor_baselayer_appid(
-    d_primary: display.Display,
-    gamescope_baselayer_sequence: list[int],
-) -> None:
-    """Monitor for broken GAMESCOPECTRL_BASELAYER_APPID values."""
-    root_primary: Window = d_primary.screen().root
-    rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
-    atom = d_primary.get_atom(GamescopeAtom.BaselayerAppId.value)
-    root_primary.change_attributes(event_mask=X.PropertyChangeMask)
-
-    log.debug(
-        "Monitoring %s property for DISPLAY=%s...",
-        GamescopeAtom.BaselayerAppId.value,
-        d_primary.get_display_name(),
-    )
-
-    # Rearranged GAMESCOPECTRL_BASELAYER_APPID
-    rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_appid(
-        gamescope_baselayer_sequence
-    )
-
-    # Set the rearranged GAMESCOPECTRL_BASELAYER_APPID
-    if rearranged_gamescope_baselayer:
-        rearranged, _ = rearranged_gamescope_baselayer
-        set_gamescope_baselayer_appid(d_primary, rearranged)
-        rearranged_gamescope_baselayer = None
-
-    while True:
-        event: Event = d_primary.next_event()
-        prop: GetProperty | None = None
-
-        if event.type == X.PropertyNotify and event.atom == atom:
-            prop = root_primary.get_full_property(atom, Xatom.CARDINAL)
-
-        # Check if the layer sequence has changed to the broken one
-        if prop and prop.value[-1] != STEAM_WINDOW_ID:
-            log.debug(
-                "Broken %s property detected, will rearrange...",
-                GamescopeAtom.BaselayerAppId.value,
-            )
-            log.debug(
-                "%s has atom %s: %s",
-                GamescopeAtom.BaselayerAppId.value,
-                atom,
-                prop.value,
-            )
-            rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_appid(
-                prop.value
-            )
-
-        if rearranged_gamescope_baselayer:
-            rearranged, _ = rearranged_gamescope_baselayer
-            set_gamescope_baselayer_appid(d_primary, rearranged)
-            rearranged_gamescope_baselayer = None
-            continue
-
-        time.sleep(0.1)
-
-
-def monitor_windows(
-    d_secondary: display.Display,
-) -> None:
-    """Monitor for new windows for a display and assign them Steam's assigned app ID."""
-    window_ids: set[str] | None = None
-    steam_appid: int = get_steam_appid(os.environ)
-
-    log.debug(
-        "Waiting for new windows IDs for DISPLAY=%s...",
-        d_secondary.get_display_name(),
-    )
-
-    while not window_ids:
-        window_ids = get_window_ids(d_secondary)
-
-    set_steam_game_property(d_secondary, window_ids, steam_appid)
-
-    log.debug(
-        "Monitoring for new window IDs for DISPLAY=%s...",
-        d_secondary.get_display_name(),
-    )
-
-    # Check if the window sequence has changed
-    while True:
-        current_window_ids: set[str] | None = get_window_ids(d_secondary)
-
-        if not current_window_ids:
-            continue
-
-        if diff := current_window_ids.difference(window_ids):
-            log.debug("New window IDs detected: %s", window_ids)
-            log.debug("Current tracked windows IDs: %s", current_window_ids)
-            log.debug("Window IDs set difference: %s", diff)
-            window_ids |= diff
-            set_steam_game_property(d_secondary, diff, steam_appid)
-
-
-def run_in_steammode(proc: Popen) -> int:
-    """Set properties on gamescope windows when running in steam mode.
-
-    Currently, Flatpak apps that use umu as their runtime will not have their
-    game window brought to the foreground due to the base layer being out of
-    order.
-
-    See https://github.com/ValveSoftware/gamescope/issues/1341
-    """
-    # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
-    gamescope_baselayer_sequence: list[int] | None = None
-
-    # Currently, steamos creates two xwayland servers at :0 and :1
-    # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
-    # in the Flatpak, it is still possible to connect to it.
-    # TODO: Find a robust way to get gamescope displays both in a container
-    # and outside a container
-    try:
-        with xdisplay(":0") as d_primary, xdisplay(":1") as d_secondary:
-            gamescope_baselayer_sequence = get_gamescope_baselayer_appid(d_primary)
-            # Dont do window fuckery if we're not inside gamescope
-            if (
-                gamescope_baselayer_sequence
-                and os.environ.get("PROTON_VERB") == "waitforexitandrun"
-            ):
-                d_secondary.screen().root.change_attributes(
-                    event_mask=X.SubstructureNotifyMask
-                )
-
-                # Monitor for new windows for the DISPLAY associated with game
-                window_thread = threading.Thread(
-                    target=monitor_windows, args=(d_secondary,)
-                )
-                window_thread.daemon = True
-                window_thread.start()
-
-                # Monitor for broken GAMESCOPECTRL_BASELAYER_APPID
-                baselayer_thread = threading.Thread(
-                    target=monitor_baselayer_appid,
-                    args=(d_primary, gamescope_baselayer_sequence),
-                )
-                baselayer_thread.daemon = True
-                baselayer_thread.start()
-            return proc.wait()
-    except DisplayConnectionError as e:
-        # Case where steamos changed its display outputs as we're currently
-        # assuming connecting to :0 and :1 is stable
-        log.exception(e)
-
-    return proc.wait()
 
 
 def run_command(command: tuple[Path | str, ...]) -> int:
@@ -695,7 +383,7 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     return ret
 
 
-def resolve_umu_version(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion | None:
+def resolve_runtime(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion | None:
     """Resolve the required runtime of a compatibility tool."""
     version: tuple[str, str, str] | None = None
 
@@ -726,9 +414,12 @@ def resolve_umu_version(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion 
     if os.environ.get("PROTONPATH") and path.is_dir():
         os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
 
-    path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf").resolve()
+    path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf").expanduser().resolve()
     if path.is_file():
         version = get_umu_version_from_manifest(path, runtimes)
+    else:
+        err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
+        raise FileNotFoundError(err)
 
     return version
 
@@ -750,6 +441,12 @@ def get_umu_version_from_manifest(
                 break
 
     if not appid:
+        if os.environ.get("UMU_NO_RUNTIME", None) == "1":
+            log.warning(
+                "Runtime Platform disabled. This mode is UNSUPPORTED by umu and remains only for convenience. "
+                "Issues created while using this mode will be automatically closed."
+            )
+            return "host", "host", "host"
         return None
 
     if appid not in appids:
@@ -797,7 +494,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     }
     opts: list[str] = []
     prereq: bool = False
-    version: RuntimeVersion | None = None
+    runtime_version: RuntimeVersion | None = None
 
     log.info("umu-launcher version %s (%s)", __version__, sys.version)
 
@@ -838,14 +535,22 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         )
         raise RuntimeError(err)
 
+    if isinstance(args, Namespace):
+        env, opts = set_env_toml(env, args)
+        os.environ.update({k: v for k, v in env.items() if bool(v)})
+    else:
+        opts = args[1]  # Reference the executable options
+
     # Resolve the runtime version for PROTONPATH
-    version = resolve_umu_version(__runtime_versions__)
-    if not version:
+    runtime_version = resolve_runtime(__runtime_versions__)
+    if not runtime_version:
         err: str = (
             f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
         )
         raise ValueError(err)
-    os.environ["RUNTIMEPATH"] = version[1]
+    # runtime_name, runtime_variant, runtime_appid
+    _, runtime_variant, _ = runtime_version
+    os.environ["RUNTIMEPATH"] = runtime_variant
 
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
@@ -858,23 +563,36 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     # Default to a strict 5 second timeouts throughout
     timeout: Timeout = Timeout(connect=NET_TIMEOUT, read=NET_TIMEOUT)
 
+    # ensure base directory exists
+    UMU_LOCAL.mkdir(parents=True, exist_ok=True)
+
     with (
         ThreadPoolExecutor() as thread_pool,
         PoolManager(timeout=timeout, retries=retries) as http_pool,
     ):
         session_pools: tuple[ThreadPoolExecutor, PoolManager] = (thread_pool, http_pool)
         # Setup the launcher and runtime files
-        future: Future = thread_pool.submit(
-            setup_umu, UMU_LOCAL / version[1], version, session_pools
-        )
+        _, do_download = check_env(env)
 
-        if isinstance(args, Namespace):
-            env, opts = set_env_toml(env, args)
-        else:
-            opts = args[1]  # Reference the executable options
-            check_env(env, session_pools)
+        if runtime_variant != "host":
+            UMU_LOCAL.joinpath(runtime_variant).mkdir(parents=True, exist_ok=True)
 
-        UMU_LOCAL.joinpath(version[1]).mkdir(parents=True, exist_ok=True)
+            future: Future = thread_pool.submit(
+                setup_umu, UMU_LOCAL / runtime_variant, runtime_version, session_pools
+            )
+
+            download_proton(do_download, env, session_pools)
+
+            try:
+                future.result()
+            except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3, ValueError) as e:
+                if not has_umu_setup():
+                    err: str = (
+                        "umu has not been setup for the user\n"
+                        "An internet connection is required to setup umu"
+                    )
+                    raise RuntimeError(err) from e
+                log.debug("Network is unreachable")
 
         # Prepare the prefix
         with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
@@ -883,22 +601,15 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         # Configure the environment
         set_env(env, args)
 
+        # Restore shim if missing
+        if not UMU_LOCAL.joinpath("umu-shim").is_file():
+            create_shim(UMU_LOCAL / "umu-shim")
+
         # Set all environment variables
         # NOTE: `env` after this block should be read only
         for key, val in env.items():
             log.debug("%s=%s", key, val)
             os.environ[key] = val
-
-        try:
-            future.result()
-        except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3, ValueError):
-            if not has_umu_setup():
-                err: str = (
-                    "umu has not been setup for the user\n"
-                    "An internet connection is required to setup umu"
-                )
-                raise RuntimeError(err)
-            log.debug("Network is unreachable")
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(
@@ -906,8 +617,13 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     ):
         sys.exit(1)
 
+    layer = CompatLayer(
+        env["RUNTIMEPATH"] if env.get("UMU_NO_PROTON", False) else env["PROTONPATH"],
+        UMU_LOCAL.joinpath("umu-shim")
+    )
+
     # Build the command
-    command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL / version[1], opts)
+    command: tuple[Path | str, ...] = build_command(env, layer, opts)
     log.debug("%s", command)
 
     # Run the command
