@@ -28,7 +28,7 @@ from Xlib.xobject.drawable import Window
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from umu import __main__, umu_proton, umu_run, umu_runtime, umu_util
+from umu import __main__, umu_proton, umu_run, umu_runtime, umu_steammode, umu_util
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -1026,7 +1026,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_display = MagicMock(spec=Display)
         mock_display.screen.side_effect = DisplayConnectionError(mock_display, "foo")
 
-        result = umu_run.get_gamescope_baselayer_appid(mock_display)
+        result = umu_steammode.get_gamescope_baselayer_appid(mock_display)
         self.assertTrue(result is None, f"Expected a value, received: {result}")
 
     def test_get_gamescope_baselayer_appid(self):
@@ -1043,7 +1043,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_root.get_full_property.return_value = mock_prop
         mock_prop.value = array("I", [1, 2, 3])
 
-        result = umu_run.get_gamescope_baselayer_appid(mock_display)
+        result = umu_steammode.get_gamescope_baselayer_appid(mock_display)
         self.assertTrue(result == [1, 2, 3], f"Expected a value, received: {result}")
 
     def test_set_steam_game_property_err(self):
@@ -1060,7 +1060,7 @@ class TestGameLauncher(unittest.TestCase):
             mock_display, "foo"
         )
 
-        result = umu_run.set_steam_game_property(
+        result = umu_steammode.set_steam_game_property(
             mock_display, mock_window_ids, mock_appid
         )
 
@@ -1077,7 +1077,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_display.create_resource_object.return_value = mock_window
         mock_display.get_atom.return_value = 0
 
-        result = umu_run.set_steam_game_property(
+        result = umu_steammode.set_steam_game_property(
             mock_display, mock_window_ids, mock_appid
         )
         self.assertTrue(result is mock_display, f"Expected Display, received: {result}")
@@ -1104,7 +1104,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_root.query_tree.side_effect = DisplayConnectionError(mock_display, "foo")
         mock_query_tree.children = set()
 
-        result = umu_run.get_window_ids(mock_display)
+        result = umu_steammode.get_window_ids(mock_display)
 
         # Assertions
         self.assertTrue(result is None, f"Expected None, received: {result}")
@@ -1128,7 +1128,7 @@ class TestGameLauncher(unittest.TestCase):
         mock_root.query_tree.return_value = mock_query_tree
         mock_query_tree.children = set()
 
-        result = umu_run.get_window_ids(mock_display)
+        result = umu_steammode.get_window_ids(mock_display)
 
         self.assertTrue(isinstance(result, set), f"Expected a set, received: {result}")
         mock_display.next_event.assert_called_once()
@@ -1145,7 +1145,7 @@ class TestGameLauncher(unittest.TestCase):
         os.environ["STEAM_COMPAT_MEDIA_PATH"] = "foo"
         os.environ["STEAM_FOSSILIZE_DUMP_PATH"] = "bar"
         os.environ["DXVK_STATE_CACHE_PATH"] = "baz"
-        result = umu_run.get_steam_appid(os.environ)
+        result = umu_steammode.get_steam_appid(os.environ)
 
         self.assertEqual(
             result,
@@ -1186,7 +1186,7 @@ class TestGameLauncher(unittest.TestCase):
         # it has been tampered by the client or by some middleware.
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
         baselayer = [1, steam_window_id, steam_layer_id]
-        result = umu_run.rearrange_gamescope_baselayer_appid(baselayer)
+        result = umu_steammode.rearrange_gamescope_baselayer_appid(baselayer)
 
         self.assertTrue(result is None, f"Expected None, received '{result}'")
 
@@ -1200,13 +1200,13 @@ class TestGameLauncher(unittest.TestCase):
         """
         steam_window_id = 769
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_appid(os.environ)
+        steam_layer_id = umu_steammode.get_steam_appid(os.environ)
         baselayer = [1, steam_window_id, steam_layer_id]
         expected = (
             [baselayer[0], steam_layer_id, steam_window_id],
             steam_layer_id,
         )
-        result = umu_run.rearrange_gamescope_baselayer_appid(baselayer)
+        result = umu_steammode.rearrange_gamescope_baselayer_appid(baselayer)
 
         self.assertEqual(
             result,
@@ -1219,7 +1219,7 @@ class TestGameLauncher(unittest.TestCase):
         baselayer = []
 
         self.assertTrue(
-            umu_run.rearrange_gamescope_baselayer_appid(baselayer) is None,
+            umu_steammode.rearrange_gamescope_baselayer_appid(baselayer) is None,
             "Expected None",
         )
 
@@ -1227,9 +1227,9 @@ class TestGameLauncher(unittest.TestCase):
         """Test rearrange_gamescope_baselayer_order when passed a sequence."""
         steam_window_id = 769
         os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_appid(os.environ)
+        steam_layer_id = umu_steammode.get_steam_appid(os.environ)
         baselayer = [1, steam_layer_id, steam_window_id]
-        result = umu_run.rearrange_gamescope_baselayer_appid(baselayer)
+        result = umu_steammode.rearrange_gamescope_baselayer_appid(baselayer)
 
         # Original sequence should be returned when Steam's window ID is last
         self.assertTrue(
