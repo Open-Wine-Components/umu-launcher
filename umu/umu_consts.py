@@ -34,6 +34,7 @@ class GamescopeAtom(Enum):
 
     SteamGame = "STEAM_GAME"
     BaselayerAppId = "GAMESCOPECTRL_BASELAYER_APPID"
+    FocusedApp = "GAMESCOPE_FOCUSED_APP"
 
 
 class FileLock(Enum):

@@ -500,6 +500,7 @@ def get_steam_appid(env: MutableMapping) -> int:
 
 
 def monitor_windows(
+    d_primary: display.Display,
     d_secondary: display.Display,
 ) -> None:
     """Monitor for new windows for a display and assign them Steam's assigned app ID."""
@@ -522,9 +523,23 @@ def monitor_windows(
     )
 
     # Check if the window sequence has changed
+    root_primary: Window = d_primary.screen().root
+    atom: int = d_primary.get_atom(GamescopeAtom.FocusedApp.value)
+    is_steam_app = False
     while True:
-        current_window_ids: set[str] | None = get_window_ids(d_secondary)
+        # Ensure only windows associated with current Steam app is focused
+        if (
+            is_steam_app
+            and (prop := root_primary.get_full_property(atom, Xatom.CARDINAL))
+            and prop.value
+            and prop.value[-1] != steam_appid
+        ):
+            log.debug(
+                "Current focused app is not Steam app, skipping current window IDs"
+            )
+            continue
 
+        current_window_ids: set[str] | None = get_window_ids(d_secondary)
         if not current_window_ids:
             continue
 
@@ -534,6 +549,14 @@ def monitor_windows(
             log.debug("Window IDs set difference: %s", diff)
             window_ids |= diff
             set_steam_game_property(d_secondary, diff, steam_appid)
+
+        if (
+            not is_steam_app
+            and (prop := root_primary.get_full_property(atom, Xatom.CARDINAL))
+            and prop.value
+            and prop.value[-1] == steam_appid
+        ):
+            is_steam_app = True
 
 
 def run_in_steammode(proc: Popen) -> int:
@@ -567,7 +590,11 @@ def run_in_steammode(proc: Popen) -> int:
 
                 # Monitor for new windows for the DISPLAY associated with game
                 window_thread = threading.Thread(
-                    target=monitor_windows, args=(d_secondary,)
+                    target=monitor_windows,
+                    args=(
+                        d_primary,
+                        d_secondary,
+                    ),
                 )
                 window_thread.daemon = True
                 window_thread.start()
