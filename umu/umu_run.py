@@ -2,7 +2,6 @@ import os
 import re
 import sys
 import threading
-import time
 from _ctypes import CFuncPtr
 from argparse import Namespace
 from array import array
@@ -500,65 +499,6 @@ def get_steam_appid(env: MutableMapping) -> int:
     return steam_appid
 
 
-def monitor_baselayer_appid(
-    d_primary: display.Display,
-    gamescope_baselayer_sequence: list[int],
-) -> None:
-    """Monitor for broken GAMESCOPECTRL_BASELAYER_APPID values."""
-    root_primary: Window = d_primary.screen().root
-    rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
-    atom = d_primary.get_atom(GamescopeAtom.BaselayerAppId.value)
-    root_primary.change_attributes(event_mask=X.PropertyChangeMask)
-
-    log.debug(
-        "Monitoring %s property for DISPLAY=%s...",
-        GamescopeAtom.BaselayerAppId.value,
-        d_primary.get_display_name(),
-    )
-
-    # Rearranged GAMESCOPECTRL_BASELAYER_APPID
-    rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_appid(
-        gamescope_baselayer_sequence
-    )
-
-    # Set the rearranged GAMESCOPECTRL_BASELAYER_APPID
-    if rearranged_gamescope_baselayer:
-        rearranged, _ = rearranged_gamescope_baselayer
-        set_gamescope_baselayer_appid(d_primary, rearranged)
-        rearranged_gamescope_baselayer = None
-
-    while True:
-        event: Event = d_primary.next_event()
-        prop: GetProperty | None = None
-
-        if event.type == X.PropertyNotify and event.atom == atom:
-            prop = root_primary.get_full_property(atom, Xatom.CARDINAL)
-
-        # Check if the layer sequence has changed to the broken one
-        if prop and prop.value[-1] != STEAM_WINDOW_ID:
-            log.debug(
-                "Broken %s property detected, will rearrange...",
-                GamescopeAtom.BaselayerAppId.value,
-            )
-            log.debug(
-                "%s has atom %s: %s",
-                GamescopeAtom.BaselayerAppId.value,
-                atom,
-                prop.value,
-            )
-            rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_appid(
-                prop.value
-            )
-
-        if rearranged_gamescope_baselayer:
-            rearranged, _ = rearranged_gamescope_baselayer
-            set_gamescope_baselayer_appid(d_primary, rearranged)
-            rearranged_gamescope_baselayer = None
-            continue
-
-        time.sleep(0.1)
-
-
 def monitor_windows(
     d_secondary: display.Display,
 ) -> None:
@@ -631,14 +571,6 @@ def run_in_steammode(proc: Popen) -> int:
                 )
                 window_thread.daemon = True
                 window_thread.start()
-
-                # Monitor for broken GAMESCOPECTRL_BASELAYER_APPID
-                baselayer_thread = threading.Thread(
-                    target=monitor_baselayer_appid,
-                    args=(d_primary, gamescope_baselayer_sequence),
-                )
-                baselayer_thread.daemon = True
-                baselayer_thread.start()
             return proc.wait()
     except DisplayConnectionError as e:
         # Case where steamos changed its display outputs as we're currently
