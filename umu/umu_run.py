@@ -573,7 +573,7 @@ def monitor_windows(d_secondary: display.Display, pid: int) -> None:
             set_steam_game_property(d_secondary, diff, steam_appid)
 
 
-def run_in_steammode() -> None:
+def run_in_steammode(pid: int) -> None:
     """Set properties on gamescope windows when running in steam mode.
 
     Currently, Flatpak apps that use umu as their runtime will not have their
@@ -607,7 +607,7 @@ def run_in_steammode() -> None:
                 # Monitor for new windows for the DISPLAY associated with game
                 window_thread = threading.Thread(
                     target=monitor_windows,
-                    args=(d_secondary, _get_pstree_root_pid(os.getpid())),
+                    args=(d_secondary, _get_pstree_root_pid(pid)),
                 )
                 window_thread.daemon = True
                 window_thread.start()
@@ -663,10 +663,10 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     if pid == 0:
         sys.stdout.flush()
         sys.stderr.flush()
-        if is_steammode:
-            run_in_steammode()
         os.chdir(cwd)
         os.execvp(command[0], command)  # noqa: S606
+    elif is_steammode:
+        run_in_steammode(pid)
 
     while True:
         try:
