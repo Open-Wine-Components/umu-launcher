@@ -2,11 +2,10 @@ import os
 import re
 import sys
 import threading
-import time
 from _ctypes import CFuncPtr
 from argparse import Namespace
 from array import array
-from collections.abc import MutableMapping
+from collections.abc import Generator, MutableMapping
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
@@ -25,8 +24,8 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.util import Timeout
 from Xlib import X, Xatom, display
 from Xlib.error import DisplayConnectionError
+from Xlib.ext import res as XRes
 from Xlib.protocol.request import GetProperty
-from Xlib.protocol.rq import Event
 from Xlib.xobject.drawable import Window
 
 from umu import __runtime_versions__, __version__
@@ -353,11 +352,54 @@ def build_command(
     )
 
 
-def get_window_ids(d: display.Display) -> set[str] | None:
+def _get_pids() -> Generator[int, Any, None]:
+    yield from (int(pid.name) for pid in Path("/proc").glob("*") if pid.name.isdigit())
+
+
+def get_pstree_from_pid(root_pid: int) -> set[int]:
+    """Get descendent PIDs of a PID."""
+    descendants: set[int] = set()
+    pid_to_ppid: dict[int, int] = {}
+
+    for pid in _get_pids():
+        try:
+            path = Path(f"/proc/{pid}/status")
+            with path.open(mode="r", encoding="utf-8") as file:
+                st_ppid = next(line for line in file if line.startswith("PPid:"))
+                st_ppid = st_ppid.removeprefix("PPid:").strip()
+                pid_to_ppid[pid] = int(st_ppid)
+        except (FileNotFoundError, ProcessLookupError, ValueError):
+            continue
+
+    current_pid: list[int] = [root_pid]
+    while current_pid:
+        current = current_pid.pop()
+        # Ignore. mypy flags [arg-type] due to the reuse of pid variable
+        for pid, ppid in pid_to_ppid.items():  # type: ignore
+            if ppid == current and pid not in descendants:
+                descendants.add(pid)  # type: ignore
+                current_pid.append(pid)  # type: ignore
+
+    log.debug("PID %s descendents: %s", root_pid, descendants)
+    return descendants
+
+
+def _query_client_id(d: display.Display, window_id: int) -> int:
+    specs = [{"client": window_id, "mask": XRes.LocalClientPIDMask}]
+    for rid in d.res_query_client_ids(specs).ids:
+        if rid.spec.client <= 0 or rid.spec.mask != XRes.LocalClientPIDMask:
+            continue
+        if not rid.value:
+            continue
+        return int(next(iter(rid.value)))
+
+    return -1
+
+
+def get_window_ids(d: display.Display) -> set[int] | None:
     """Get the list of window ids under the root window for a display."""
     try:
-        event: Event = d.next_event()
-        if event.type == X.CreateNotify:
+        if d.next_event().type == X.CreateNotify:
             return {child.id for child in d.screen().root.query_tree().children}
     except Exception as e:
         log.exception(e)
@@ -365,16 +407,61 @@ def get_window_ids(d: display.Display) -> set[str] | None:
     return None
 
 
+def get_pstree_window_ids(
+    d: display.Display, pstree: set[int], window_ids: set[int] | None
+) -> set[int] | None:
+    """Get a subset of window ids associated with a set of pids."""
+    game_window_ids: set[int] = set()
+    atom = d.get_atom("_NET_WM_PID", only_if_exists=True)
+
+    if not window_ids:
+        return None
+
+    for window_id in window_ids:
+        # Ensure only the game's windows are returned via _NET_WM_PID
+        # https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html#id-1.6.14
+        if atom != X.NONE:
+            window: Window = d.create_resource_object("window", window_id)
+            prop = window.get_full_property(atom, Xatom.CARDINAL)
+            if not prop or not prop.value:
+                continue
+            pid = prop.value.tolist()[0]
+            if pid not in pstree:
+                log.debug(
+                    "PID %s is unrelated to app or not a descendent, skipping", pid
+                )
+                continue
+            log.debug("Window ID %s has PID: %s", window_id, pid)
+            game_window_ids.add(window_id)
+            continue
+        log.debug(
+            "_NET_WM_PID not found, falling back to X-Resource to determine window PIDs"
+        )
+        # Determine a window's PID via X-Resource as fallback
+        # https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/raw/master/resproto.txt
+        for client in d.res_query_clients().clients:
+            pid = _query_client_id(d, client.resource_base)
+            if pid < 0:
+                continue
+            if pid not in pstree:
+                log.debug(
+                    "PID %s is unrelated to app or not a descendent, skipping", pid
+                )
+                continue
+            log.debug("Window ID %s has PID: %s", client.resource_base, pid)
+            game_window_ids.add(window_id)
+
+    return game_window_ids
+
+
 def set_steam_game_property(
-    d: display.Display,
-    window_ids: set[str],
-    steam_assigned_appid: int,
+    d: display.Display, window_ids: set[int], steam_assigned_appid: int
 ) -> display.Display:
     """Set Steam's assigned app ID on a list of windows."""
     log.debug("Steam app ID: %s", steam_assigned_appid)
     for window_id in window_ids:
         try:
-            window: Window = d.create_resource_object("window", int(window_id))
+            window: Window = d.create_resource_object("window", window_id)
             window.change_property(
                 d.get_atom(GamescopeAtom.SteamGame.value),
                 Xatom.CARDINAL,
@@ -500,70 +587,39 @@ def get_steam_appid(env: MutableMapping) -> int:
     return steam_appid
 
 
-def monitor_baselayer_appid(
-    d_primary: display.Display,
-    gamescope_baselayer_sequence: list[int],
-) -> None:
-    """Monitor for broken GAMESCOPECTRL_BASELAYER_APPID values."""
-    root_primary: Window = d_primary.screen().root
-    rearranged_gamescope_baselayer: tuple[list[int], int] | None = None
-    atom = d_primary.get_atom(GamescopeAtom.BaselayerAppId.value)
-    root_primary.change_attributes(event_mask=X.PropertyChangeMask)
+def _get_pstree_root_pid(root_pid: int) -> int:
+    if os.environ.get("container") != "flatpak":  # noqa: SIM112
+        return root_pid
 
-    log.debug(
-        "Monitoring %s property for DISPLAY=%s...",
-        GamescopeAtom.BaselayerAppId.value,
-        d_primary.get_display_name(),
-    )
-
-    # Rearranged GAMESCOPECTRL_BASELAYER_APPID
-    rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_appid(
-        gamescope_baselayer_sequence
-    )
-
-    # Set the rearranged GAMESCOPECTRL_BASELAYER_APPID
-    if rearranged_gamescope_baselayer:
-        rearranged, _ = rearranged_gamescope_baselayer
-        set_gamescope_baselayer_appid(d_primary, rearranged)
-        rearranged_gamescope_baselayer = None
-
+    # It's observed that a child bwrap subprocess in a Flatpak app will have a
+    # PPID of zero and will sometimes detach itself and its children from the
+    # umu-run subprocess pstree. Since this will bring the game processes with
+    # it, we need to find it and ensure it's always the root PID before mapping
+    # windows and PIDs
     while True:
-        event: Event = d_primary.next_event()
-        prop: GetProperty | None = None
-
-        if event.type == X.PropertyNotify and event.atom == atom:
-            prop = root_primary.get_full_property(atom, Xatom.CARDINAL)
-
-        # Check if the layer sequence has changed to the broken one
-        if prop and prop.value[-1] != STEAM_WINDOW_ID:
-            log.debug(
-                "Broken %s property detected, will rearrange...",
-                GamescopeAtom.BaselayerAppId.value,
-            )
-            log.debug(
-                "%s has atom %s: %s",
-                GamescopeAtom.BaselayerAppId.value,
-                atom,
-                prop.value,
-            )
-            rearranged_gamescope_baselayer = rearrange_gamescope_baselayer_appid(
-                prop.value
-            )
-
-        if rearranged_gamescope_baselayer:
-            rearranged, _ = rearranged_gamescope_baselayer
-            set_gamescope_baselayer_appid(d_primary, rearranged)
-            rearranged_gamescope_baselayer = None
-            continue
-
-        time.sleep(0.1)
+        st: dict[str, str] = {}
+        for pid in _get_pids():
+            try:
+                # https://docs.kernel.org/filesystems/proc.html#id10
+                path = Path(f"/proc/{pid}/status")
+                with path.open(mode="r", encoding="utf-8") as file:
+                    for line in file:
+                        key, val = line.split(":")
+                        st[key] = val.strip()
+                if st["Name"] == "bwrap" and st["PPid"] == "0" and st["Pid"] != "1":
+                    log.warning(
+                        "Flatpak detected, changing subprocess PID from %s -> %s",
+                        root_pid,
+                        st["Pid"],
+                    )
+                    return int(st["Pid"])
+            except (FileNotFoundError, ProcessLookupError, ValueError):
+                continue
 
 
-def monitor_windows(
-    d_secondary: display.Display,
-) -> None:
+def monitor_windows(d_secondary: display.Display, pid: int) -> None:
     """Monitor for new windows for a display and assign them Steam's assigned app ID."""
-    window_ids: set[str] | None = None
+    window_ids: set[int] | None = None
     steam_appid: int = get_steam_appid(os.environ)
 
     log.debug(
@@ -572,9 +628,9 @@ def monitor_windows(
     )
 
     while not window_ids:
-        window_ids = get_window_ids(d_secondary)
-
-    set_steam_game_property(d_secondary, window_ids, steam_appid)
+        window_ids = get_pstree_window_ids(
+            d_secondary, get_pstree_from_pid(pid), get_window_ids(d_secondary)
+        )
 
     log.debug(
         "Monitoring for new window IDs for DISPLAY=%s...",
@@ -583,11 +639,11 @@ def monitor_windows(
 
     # Check if the window sequence has changed
     while True:
-        current_window_ids: set[str] | None = get_window_ids(d_secondary)
-
+        current_window_ids: set[int] | None = get_pstree_window_ids(
+            d_secondary, get_pstree_from_pid(pid), get_window_ids(d_secondary)
+        )
         if not current_window_ids:
             continue
-
         if diff := current_window_ids.difference(window_ids):
             log.debug("New window IDs detected: %s", window_ids)
             log.debug("Current tracked windows IDs: %s", current_window_ids)
@@ -627,18 +683,11 @@ def run_in_steammode(proc: Popen) -> int:
 
                 # Monitor for new windows for the DISPLAY associated with game
                 window_thread = threading.Thread(
-                    target=monitor_windows, args=(d_secondary,)
+                    target=monitor_windows,
+                    args=(d_secondary, _get_pstree_root_pid(proc.pid)),
                 )
                 window_thread.daemon = True
                 window_thread.start()
-
-                # Monitor for broken GAMESCOPECTRL_BASELAYER_APPID
-                baselayer_thread = threading.Thread(
-                    target=monitor_baselayer_appid,
-                    args=(d_primary, gamescope_baselayer_sequence),
-                )
-                baselayer_thread.daemon = True
-                baselayer_thread.start()
             return proc.wait()
     except DisplayConnectionError as e:
         # Case where steamos changed its display outputs as we're currently
