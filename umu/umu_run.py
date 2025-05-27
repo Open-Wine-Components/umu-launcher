@@ -631,6 +631,7 @@ def monitor_windows(d_secondary: display.Display, pid: int) -> None:
         window_ids = get_pstree_window_ids(
             d_secondary, get_pstree_from_pid(pid), get_window_ids(d_secondary)
         )
+    set_steam_game_property(d_secondary, window_ids, steam_appid)
 
     log.debug(
         "Monitoring for new window IDs for DISPLAY=%s...",
