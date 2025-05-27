@@ -645,8 +645,8 @@ def monitor_windows(d_secondary: display.Display, pid: int) -> None:
         if not current_window_ids:
             continue
         if diff := current_window_ids.difference(window_ids):
-            log.debug("New window IDs detected: %s", window_ids)
-            log.debug("Current tracked windows IDs: %s", current_window_ids)
+            log.debug("New window IDs detected: %s", current_window_ids)
+            log.debug("Current tracked windows IDs: %s", window_ids)
             log.debug("Window IDs set difference: %s", diff)
             window_ids |= diff
             set_steam_game_property(d_secondary, diff, steam_appid)
