@@ -368,7 +368,7 @@ def get_pstree_from_pid(root_pid: int) -> set[int]:
                 st_ppid = next(line for line in file if line.startswith("PPid:"))
                 st_ppid = st_ppid.removeprefix("PPid:").strip()
                 pid_to_ppid[pid] = int(st_ppid)
-        except (FileNotFoundError, IndexError, ProcessLookupError, ValueError):
+        except (FileNotFoundError, ProcessLookupError, ValueError):
             continue
 
     current_pid: list[int] = [root_pid]
@@ -613,7 +613,7 @@ def _get_pstree_root_pid(root_pid: int) -> int:
                         st["Pid"],
                     )
                     return int(st["Pid"])
-            except (FileNotFoundError, IndexError, ProcessLookupError, ValueError):
+            except (FileNotFoundError, ProcessLookupError, ValueError):
                 continue
 
 
