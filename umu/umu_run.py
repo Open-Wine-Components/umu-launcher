@@ -234,7 +234,7 @@ def set_env(
     env["STEAM_COMPAT_TOOL_PATHS"] = (
         f"{env['PROTONPATH']}:{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
     )
-    env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
+    env["STEAM_COMPAT_MOUNTS"] = os.environ.get("STEAM_COMPAT_MOUNTS", "") + ":" + env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Zenity
     env["UMU_ZENITY"] = os.environ.get("UMU_ZENITY") or ""
