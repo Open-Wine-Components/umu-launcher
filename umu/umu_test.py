@@ -2230,7 +2230,7 @@ class TestGameLauncher(unittest.TestCase):
             result_args = __main__.parse_args()
             # Config
             _, result_dl = umu_run.check_env(self.env)
-            if version[1] != "host":
+            if version[1]:
                 umu_run.download_proton(result_dl, self.env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
@@ -2330,7 +2330,7 @@ class TestGameLauncher(unittest.TestCase):
             result_args = __main__.parse_args()
             # Config
             _, result_dl = umu_run.check_env(self.env)
-            if version[1] != "host":
+            if version[1]:
                 umu_run.download_proton(result_dl, self.env, thread_pool)
             # Prefix
             umu_run.setup_pfx(self.env["WINEPREFIX"])
