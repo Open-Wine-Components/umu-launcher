@@ -430,6 +430,7 @@ class UmuRuntime:
 
     name: str
     variant: str
+    appid: str
     path: Path | None = None
 
     def __post_init__(self) -> None:  # noqa: D105
@@ -440,14 +441,17 @@ class UmuRuntime:
 
     def __bool__(self) -> bool:
         """Return if the runtime's path has been populated."""
-        return self.path.is_dir() and self.path.joinpath("mtree.txt.gz").is_file()
+        return self.path is not None and self.path.is_dir() and self.path.joinpath("mtree.txt.gz").is_file()
+
+    def as_tuple(self) -> RuntimeVersion:
+        """Return runtime information as tuple."""
+        return self.name, self.variant, self.appid
 
 
 RUNTIME_VERSIONS = {
-    "host":    UmuRuntime("host",    ""        ),
-    "1070560": UmuRuntime("scout",   "steamrt1"),
-    "1391110": UmuRuntime("soldier", "steamrt2"),
-    "1628350": UmuRuntime("sniper",  "steamrt3"),
+    "host":    UmuRuntime("host",    ""        , ""   ),
+    "1391110": UmuRuntime("soldier", "steamrt2", "1391110"),
+    "1628350": UmuRuntime("sniper",  "steamrt3", "1628350"),
     # ""       : UmuRuntime("medic",   "steamrt4"),
 }
 
@@ -458,26 +462,25 @@ RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}
 class CompatLayer:
     """Class to describe a Steam compatibility layer."""
 
-    def __init__(self, path: str, shim: Path) -> None:  # noqa: D107
-        self.tool_path = path
+    def __init__(self, path: Path, shim: Path) -> None:  # noqa: D107
+        self.tool_path = path.as_posix()
         with Path(path).joinpath("toolmanifest.vdf").open(encoding="utf-8") as f:
             self.tool_manifest = vdf.load(f)["manifest"]
 
-        self.runtime: CompatLayer = (
-            CompatLayer(str(self.required_runtime.path), shim)
-            if self.required_tool_appid is not None
+        self.runtime: CompatLayer | None = (
+            CompatLayer(self.required_runtime.path, shim)
+            if self.required_tool_appid is not None and self.required_runtime.path is not None
             else None
         )
 
-        _path = Path(path)
-        if _path.joinpath("compatibilitytool.vdf").exists():
-            with _path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
+        if path.joinpath("compatibilitytool.vdf").exists():
+            with path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
                 # There can be multiple tools definitions in `compatibilitytools.vdf`
                 # Take the first one and hope it is the one with the correct display_name
                 compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
                 self.compatibility_tool = compat_tools[0]
         else:
-            self.compatibility_tool = {"display_name": _path.name}
+            self.compatibility_tool = {"display_name": path.name}
 
         self.shim = shim
 
@@ -495,6 +498,10 @@ class CompatLayer:
     @property
     def layer_name(self) -> str | None:  # noqa: D102
         return str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else None
+
+    @property
+    def is_proton(self) -> bool:  # noqa: D102
+        return self.layer_name == "proton"
 
     @property
     def display_name(self) -> str | None:  # noqa: D102
@@ -520,7 +527,7 @@ class CompatLayer:
 
         If the runtime uses another runtime, its entry point is prepended to the local command.
         """
-        log.info("Running '%s' using runtime on '%s'", self.display_name, self.required_runtime.name)
+        log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
         cmd = self.runtime.command(verb) if self.runtime is not None else []
         target = self._command(verb)
         if self.layer_name in {"container-runtime"}:
