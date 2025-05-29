@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import threading
 from _ctypes import CFuncPtr
@@ -10,7 +9,6 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
 from errno import ENETUNREACH
-from itertools import chain
 from pathlib import Path
 from pwd import getpwuid
 from re import match
@@ -27,7 +25,7 @@ from Xlib.error import DisplayConnectionError
 from Xlib.protocol.request import GetProperty
 from Xlib.xobject.drawable import Window
 
-from umu import __runtime_versions__, __version__
+from umu import __version__
 from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
@@ -39,7 +37,13 @@ from umu.umu_consts import (
 from umu.umu_log import log
 from umu.umu_plugins import set_env_toml
 from umu.umu_proton import get_umu_proton
-from umu.umu_runtime import CompatLayer, create_shim, setup_umu
+from umu.umu_runtime import (
+    RUNTIME_NAMES,
+    RUNTIME_VERSIONS,
+    CompatLayer,
+    create_shim,
+    setup_umu,
+)
 from umu.umu_util import (
     get_libc,
     get_library_paths,
@@ -56,35 +60,38 @@ NET_RETRIES = 3
 RuntimeVersion = tuple[str, str, str]
 
 
-def setup_pfx(path: str) -> None:
+def setup_pfx(path: Path) -> None:
     """Prepare a Proton compatible WINE prefix."""
-    pfx: Path = Path(path).joinpath("pfx").expanduser()
-    steam: Path = Path(path).expanduser().joinpath("drive_c", "users", "steamuser")
-    # Login name of the user as determined by the password database (pwd)
-    user: str = getpwuid(os.getuid()).pw_name
-    wineuser: Path = Path(path).expanduser().joinpath("drive_c", "users", user)
+    if not path.is_dir():
+        path.mkdir(parents=True, exist_ok=True)
 
-    if os.environ.get("UMU_NO_PROTON") == "1":
-        return
+    pfx: Path = path.joinpath("pfx")
+    steamuser: Path = path.joinpath("drive_c", "users", "steamuser")
+    # Login name of the user as determined by the password database (pwd)
+    unixuser: str = getpwuid(os.getuid()).pw_name
+    wineuser: Path = path.joinpath("drive_c", "users", unixuser)
+
+    path.joinpath("shadercache").mkdir(parents=True, exist_ok=True)
+    path.joinpath("gstreamer-1.0").mkdir(parents=True, exist_ok=True)
 
     if pfx.is_symlink():
         pfx.unlink()
 
     if not pfx.is_dir():
-        pfx.symlink_to(Path(path).expanduser().resolve(strict=True))
+        pfx.symlink_to(path.resolve(strict=True))
 
-    Path(path).joinpath("tracked_files").expanduser().touch()
+    path.joinpath("tracked_files").touch()
 
     # Create a symlink of the current user to the steamuser dir or vice versa
     # Default for a new prefix is: unixuser -> steamuser
-    if not wineuser.exists() and not steam.exists():
+    if not wineuser.exists() and not steamuser.exists():
         # For new prefixes with our Proton: user -> steamuser
-        steam.mkdir(parents=True)
+        steamuser.mkdir(parents=True)
         wineuser.symlink_to("steamuser")
-    elif wineuser.is_dir() and not steam.exists():
+    elif wineuser.is_dir() and not steamuser.exists():
         # When there's a user dir: steamuser -> user
-        steam.symlink_to(user)
-    elif not wineuser.exists() and steam.is_dir():
+        steamuser.symlink_to(unixuser)
+    elif not wineuser.exists() and steamuser.is_dir():
         wineuser.symlink_to("steamuser")
 
 
@@ -105,20 +112,17 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
         err: str = "Environment variable is empty: WINEPREFIX"
         raise ValueError(err)
 
-    if os.environ.get("UMU_NO_PROTON") != "1" and "WINEPREFIX" not in os.environ:
+    if "WINEPREFIX" not in os.environ:
         pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
-        pfx.mkdir(parents=True, exist_ok=True)
-        os.environ["WINEPREFIX"] = str(pfx)
+    else:
+        pfx: Path = Path(os.environ["WINEPREFIX"]).expanduser()
 
-    if (
-        os.environ.get("UMU_NO_PROTON") != "1"
-        and not Path(os.environ["WINEPREFIX"]).expanduser().is_dir()
-    ):
-        pfx: Path = Path(os.environ["WINEPREFIX"])
-        pfx.mkdir(parents=True, exist_ok=True)
-        os.environ["WINEPREFIX"] = str(pfx)
+    if not pfx.is_absolute():
+        err: str = "WINEPREFIX is set but not an absolute path."
+        raise RuntimeError(err)
 
-    env["WINEPREFIX"] = os.environ.get("WINEPREFIX", "")
+    os.environ["WINEPREFIX"] = str(pfx)
+    env["WINEPREFIX"] = str(pfx)
 
     do_download = False
     # Skip Proton if running a native Linux executable
@@ -131,7 +135,9 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
         os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
 
     # Proton Codename
-    if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest", "UMU-Latest"}:
+    if os.environ.get("PROTONPATH") in {
+        "GE-Proton", "GE-Latest", "UMU-Latest", "umu-scout", "umu-soldier", "umu-sniper"
+    }:
         do_download = True
 
     if "PROTONPATH" not in os.environ:
@@ -166,7 +172,7 @@ def set_env(
     env: dict[str, str], args: Namespace | tuple[str, list[str]]
 ) -> dict[str, str]:
     """Set various environment variables for the Steam Runtime."""
-    pfx: Path = Path(env["WINEPREFIX"]).expanduser().resolve(strict=True)
+    pfx: Path = Path(env["WINEPREFIX"]).expanduser().resolve(strict=False)
     protonpath: Path = Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
     # Command execution usage
     is_cmd: bool = isinstance(args, tuple)
@@ -232,16 +238,16 @@ def set_env(
     env["SteamGameId"] = env["SteamAppId"]
     env["UMU_INVOCATION_ID"] = token_hex(16)
 
-    runtime_path = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}" if os.environ['RUNTIMEPATH'] != "host" else ""
+    runtime_path = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}" if os.environ['RUNTIMEPATH'] else ""
 
     # PATHS
     env["WINEPREFIX"] = str(pfx)
+    env["STEAM_COMPAT_DATA_PATH"] = str(pfx)
+    env["STEAM_COMPAT_SHADER_PATH"] = str(pfx.joinpath("shadercache"))
     env["PROTONPATH"] = str(protonpath)
-    env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
-    env["STEAM_COMPAT_SHADER_PATH"] = f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
     env["STEAM_COMPAT_TOOL_PATHS"] = ":".join(
-        [f"{env['PROTONPATH']}", runtime_path]
-    ) if runtime_path else f"{env['PROTONPATH']}"
+        [f"{str(protonpath)}", runtime_path]
+    ) if runtime_path else f"{str(protonpath)}"
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Zenity
@@ -320,7 +326,7 @@ def build_command(
     #     raise FileNotFoundError(err)
 
     # Winetricks
-    if env.get("EXE", "").endswith("winetricks") and opts:
+    if layer.is_proton and env.get("EXE", "").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         return (
@@ -663,76 +669,44 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     return ret
 
 
-def resolve_runtime(runtimes: tuple[RuntimeVersion, ...]) -> RuntimeVersion | None:
+def resolve_runtime() -> RuntimeVersion | None:
     """Resolve the required runtime of a compatibility tool."""
-    version: tuple[str, str, str] | None = None
-
-    if os.environ.get("RUNTIMEPATH") in set(chain.from_iterable(runtimes)):
-        # Skip the parsing and trust the client
-        log.debug("RUNTIMEPATH is codename, skipping version resolution")
-        return next(
-            member for member in runtimes if os.environ["RUNTIMEPATH"] in member
-        )
-
+    # default to UMU-Latest if PROTONPATH is not set
     if not os.environ.get("PROTONPATH"):
-        log.debug("PROTONPATH unset, defaulting to '%s'", runtimes[0][1])
-        return runtimes[0]
+        os.environ["PROTONPATH"] = "UMU-Latest"
 
-    # Default to latest runtime for codenames
-    if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest", "UMU-Latest"}:
-        log.debug("PROTONPATH is codename, defaulting to '%s'", runtimes[0][1])
-        return runtimes[0]
+    named_runtimes = {
+        RUNTIME_NAMES["sniper"]: {"GE-Proton", "GE-Latest", "UMU-Latest", "umu-sniper"},
+        RUNTIME_NAMES["soldier"]: {"umu-scout", "umu-soldier"},
+    }
 
-    # Default to latest runtime for native Linux executables
-    if os.environ.get("UMU_NO_PROTON"):
-        log.debug("UMU_NO_PROTON set, defaulting to '%s'", runtimes[0][1])
-        return runtimes[0]
+    for name in named_runtimes:
+        if (protonpath := os.environ.get("PROTONPATH")) in named_runtimes[name]:
+            runtime = RUNTIME_VERSIONS[name]
+            log.debug(
+                "PROTONPATH is codename '%s', defaulting to '%s'",
+                protonpath,
+                runtime.name,
+            )
+            return runtime.as_tuple()
 
     # Solve the required runtime for PROTONPATH
     log.debug("PROTONPATH set, resolving its required runtime")
-    path: Path = STEAM_COMPAT.joinpath(os.environ.get("PROTONPATH", ""))
-    if os.environ.get("PROTONPATH") and path.is_dir():
-        os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
+    path: Path = Path(os.environ.get("PROTONPATH", "")).expanduser()
+    if not path.is_absolute():
+        path: Path = STEAM_COMPAT.joinpath(path).resolve()
+        if os.environ.get("PROTONPATH") and path.is_dir():
+            os.environ["PROTONPATH"] = str(path)
 
-    path = Path(os.environ["PROTONPATH"], "toolmanifest.vdf").expanduser().resolve()
-    if path.is_file():
-        version = get_umu_version_from_manifest(path, runtimes)
+    toolmanifest = path.joinpath("toolmanifest.vdf")
+    if toolmanifest.is_file():
+        layer = CompatLayer(toolmanifest.parent, Path())
+        runtime = layer.required_runtime
     else:
         err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
         raise FileNotFoundError(err)
 
-    return version
-
-
-def get_umu_version_from_manifest(
-    path: Path, runtimes: tuple[RuntimeVersion, ...]
-) -> RuntimeVersion | None:
-    """Find the required runtime from a compatibility tool's configuration file."""
-    key: str = "require_tool_appid"
-    appids: set[str] = {member[2] for member in runtimes}
-    appid: str = ""
-
-    with path.open(mode="r", encoding="utf-8") as file:
-        for line in file:
-            if key not in line:
-                continue
-            if match := re.search(r'"require_tool_appid"\s+"(\d+)', line):
-                appid = match.group(1)
-                break
-
-    if not appid:
-        if os.environ.get("UMU_NO_RUNTIME", None) == "1":
-            log.warning(
-                "Runtime Platform disabled. This mode is UNSUPPORTED by umu and remains only for convenience. "
-                "Issues created while using this mode will be automatically closed."
-            )
-            return "host", "host", "host"
-        return None
-
-    if appid not in set(filter(None, appids)):
-        return None
-
-    return next(member for member in runtimes if appid in member)
+    return runtime.as_tuple()
 
 
 def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
@@ -822,7 +796,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         opts = args[1]  # Reference the executable options
 
     # Resolve the runtime version for PROTONPATH
-    runtime_version = resolve_runtime(__runtime_versions__)
+    runtime_version = resolve_runtime()
     if not runtime_version:
         err: str = (
             f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
@@ -874,7 +848,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         # Setup the launcher and runtime files
         _, do_download = check_env(env)
 
-        if runtime_variant != "host":
+        if runtime_variant:
             UMU_LOCAL.joinpath(runtime_variant).mkdir(parents=True, exist_ok=True)
 
             future: Future = thread_pool.submit(
@@ -896,16 +870,21 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             except Exception as e:
                 log.exception(e)
 
-        # Prepare the prefix
-        with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
-            setup_pfx(env["WINEPREFIX"])
-
-        # Configure the environment
-        set_env(env, args)
-
         # Restore shim if missing
         if not UMU_LOCAL.joinpath("umu-shim").is_file():
             create_shim(UMU_LOCAL / "umu-shim")
+
+        protonpath: Path = Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
+        layer = CompatLayer(protonpath, UMU_LOCAL.joinpath("umu-shim"))
+
+        # Prepare the prefix
+        if layer.is_proton:
+            cdata_path: Path =  Path(env["WINEPREFIX"]).expanduser().resolve(strict=False)
+            with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
+                setup_pfx(cdata_path)
+
+        # Configure the environment
+        set_env(env, args)
 
         # Set all environment variables
         # NOTE: `env` after this block should be read only
@@ -918,11 +897,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         opts, Path(env["WINEPREFIX"])
     ):
         sys.exit(1)
-
-    layer = CompatLayer(
-        env["RUNTIMEPATH"] if env.get("UMU_NO_PROTON", False) else env["PROTONPATH"],
-        UMU_LOCAL.joinpath("umu-shim")
-    )
 
     # Build the command
     command: tuple[Path | str, ...] = build_command(env, layer, opts)
