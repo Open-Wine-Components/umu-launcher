@@ -591,9 +591,7 @@ def run_in_steammode(pid: int) -> None:
     # TODO: Find a robust way to get gamescope displays both in a container
     # and outside a container
     try:
-        main_display = os.environ.get("DISPLAY", ":0")
-        game_display = os.environ.get("STEAM_GAME_DISPLAY_0", ":1")
-        with xdisplay(main_display) as d_primary, xdisplay(game_display) as d_secondary:
+        with xdisplay(":0") as d_primary, xdisplay(":1") as d_secondary:
             gamescope_baselayer_sequence = get_gamescope_baselayer_appid(d_primary)
             # Dont do window fuckery if we're not inside gamescope
             if (
