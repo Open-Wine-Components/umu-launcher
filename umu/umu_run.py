@@ -33,7 +33,6 @@ from umu.umu_consts import (
     PR_SET_CHILD_SUBREAPER,
     PROTON_VERBS,
     STEAM_COMPAT,
-    STEAM_WINDOW_ID,
     UMU_LOCAL,
     FileLock,
     GamescopeAtom,
@@ -501,63 +500,6 @@ def get_gamescope_baselayer_appid(
         log.debug("%s property not found", GamescopeAtom.BaselayerAppId.value)
     except Exception as e:
         log.error("Error getting %s property", GamescopeAtom.BaselayerAppId.value)
-        log.exception(e)
-
-    return None
-
-
-def rearrange_gamescope_baselayer_appid(
-    sequence: list[int],
-) -> tuple[list[int], int] | None:
-    """Rearrange the GAMESCOPECTRL_BASELAYER_APPID value retrieved from a window."""
-    rearranged: list[int] = list(sequence)
-    steam_appid: int = get_steam_appid(os.environ)
-
-    log.debug("%s: %s", GamescopeAtom.BaselayerAppId.value, sequence)
-
-    if not steam_appid:
-        # Case when the app ID can't be found from environment variables
-        # See https://github.com/Open-Wine-Components/umu-launcher/issues/318
-        log.error(
-            "Failed to acquire app ID, skipping %s rearrangement",
-            GamescopeAtom.BaselayerAppId.value,
-        )
-        return None
-
-    try:
-        rearranged.remove(steam_appid)
-    except ValueError as e:
-        # Case when the app ID isn't in GAMESCOPECTRL_BASELAYER_APPID
-        # One case this can occur is if the client overrides Steam's env vars
-        # that we get the app ID from
-        log.exception(e)
-        return None
-
-    # Steam's window should be last, while assigned app id 2nd to last
-    rearranged = [*rearranged[:-1], steam_appid, STEAM_WINDOW_ID]
-    log.debug("Rearranging %s", GamescopeAtom.BaselayerAppId.value)
-    log.debug("'%s' -> '%s'", sequence, rearranged)
-
-    return rearranged, steam_appid
-
-
-def set_gamescope_baselayer_appid(
-    d: display.Display, rearranged: list[int]
-) -> display.Display | None:
-    """Set a new gamescope GAMESCOPECTRL_BASELAYER_APPID on the primary root window."""
-    try:
-        # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.get_atom(GamescopeAtom.BaselayerAppId.value)
-        # Set the property value
-        d.screen().root.change_property(atom, Xatom.CARDINAL, 32, rearranged)
-        log.debug(
-            "Successfully set %s property: %s",
-            GamescopeAtom.BaselayerAppId.value,
-            ", ".join(map(str, rearranged)),
-        )
-        return d
-    except Exception as e:
-        log.error("Error setting %s property", GamescopeAtom.BaselayerAppId.value)
         log.exception(e)
 
     return None

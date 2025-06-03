@@ -44,11 +44,6 @@ class FileLock(Enum):
     Prefix = "pfx.lock"  # WINEPREFIX lock
 
 
-# Gamescope looks for the app ID 769 to determine if the window is Steam's
-# The app ID is expected to be in the atom GAMESCOPECTRL_BASELAYER_APPID and is
-# a required value in the sequence
-STEAM_WINDOW_ID = 769
-
 PROTON_VERBS = {
     "waitforexitandrun",
     "run",

@@ -1171,68 +1171,6 @@ class TestGameLauncher(unittest.TestCase):
             # Ensure there's data
             self.assertTrue(shim.stat().st_size > 0, f"Expected '{shim}' to have data")
 
-    def test_rearrange_gamescope_baselayer_order_none(self):
-        """Test rearrange_gamescope_baselayer_order for layer ID mismatches."""
-        steam_window_id = 769
-        # Mock a real assigned non-Steam app ID
-        steam_layer_id = 1234
-        # Mock an overridden value STEAM_COMPAT_TRANSCODED_MEDIA_PATH.
-        # The app ID for this env var is the last segment and should be found
-        # in GAMESCOPECTRL_BASELAYER_APPID. When it's not, then that indicates
-        # it has been tampered by the client or by some middleware.
-        os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        baselayer = [1, steam_window_id, steam_layer_id]
-        result = umu_run.rearrange_gamescope_baselayer_appid(baselayer)
-
-        self.assertTrue(result is None, f"Expected None, received '{result}'")
-
-    def test_rearrange_gamescope_baselayer_order_broken(self):
-        """Test rearrange_gamescope_baselayer_order when passed broken seq.
-
-        When the Steam client's window ID is not the last element in
-        the atom GAMESCOPECTRL_BASELAYER_APPID, then a rearranged sequence
-        should be returned where the last element is Steam's window ID and
-        the 2nd to last is the assigned layer ID.
-        """
-        steam_window_id = 769
-        os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_appid(os.environ)
-        baselayer = [1, steam_window_id, steam_layer_id]
-        expected = (
-            [baselayer[0], steam_layer_id, steam_window_id],
-            steam_layer_id,
-        )
-        result = umu_run.rearrange_gamescope_baselayer_appid(baselayer)
-
-        self.assertEqual(
-            result,
-            expected,
-            f"Expected {expected}, received {result}",
-        )
-
-    def test_rearrange_gamescope_baselayer_order_invalid(self):
-        """Test rearrange_gamescope_baselayer_order for invalid seq."""
-        baselayer = []
-
-        self.assertTrue(
-            umu_run.rearrange_gamescope_baselayer_appid(baselayer) is None,
-            "Expected None",
-        )
-
-    def test_rearrange_gamescope_baselayer_order(self):
-        """Test rearrange_gamescope_baselayer_order when passed a sequence."""
-        steam_window_id = 769
-        os.environ["STEAM_COMPAT_TRANSCODED_MEDIA_PATH"] = "/123"
-        steam_layer_id = umu_run.get_steam_appid(os.environ)
-        baselayer = [1, steam_layer_id, steam_window_id]
-        result = umu_run.rearrange_gamescope_baselayer_appid(baselayer)
-
-        # Original sequence should be returned when Steam's window ID is last
-        self.assertTrue(
-            result == (baselayer, steam_layer_id),
-            f"Expected {baselayer}, received {result}",
-        )
-
     def test_run_command(self):
         """Test run_command."""
         mock_exe = "foo"
