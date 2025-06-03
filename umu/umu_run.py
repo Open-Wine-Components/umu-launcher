@@ -24,7 +24,6 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.util import Timeout
 from Xlib import X, Xatom, display
 from Xlib.error import DisplayConnectionError
-from Xlib.ext import res as XRes
 from Xlib.protocol.request import GetProperty
 from Xlib.xobject.drawable import Window
 
