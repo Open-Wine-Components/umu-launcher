@@ -24,7 +24,6 @@ from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.util import Timeout
 from Xlib import X, Xatom, display
 from Xlib.error import DisplayConnectionError
-from Xlib.ext import res as XRes
 from Xlib.protocol.request import GetProperty
 from Xlib.xobject.drawable import Window
 
@@ -383,18 +382,6 @@ def get_pstree_from_pid(root_pid: int) -> set[int]:
     return descendants
 
 
-def _query_client_id(d: display.Display, window_id: int) -> int:
-    specs = [{"client": window_id, "mask": XRes.LocalClientPIDMask}]
-    for rid in d.res_query_client_ids(specs).ids:
-        if rid.spec.client <= 0 or rid.spec.mask != XRes.LocalClientPIDMask:
-            continue
-        if not rid.value:
-            continue
-        return int(next(iter(rid.value)))
-
-    return -1
-
-
 def get_window_ids(d: display.Display) -> set[int] | None:
     """Get the list of window ids under the root window for a display."""
     try:
@@ -416,39 +403,31 @@ def get_pstree_window_ids(
     if not window_ids:
         return None
 
+    # Return if _NET_WM_PID does not exist. Its atom existing will be a hard
+    # requirement as, unfortunately, we cannot fallback to X-Res because the
+    # PIDs returned would not map to the ones in the Flatpak's namespace
+    if atom == X.NONE:
+        log.warning("_NET_WM_PID does not exist, skipping window IDs")
+        return None
+
+    # Ensure only the game's windows are returned via _NET_WM_PID
+    # https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html#id-1.6.14
     for window_id in window_ids:
-        # Ensure only the game's windows are returned via _NET_WM_PID
-        # https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html#id-1.6.14
-        if atom != X.NONE:
-            window: Window = d.create_resource_object("window", window_id)
-            prop = window.get_full_property(atom, Xatom.CARDINAL)
-            if not prop or not prop.value:
-                continue
-            pid = prop.value.tolist()[0]
-            if pid not in pstree:
-                log.debug(
-                    "PID %s is unrelated to app or not a descendent, skipping", pid
-                )
-                continue
-            log.debug("Window ID %s has PID: %s", window_id, pid)
-            game_window_ids.add(window_id)
+        window: Window = d.create_resource_object("window", window_id)
+        prop = window.get_full_property(atom, Xatom.CARDINAL)
+        if not prop or not prop.value:
             continue
-        log.debug(
-            "_NET_WM_PID not found, falling back to X-Resource to determine window PIDs"
-        )
-        # Determine a window's PID via X-Resource as fallback
-        # https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/raw/master/resproto.txt
-        for client in d.res_query_clients().clients:
-            pid = _query_client_id(d, client.resource_base)
-            if pid < 0:
-                continue
-            if pid not in pstree:
-                log.debug(
-                    "PID %s is unrelated to app or not a descendent, skipping", pid
-                )
-                continue
-            log.debug("Window ID %s has PID: %s", client.resource_base, pid)
-            game_window_ids.add(window_id)
+        pid = prop.value.tolist()[0]
+        if pid not in pstree:
+            log.debug(
+                "PID %s is unrelated to app or not a descendent, skipping window ID: %s",
+                pid,
+                window_id,
+            )
+            continue
+        log.debug("Window ID %s has PID: %s", window_id, pid)
+        game_window_ids.add(window_id)
+        continue
 
     return game_window_ids
 
