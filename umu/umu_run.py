@@ -149,7 +149,7 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
     return env, do_download
 
 
-def download_proton(download: bool, env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]) -> None:
+def download_proton(download: bool, env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]) -> None:  # noqa: FBT001
     """Check if umu should download proton and check if PROTONPATH is set.
 
     I am not gonna lie about it, this only exists to satisfy the tests, because downloading
@@ -187,7 +187,7 @@ def set_env(
 
     # PROTON_VERB
     # For invalid Proton verbs, just assign the waitforexitandrun
-    if os.environ.get("PROTON_VERB") in PROTON_VERBS:
+    if os.environ.get("PROTON_VERB", "").split("=")[0] in PROTON_VERBS:
         env["PROTON_VERB"] = os.environ["PROTON_VERB"]
     else:
         env["PROTON_VERB"] = "waitforexitandrun"
@@ -342,7 +342,18 @@ def build_command(
     # if env.get("UMU_NO_PROTON") == "1":
     #     return *entry_point, env["EXE"], *opts
 
+    nsenter: tuple[str, ...] = ()
+    if env.get("PROTON_VERB", "").startswith("runinprefix="):
+        verb_pid = os.environ["PROTON_VERB"].split("=")
+        if len(verb_pid) == 2:  # noqa: PLR2004
+            verb, pid = verb_pid
+            layer.runtime = None
+            nsenter = ("nsenter", "--preserve-credentials", "--user", "--mount", "--env", "--target", pid)
+            env["PROTON_VERB"] = verb
+            log.debug("Using nsenter to under namespace of pid: %s", pid)
+
     return (
+        *nsenter,
         *layer.command(env["PROTON_VERB"]),
         env["EXE"],
         *opts,
