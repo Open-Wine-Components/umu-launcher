@@ -15,7 +15,7 @@ from pwd import getpwuid
 from re import match
 from secrets import token_hex
 from socket import AF_INET, SOCK_DGRAM, socket
-from subprocess import Popen
+from subprocess import PIPE, Popen
 from types import FrameType
 from typing import Any
 
@@ -151,7 +151,7 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
     return env, do_download
 
 
-def download_proton(download: bool, env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]) -> None:
+def download_proton(download: bool, env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]) -> None:  # noqa: FBT001
     """Check if umu should download proton and check if PROTONPATH is set.
 
     I am not gonna lie about it, this only exists to satisfy the tests, because downloading
@@ -245,6 +245,7 @@ def set_env(
     # PATHS
     env["WINEPREFIX"] = str(pfx)
     env["STEAM_COMPAT_DATA_PATH"] = str(pfx)
+    env["STEAM_COMPAT_APP_ID"] = str(pfx).replace("/", "_")
     env["STEAM_COMPAT_SHADER_PATH"] = str(pfx.joinpath("shadercache"))
     env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_TOOL_PATHS"] = ":".join(
@@ -344,7 +345,24 @@ def build_command(
     # if env.get("UMU_NO_PROTON") == "1":
     #     return *entry_point, env["EXE"], *opts
 
+    nsenter: tuple[str, ...] = ()
+    if launch_client := layer.launch_client:
+        with Popen([launch_client, "--list"], stdout=PIPE, stderr=PIPE) as proc:
+            out, err = proc.communicate()
+        bus_names = out.decode("utf-8").splitlines()
+        pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
+        if f"--bus-name={pfx_bus}" in bus_names:
+            nsenter = (launch_client, f"--bus-name={pfx_bus}", "--")
+            # Unset runtime to make the CompatLayer stack report only the command
+            # of the innermost layer instead of the whole layer chain.
+            layer.runtime = None
+            env["PROTON_VERB"] = "runinprefix"
+            log.info("Re-entering container through bus '%s'", pfx_bus)
+        else:
+            env["PROTON_VERB"] = "waitforexitandrun"
+
     return (
+        *nsenter,
         *layer.command(env["PROTON_VERB"]),
         env["EXE"],
         *opts,
@@ -621,7 +639,7 @@ def run_in_steammode(proc: Popen) -> int:
     return proc.wait()
 
 
-def signal_handler(sig: int, frame: FrameType):  # noqa: ARG001
+def signal_handler(sig: int, frame: FrameType | None):  # noqa: ARG001
     """Handle SIGINT/SIGTERM."""
     pstree = get_pstree_from_pid(os.getpid())
     for p in pstree:

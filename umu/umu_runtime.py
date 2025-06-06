@@ -496,9 +496,9 @@ class CompatLayer:
         return RUNTIME_VERSIONS[self.required_tool_appid]
 
     @property
-    def layer_name(self) -> str | None:  # noqa: D102
-        layer_name = str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else None
-        if layer_name == "umu-passthrough":
+    def layer_name(self) -> str:  # noqa: D102
+        layer_name = str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else ""
+        if layer_name == "umu-passthrough" and self.runtime is not None:
             layer_name = self.runtime.tool_manifest.get("compatmanager_layer_name")
         return layer_name
 
