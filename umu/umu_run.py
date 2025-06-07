@@ -143,7 +143,7 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
     return env, do_download
 
 
-def download_proton(download: bool, env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]) -> None:
+def download_proton(env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager], *, download: bool) -> None:
     """Check if umu should download proton and check if PROTONPATH is set.
 
     I am not gonna lie about it, this only exists to satisfy the tests, because downloading
@@ -732,13 +732,8 @@ def get_umu_version_from_manifest(
                 break
 
     if not appid:
-        if os.environ.get("UMU_NO_RUNTIME", None) == "1":
-            log.warning(
-                "Runtime Platform disabled. This mode is UNSUPPORTED by umu and remains only for convenience. "
-                "Issues created while using this mode will be automatically closed."
-            )
-            return "host", "host", "host"
-        return None
+        os.environ["UMU_RUNTIME_UPDATE"] = "0"
+        return "host", "host", "host"
 
     if appid not in appids:
         return None
@@ -873,7 +868,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
                 setup_umu, UMU_LOCAL / runtime_variant, runtime_version, session_pools
             )
 
-            download_proton(do_download, env, session_pools)
+            download_proton(env, session_pools, download=do_download)
 
         try:
             future.result()
