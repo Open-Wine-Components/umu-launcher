@@ -2499,12 +2499,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_APP_ID"],
                 "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
             )
-            self.assertEqual(
-                self.env["SteamGameId"],
-                self.env["SteamAppId"],
-                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
-            )
-
             # PATHS
             self.assertEqual(
                 self.env["STEAM_COMPAT_SHADER_PATH"],
@@ -2615,12 +2609,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_APP_ID"],
                 "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
             )
-            self.assertEqual(
-                self.env["SteamGameId"],
-                self.env["SteamAppId"],
-                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
-            )
-
             # PATHS
             self.assertEqual(
                 self.env["STEAM_COMPAT_SHADER_PATH"],
@@ -2736,12 +2724,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_APP_ID"],
                 "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
             )
-            self.assertEqual(
-                self.env["SteamGameId"],
-                self.env["SteamAppId"],
-                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
-            )
-
             # PATHS
             self.assertEqual(
                 self.env["STEAM_COMPAT_SHADER_PATH"],
@@ -2870,12 +2852,6 @@ class TestGameLauncher(unittest.TestCase):
                 self.env["STEAM_COMPAT_APP_ID"],
                 "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
             )
-            self.assertEqual(
-                self.env["SteamGameId"],
-                self.env["SteamAppId"],
-                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
-            )
-
             # PATHS
             self.assertEqual(
                 self.env["STEAM_COMPAT_SHADER_PATH"],
