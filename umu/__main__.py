@@ -30,7 +30,7 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         "-v",
         "--version",
         action="version",
-        version=f"umu-launcher version {__version__} ({sys.version})",
+        version=f"umu-launcher {__version__} ({os.uname().machine} {sys.version})",
         help="show this version and exit",
     )
     parser.add_argument("--config", help=("path to TOML file (requires Python 3.11+)"))
