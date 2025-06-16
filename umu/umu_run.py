@@ -14,6 +14,7 @@ from itertools import chain
 from pathlib import Path
 from pwd import getpwuid
 from re import match
+from secrets import token_hex
 from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
 from typing import Any
@@ -223,6 +224,8 @@ def set_env(
         env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][env["UMU_ID"].find("-") + 1 :]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = os.environ.get("SteamGameId", env["SteamAppId"])  # noqa: SIM112
+    env["UMU_INVOCATION_ID"] = token_hex(16)
+
     # PATHS
     env["WINEPREFIX"] = str(pfx)
     env["PROTONPATH"] = str(protonpath)
@@ -507,15 +510,11 @@ def get_steam_appid(env: MutableMapping) -> int:
     return steam_appid
 
 
-def _get_pstree_root_pid(root_pid: int) -> int:
-    if os.environ.get("container") != "flatpak":  # noqa: SIM112
-        return root_pid
+def _get_pstree_root_pid(env: MutableMapping) -> int:
+    target = "pv-adverb"
 
-    # It's observed that a child bwrap subprocess in a Flatpak app will have a
-    # PPID of zero and will sometimes detach itself and its children from the
-    # umu-run subprocess pstree. Since this will bring the game processes with
-    # it, we need to find it and ensure it's always the root PID before mapping
-    # windows and PIDs
+    # Find a target process where it's descendents create game windows
+    # and return its PID
     while True:
         st: dict[str, str] = {}
         for pid in _get_pids():
@@ -524,15 +523,14 @@ def _get_pstree_root_pid(root_pid: int) -> int:
                 path = Path(f"/proc/{pid}/status")
                 with path.open(mode="r", encoding="utf-8") as file:
                     for line in file:
-                        key, val = line.split(":")
+                        key, val = line.split(":", 1)
                         st[key] = val.strip()
-                if st["Name"] == "bwrap" and st["PPid"] == "0" and st["Pid"] != "1":
-                    log.warning(
-                        "Flatpak detected, changing subprocess PID from %s -> %s",
-                        root_pid,
-                        st["Pid"],
-                    )
-                    return int(st["Pid"])
+                if st["Name"] != target:
+                    continue
+                # Ensure the target process is related to the game
+                inv_id = f"UMU_INVOCATION_ID={env['UMU_INVOCATION_ID']}".encode()
+                if inv_id in Path(f"/proc/{pid}/environ").read_bytes():
+                    return int(pid)
             except (FileNotFoundError, ProcessLookupError, ValueError):
                 continue
 
@@ -605,7 +603,7 @@ def run_in_steammode(proc: Popen) -> int:
                 # Monitor for new windows for the DISPLAY associated with game
                 window_thread = threading.Thread(
                     target=monitor_windows,
-                    args=(d_secondary, _get_pstree_root_pid(proc.pid)),
+                    args=(d_secondary, _get_pstree_root_pid(os.environ)),
                 )
                 window_thread.daemon = True
                 window_thread.start()
