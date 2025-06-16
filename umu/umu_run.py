@@ -222,7 +222,7 @@ def set_env(
     if match(r"^umu-[\d\w]+$", env["UMU_ID"]):
         env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][env["UMU_ID"].find("-") + 1 :]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
-    env["SteamGameId"] = os.environ.get("SteamGameId", env["SteamAppId"])
+    env["SteamGameId"] = os.environ.get("SteamGameId", env["SteamAppId"])  # noqa: SIM112
     # PATHS
     env["WINEPREFIX"] = str(pfx)
     env["PROTONPATH"] = str(protonpath)
