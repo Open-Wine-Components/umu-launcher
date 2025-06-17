@@ -511,6 +511,7 @@ def get_steam_appid(env: MutableMapping) -> int:
 
 
 def _get_pstree_root_pid(env: MutableMapping) -> int:
+    # https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/raw/main/pressure-vessel/adverb.1.md
     target = "pv-adverb"
 
     # Find a target process where it's descendents create game windows
