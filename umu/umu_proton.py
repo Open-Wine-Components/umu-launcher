@@ -515,9 +515,11 @@ def _get_delta(
         log.debug("Received empty byte string for patch, skipping")
         return None
 
-    from cbor2 import CBORDecodeError, dumps, loads
+    # Ignore. cbor2 is an optional dep
+    from cbor2 import CBORDecodeError, dumps, loads  # noqa: PLC0415
 
-    from .umu_delta import valid_key, valid_signature
+    # Ignore. umu_delta is relevant for sys packages when using *-Latest tokens
+    from .umu_delta import valid_key, valid_signature  # noqa: PLC0415
 
     try:
         cbor = loads(patch)

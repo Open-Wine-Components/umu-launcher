@@ -821,7 +821,8 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
-        import truststore
+        # Ignore. truststore is an optional dep
+        import truststore  # noqa: PLC0415
 
         truststore.inject_into_ssl()
 

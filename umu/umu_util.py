@@ -275,7 +275,8 @@ def extract_tarfile(path: Path, dest: Path) -> Path | None:
     # See https://github.com/python/cpython/blob/b83be9c9718aac42d0d8fc689a829d6594192afa/Lib/tarfile.py#L1871
     with taropen(path, f"r:{path.suffix.removeprefix('.')}") as tar:  # type: ignore
         try:
-            from tarfile import tar_filter
+            # We require Python 3.10+ and extraction filters require 3.12+
+            from tarfile import tar_filter  # noqa: PLC0415
 
             tar.extraction_filter = tar_filter
             log.debug("Using data filter for archive")
