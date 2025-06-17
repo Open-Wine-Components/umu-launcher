@@ -21,7 +21,8 @@ def set_env_toml(
     updates to Proton.
     """
     try:
-        import tomllib
+        # Ignore. We require Python 3.10+ and tomllib requires 3.11+
+        import tomllib  # noqa: PLC0415
     except ModuleNotFoundError:
         err: str = "tomllib requires Python 3.11"
         raise ModuleNotFoundError(err)

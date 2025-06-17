@@ -42,7 +42,11 @@ dependencies = ["python-xlib>=0.33", "urllib3>=2.0.0"]
 # For network requests, use the system's CA bundle instead of certifi's
 cli = ["truststore"]
 # Support for delta updates for Proton and the Steam Linux Runtime
-delta-updates = ["cbor2>=5.4.6,<6.0.0", "xxhash>=3.2.0,<4.0.0", "pyzstd>=0.16.2"]
+delta-updates = [
+    "cbor2>=5.4.6,<6.0.0",
+    "xxhash>=3.2.0,<4.0.0",
+    "pyzstd>=0.16.2",
+]
 
 [project.scripts]
 umu-run = "umu.__main__:main"
@@ -289,7 +293,7 @@ select = [
     #
     # Use instead:
     # if a:
-    #   print(a) 
+    #   print(a)
     "PLC1802",
     # Check for shallow copies of os.environ
     "PLW1507",
@@ -304,6 +308,27 @@ select = [
     # Example:
     # int(os.getenv("FOO", 1))
     "PLW1508",
+    # Check for unnecessary key-based access with MutableMapping types in loops
+    # a = {"a": 1, "b": 2, }
+    # for k, v in a.items():
+    #   print(a[k])
+    "PLR1733",
+    # Enforce top-level import statements whenever possible as defined in PEP8
+    # The only exceptions should be for optional dependencies defined in pyproject.toml
+    # or when using features above our minimum required Python
+    # https://peps.python.org/pep-0008/#imports
+    "PLC0415",
+    # Check for invalid ruff formatter suppression comments
+    "RUF028",
+    # Check for enum classes decorated with @dataclass to avoid unexpected results
+    # @dataclass
+    # class E(Enum):
+    #    A = 1
+    #    B = 2
+    # print(E.A == E.B)  # True
+    "RUF049",
+    # Check for function definitions with boolean positonal arguments/parameters
+    "FBT",
 ]
 ignore = [
     # Format
@@ -332,5 +357,9 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 logger-objects = ["umu.umu_log.log"]
 
 [tool.ruff.lint.per-file-ignores]
-"umu_test.py" = ["ANN"]
-"umu_test_plugins.py" = ["ANN"]
+"umu_test.py" = ["ANN", "PLC0415"]
+"umu_test_plugins.py" = ["ANN", "PLC0415"]
+
+[tool.ruff.lint.flake8-boolean-trap]
+# https://docs.python.org/3/library/os.html#os.set_inheritable
+extend-allowed-calls = ["os.set_inheritable"]
