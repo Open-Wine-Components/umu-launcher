@@ -504,6 +504,9 @@ def get_steam_appid(env: MutableMapping) -> int:
         with suppress(ValueError, IndexError):
             return int(Path(path).parts[-2])
 
+    with suppress(ValueError):
+            return int(env.get("SteamGameId", "")) >> 32
+
     return steam_appid
 
 
