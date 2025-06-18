@@ -771,7 +771,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     prereq: bool = False
     version: RuntimeVersion | None = None
 
-    log.info("umu-launcher version %s (%s)", __version__, sys.version)
+    log.info("umu-launcher %s (%s %s)", __version__, os.uname().machine, sys.version)
 
     # Test the network environment and fail early if the user is trying
     # to run umu-run offline because an internet connection is required
