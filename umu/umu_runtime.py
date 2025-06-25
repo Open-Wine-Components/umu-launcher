@@ -66,6 +66,107 @@ def create_shim(file_path: Path):
     # Make the script executable
     file_path.chmod(0o700)
 
+def create_reaper(file_path: Path):
+    """Create a python reaper at the specified file path.
+
+    Args:
+        file_path (Path): The path where the reaper script will be created.
+
+    """
+    script_content = (
+        '#!/usr/bin/env python3\n'
+        '\n'
+        'import logging\n'
+        'import os\n'
+        'import sys\n'
+        'from argparse import Namespace\n'
+        'from ctypes import CDLL, c_int, c_ulong, create_string_buffer, byref\n'
+        'from ctypes.util import find_library\n'
+        'from logging import getLogger\n'
+        'from typing import List\n'
+        '\n'
+        '# Constant defined in prctl.h\n'
+        '# See prctl(2) for more details\n'
+        'PR_SET_CHILD_SUBREAPER = 36\n'
+        'PR_SET_NAME = 15\n'
+        '\n'
+        'def get_libc() -> str:\n'
+        '    """Find libc.so from the user\'s system."""\n'
+        '    return find_library("c") or ""\n'
+        '\n'
+        '\n'
+        'def subreaper(args: Namespace, other: List[str]) -> int:\n'
+        '    logger = getLogger("subreaper")\n'
+        '    logging.basicConfig(\n'
+        '        format="[%(name)s] %(levelname)s: %(message)s",\n'
+        '        level=logging.DEBUG if args.debug else logging.INFO,\n'
+        '        stream=sys.stderr,\n'
+        '    )\n'
+        '\n'
+        '    logger.debug("command: %s", args)\n'
+        '    logger.debug("arguments: %s", other)\n'
+        '\n'
+        '    command: List[str] = [args.command, *other]\n'
+        '    workdir: str = args.workdir\n'
+        '    child_status: int = 0\n'
+        '\n'
+        '    libc: str = get_libc()\n'
+        '    prctl = CDLL(libc).prctl\n'
+        '    prctl.restype = c_int\n'
+        '    prctl.argtypes = [\n'
+        '        c_int,\n'
+        '        # c_ulong,\n'
+        '        # c_ulong,\n'
+        '        # c_ulong,\n'
+        '        # c_ulong,\n'
+        '    ]\n'
+        '\n'
+        '    proc_name = b"reaper"\n'
+        '    buff = create_string_buffer(len(proc_name)+1)\n'
+        '    buff.value = proc_name\n'
+        '    prctl_ret = prctl(PR_SET_NAME, byref(buff), 0, 0, 0)\n'
+        '    logger.debug("prctl PR_SET_NAME exited with status: %s", prctl_ret)\n'
+        '\n'
+        '    prctl_ret = prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0)\n'
+        '    logger.debug("prctl PR_SET_CHILD_SUBREAPER exited with status: %s", prctl_ret)\n'
+        '\n'
+        '    pid = os.fork()  # pylint: disable=E1101\n'
+        '    if pid == -1:\n'
+        '        logger.error("Fork failed")\n'
+        '\n'
+        '    if pid == 0:\n'
+        '        sys.stdout.flush()\n'
+        '        sys.stderr.flush()\n'
+        '        os.chdir(workdir)\n'
+        '        os.execvp(command[0], command)  # noqa: S606\n'
+        '\n'
+        '    while True:\n'
+        '        try:\n'
+        '            child_pid, child_status = os.wait()  # pylint: disable=E1101\n'
+        '            logger.info("Child %s exited with wait status: %s", child_pid, child_status)\n'
+        '        except ChildProcessError as e:\n'
+        '            logger.info(e)\n'
+        '            break\n'
+        '\n'
+        '    return child_status\n'
+        '\n'
+        '\n'
+        'if __name__ == "__main__":\n'
+        '    sep = sys.argv.index("--")\n'
+        '    argv = sys.argv[sep+1:]\n'
+        '    args = Namespace(command=argv.pop(0), workdir=os.getcwd(), debug=os.environ.get("UMU_REAPER_DEBUG") in {"1", "debug"})\n'
+        '    subreaper(args, argv)\n'
+        '\n'
+        '\n'
+        '__all__ = ["subreaper"]'
+    )
+
+    # Write the script content to the specified file path
+    with file_path.open("w") as file:
+        file.write(script_content)
+
+    # Make the script executable
+    file_path.chmod(0o700)
 
 def _install_umu(
     runtime_ver: RuntimeVersion,
@@ -260,6 +361,7 @@ def _install_umu(
     local.joinpath("_v2-entry-point").rename(local.joinpath("umu"))
 
     create_shim(local / "umu-shim")
+    create_reaper(local / "reaper")
 
     # Validate the runtime after moving the files
     check_runtime(local, runtime_ver)
@@ -372,6 +474,10 @@ def _update_umu(
     # Restore shim if missing
     if not local.joinpath("umu-shim").is_file():
         create_shim(local / "umu-shim")
+
+    # Restore reaper if missing
+    if not local.joinpath("reaper").is_file():
+        create_reaper(local / "reaper")
 
     log.info("%s is up to date", variant)
 

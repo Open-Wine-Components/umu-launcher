@@ -1,11 +1,9 @@
 import os
 import re
 import sys
-import threading
 from _ctypes import CFuncPtr
 from argparse import Namespace
-from array import array
-from collections.abc import Generator, MutableMapping
+from collections.abc import MutableMapping
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
 from ctypes import CDLL, c_int, c_ulong
@@ -23,10 +21,6 @@ from urllib3 import PoolManager, Retry
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.util import Timeout
-from Xlib import X, Xatom, display
-from Xlib.error import DisplayConnectionError
-from Xlib.protocol.request import GetProperty
-from Xlib.xobject.drawable import Window
 
 from umu import __runtime_versions__, __version__
 from umu.umu_consts import (
@@ -35,7 +29,6 @@ from umu.umu_consts import (
     STEAM_COMPAT,
     UMU_LOCAL,
     FileLock,
-    GamescopeAtom,
 )
 from umu.umu_log import log
 from umu.umu_plugins import set_env_toml
@@ -47,7 +40,6 @@ from umu.umu_util import (
     has_umu_setup,
     is_installed_verb,
     unix_flock,
-    xdisplay,
 )
 
 NET_TIMEOUT = 5.0
@@ -295,6 +287,8 @@ def build_command(
     shim: Path = local.joinpath("umu-shim")
     proton: Path = Path(env["PROTONPATH"], "proton")
     entry_point: Path = local.joinpath("umu")
+    reaper: Path = local.joinpath("reaper")
+    appId: int = get_steam_appid(env)
 
     if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
         err: str = "The following file was not found in PROTONPATH: proton"
@@ -319,6 +313,10 @@ def build_command(
             "--verb",
             env["PROTON_VERB"],
             "--",
+            reaper,
+            "SteamLaunch",
+            "AppId=" + str(appId),
+            "--",
             proton,
             env["PROTON_VERB"],
             env["EXE"],
@@ -342,148 +340,16 @@ def build_command(
         "--verb",
         env["PROTON_VERB"],
         "--",
+        reaper,
+        "SteamLaunch",
+        "AppId=" + str(appId),
+        "--",
         shim,
         proton,
         env["PROTON_VERB"],
         env["EXE"],
         *opts,
     )
-
-
-def _get_pids() -> Generator[int, Any, None]:
-    yield from (int(pid.name) for pid in Path("/proc").glob("*") if pid.name.isdigit())
-
-
-def get_pstree_from_pid(root_pid: int) -> set[int]:
-    """Get descendent PIDs of a PID."""
-    descendants: set[int] = set()
-    pid_to_ppid: dict[int, int] = {}
-
-    for pid in _get_pids():
-        try:
-            path = Path(f"/proc/{pid}/status")
-            with path.open(mode="r", encoding="utf-8") as file:
-                st_ppid = next(line for line in file if line.startswith("PPid:"))
-                st_ppid = st_ppid.removeprefix("PPid:").strip()
-                pid_to_ppid[pid] = int(st_ppid)
-        except (FileNotFoundError, ProcessLookupError, ValueError):
-            continue
-
-    current_pid: list[int] = [root_pid]
-    while current_pid:
-        current = current_pid.pop()
-        # Ignore. mypy flags [arg-type] due to the reuse of pid variable
-        for pid, ppid in pid_to_ppid.items():  # type: ignore
-            if ppid == current and pid not in descendants:
-                descendants.add(pid)  # type: ignore
-                current_pid.append(pid)  # type: ignore
-
-    log.debug("PID %s descendents: %s", root_pid, descendants)
-    return descendants
-
-
-def get_window_ids(d: display.Display) -> set[int] | None:
-    """Get the list of window ids under the root window for a display."""
-    try:
-        if d.next_event().type == X.CreateNotify:
-            return {child.id for child in d.screen().root.query_tree().children}
-    except Exception as e:
-        log.exception(e)
-
-    return None
-
-
-def get_pstree_window_ids(
-    d: display.Display, pstree: set[int], window_ids: set[int] | None
-) -> set[int] | None:
-    """Get a subset of window ids associated with a set of pids."""
-    game_window_ids: set[int] = set()
-    atom = d.get_atom("_NET_WM_PID", only_if_exists=True)
-
-    if not window_ids:
-        return None
-
-    # Return if _NET_WM_PID does not exist. Its atom existing will be a hard
-    # requirement as, unfortunately, we cannot fallback to X-Res because the
-    # PIDs returned would not map to the ones in the Flatpak's namespace
-    if atom == X.NONE:
-        log.warning("_NET_WM_PID does not exist, skipping window IDs")
-        return None
-
-    # Ensure only the game's windows are returned via _NET_WM_PID
-    # https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html#id-1.6.14
-    for window_id in window_ids:
-        try:
-            window: Window = d.create_resource_object("window", window_id)
-            prop = window.get_full_property(atom, Xatom.CARDINAL)
-            if not prop or not prop.value:
-                continue
-            pid = prop.value.tolist()[0]
-            if pid not in pstree:
-                log.debug(
-                    "PID %s is unrelated to app or not a descendent, skipping window ID: %s",
-                    pid,
-                    window_id,
-                )
-                continue
-            log.debug("Window ID %s has PID: %s", window_id, pid)
-            game_window_ids.add(window_id)
-        except Exception as e:
-            log.exception(e)
-
-    return game_window_ids
-
-
-def set_steam_game_property(
-    d: display.Display, window_ids: set[int], steam_assigned_appid: int
-) -> display.Display:
-    """Set Steam's assigned app ID on a list of windows."""
-    log.debug("Steam app ID: %s", steam_assigned_appid)
-    for window_id in window_ids:
-        try:
-            window: Window = d.create_resource_object("window", window_id)
-            window.change_property(
-                d.get_atom(GamescopeAtom.SteamGame.value),
-                Xatom.CARDINAL,
-                32,
-                [steam_assigned_appid],
-            )
-            log.debug(
-                "Successfully set %s property for window ID: %s",
-                GamescopeAtom.SteamGame.value,
-                window_id,
-            )
-        except Exception as e:
-            log.error(
-                "Error setting %s property for window ID: %s",
-                GamescopeAtom.SteamGame.value,
-                window_id,
-            )
-            log.exception(e)
-
-    return d
-
-
-def get_gamescope_baselayer_appid(
-    d: display.Display,
-) -> list[int] | None:
-    """Get the GAMESCOPECTRL_BASELAYER_APPID value on the primary root window."""
-    try:
-        root_primary: Window = d.screen().root
-        # Intern the atom for GAMESCOPECTRL_BASELAYER_APPID
-        atom = d.get_atom(GamescopeAtom.BaselayerAppId.value)
-        # Get the property value
-        prop: GetProperty | None = root_primary.get_full_property(atom, Xatom.CARDINAL)
-        # For GAMESCOPECTRL_BASELAYER_APPID, the value is a u32 array
-        if prop and prop.value and isinstance(prop.value, array):
-            # Ignore. Converting a u32 array to a list creates a list[int]
-            return prop.value.tolist()  # type: ignore
-        log.debug("%s property not found", GamescopeAtom.BaselayerAppId.value)
-    except Exception as e:
-        log.error("Error getting %s property", GamescopeAtom.BaselayerAppId.value)
-        log.exception(e)
-
-    return None
 
 
 def get_steam_appid(env: MutableMapping) -> int:
@@ -513,113 +379,6 @@ def get_steam_appid(env: MutableMapping) -> int:
     return steam_appid
 
 
-def _get_pstree_root_pid(env: MutableMapping) -> int:
-    # https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/raw/main/pressure-vessel/adverb.1.md
-    target = "pv-adverb"
-
-    # Find a target process where it's descendents create game windows
-    # and return its PID
-    while True:
-        st: dict[str, str] = {}
-        for pid in _get_pids():
-            try:
-                # https://docs.kernel.org/filesystems/proc.html#id10
-                path = Path(f"/proc/{pid}/status")
-                with path.open(mode="r", encoding="utf-8") as file:
-                    for line in file:
-                        key, val = line.split(":", 1)
-                        st[key] = val.strip()
-                if st["Name"] != target:
-                    continue
-                # Ensure the target process is related to the game
-                inv_id = f"UMU_INVOCATION_ID={env['UMU_INVOCATION_ID']}".encode()
-                if inv_id in Path(f"/proc/{pid}/environ").read_bytes():
-                    return int(pid)
-            except (FileNotFoundError, ProcessLookupError, ValueError):
-                continue
-
-
-def monitor_windows(d_secondary: display.Display, pid: int) -> None:
-    """Monitor for new windows for a display and assign them Steam's assigned app ID."""
-    window_ids: set[int] | None = None
-    steam_appid: int = get_steam_appid(os.environ)
-
-    log.debug(
-        "Waiting for new windows IDs for DISPLAY=%s...",
-        d_secondary.get_display_name(),
-    )
-
-    while not window_ids:
-        window_ids = get_pstree_window_ids(
-            d_secondary, get_pstree_from_pid(pid), get_window_ids(d_secondary)
-        )
-    set_steam_game_property(d_secondary, window_ids, steam_appid)
-
-    log.debug(
-        "Monitoring for new window IDs for DISPLAY=%s...",
-        d_secondary.get_display_name(),
-    )
-
-    # Check if the window sequence has changed
-    while True:
-        current_window_ids: set[int] | None = get_pstree_window_ids(
-            d_secondary, get_pstree_from_pid(pid), get_window_ids(d_secondary)
-        )
-        if not current_window_ids:
-            continue
-        if diff := current_window_ids.difference(window_ids):
-            log.debug("New window IDs detected: %s", current_window_ids)
-            log.debug("Current tracked windows IDs: %s", window_ids)
-            log.debug("Window IDs set difference: %s", diff)
-            window_ids |= diff
-            set_steam_game_property(d_secondary, diff, steam_appid)
-
-
-def run_in_steammode(proc: Popen) -> int:
-    """Set properties on gamescope windows when running in steam mode.
-
-    Currently, Flatpak apps that use umu as their runtime will not have their
-    game window brought to the foreground due to the base layer being out of
-    order.
-
-    See https://github.com/ValveSoftware/gamescope/issues/1341
-    """
-    # GAMESCOPECTRL_BASELAYER_APPID value on the primary's window
-    gamescope_baselayer_sequence: list[int] | None = None
-
-    # Currently, steamos creates two xwayland servers at :0 and :1
-    # Despite the socket for display :0 being hidden at /tmp/.x11-unix in
-    # in the Flatpak, it is still possible to connect to it.
-    # TODO: Find a robust way to get gamescope displays both in a container
-    # and outside a container
-    try:
-        with xdisplay(":0") as d_primary, xdisplay(":1") as d_secondary:
-            gamescope_baselayer_sequence = get_gamescope_baselayer_appid(d_primary)
-            # Dont do window fuckery if we're not inside gamescope
-            if (
-                gamescope_baselayer_sequence
-                and os.environ.get("PROTON_VERB") == "waitforexitandrun"
-            ):
-                d_secondary.screen().root.change_attributes(
-                    event_mask=X.SubstructureNotifyMask
-                )
-
-                # Monitor for new windows for the DISPLAY associated with game
-                window_thread = threading.Thread(
-                    target=monitor_windows,
-                    args=(d_secondary, _get_pstree_root_pid(os.environ)),
-                )
-                window_thread.daemon = True
-                window_thread.start()
-            return proc.wait()
-    except DisplayConnectionError as e:
-        # Case where steamos changed its display outputs as we're currently
-        # assuming connecting to :0 and :1 is stable
-        log.exception(e)
-
-    return proc.wait()
-
-
 def run_command(command: tuple[Path | str, ...]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     prctl: CFuncPtr
@@ -628,18 +387,6 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     ret: int = 0
     prctl_ret: int = 0
     libc: str = get_libc()
-    is_gamescope_session: bool = (
-        os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
-        or os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
-    )
-    is_flatpak: bool = os.environ.get("container") == "flatpak"  # noqa: SIM112
-    # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
-    # documented to be a legacy env var.
-    is_steammode: bool = (
-        is_gamescope_session
-        and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
-        and is_flatpak
-    )
 
     if not command:
         err: str = f"Command list is empty or None: {command}"
@@ -664,7 +411,6 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     log.debug("prctl exited with status: %s", prctl_ret)
 
     with Popen(command, start_new_session=True, cwd=cwd) as proc:
-        ret = run_in_steammode(proc) if is_steammode else proc.wait()
         log.debug("Child %s exited with wait status: %s", proc.pid, ret)
 
     return ret
