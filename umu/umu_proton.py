@@ -276,7 +276,7 @@ def _fetch_proton(
     _, http_pool = session_pools
     proton_hash, proton_hash_url = assets[0]
     tarball, tar_url = assets[1]
-    # remove any combination of .xyz.xy suffix (realistically .tar.gz|xz)
+    # remove any combination of .abc.xy suffix (realistically .tar.gz|xz)
     proton = ".".join(tarball.split(".")[:-2])
     ret: int = 0  # Exit code from zenity
     digest: str = ""  # Digest of the Proton archive
@@ -455,7 +455,7 @@ def _get_latest(
         return None
 
     tarball = assets[1][0]
-    # remove any combination of .xyz.xy suffix (realistically .tar.gz|xz)
+    # remove any combination of .abc.xy suffix (realistically .tar.gz|xz)
     proton = ".".join(tarball.split(".")[:-2])
     latest_candidates = {
         ProtonVersion.GELatest.value,
@@ -549,7 +549,7 @@ def _install_proton(
 
     # Move decompressed archive to compatibilitytools.d or
     # $XDG_DATA_HOME/umu/compatibilitytools
-    # remove any combination of .xyz.xy suffix (realistically .tar.gz|xz)
+    # remove any combination of .abc.xy suffix (realistically .tar.gz|xz)
     name = ".".join(tarball.split(".")[:-2])
     folder = cache.joinpath(name)
     if os.environ.get("PROTONPATH") in latest_candidates:
