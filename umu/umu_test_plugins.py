@@ -329,6 +329,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
         shim_path = Path(self.test_local_share, "umu-shim")
         shim_path.touch()
 
+        # Mock the reaper file
+        reaper_path = Path(self.test_local_share, "reaper")
+        reaper_path.touch()
+
         with Path(toml_path).open(mode="w", encoding="utf-8") as file:
             file.write(toml_str)
 
@@ -384,7 +388,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         test_command = umu_run.build_command(self.env, self.test_local_share)
 
         # Verify contents of the command
-        entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [*test_command]
+        entry_point, opt1, verb, opt2, reaper, opt3, appId, opt4, shim, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertIsInstance(
@@ -393,6 +397,11 @@ class TestGameLauncherPlugins(unittest.TestCase):
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")
         self.assertEqual(opt2, "--", "Expected --")
+        self.assertIsInstance(reaper, os.PathLike, "Expected reaper to be PathLike")
+        self.assertEqual(opt3, "SteamLaunch", "Expected SteamLaunch")
+        self.assertEqual(appId, "AppId=0", "Expected AppId")
+        self.assertEqual(opt4, "--", "Expected --")
+        self.assertEqual(reaper, reaper_path, "Expected the reaper file")
         self.assertIsInstance(shim, os.PathLike, "Expected shim to be PathLike")
         self.assertEqual(shim, shim_path, "Expected the shim file")
         self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
