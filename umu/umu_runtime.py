@@ -19,6 +19,7 @@ from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
     file_digest,
+    get_tempdir,
     has_umu_setup,
     run_zenity,
     unix_flock,
@@ -77,7 +78,8 @@ def _install_umu(
     local: Path,
 ) -> None:
     resp: BaseHTTPResponse
-    tmp: Path = Path(mkdtemp())
+    UMU_CACHE.mkdir(parents=True, exist_ok=True)
+    tmp: Path = get_tempdir()
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
     codename, variant, _ = runtime_ver
@@ -91,8 +93,6 @@ def _install_umu(
     host: str = "repo.steampowered.com"
     parts: Path = tmp.joinpath(f"{archive}.parts")
     log.debug("Using endpoint '%s' for requests", base_url)
-
-    UMU_CACHE.mkdir(parents=True, exist_ok=True)
 
     # Download the runtime and optionally create a popup with zenity
     if os.environ.get("UMU_ZENITY") == "1":
