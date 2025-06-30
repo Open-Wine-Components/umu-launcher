@@ -163,7 +163,7 @@ def _install_umu(
         if cached_parts.is_file():
             log.info("Found '%s' in cache, resuming...", cached_parts.name)
             headers = {"Range": f"bytes={cached_parts.stat().st_size}-"}
-            parts = cached_parts
+            parts = cached_parts.rename(f"{mkdtemp(dir=UMU_CACHE)}/{parts.name}")
             # Rebuild our hashed progress
             with parts.open("rb") as fp:
                 hashsum = file_digest(fp, hashsum.name)
