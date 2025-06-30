@@ -259,9 +259,10 @@ def _fetch_proton(
         parts: Path = tmpfs.joinpath(f"{tarball}.parts")
         cached_parts: Path = UMU_CACHE.joinpath(parts.name)
         headers: dict[str, str] | None = None
+        has_cache: bool = cached_parts.is_file()
 
         # Resume from our cached file, if we were interrupted previously
-        if cached_parts.is_file():
+        if has_cache:
             log.info("Found '%s' in cache, resuming...", cached_parts.name)
             headers = {"Range": f"bytes={cached_parts.stat().st_size}-"}
             parts = cached_parts.rename(f"{mkdtemp(dir=UMU_CACHE)}/{parts.name}")
@@ -308,6 +309,9 @@ def _fetch_proton(
                 f"Link: {tar_url}"
             )
             raise ValueError(err)
+
+        if has_cache:
+            move(parts, UMU_CACHE)
 
         log.info("%s: SHA512 is OK", tarball)
 
