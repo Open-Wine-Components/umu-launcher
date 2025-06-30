@@ -13,12 +13,13 @@ from re import compile as re_compile
 from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 from tarfile import open as taropen
+from tempfile import gettempdir, mkdtemp
 from typing import Any
 
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
-from umu.umu_consts import UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
+from umu.umu_consts import TMPFS_MIN, UMU_CACHE, UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
 from umu.umu_log import log
 
 
@@ -258,6 +259,61 @@ def write_file_chunks(
             hasher.update(view[:size])
 
     return hasher
+
+
+def _get_lines_split(
+    path: Path, sep: str | None, maxsplit: int = -1
+) -> Generator[list[str], Any, None]:
+    with path.open(mode="r", encoding="utf-8") as file:
+        for line in file:
+            columns = line.split(sep=sep, maxsplit=maxsplit)
+            if not columns:
+                continue
+            yield columns
+
+
+@lru_cache
+def _get_supported_fs() -> set[str]:
+    # https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/4/html/reference_guide/s2-proc-filesystems
+    return {line[-1] for line in _get_lines_split(Path("/proc/filesystems"), None, 2)}
+
+
+@lru_cache
+def _fsck_path(path: Path, filesystem: str) -> bool:
+    """Validate the file system of a path."""
+    if filesystem not in _get_supported_fs():
+        log.error("Path is not a supported Linux file system: %s", filesystem)
+        return False
+
+    dst = str(path)
+    # https://docs.kernel.org/filesystems/proc.html#kernel-data
+    lines = _get_lines_split(Path("/proc/mounts"), None, 5)
+
+    return any(line for line in lines if line[1] == dst and line[2] == filesystem)
+
+
+def get_tempdir(cache: Path = UMU_CACHE) -> Path:
+    """Get a path to a temporary directory on a tmpfs.
+
+    The temporary directory is created securely, and the path returned may be
+    on a tmpfs. For a temporary directory to be on a tmpfs, the destination
+    mount point must be >= TMPFS_MIN. Otherwise, file system at $XDG_CACHE_HOME
+    will be used to create the temporary directory.
+    """
+    tmpdir = Path(gettempdir())
+
+    # Fallback to the cache instead of the current working directory
+    # https://github.com/python/cpython/blob/f297a2292cd3c3596f21ca5914310f1f8d5d8750/Lib/tempfile.py#L175
+    if tmpdir == Path.cwd():
+        tmpdir = cache
+
+    stat = os.statvfs(tmpdir)
+    has_tmpfs_min = (
+        _fsck_path(tmpdir, "tmpfs") and stat.f_frsize * stat.f_blocks >= TMPFS_MIN
+    )
+
+    # Return without handling the case where the cache is a tmpfs
+    return Path(mkdtemp()) if has_tmpfs_min else Path(mkdtemp(prefix=".", dir=cache))
 
 
 def extract_tarfile(path: Path, dest: Path) -> Path | None:
