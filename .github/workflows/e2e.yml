@@ -51,6 +51,13 @@ jobs:
           source .venv/bin/activate
           sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+      - name: Test steamrt install w/ tmpfs
+        run: |
+          sudo mount -o size=1G -t tmpfs none /tmp
+          source .venv/bin/activate
+          sh tests/test_install.sh
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+          sudo mount -o remount,size=500M /tmp
       - name: Test obsolete steamrt install
         run: |
           source .venv/bin/activate

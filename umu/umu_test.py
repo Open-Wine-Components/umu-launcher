@@ -7,6 +7,7 @@ import tarfile
 import unittest
 from argparse import Namespace
 from array import array
+from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
 from importlib.util import find_spec
 from pathlib import Path
@@ -17,6 +18,7 @@ from tempfile import (
     NamedTemporaryFile,
     TemporaryDirectory,
     TemporaryFile,
+    gettempdir,
 )
 from unittest.mock import MagicMock, Mock, patch
 
@@ -198,6 +200,92 @@ class TestGameLauncher(unittest.TestCase):
 
         if self.test_umu_compat.exists():
             rmtree(self.test_umu_compat.as_posix())
+
+    def test_get_lines_split(self):
+        """Test _get_lines_split.
+
+        Expects a Generator to yield values of type str.
+        """
+        result = None
+        mock_proc_filesystems = (
+            "nodev	sysfs\n"
+            "nodev	tmpfs\n"
+            "nodev	bdev\n"
+            "nodev	proc\n"
+            "nodev	cgroup\n"
+            "nodev	cgroup2\n"
+            "       ext3"
+        )
+
+        with NamedTemporaryFile(mode="w", encoding="utf-8") as tmp:
+            tmp.write(mock_proc_filesystems)
+            tmp.seek(0)
+            result = umu_util._get_lines_split(Path(tmp.name), None, 2)
+            self.assertTrue(
+                isinstance(result, Generator), f"Expected '{result}' to be a Generator"
+            )
+            lines = iter(
+                line.split(None, 2) for line in mock_proc_filesystems.split("\n")
+            )
+            expected = [line for line in lines if line]
+            result = list(result)
+            self.assertEqual(
+                expected, result, f"Expected '{expected}' to be '{result}'"
+            )
+            self.assertTrue(
+                any(val for val in result if not isinstance(val, str)),
+                f"Expected items in '{result}' to be str",
+            )
+            self.assertTrue(
+                any(val for val in expected if not isinstance(val, str)),
+                f"Expected items in '{expected}' to be str",
+            )
+
+    def test_get_supported_fs(self):
+        """Test _get_supported_fs.
+
+        Expects a set to be returned.
+        """
+        result = None
+
+        # Skip this test if /proc does not exist
+        if not Path("/proc").exists():
+            err = "/proc does not exists"
+            self.skipTest(err)
+
+        result = umu_util._get_supported_fs()
+        self.assertTrue(isinstance(result, set), f"Expected '{result}' to be a set")
+
+    def test_fsck_path(self):
+        """Test _fsck_path.
+
+        Expects a boolean to be returned.
+        """
+        result = None
+        filesystem = "tmpfs"
+
+        # Skip this test if /proc does not exist
+        if not Path("/proc").exists():
+            err = "/proc does not exists"
+            self.skipTest(err)
+
+        result = umu_util._fsck_path(Path(gettempdir()), filesystem)
+        self.assertTrue(isinstance(result, bool), f"Expected '{result}' to be a bool")
+
+    def test_get_tempdir(self):
+        """Test get_tempdir.
+
+        Expects a Path to be returned.
+        """
+        result = None
+
+        # Skip this test if /proc does not exist
+        if not Path("/proc").exists():
+            err = "/proc does not exists"
+            self.skipTest(err)
+
+        result = umu_util.get_tempdir(Path(gettempdir()))
+        self.assertTrue(isinstance(result, Path), f"Expected '{result}' to be a Path")
 
     def test_fetch_patch_url_req(self):
         """Test _fetch_patch when the second request fails.
