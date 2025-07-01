@@ -31,6 +31,7 @@ from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
     file_digest,
+    get_tempdir,
     run_zenity,
     unix_flock,
     write_file_chunks,
@@ -81,8 +82,8 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
     except HTTPError:
         log.debug("Network is unreachable")
 
-    with TemporaryDirectory() as tmp, TemporaryDirectory(dir=UMU_CACHE) as tmpcache:
-        tmpdirs: SessionCaches = (Path(tmp), Path(tmpcache))
+    with TemporaryDirectory(dir=UMU_CACHE) as tmpcache:
+        tmpdirs: SessionCaches = (get_tempdir(), Path(tmpcache))
         compatdirs = (UMU_COMPAT, STEAM_COMPAT)
         if _get_delta(env, UMU_COMPAT, patch, assets, session_pools) is env:
             return env
