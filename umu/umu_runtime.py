@@ -83,8 +83,9 @@ def _install_umu(
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
     codename, variant, _ = runtime_ver
+    arch: str = "-arm64" if "aarch64" in os.uname().machine else ""
     # Archive containing the runtime
-    archive: str = f"SteamLinuxRuntime_{codename}.tar.xz"
+    archive: str = f"SteamLinuxRuntime_{codename}{arch}.tar.xz"
     base_url: str = (
         f"https://repo.steampowered.com/steamrt-images-{codename}"
         "/snapshots/latest-container-runtime-public-beta"
@@ -236,7 +237,7 @@ def _install_umu(
         extract_tarfile(Path(tmpcache, archive), Path(tmpcache))
 
         # Move the files to the correct location
-        source_dir: Path = Path(tmpcache, f"SteamLinuxRuntime_{codename}")
+        source_dir: Path = Path(tmpcache, f"SteamLinuxRuntime_{codename}{arch}")
         var: Path = local.joinpath("var")
         log.debug("Source: %s", source_dir)
         log.debug("Destination: %s", local)
@@ -310,6 +311,7 @@ def _update_umu(
     runtime: Path
     resp: BaseHTTPResponse
     _, http_pool = session_pools
+    arch: str = "-arm64" if "aarch64" in os.uname().machine else ""
     codename, variant, _ = runtime_ver
     endpoint: str = (
         f"/steamrt-images-{codename}/snapshots/latest-container-runtime-public-beta"
@@ -370,7 +372,9 @@ def _update_umu(
         local.joinpath("VERSIONS.txt").write_text(platformid)
 
     # Fetch the version file
-    url: str = f"{host}{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt{token}"
+    url: str = (
+        f"{host}{endpoint}/SteamLinuxRuntime_{codename}{arch}.VERSIONS.txt{token}"
+    )
     log.debug("Sending request to '%s' for 'VERSIONS.txt'...", url)
     resp = http_pool.request(HTTPMethod.GET.value, url)
     if resp.status != HTTPStatus.OK:
@@ -477,7 +481,8 @@ def _restore_umu_platformid(
     _, http_pool = session_pools
     codename, *_ = runtime_ver
     release: Path = runtime_base.joinpath("files", "lib", "os-release")
-    versions: str = f"SteamLinuxRuntime_{codename}.VERSIONS.txt"
+    arch: str = "-arm64" if "aarch64" in os.uname().machine else ""
+    versions: str = f"SteamLinuxRuntime_{codename}{arch}.VERSIONS.txt"
     host: str = "repo.steampowered.com"
 
     # Restore the runtime if os-release is missing, otherwise pressure
