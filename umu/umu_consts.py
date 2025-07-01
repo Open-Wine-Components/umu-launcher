@@ -44,6 +44,11 @@ class FileLock(Enum):
     Prefix = "pfx.lock"  # WINEPREFIX lock
 
 
+# Minimum size expected of the system's tmpfs when writing to it.
+# We want a tmpfs that's sufficient to fit at least Proton and the Steam
+# Linux Runtime image, which is currently ~500MB and ~200MB.
+TMPFS_MIN = 1073741824
+
 PROTON_VERBS = {
     "waitforexitandrun",
     "run",
