@@ -508,7 +508,7 @@ def get_steam_appid(env: MutableMapping) -> int:
             return int(Path(path).parts[-2])
 
     with suppress(ValueError):
-            return int(env.get("SteamGameId", "")) >> 32
+        return int(env.get("SteamGameId", "")) >> 32
 
     return steam_appid
 
@@ -632,11 +632,13 @@ def run_command(command: tuple[Path | str, ...]) -> int:
         os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
         or os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
     )
-    is_flatpak: bool = (os.environ.get("container") == "flatpak") # noqa: SIM112
+    is_flatpak: bool = os.environ.get("container") == "flatpak"  # noqa: SIM112
     # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
     # documented to be a legacy env var.
     is_steammode: bool = (
-        is_gamescope_session and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1" and is_flatpak
+        is_gamescope_session
+        and os.environ.get("STEAM_MULTIPLE_XWAYLANDS") == "1"
+        and is_flatpak
     )
 
     if not command:
