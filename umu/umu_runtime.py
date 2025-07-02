@@ -304,8 +304,8 @@ def _update_umu(
 ) -> None:
     """For existing installations, check for updates to the runtime.
 
-    The runtime platform will be updated to the latest public beta by comparing
-    the local VERSIONS.txt against the remote one.
+    The runtime platform will be updated to the latest public beta by
+    confirming if the latest platform ID exists in the local VERSIONS.txt
     """
     runtime: Path
     resp: BaseHTTPResponse
@@ -352,26 +352,20 @@ def _update_umu(
         return
 
     # Restore VERSIONS.txt
-    # When the file is missing, the request for the image will need to be made
-    # to the endpoint of the specific snapshot
     if not local.joinpath("VERSIONS.txt").is_file():
         log.critical("VERSIONS.txt file missing in '%s'", local)
-        platformid: str | None = _restore_umu_platformid(
-            runtime, runtime_ver, session_pools
+        log.info("Restoring Runtime Platform...")
+        _restore_umu(
+            local,
+            runtime_ver,
+            session_pools,
+            lambda: local.joinpath("VERSIONS.txt").is_file(),
         )
-        if platformid is None:
-            _restore_umu(
-                local,
-                runtime_ver,
-                session_pools,
-                lambda: local.joinpath("VERSIONS.txt").is_file(),
-            )
-            return
-        local.joinpath("VERSIONS.txt").write_text(platformid)
+        return
 
-    # Fetch the version file
-    url: str = f"{host}{endpoint}/SteamLinuxRuntime_{codename}.VERSIONS.txt{token}"
-    log.debug("Sending request to '%s' for 'VERSIONS.txt'...", url)
+    # Fetch the VERSION.txt data
+    url: str = f"{host}{endpoint}/VERSION.txt{token}"
+    log.debug("Sending request to '%s' for 'VERSION.txt'...", url)
     resp = http_pool.request(HTTPMethod.GET.value, url)
     if resp.status != HTTPStatus.OK:
         log.error("%s returned the status: %s", resp.getheader("Host"), resp.status)
@@ -468,55 +462,6 @@ def _restore_umu(
         log.debug("Released file lock '%s'", lock)
 
 
-def _restore_umu_platformid(
-    runtime_base: Path,
-    runtime_ver: RuntimeVersion,
-    session_pools: SessionPools,
-) -> None | str:
-    url: str = ""
-    _, http_pool = session_pools
-    codename, *_ = runtime_ver
-    release: Path = runtime_base.joinpath("files", "lib", "os-release")
-    versions: str = f"SteamLinuxRuntime_{codename}.VERSIONS.txt"
-    host: str = "repo.steampowered.com"
-
-    # Restore the runtime if os-release is missing, otherwise pressure
-    # vessel will crash when creating the variable directory
-    if not release.is_file():
-        log.critical("os-release file missing in *_platform_*")
-        log.critical("Runtime Platform corrupt")
-        log.info("Restoring Runtime Platform...")
-        return None
-
-    # Get the BUILD_ID value in os-release so we can get VERSIONS.txt
-    with release.open(mode="r", encoding="utf-8") as file:
-        for line in file:
-            if line.startswith("BUILD_ID"):
-                # Get the value after 'BUILD_ID=' and strip the quotes
-                build_id: str = line.removeprefix("BUILD_ID=").rstrip().strip('"')
-                url = f"/steamrt-images-{codename}/snapshots/{build_id}"
-                break
-
-    if not url:
-        log.critical("Failed to parse os-release for BUILD_ID in *_platform_*")
-        log.critical("Runtime Platform corrupt")
-        log.info("Restoring Runtime Platform...")
-        return None
-
-    # Make the request to the VERSIONS.txt endpoint. It's fine to hit the
-    # cache for this endpoint, as it differs to the latest-beta endpoint
-    resp = http_pool.request(HTTPMethod.GET.value, f"{host}{url}{versions}")
-    if resp.status != HTTPStatus.OK:
-        log.error(
-            "%s returned the status: %s",
-            resp.getheader("Host"),
-            resp.status,
-        )
-        return None
-
-    return resp.data.decode(encoding="utf-8")  # type: ignore
-
-
 def _update_umu_platform(
     local: Path,
     runtime: Path,
@@ -525,23 +470,23 @@ def _update_umu_platform(
     resp: BaseHTTPResponse,
 ) -> None:
     _, variant, _ = runtime_ver
-    latest: bytes = sha256(resp.data).digest()
-    current: bytes = sha256(local.joinpath("VERSIONS.txt").read_bytes()).digest()
-    versions: Path = local.joinpath("VERSIONS.txt")
+    version: bytes = resp.data.strip()  # VERSION.txt
     lock: str = f"{local.parent}/{FileLock.Runtime.value}"
+    versions: bytes  # VERSIONS.txt
 
-    # Compare our version file to upstream's, updating if different
-    if latest != current:
-        log.info("Updating %s to latest...", variant)
-        log.debug("Acquiring file lock '%s'...", lock)
-        with unix_flock(lock):
-            log.debug("Acquired file lock '%s'", lock)
-            # Once another process acquires the lock, check if the latest
-            # runtime has already been downloaded
-            if latest == sha256(versions.read_bytes()).digest():
-                log.debug("Released file lock '%s'", lock)
-                return
-            _install_umu(runtime_ver, session_pools, local)
-            log.debug("Removing: %s", runtime)
-            rmtree(str(runtime))
+    # Update to the latest platform by checking if the VERSION.txt value
+    # exists in VERSIONS.txt
+    log.debug("Acquiring file lock '%s'...", lock)
+    with unix_flock(lock):
+        log.debug("Acquired file lock '%s'", lock)
+        # Once another process acquires the lock, check if the latest
+        # runtime has already been downloaded
+        versions = local.joinpath("VERSIONS.txt").read_bytes()
+        if version in versions:
             log.debug("Released file lock '%s'", lock)
+            return
+        log.info("Updating %s to latest...", variant)
+        _install_umu(runtime_ver, session_pools, local)
+        log.debug("Removing: %s", runtime)
+        rmtree(str(runtime))
+        log.debug("Released file lock '%s'", lock)
