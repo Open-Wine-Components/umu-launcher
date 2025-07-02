@@ -4,7 +4,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from ctypes.util import find_library
 from fcntl import LOCK_EX, LOCK_UN, flock
-from functools import cache, lru_cache
+from functools import cache
 from hashlib import new as hashnew
 from io import BufferedIOBase, BufferedRandom
 from pathlib import Path
@@ -54,13 +54,13 @@ def memfdfile(name: str) -> Generator[BufferedRandom, Any, None]:
             fp.close()
 
 
-@lru_cache
+@cache
 def get_libc() -> str:
     """Find libc.so from the user's system."""
     return find_library("c") or ""
 
 
-@lru_cache
+@cache
 def get_library_paths() -> set[str]:
     """Find the shared library paths from the user's system."""
     library_paths: set[str] = set()
