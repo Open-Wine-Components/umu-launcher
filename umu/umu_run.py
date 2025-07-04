@@ -216,7 +216,9 @@ def set_env(
     # UMU_ID
     env["UMU_ID"] = env["GAMEID"]
     env["STEAM_COMPAT_APP_ID"] = "0"
+    env["UMU_STEAM_GAME_ID"] = os.environ.get("SteamGameId", "")  # noqa: SIM112
 
+    # Steam Application ID
     if match(r"^umu-[\d\w]+$", env["UMU_ID"]):
         env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][env["UMU_ID"].find("-") + 1 :]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
@@ -505,7 +507,7 @@ def get_steam_appid(env: MutableMapping) -> int:
             return int(Path(path).parts[-2])
 
     with suppress(ValueError):
-        return int(env.get("SteamGameId", "")) >> 32
+        return int(env.get("UMU_STEAM_GAME_ID", "")) >> 32
 
     return steam_appid
 
