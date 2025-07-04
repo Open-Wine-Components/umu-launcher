@@ -188,7 +188,7 @@ def set_env(
 
     # PROTON_VERB
     # For invalid Proton verbs, just assign the waitforexitandrun
-    if os.environ.get("PROTON_VERB", "").split("=")[0] in PROTON_VERBS:
+    if os.environ.get("PROTON_VERB") in PROTON_VERBS:
         env["PROTON_VERB"] = os.environ["PROTON_VERB"]
     else:
         env["PROTON_VERB"] = "waitforexitandrun"
@@ -304,6 +304,33 @@ def enable_steam_game_drive(env: dict[str, str]) -> dict[str, str]:
     return env
 
 
+def _get_wineserver_pid(env: dict[str, str]) -> str:
+    pid: str = ""
+
+    for dirname in Path("/proc").iterdir():
+        if dirname.name == "curproc" or not dirname.is_dir():
+            continue
+
+        try:
+            with dirname.joinpath("cmdline").open(mode="rb") as cmd_fd:
+                cmdline = cmd_fd.read().decode().split("\x00")
+            cmdline = list(filter(None, cmdline))
+            matches = ((p.startswith(env["PROTONPATH"]) and p.endswith("wineserver")) for p in cmdline)
+            if any(matches):
+                with dirname.joinpath("environ").open(mode="rb") as environ_fd:
+                    environ = environ_fd.read().decode().split("\x00")
+                environ = list(filter(None, environ))
+                oldenv = dict(map(lambda x: x.split("=", maxsplit=1), environ))
+                if oldenv["STEAM_COMPAT_DATA_PATH"] == env["STEAM_COMPAT_DATA_PATH"]:
+                    pid = dirname.name
+                    break
+        except Exception as e:  # noqa: BLE001
+            log.debug(e)
+            continue
+
+    return pid
+
+
 def build_command(
     env: dict[str, str],
     layer: CompatLayer,
@@ -345,14 +372,14 @@ def build_command(
     #     return *entry_point, env["EXE"], *opts
 
     nsenter: tuple[str, ...] = ()
-    if env.get("PROTON_VERB", "").startswith("runinprefix="):
-        verb_pid = os.environ["PROTON_VERB"].split("=")
-        if len(verb_pid) == 2:  # noqa: PLR2004
-            verb, pid = verb_pid
-            layer.runtime = None
-            nsenter = ("nsenter", "--preserve-credentials", "--user", "--mount", "--env", "--target", pid)
-            env["PROTON_VERB"] = verb
-            log.debug("Using nsenter to under namespace of pid: %s", pid)
+    pid: str = _get_wineserver_pid(env)
+    if pid:
+        layer.runtime = None
+        nsenter = ("nsenter", "--preserve-credentials", "--user", "--mount", "--env", "--target", pid)
+        env["PROTON_VERB"] = "runinprefix"
+        log.info("Using nsenter to under namespace of pid: %s", pid)
+    else:
+        env["PROTON_VERB"] = "waitforexitandrun"
 
     return (
         *nsenter,
