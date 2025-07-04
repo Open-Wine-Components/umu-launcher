@@ -136,13 +136,6 @@ $ PROTONPATH=GE-Proton umu-run winetricks quartz wmp11 qasf
 $ GAMEID=umu-genshin PROTONPATH=GE-Proton PROTONFIXES_DISABLE=1 umu-run foo.exe
 ```
 
-*Example 13. Run a game and automatically use the latest GE-Proton, but apply a
-delta update to it*
-
-```
-$ PROTONPATH=GE-Latest umu-run foo.exe
-```
-
 # ENVIRONMENT VARIABLES
 
 _GAMEID_
@@ -155,7 +148,7 @@ _PROTONPATH_
 	
 	Otherwise, defaults to using UMU-Proton.
 
-	Valid codenames include: _GE-Proton_, _UMU-Latest_, and _GE-Latest_.
+	Valid codenames include: _GE-Proton_
 	
 _WINEPREFIX_
 	Optional. Path to a WINE prefix directory. Otherwise, defaults to _$HOME/Games/umu/$GAMEID_.
