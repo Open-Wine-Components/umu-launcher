@@ -1,4 +1,4 @@
-name: UMU RPM Build - Fedora/Nobara 40
+name: UMU RPM Build - Fedora/Nobara 42
 
 on:
   workflow_call:
@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: fedora:40
+      image: fedora:41
 
     steps:
       - name: Install Git
@@ -69,10 +69,10 @@ jobs:
 
           rpmbuild -ba packaging/rpm/umu-launcher.spec
           mv ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}*.rpm \
-             ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc40.rpm
+             ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc42.rpm
 
-      - name: Fedora-40
+      - name: Fedora-42
         uses: actions/upload-artifact@v4
         with:
-          name: umu-launcher-${{ env.VERSION }}.fc40.rpm
-          path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc40.rpm
+          name: umu-launcher-${{ env.VERSION }}.fc42.rpm
+          path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc42.rpm

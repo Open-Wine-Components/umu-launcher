@@ -71,7 +71,7 @@ jobs:
           mv ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}*.rpm \
              ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc41.rpm
 
-      - name: Fedora-40
+      - name: Fedora-41
         uses: actions/upload-artifact@v4
         with:
           name: umu-launcher-${{ env.VERSION }}.fc41.rpm
