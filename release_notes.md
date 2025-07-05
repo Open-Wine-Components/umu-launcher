@@ -1,46 +1,42 @@
-# 🎁 Release notes (`1.2.6`)
+# 🎁 Release notes (`1.2.7`)
 
 ## Changes
-- Merge pull request #426 from Open-Wine-Components/revert-410-unruntime
-- Revert "umu_run: handle Protons without an explicit runtime requirement"
+- docs: remove mentions GE-Latest and UMU-Latest from docs
+- refactor: use original SteamGameId for window management
+- Revert "don't set SteamGameId if it's already set by steam"
+- fix: skip unlinking UMU-Latest in compatibilitytools.d (#504)
+- refactor: prefer cache over lru_cache
+- chore: update format
+- refactor: use value from VERSION.txt for runtime updates (#503)
+- refactor: use tmpfs when sufficiently large (#502)
+- fix: create temporary directory on subsequent network errors (#501)
+- only run in steammode when running in a flatpak container (#496)
+- chore: extend lint rules (#494)
+- derive steam_appid from SteamGameId (#491)
+- refactor: improve subprocess PID detection for window management (#493)
+- ci: add noqa for SteamGameId
+- Merge pull request #447 from nodscher/main
+- build(deps): bump pyo3 from 0.25.0 to 0.25.1 (#488)
+- refactor: remove fallback to XRes when acquiring window PIDs (#484)
+- chore: remove unused window management functionality (#483)
+- build(deps): bump DeterminateSystems/flake-checker-action from 9 to 10 (#482)
+- fix: set STEAM_GAME property for initial X windows (#478)
+- fix: update log statements (#477)
+- fix: update window management for Flatpak apps in Steam mode (#474)
+- build(deps): bump pyo3 from 0.24.2 to 0.25.0 (#464)
+- test: find the expected source in delta update test (#461)
+- fix: downgrade pyzstd 0.17.0 -> 0.16.2 (#462)
+- fix: dynamically link to zstd when vendoring (#458)
+- chore: bump subprojects (#457)
+- build(deps): bump sha2 from 0.10.8 to 0.10.9 (#449)
+- don't set SteamGameId if it's already set by steam
+- build(deps): bump pyo3 from 0.24.1 to 0.24.2 (#442)
+- build(deps): bump pyo3 from 0.24.0 to 0.24.1 (#433)
 - bump release notes
-- Merge pull request #408 from R1kaB3rN/bump-version-1.2.6
-- Merge pull request #424 from Open-Wine-Components/fix/install-path
-- Merge pull request #410 from loathingKernel/unruntime
-- improv: default to environment provided STEAM_COMPAT_INSTALL_PATH
-- umu: update tests
-- umu_run: move toml config loading earlier and merge it with the environment
-- build(deps): bump cachix/install-nix-action from 30 to 31 (#423)
-- umu: update tests
-- umu_run: extract function from `umu_run` to download proton if needed
-- umu_run: raise exception if PROTONPATH doesn't exist while checking for runtime version
-- umu_run: try to decouple get_umu_proton from check_env
-- umu_run: handle Protons without an explicit runtime requirement
-- Merge pull request #402 from MattSturgeon/nix/drop-old
-- Merge pull request #413 from loathingKernel/isatty
-- packaging: update umu-launcher debian packages (#422)
-- deb: update rustup patch (#421)
-- refactor: use __package__ to determine module (#420)
-- feat: extend lint rules (#419)
-- umu_log: do an early return if not tty
-- umu_log: do not use colors if stderr is not an interactive terminal
-- build(deps): bump pyo3 from 0.23.5 to 0.24.0 (#411)
-- Bump version to 1.2.6
-- fix: adhere to the XDG spec for compatibilitytools.d
-- build: remove umu-launcher install from packaging
-- build: remove umu-launcher build target
-- Don't package and distrbute umu-launcher as a compatibility tool -- steam ends up using it on every launch (bug), and there's also not really any point
-- build(nix): drop support for outdated nixpkgs revisions
-- packaging/nix/flake.lock: Update (#406)
-- build(deps): bump pyo3 from 0.23.4 to 0.23.5 (#405)
-- refactor: update runtime directory structure (#400)
-- Support overriding 1.2.0+ nix package (#374)
-- bump commit on rpm spec sheet to match tag just in case of manual builds
-- bump release notes for 1.2.5 (again)
 
 ## Metadata
 ```
-This version -------- 1.2.6
-Previous version ---- 1.2.5
-Total commits ------- 36
+This version -------- 1.2.7
+Previous version ---- 1.2.6
+Total commits ------- 32
 ```
