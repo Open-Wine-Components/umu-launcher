@@ -414,21 +414,23 @@ def get_pstree_window_ids(
     # Ensure only the game's windows are returned via _NET_WM_PID
     # https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html#id-1.6.14
     for window_id in window_ids:
-        window: Window = d.create_resource_object("window", window_id)
-        prop = window.get_full_property(atom, Xatom.CARDINAL)
-        if not prop or not prop.value:
-            continue
-        pid = prop.value.tolist()[0]
-        if pid not in pstree:
-            log.debug(
-                "PID %s is unrelated to app or not a descendent, skipping window ID: %s",
-                pid,
-                window_id,
-            )
-            continue
-        log.debug("Window ID %s has PID: %s", window_id, pid)
-        game_window_ids.add(window_id)
-        continue
+        try:
+            window: Window = d.create_resource_object("window", window_id)
+            prop = window.get_full_property(atom, Xatom.CARDINAL)
+            if not prop or not prop.value:
+                continue
+            pid = prop.value.tolist()[0]
+            if pid not in pstree:
+                log.debug(
+                    "PID %s is unrelated to app or not a descendent, skipping window ID: %s",
+                    pid,
+                    window_id,
+                )
+                continue
+            log.debug("Window ID %s has PID: %s", window_id, pid)
+            game_window_ids.add(window_id)
+        except Exception as e:
+            log.exception(e)
 
     return game_window_ids
 
