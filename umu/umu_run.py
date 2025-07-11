@@ -16,6 +16,7 @@ from pwd import getpwuid
 from re import match
 from secrets import token_hex
 from socket import AF_INET, SOCK_DGRAM, socket
+from subprocess import Popen
 from typing import Any
 
 from urllib3 import PoolManager, Retry
@@ -574,7 +575,7 @@ def monitor_windows(d_secondary: display.Display, pid: int) -> None:
             set_steam_game_property(d_secondary, diff, steam_appid)
 
 
-def run_in_steammode() -> None:
+def run_in_steammode(proc: Popen) -> int:
     """Set properties on gamescope windows when running in steam mode.
 
     Currently, Flatpak apps that use umu as their runtime will not have their
@@ -592,9 +593,7 @@ def run_in_steammode() -> None:
     # TODO: Find a robust way to get gamescope displays both in a container
     # and outside a container
     try:
-        main_display = os.environ.get("DISPLAY", ":0")
-        game_display = os.environ.get("STEAM_GAME_DISPLAY_0", ":1")
-        with xdisplay(main_display) as d_primary, xdisplay(game_display) as d_secondary:
+        with xdisplay(":0") as d_primary, xdisplay(":1") as d_secondary:
             gamescope_baselayer_sequence = get_gamescope_baselayer_appid(d_primary)
             # Dont do window fuckery if we're not inside gamescope
             if (
@@ -612,16 +611,20 @@ def run_in_steammode() -> None:
                 )
                 window_thread.daemon = True
                 window_thread.start()
+            return proc.wait()
     except DisplayConnectionError as e:
         # Case where steamos changed its display outputs as we're currently
         # assuming connecting to :0 and :1 is stable
         log.exception(e)
+
+    return proc.wait()
 
 
 def run_command(command: tuple[Path | str, ...]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     prctl: CFuncPtr
     cwd: Path | str
+    proc: Popen
     ret: int = 0
     prctl_ret: int = 0
     libc: str = get_libc()
@@ -660,25 +663,9 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     prctl_ret = prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0)
     log.debug("prctl exited with status: %s", prctl_ret)
 
-    pid = os.fork()
-    if pid == -1:
-        log.error("Fork failed")
-
-    if pid == 0:
-        sys.stdout.flush()
-        sys.stderr.flush()
-        if is_steammode:
-            run_in_steammode()
-        os.chdir(cwd)
-        os.execvp(command[0], command)  # noqa: S606
-
-    while True:
-        try:
-            wait_pid, wait_status = os.wait()
-            log.debug("Child %s exited with wait status: %s", wait_pid, wait_status)
-        except ChildProcessError as e:
-            log.info(e)
-            break
+    with Popen(command, start_new_session=True, cwd=cwd) as proc:
+        ret = run_in_steammode(proc) if is_steammode else proc.wait()
+        log.debug("Child %s exited with wait status: %s", proc.pid, ret)
 
     return ret
 
