@@ -667,10 +667,10 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     if pid == 0:
         sys.stdout.flush()
         sys.stderr.flush()
+        if is_steammode:
+            run_in_steammode()
         os.chdir(cwd)
         os.execvp(command[0], command)  # noqa: S606
-    elif is_steammode:
-        run_in_steammode()
 
     while True:
         try:
