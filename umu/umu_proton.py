@@ -242,11 +242,11 @@ def _fetch_proton(
     if os.environ.get("UMU_ZENITY") == "1":
         curl: str = "curl"
         opts: list[str] = [
-            "-LJO",
+            "-LJ",
             "--silent",
             tar_url,
-            "--output-dir",
-            str(tmpfs),
+            "-o",
+            str(tmpfs.joinpath(f"{tarball}.parts")),
         ]
         msg: str = f"Downloading {proton}..."
         ret = run_zenity(curl, opts, msg)
