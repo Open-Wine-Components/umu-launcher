@@ -95,13 +95,13 @@ def _install_umu(
         opts: list[str] = [
             "-LJ",
             "--silent",
-            "-O",
             f"{base_url}/{archive}",
-            "--output-dir",
-            str(tmp),
+            "-o",
+            str(parts),
         ]
         msg: str = "Downloading umu runtime, please wait..."
         ret = run_zenity(curl, opts, msg)
+        parts = parts.rename(parts.parent / parts.name.removesuffix(".parts"))
 
     # Handle the exit code from zenity
     if ret:

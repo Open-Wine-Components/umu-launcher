@@ -166,11 +166,8 @@ _STORE_
 _PROTON_VERB_
 	Optional. Must be a valid Proton verb. Otherwise, defaults to _waitforexitandrun_.
 
-_UMU_ZENITY_
-	Optional. Creates a *zenity*[5] popup window when downloading large files.
-
 _UMU_RUNTIME_UPDATE_
-	Optional. Disables automatic updates to the *Steam Linux Runtime*[6].
+	Optional. Disables automatic updates to the *Steam Linux Runtime*[5].
 
 	Set _0_ to disable updates.
 
@@ -181,7 +178,7 @@ _UMU_NO_PROTON_
 
 # SEE ALSO
 
-_umu_(5), _winetricks_(1), _zenity_(1)
+_umu_(5), _winetricks_(1)
 
 # NOTES
 
@@ -189,7 +186,6 @@ _umu_(5), _winetricks_(1), _zenity_(1)
 . https://github.com/ValveSoftware/Proton
 . https://github.com/Open-Wine-Components/umu-protonfixes
 . https://github.com/Open-Wine-Components/umu-database
-. https://gitlab.gnome.org/GNOME/zenity
 . https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/container-runtime.md
 
 # AUTHORS
