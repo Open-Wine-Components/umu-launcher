@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=umu-Launcher
+Comment=Run applications with Proton outside of Steam
+Exec=umu-run %f
+Categories=Game;Utility;
+MimeType=application/x-ms-dos-executable;application/vnd.microsoft.portable-executable;
+PrefersNonDefaultGPU=true
