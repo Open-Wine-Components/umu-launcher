@@ -251,6 +251,9 @@ def set_env(
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
     env["RUNTIMEPATH"] = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
+    env["UMU_RUNTIME_ARCH"] = (
+        "arm64" if os.environ.get("UMU_RUNTIME_ARCH") == "aarch64" else "amd64"
+    )
 
     return env
 
