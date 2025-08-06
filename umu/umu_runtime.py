@@ -10,7 +10,6 @@ from subprocess import run
 from tempfile import TemporaryDirectory, mkdtemp
 
 from urllib3.exceptions import HTTPError
-from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
@@ -186,8 +185,8 @@ def _install_umu(
             try:
                 log.debug("Writing: %s", parts)
                 hashsum = write_file_chunks(parts, resp, hashsum)
-            except TimeoutErrorUrllib3:
-                log.error("Aborting steamrt install due to network error")
+            except HTTPError as e:
+                log.exception(e)
                 log.info("Moving '%s' to cache for future resumption", parts.name)
                 move(parts, UMU_CACHE)
                 raise
