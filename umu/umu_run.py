@@ -20,8 +20,7 @@ from subprocess import Popen
 from typing import Any
 
 from urllib3 import PoolManager, Retry
-from urllib3.exceptions import MaxRetryError, NewConnectionError
-from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
+from urllib3.exceptions import HTTPError
 from urllib3.util import Timeout
 from Xlib import X, Xatom, display
 from Xlib.error import DisplayConnectionError
@@ -867,14 +866,16 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
         try:
             future.result()
-        except (MaxRetryError, NewConnectionError, TimeoutErrorUrllib3, ValueError):
+        except HTTPError as e:
             if not has_umu_setup():
                 err: str = (
                     "umu has not been setup for the user\n"
                     "An internet connection is required to setup umu"
                 )
                 raise RuntimeError(err)
-            log.debug("Network is unreachable")
+            log.debug(e)
+        except Exception as e:
+            log.exception(e)
 
     # Exit if the winetricks verb is already installed to avoid reapplying it
     if env["EXE"].endswith("winetricks") and is_installed_verb(
