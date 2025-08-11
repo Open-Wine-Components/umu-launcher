@@ -51,7 +51,6 @@ BuildRequires:  cargo
 Requires:	python
 Requires:	python3
 Requires:	python3-xlib
-Requires:	python3-filelock
 Requires:	python3-pyzstd
 
 # Can't use these yet, F41 doesn't ship urllib3 >= 2.0 needed
