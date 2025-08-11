@@ -1,6 +1,6 @@
-From 733db195c2dc5569bab598cf4441b8a43471cc68 Mon Sep 17 00:00:00 2001
+From ec722dbd618817165bce740e821ffff7c8a88e83 Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Sun, 10 Aug 2025 20:15:15 -0700
+Date: Sun, 10 Aug 2025 20:45:09 -0700
 Subject: [PATCH] deb: update rustup patch
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH] deb: update rustup patch
  2 files changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 1ad390ff..fc02fbe7 100644
+index 1ad390ff..e4088650 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -2,6 +2,7 @@ PROJECT := umu-launcher
@@ -24,7 +24,7 @@ index 1ad390ff..fc02fbe7 100644
  umu-install: umu-dist-install umu-delta-install umu-docs-install
  endif
  
-+URLLIB3_URL := https://github.com/urllib3/urllib3/releases/download/2.4.0/urllib3-2.4.0-py3-none-any.whl
++URLLIB3_URL := https://github.com/urllib3/urllib3/releases/download/2.5.0/urllib3-2.5.0-py3-none-any.whl
  
  $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  	$(info :: Building vendored dependencies )
