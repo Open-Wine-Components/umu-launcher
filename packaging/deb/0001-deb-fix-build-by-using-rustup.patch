@@ -1,7 +1,7 @@
-From e78b30b05387e8d45c01dae4b5c2bc7b3abdedb2 Mon Sep 17 00:00:00 2001
+From 733db195c2dc5569bab598cf4441b8a43471cc68 Mon Sep 17 00:00:00 2001
 From: R1kaB3rN <100738684+R1kaB3rN@users.noreply.github.com>
-Date: Sun, 11 May 2025 13:28:47 -0700
-Subject: [PATCH] fix: update patch for bookworm
+Date: Sun, 10 Aug 2025 20:15:15 -0700
+Subject: [PATCH] deb: update rustup patch
 
 ---
  Makefile.in                           | 17 ++++++++++++-----
@@ -9,7 +9,7 @@ Subject: [PATCH] fix: update patch for bookworm
  2 files changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index fe2a529d..c173df3b 100644
+index 1ad390ff..fc02fbe7 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -2,6 +2,7 @@ PROJECT := umu-launcher
@@ -29,7 +29,7 @@ index fe2a529d..c173df3b 100644
  $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  	$(info :: Building vendored dependencies )
 @@ -92,9 +94,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
- 		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
+ 		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn -C=--build-option=--dynamic-link-zstd --outdir=$(OBJDIR); \
  	fi
  	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 -		cd subprojects/urllib3 && \
@@ -39,15 +39,15 @@ index fe2a529d..c173df3b 100644
  	fi
  	touch $(@)
  
-@@ -105,7 +105,7 @@ umu-vendored-install: umu-vendored
- 	$(info :: Installing subprojects )
- 	install -d $(DESTDIR)$(PYTHONDIR)/umu/_vendor
- 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
--		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/pyzstd/$(OBJDIR)/pyzstd*.whl; \
-+		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/urllib3*.whl; \
+@@ -109,7 +109,7 @@ umu-vendored-install: umu-vendored
  		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name pyzstd | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
  	fi
  	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
+-		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/urllib3/$(OBJDIR)/urllib3*.whl; \
++		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor $(OBJDIR)/urllib3*.whl; \
+ 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name urllib3 | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
+ 	fi
+ 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ] || [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 @@ -173,10 +173,17 @@ zipapp-install: zipapp
  	@echo "Standalone application 'umu-run' created at '$(DESTDIR)$(PREFIX)/bin'"
  
@@ -80,5 +80,5 @@ index adfd8025..b725d9f5 100644
  Homepage: https://github.com/Open-Wine-Components/umu-launcher
  Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
 -- 
-2.49.0
+2.50.1
 
