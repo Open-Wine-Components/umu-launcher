@@ -22,7 +22,7 @@ jobs:
     - name: Install build dependencies
       run: apt install -y python3-venv python3-all bash make scdoc python3-hatchling python3-installer python3-build cargo git
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0
 

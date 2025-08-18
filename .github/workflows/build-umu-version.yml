@@ -20,7 +20,7 @@ jobs:
       full_desc: ${{ steps.describe.outputs.full_desc }}
       branch: ${{ steps.describe.outputs.branch }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Describe
