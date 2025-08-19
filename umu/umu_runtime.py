@@ -3,6 +3,7 @@ from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha256
 from http import HTTPStatus
+from inspect import getsource
 from pathlib import Path
 from secrets import token_urlsafe
 from shutil import move, rmtree
@@ -13,6 +14,7 @@ from urllib3.exceptions import HTTPError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
+import umu.umu_reaper as umu_reaper
 from umu.umu_consts import UMU_CACHE, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
@@ -61,6 +63,30 @@ def create_shim(file_path: Path):
     # Write the script content to the specified file path
     with file_path.open("w") as file:
         file.write(script_content)
+
+    # Make the script executable
+    file_path.chmod(0o700)
+
+
+def create_reaper(file_path: Path):
+    """Check if the reaper exists at the specified file path and is up to date.
+
+    Creates or updates the reaper if necessary.
+
+    Args:
+        file_path (Path): The path where the reaper script should be located.
+
+    """
+    contents = getsource(umu_reaper)
+
+    if Path(file_path).is_file():
+        with file_path.open() as file:
+            target_contents = file.read()
+        if target_contents == contents:
+            return
+
+    with file_path.open("w") as file:
+        file.write(contents)
 
     # Make the script executable
     file_path.chmod(0o700)
@@ -259,6 +285,7 @@ def _install_umu(
     local.joinpath("_v2-entry-point").rename(local.joinpath("umu"))
 
     create_shim(local / "umu-shim")
+    create_reaper(local / "reaper")
 
     # Validate the runtime after moving the files
     check_runtime(local, runtime_ver)
@@ -371,6 +398,9 @@ def _update_umu(
     # Restore shim if missing
     if not local.joinpath("umu-shim").is_file():
         create_shim(local / "umu-shim")
+
+    # Restore reaper if missing
+    create_reaper(local / "reaper")
 
     log.info("%s is up to date", variant)
 
