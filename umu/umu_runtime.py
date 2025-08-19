@@ -77,8 +77,12 @@ def _install_umu(
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
     codename, variant, _ = runtime_ver
+    # Target architecture of the runtime. For all uploaded artifacts, upstream
+    # currently derives its names from dpkg-architecture(1).
+    # https://gitlab.steamos.cloud/steamrt/flatdeb-steam/-/blob/4dbe64b1f7bb7caa74f3a33bd8a5e6c2a2ed12f1/subprojects/flatdeb/run.py#L791
+    arch: str = "-arm64" if os.environ.get("UMU_RUNTIME_ARCH") == "aarch64" else ""
     # Archive containing the runtime
-    archive: str = f"SteamLinuxRuntime_{codename}.tar.xz"
+    archive: str = f"SteamLinuxRuntime_{codename}{arch}.tar.xz"
     base_url: str = (
         f"https://repo.steampowered.com/steamrt-images-{codename}"
         "/snapshots/latest-container-runtime-public-beta"
@@ -230,7 +234,7 @@ def _install_umu(
         extract_tarfile(Path(tmpcache, archive), Path(tmpcache))
 
         # Move the files to the correct location
-        source_dir: Path = Path(tmpcache, f"SteamLinuxRuntime_{codename}")
+        source_dir: Path = Path(tmpcache, f"SteamLinuxRuntime_{codename}{arch}")
         var: Path = local.joinpath("var")
         log.debug("Source: %s", source_dir)
         log.debug("Destination: %s", local)
