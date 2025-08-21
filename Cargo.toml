@@ -16,4 +16,4 @@ ssh-key = { version = "0.6.7", default-features = false, features = [
     "alloc",
 ] }
 sha2 = "0.10.9"
-base16ct = { version = "0.2.0", features = ["alloc"] }
+base16ct = { version = "0.3.0", features = ["alloc"] }
