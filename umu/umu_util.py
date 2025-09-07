@@ -65,7 +65,8 @@ def get_library_paths() -> set[str]:
     """Find the shared library paths from the user's system."""
     library_paths: set[str] = set()
     paths: set[str] = set()
-    ldconfig: str = which("ldconfig") or ""
+    ldconfig_paths: str = ":".join(filter(None, (os.environ.get("PATH"), "/sbin")))
+    ldconfig: str = which("ldconfig", path=ldconfig_paths) or ""
     root = "/"
 
     if not ldconfig:
