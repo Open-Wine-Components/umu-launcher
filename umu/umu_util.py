@@ -17,7 +17,6 @@ from tempfile import gettempdir, mkdtemp
 from typing import Any
 
 from urllib3.response import BaseHTTPResponse
-from Xlib import display
 
 from umu.umu_consts import TMPFS_MIN, UMU_CACHE, UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
 from umu.umu_log import log
@@ -213,20 +212,6 @@ def is_winetricks_verb(
             return False
 
     return True
-
-
-@contextmanager
-def xdisplay(no: str):
-    """Create a Display."""
-    d: display.Display | None = None
-
-    try:
-        d = display.Display(no)
-        yield d
-    finally:
-        if d is not None:
-            d.close()
-
 
 def write_file_chunks(
     path: Path,
