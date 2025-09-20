@@ -58,6 +58,13 @@ jobs:
           sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
           sudo mount -o remount,size=500M /tmp
+      - name: Test steamrt install w/ free-threaded Python
+        run: |
+          uv venv --python 3.14t --clear
+          source .venv/bin/activate
+          PYTHON_GIL=0 sh tests/test_install.sh
+          rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+          uv venv --python 3.10 --clear
       - name: Test obsolete steamrt install
         run: |
           source .venv/bin/activate
