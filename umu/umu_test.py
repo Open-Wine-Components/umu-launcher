@@ -1684,7 +1684,9 @@ class TestGameLauncher(unittest.TestCase):
 
         A ReadError should be raised as we only expect .tar.gz releases
         """
-        test_archive = self.test_cache.joinpath(f"{self.test_proton_dir}.tar.zst")
+        # Since 3.14, only lzma, bzip2, zstd and gzip compression is supported
+        # See https://docs.python.org/3.14/library/tarfile.html#tarfile.open
+        test_archive = self.test_cache.joinpath(f"{self.test_proton_dir}.tar.lz4")
 
         # Do not apply compression
         with tarfile.open(test_archive.as_posix(), "w") as tar:
@@ -1693,7 +1695,7 @@ class TestGameLauncher(unittest.TestCase):
                 arcname=self.test_proton_dir.as_posix(),
             )
 
-        with self.assertRaisesRegex(tarfile.CompressionError, "zst"):
+        with self.assertRaisesRegex(tarfile.CompressionError, "lz4"):
             umu_util.extract_tarfile(test_archive, test_archive.parent)
 
         if test_archive.exists():
