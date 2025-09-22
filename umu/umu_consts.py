@@ -29,13 +29,6 @@ class HTTPMethod(Enum):
     TRACE = "TRACE"
 
 
-class GamescopeAtom(Enum):
-    """Represent Gamescope-specific X11 atom names."""
-
-    SteamGame = "STEAM_GAME"
-    BaselayerAppId = "GAMESCOPECTRL_BASELAYER_APPID"
-
-
 class FileLock(Enum):
     """Files placed with an exclusive lock via flock(2)."""
 

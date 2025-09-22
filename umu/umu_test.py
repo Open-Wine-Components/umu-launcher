@@ -6,7 +6,6 @@ import sys
 import tarfile
 import unittest
 from argparse import Namespace
-from array import array
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
 from importlib.util import find_spec
@@ -21,12 +20,6 @@ from tempfile import (
     gettempdir,
 )
 from unittest.mock import MagicMock, Mock, patch
-
-from Xlib.display import Display
-from Xlib.error import DisplayConnectionError
-from Xlib.protocol.rq import Event
-from Xlib.X import CreateNotify
-from Xlib.xobject.drawable import Window
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -940,124 +933,6 @@ class TestGameLauncher(unittest.TestCase):
             umu_util.write_file_chunks(mock_file, file2, hasher, chunk_size)
             self.assertTrue(hasher.digest(), "Expected hashed data > 0, received 0")
 
-    def test_get_gamescope_baselayer_appid_err(self):
-        """Test get_gamescope_baselayer_appid on error.
-
-        Expects function be fail safe, handling any exceptions when getting
-        GAMESCOPECTRL_BASELAYER_APPID
-        """
-        mock_display = MagicMock(spec=Display)
-        mock_display.screen.side_effect = DisplayConnectionError(mock_display, "foo")
-
-        result = umu_run.get_gamescope_baselayer_appid(mock_display)
-        self.assertTrue(result is None, f"Expected a value, received: {result}")
-
-    def test_get_gamescope_baselayer_appid(self):
-        """Test get_gamescope_baselayer_appid."""
-        mock_display = MagicMock(spec=Display)
-        mock_screen = MagicMock()
-        mock_root = MagicMock()
-        mock_prop = MagicMock()
-        result = None
-
-        mock_display.screen.return_value = mock_screen
-        mock_display.get_atom.return_value = 0
-        mock_screen.root = mock_root
-        mock_root.get_full_property.return_value = mock_prop
-        mock_prop.value = array("I", [1, 2, 3])
-
-        result = umu_run.get_gamescope_baselayer_appid(mock_display)
-        self.assertTrue(result == [1, 2, 3], f"Expected a value, received: {result}")
-
-    def test_set_steam_game_property_err(self):
-        """Test set_steam_game_property on error.
-
-        Expects function be fail safe, handling any exceptions when setting
-        a new value for STEAM_GAME.
-        """
-        mock_display = MagicMock(spec=Display)
-        mock_window_ids = {"1", "2", "3"}
-        mock_appid = 123
-
-        mock_display.create_resource_object.side_effect = DisplayConnectionError(
-            mock_display, "foo"
-        )
-
-        result = umu_run.set_steam_game_property(
-            mock_display, mock_window_ids, mock_appid
-        )
-
-        self.assertTrue(result is mock_display, f"Expected Display, received: {result}")
-        mock_display.create_resource_object.assert_called()
-
-    def test_set_steam_game_property(self):
-        """Test set_steam_game_property."""
-        mock_display = MagicMock(spec=Display)
-        mock_window = MagicMock(spec=Window)
-        mock_window_ids = {"1", "2", "3"}
-        mock_appid = 123
-
-        mock_display.create_resource_object.return_value = mock_window
-        mock_display.get_atom.return_value = 0
-
-        result = umu_run.set_steam_game_property(
-            mock_display, mock_window_ids, mock_appid
-        )
-        self.assertTrue(result is mock_display, f"Expected Display, received: {result}")
-        mock_display.create_resource_object.assert_called()
-        mock_display.get_atom.assert_called()
-
-    def test_get_window_ids_err(self):
-        """Test get_window_ids on error.
-
-        Expects function to be fail safe, so any exceptions should be handled
-        when returning child windows.
-        """
-        mock_display = MagicMock(spec=Display)
-        mock_event = MagicMock(spec=Event)
-        mock_screen = MagicMock()
-        mock_root = MagicMock()
-        mock_query_tree = MagicMock()
-
-        mock_event.type = CreateNotify
-        mock_display.next_event.return_value = mock_event
-
-        mock_display.screen.return_value = mock_screen
-        mock_screen.root = mock_root
-        mock_root.query_tree.side_effect = DisplayConnectionError(mock_display, "foo")
-        mock_query_tree.children = set()
-
-        result = umu_run.get_window_ids(mock_display)
-
-        # Assertions
-        self.assertTrue(result is None, f"Expected None, received: {result}")
-        mock_display.next_event.assert_called_once()
-        mock_display.screen.assert_called_once()
-        mock_screen.root.query_tree.assert_called_once()
-
-    def test_get_window_ids(self):
-        """Test get_window_ids."""
-        mock_display = MagicMock(spec=Display)
-        mock_event = MagicMock(spec=Event)
-        mock_screen = MagicMock()
-        mock_root = MagicMock()
-        mock_query_tree = MagicMock()
-
-        mock_event.type = CreateNotify
-        mock_display.next_event.return_value = mock_event
-
-        mock_display.screen.return_value = mock_screen
-        mock_screen.root = mock_root
-        mock_root.query_tree.return_value = mock_query_tree
-        mock_query_tree.children = set()
-
-        result = umu_run.get_window_ids(mock_display)
-
-        self.assertTrue(isinstance(result, set), f"Expected a set, received: {result}")
-        mock_display.next_event.assert_called_once()
-        mock_display.screen.assert_called_once()
-        mock_screen.root.query_tree.assert_called_once()
-
     def test_get_steam_layer_id(self):
         """Test get_steam_layer_id.
 
@@ -1097,6 +972,28 @@ class TestGameLauncher(unittest.TestCase):
             self.assertTrue(shim.is_file(), f"Expected '{shim}' to be a file")
             # Ensure there's data
             self.assertTrue(shim.stat().st_size > 0, f"Expected '{shim}' to have data")
+
+    def test_create_reaper_exe(self):
+        """Test create_reaper and ensure it's executable."""
+        reaper = None
+
+        with TemporaryDirectory() as tmp:
+            reaper = Path(tmp, "reaper")
+            umu_runtime.create_reaper(reaper)
+            self.assertTrue(
+                os.access(reaper, os.X_OK), f"Expected '{reaper}' to be executable"
+            )
+
+    def test_create_reaper(self):
+        """Test create_reaper."""
+        reaper = None
+
+        with TemporaryDirectory() as tmp:
+            reaper = Path(tmp, "reaper")
+            umu_runtime.create_reaper(reaper)
+            self.assertTrue(reaper.is_file(), f"Expected '{reaper}' to be a file")
+            # Ensure there's data
+            self.assertTrue(reaper.stat().st_size > 0, f"Expected '{reaper}' to have data")
 
     def test_run_command(self):
         """Test run_command."""
@@ -2187,6 +2084,10 @@ class TestGameLauncher(unittest.TestCase):
         shim_path = Path(self.test_local_share, "umu-shim")
         shim_path.touch()
 
+        # Mock the reaper file
+        reaper_path = Path(self.test_local_share, "reaper")
+        reaper_path.touch()
+
         with (
             patch("sys.argv", ["", self.test_exe]),
             ThreadPoolExecutor() as thread_pool,
@@ -2245,10 +2146,10 @@ class TestGameLauncher(unittest.TestCase):
         )
         self.assertEqual(
             len(test_command),
-            8,
-            f"Expected 8 elements, received {len(test_command)}",
+            12,
+            f"Expected 12 elements, received {len(test_command)}",
         )
-        entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [*test_command]
+        entry_point, opt1, verb, opt2, reaper, opt3, appId, opt4, shim, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertIsInstance(
@@ -2257,6 +2158,11 @@ class TestGameLauncher(unittest.TestCase):
         self.assertEqual(opt1, "--verb", "Expected --verb")
         self.assertEqual(verb, self.test_verb, "Expected a verb")
         self.assertEqual(opt2, "--", "Expected --")
+        self.assertIsInstance(reaper, os.PathLike, "Expected reaper to be PathLike")
+        self.assertEqual(opt3, "SteamLaunch", "Expected SteamLaunch")
+        self.assertEqual(appId, "AppId=0", "Expected AppId")
+        self.assertEqual(opt4, "--", "Expected --")
+        self.assertEqual(reaper, reaper_path, "Expected the reaper file")
         self.assertIsInstance(shim, os.PathLike, "Expected shim to be PathLike")
         self.assertEqual(shim, shim_path, "Expected the shim file")
         self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
