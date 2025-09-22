@@ -1,6 +1,8 @@
 import os
+import shlex
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import dataclass
 from hashlib import sha256
 from http import HTTPStatus
 from pathlib import Path
@@ -9,11 +11,12 @@ from shutil import move, rmtree
 from subprocess import run
 from tempfile import TemporaryDirectory, mkdtemp
 
+import vdf
 from urllib3.exceptions import HTTPError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
-from umu.umu_consts import UMU_CACHE, FileLock, HTTPMethod
+from umu.umu_consts import UMU_CACHE, UMU_LOCAL, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
     extract_tarfile,
@@ -258,8 +261,6 @@ def _install_umu(
     log.debug("Renaming: _v2-entry-point -> umu")
     local.joinpath("_v2-entry-point").rename(local.joinpath("umu"))
 
-    create_shim(local / "umu-shim")
-
     # Validate the runtime after moving the files
     check_runtime(local, runtime_ver)
 
@@ -367,10 +368,6 @@ def _update_umu(
 
     # Update our runtime
     _update_umu_platform(local, runtime, runtime_ver, session_pools, resp)
-
-    # Restore shim if missing
-    if not local.joinpath("umu-shim").is_file():
-        create_shim(local / "umu-shim")
 
     log.info("%s is up to date", variant)
 
@@ -484,3 +481,122 @@ def _update_umu_platform(
         log.debug("Removing: %s", runtime)
         rmtree(str(runtime))
         log.debug("Released file lock '%s'", lock)
+
+
+@dataclass
+class UmuRuntime:
+    """Holds information about a runtime."""
+
+    name: str
+    variant: str
+    appid: str
+    path: Path | None = None
+
+    def __post_init__(self) -> None:  # noqa: D105
+        if not self.variant:
+            return
+        if self.path is None:
+            self.path = UMU_LOCAL.joinpath(self.variant)
+
+    def __bool__(self) -> bool:
+        """Return if the runtime's path has been populated."""
+        return self.path is not None and self.path.is_dir() and self.path.joinpath("mtree.txt.gz").is_file()
+
+    def as_tuple(self) -> RuntimeVersion:
+        """Return runtime information as tuple."""
+        return self.name, self.variant, self.appid
+
+
+RUNTIME_VERSIONS = {
+    "host":    UmuRuntime("host",    ""        , ""   ),
+    "1391110": UmuRuntime("soldier", "steamrt2", "1391110"),
+    "1628350": UmuRuntime("sniper",  "steamrt3", "1628350"),
+    # ""       : UmuRuntime("medic",   "steamrt4"),
+}
+
+
+RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}
+
+
+class CompatLayer:
+    """Class to describe a Steam compatibility layer."""
+
+    def __init__(self, path: Path, shim: Path) -> None:  # noqa: D107
+        self.tool_path = path.as_posix()
+        with Path(path).joinpath("toolmanifest.vdf").open(encoding="utf-8") as f:
+            self.tool_manifest = vdf.load(f)["manifest"]
+
+        self.runtime: CompatLayer | None = (
+            CompatLayer(self.required_runtime.path, shim)
+            if self.required_tool_appid is not None and self.required_runtime.path is not None
+            else None
+        )
+
+        if path.joinpath("compatibilitytool.vdf").exists():
+            with path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
+                # There can be multiple tools definitions in `compatibilitytools.vdf`
+                # Take the first one and hope it is the one with the correct display_name
+                compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
+                self.compatibility_tool = compat_tools[0]
+        else:
+            self.compatibility_tool = {"display_name": path.name}
+
+        self.shim = shim
+
+    @property
+    def required_tool_appid(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.tool_manifest.get("require_tool_appid")) else None
+
+    @property
+    def required_runtime(self) -> UmuRuntime:
+        """Map the required tool's appid to a runtime known by umu."""
+        if self.required_tool_appid is None:
+            return RUNTIME_VERSIONS["host"]
+        return RUNTIME_VERSIONS[self.required_tool_appid]
+
+    @property
+    def layer_name(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else None
+
+    @property
+    def is_proton(self) -> bool:  # noqa: D102
+        return self.layer_name == "proton"
+
+    @property
+    def display_name(self) -> str | None:  # noqa: D102
+        return str(ret) if (ret := self.compatibility_tool.get("display_name")) else None
+
+    @property
+    def has_runtime(self) -> bool:
+        """Report if the compatibility tool has a configured runtime."""
+        return self.runtime is not None
+
+    def _command(self, verb: str) -> list[str]:
+        """Return the tool specific entry point."""
+        tool_path = os.path.normpath(self.tool_path)
+        cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
+        # Temporary override entry point for backwards compatibility
+        if self.layer_name in {"container-runtime"}:
+            cmd = cmd.replace("_v2-entry-point", "umu")
+        cmd = cmd.replace("%verb%", verb)
+        return shlex.split(cmd)
+
+    def command(self, verb: str) -> list[str]:
+        """Return the fully qualified command for the runtime.
+
+        If the runtime uses another runtime, its entry point is prepended to the local command.
+        """
+        log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
+        cmd = self.runtime.command(verb) if self.runtime is not None else []
+        target = self._command(verb)
+        if self.layer_name in {"container-runtime"}:
+            cmd.extend([*target, self.shim.as_posix()])
+        elif self.runtime is None:
+            cmd.extend([self.shim.as_posix(), *target])
+        else:
+            cmd.extend(target)
+        return cmd
+
+    def as_str(self, verb: str):  # noqa: D102
+        return " ".join(map(shlex.quote, self.command(verb)))
+
