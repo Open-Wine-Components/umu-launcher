@@ -2,7 +2,9 @@ import os
 import sys
 from collections.abc import Generator
 from contextlib import contextmanager
+from ctypes import CDLL
 from ctypes.util import find_library
+from enum import IntFlag
 from fcntl import LOCK_EX, LOCK_UN, flock
 from functools import cache
 from hashlib import new as hashnew
@@ -21,6 +23,22 @@ from Xlib import display
 
 from umu.umu_consts import TMPFS_MIN, UMU_CACHE, UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
 from umu.umu_log import log
+
+
+class Renameat2(IntFlag):
+    """Represent a supported bit mask flag for renameat2.
+
+    See https://www.man7.org/linux/man-pages/man2/rename.2.html
+    """
+
+    RENAME_EXCHANGE = 2
+    # Don't overwrite DEST of the rename and error if DEST already exists.
+    # See rename(2) for supported file systems and Linux kernel versions.
+    RENAME_NOREPLACE = 1
+    # Creates a "whiteout" object at the source of the rename at the same time as
+    # performing the rename. See renameat(2) for details.
+    # Requires Linux 3.18+
+    RENAME_WHITEOUT = 4
 
 
 @contextmanager
@@ -398,3 +416,45 @@ def file_digest(fileobj, digest, /, *, _bufsize=2**18):  # noqa: ANN001
         digestobj.update(view[:size])
 
     return digestobj
+
+
+def _renameat2(
+    olddirfd: int,
+    oldpath: str,
+    newdirfd: int,
+    newpath: str,
+    flags: Renameat2,
+) -> None:
+    libc: CDLL = CDLL(get_libc())
+
+    ret = libc.renameat2(olddirfd, oldpath.encode(), newdirfd, newpath.encode(), flags)
+    if ret == 0:
+        return
+
+    raise OSError(ret, os.strerror(ret), oldpath, None, newpath)
+
+
+@contextmanager
+def _split_dirfd(path: os.PathLike) -> Generator[tuple[int, str], Any, None]:
+    fd: int | None = None
+    path = Path(path)
+
+    try:
+        fd = os.open(path.parent, os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
+        yield (fd, path.name)
+    finally:
+        if fd is not None:
+            os.close(fd)
+
+
+def renameat2(src: os.PathLike, dest: os.PathLike, flags: Renameat2) -> None:
+    """Rename a file using the renameat2 system call."""
+    with _split_dirfd(src) as src_split, _split_dirfd(dest) as dst_split:
+        # Note, renameat2 requires Linux 3.15 and glibc 2.28. Our minimum target
+        # platform is latest Debian, which will have versions 3.15+ and 2.28+.
+        _renameat2(src_split[0], src_split[1], dst_split[0], dst_split[1], flags)
+
+
+def exchange(src: os.PathLike, dest: os.PathLike) -> None:
+    """Atomically exchange paths between two files."""
+    renameat2(src, dest, Renameat2.RENAME_EXCHANGE)

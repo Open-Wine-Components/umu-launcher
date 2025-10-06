@@ -1,6 +1,6 @@
 import os
 from collections.abc import Callable
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from hashlib import sha256
 from http import HTTPStatus
 from pathlib import Path
@@ -16,6 +16,7 @@ from urllib3.response import BaseHTTPResponse
 from umu.umu_consts import UMU_CACHE, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
+    exchange,
     extract_tarfile,
     file_digest,
     get_tempdir,
@@ -40,7 +41,6 @@ def create_shim(file_path: Path):
         file_path (Path, optional): The path where the shim script will be created.
 
     """
-    # Define the content of the shell script
     script_content = (
         "#!/bin/sh\n"
         "\n"
@@ -57,12 +57,7 @@ def create_shim(file_path: Path):
         "# Execute the passed command\n"
         'exec "$@"\n'
     )
-
-    # Write the script content to the specified file path
-    with file_path.open("w") as file:
-        file.write(script_content)
-
-    # Make the script executable
+    file_path.write_text(script_content, encoding="utf-8")
     file_path.chmod(0o700)
 
 
@@ -214,54 +209,37 @@ def _install_umu(
             parts.parent / parts.name.removesuffix(f".{buildid}.parts")
         )
 
-    # Open the tar file and move the files
-    log.debug("Opening: %s", parts)
-
     with TemporaryDirectory(dir=UMU_CACHE) as tmpcache:
-        futures: list[Future] = []
-        var: Path = local.joinpath("var")
         log.debug("Created: %s", tmpcache)
         log.debug("Moving: %s -> %s", parts, tmpcache)
         move(parts, tmpcache)
 
-        # Ensure the target directory exists
         local.mkdir(parents=True, exist_ok=True)
         log.debug("Extracting: %s -> %s", f"{tmpcache}/{archive}", tmpcache)
         extract_tarfile(Path(tmpcache, archive), Path(tmpcache))
 
-        # Move the files to the correct location
-        source_dir: Path = Path(tmpcache, f"SteamLinuxRuntime_{codename}")
-        var: Path = local.joinpath("var")
-        log.debug("Source: %s", source_dir)
-        log.debug("Destination: %s", local)
+        steamrt, *_ = archive.split(".tar.xz")
+        try:
+            log.debug("Exchanging: '%s' -> '%s'", f"{tmpcache}/{steamrt}", local)
+            exchange(Path(tmpcache, steamrt), local)
+        except OSError as e:
+            # Exchange in $XDG_DATA_HOME, when the file systems at $XDG_CACHE_HOME
+            # and $XDG_DATA_HOME are different.
+            log.error(e)
+            log.debug("Moving: '%s' -> '%s'", f"{tmpcache}/{steamrt}", local.parent)
+            move(Path(tmpcache, steamrt), local.parent)
+            log.debug("Exchanging: '%s' -> '%s'", f"{local.parent}/{steamrt}", local)
+            exchange(local.parent / steamrt, local)
+            log.debug("Moving: '%s' -> '%s'", f"{local.parent}/{steamrt}", tmpcache)
+            move(local.parent / steamrt, tmpcache)
 
-        # Move each file to the dest dir, overwriting if exists
-        futures.extend(
-            [
-                thread_pool.submit(_move, file, source_dir, local)
-                for file in source_dir.glob("*")
-            ]
-        )
-
-        if var.is_dir():
-            log.debug("Removing: %s", var)
-            # Remove the variable directory to avoid Steam Linux Runtime
-            # related errors when creating it. Supposedly, it only happens
-            # when going from umu-launcher 0.1-RC4 -> 1.1.1+
-            # See https://github.com/Open-Wine-Components/umu-launcher/issues/213#issue-2576708738
-            thread_pool.submit(rmtree, str(var))
-
-        for future in futures:
-            future.result()
-
-    # Rename _v2-entry-point
-    log.debug("Renaming: _v2-entry-point -> umu")
-    local.joinpath("_v2-entry-point").rename(local.joinpath("umu"))
-
-    create_shim(local / "umu-shim")
-
-    # Validate the runtime after moving the files
+    # Validate
     check_runtime(local, runtime_ver)
+
+    # Post-install
+    log.debug("Linking: umu -> _v2-entry-point")
+    local.joinpath("umu").symlink_to("_v2-entry-point")
+    create_shim(local / "umu-shim")
 
 
 def setup_umu(
@@ -373,25 +351,6 @@ def _update_umu(
         create_shim(local / "umu-shim")
 
     log.info("%s is up to date", variant)
-
-
-def _move(file: Path, src: Path, dst: Path) -> None:
-    """Move a file or directory to a destination.
-
-    In order for the source and destination directory to be identical, when
-    moving a directory, the contents of that same directory at the destination
-    will be removed.
-    """
-    src_file: Path = src.joinpath(file.name)
-    dest_file: Path = dst.joinpath(file.name)
-
-    if dest_file.is_dir():
-        log.debug("Removing directory: %s", dest_file)
-        rmtree(str(dest_file))
-
-    if src.is_file() or src.is_dir():
-        log.debug("Moving: %s -> %s", src_file, dest_file)
-        move(src_file, dest_file)
 
 
 def check_runtime(src: Path, runtime_ver: RuntimeVersion) -> int:
