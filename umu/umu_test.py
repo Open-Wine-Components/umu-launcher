@@ -201,6 +201,198 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_umu_compat.exists():
             rmtree(self.test_umu_compat.as_posix())
 
+    def test_split_dirfd(self):
+        """Test _split_dirfd."""
+        with TemporaryDirectory() as file:
+            result = None
+            mock_path = Path(file, "foo")
+
+            with umu_util._split_dirfd(mock_path) as mock_split:
+                result = mock_split
+                self.assertIsInstance(
+                    result, tuple, f"Expected '{result}' to be a tuple"
+                )
+                self.assertTrue(
+                    os.fstat(result[0]),
+                    f"Expected '{result[0]}' to be a file descriptor",
+                )
+                self.assertEqual(
+                    mock_path.name,
+                    result[1],
+                    f"Expected '{result[1]}' to be '{mock_path.name}'",
+                )
+
+    def test_sys_renameat2(self):
+        """Test _renameat2 for files when SRC exists and DEST does not exists."""
+        with TemporaryDirectory() as file:
+            result = None
+            mock_src = Path(file, "foo")
+            mock_dest = Path(file, "bar")
+
+            mock_src.touch()
+
+            self.assertTrue(
+                Path(file, "foo").exists(), f"Expected {Path(file, 'foo')} to exist."
+            )
+            self.assertFalse(
+                Path(file, "bar").exists(),
+                f"Expected {Path(file, 'bar')} to not exist.",
+            )
+
+            mock_src_fd = None
+            mock_dest_fd = None
+            try:
+                mock_src_fd = os.open(
+                    mock_src.parent, os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC
+                )
+                mock_dest_fd = os.open(
+                    mock_src.parent, os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC
+                )
+                result = umu_util._renameat2(
+                    mock_src_fd,
+                    mock_src.name,
+                    mock_dest_fd,
+                    mock_dest.name,
+                    umu_util.Renameat2.RENAME_NOREPLACE,
+                )
+            finally:
+                if mock_src_fd is not None:
+                    os.close(mock_src_fd)
+                if mock_dest_fd is not None:
+                    os.close(mock_dest_fd)
+
+            self.assertIsNone(result, f"Expected '{result}' to be None")
+            self.assertTrue(
+                Path(file, "bar").exists(), f"Expected {Path(file, 'bar')} to exist."
+            )
+            self.assertFalse(
+                Path(file, "foo").exists(),
+                f"Expected {Path(file, 'foo')} to not exist.",
+            )
+
+    def test_sys_renameat2_exch(self):
+        """Test _renameat2 when SRC and DEST are different directories."""
+        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            result = None
+            mock_src = Path(file1, "foo")
+            mock_dest = Path(file2, "bar")
+
+            mock_src.touch()
+            mock_dest.touch()
+
+            self.assertTrue(
+                Path(file1, "foo").exists(), f"Expected {Path(file1, 'foo')} to exist."
+            )
+            self.assertTrue(
+                Path(file2, "bar").exists(), f"Expected {Path(file2, 'bar')} to exist."
+            )
+
+            mock_src_fd = None
+            mock_dest_fd = None
+            try:
+                mock_src_fd = os.open(
+                    mock_src.parent, os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC
+                )
+                mock_dest_fd = os.open(
+                    mock_dest.parent, os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC
+                )
+                result = umu_util._renameat2(
+                    mock_src_fd,
+                    str(mock_src.parent),
+                    mock_dest_fd,
+                    str(mock_dest.parent),
+                    umu_util.Renameat2.RENAME_EXCHANGE,
+                )
+            finally:
+                if mock_src_fd is not None:
+                    os.close(mock_src_fd)
+                if mock_dest_fd is not None:
+                    os.close(mock_dest_fd)
+
+            self.assertIsNone(result, f"Expected '{result}' to be None")
+            self.assertTrue(
+                Path(file1, "bar").exists(), f"Expected {Path(file1, 'bar')} to exist."
+            )
+            self.assertFalse(
+                Path(file1, "foo").exists(),
+                f"Expected {Path(file1, 'foo')} to not exist.",
+            )
+            self.assertTrue(
+                Path(file2, "foo").exists(), f"Expected {Path(file2, 'foo')} to exist."
+            )
+            self.assertFalse(
+                Path(file2, "bar").exists(),
+                f"Expected {Path(file1, 'bar')} to not exist.",
+            )
+
+    def test_exchange(self):
+        """Test exchange."""
+        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            result = None
+
+            Path(file1, "foo").touch()
+            Path(file2, "bar").touch()
+
+            self.assertTrue(
+                Path(file1, "foo").exists(), f"Expected {Path(file1, 'foo')} to exist."
+            )
+            self.assertTrue(
+                Path(file2, "bar").exists(), f"Expected {Path(file2, 'bar')} to exist."
+            )
+
+            result = umu_util.exchange(Path(file1), Path(file2))
+
+            self.assertIsNone(result, f"Expected '{result}' to be None")
+            self.assertTrue(
+                Path(file1, "bar").exists(), f"Expected {Path(file1, 'bar')} to exist."
+            )
+            self.assertFalse(
+                Path(file1, "foo").exists(),
+                f"Expected {Path(file1, 'foo')} to not exist.",
+            )
+            self.assertTrue(
+                Path(file2, "foo").exists(), f"Expected {Path(file2, 'foo')} to exist."
+            )
+            self.assertFalse(
+                Path(file2, "bar").exists(),
+                f"Expected {Path(file1, 'bar')} to not exist.",
+            )
+
+    def test_renameat2(self):
+        """Test renameat2."""
+        with TemporaryDirectory() as file1, TemporaryDirectory() as file2:
+            result = None
+
+            Path(file1, "foo").touch()
+            Path(file2, "bar").touch()
+
+            self.assertTrue(
+                Path(file1, "foo").exists(), f"Expected {Path(file1, 'foo')} to exist."
+            )
+            self.assertTrue(
+                Path(file2, "bar").exists(), f"Expected {Path(file2, 'bar')} to exist."
+            )
+
+            result = umu_util.renameat2(
+                Path(file1), Path(file2), umu_util.Renameat2.RENAME_EXCHANGE
+            )
+
+            self.assertIsNone(result, f"Expected '{result}' to be None")
+            self.assertTrue(
+                Path(file1, "bar").exists(), f"Expected {Path(file1, 'bar')} to exist."
+            )
+            self.assertFalse(
+                Path(file1, "foo").exists(),
+                f"Expected {Path(file1, 'foo')} to not exist.",
+            )
+            self.assertTrue(
+                Path(file2, "foo").exists(), f"Expected {Path(file2, 'foo')} to exist."
+            )
+            self.assertFalse(
+                Path(file2, "bar").exists(),
+                f"Expected {Path(file1, 'bar')} to not exist.",
+            )
+
     def test_get_lines_split(self):
         """Test _get_lines_split.
 
@@ -1265,57 +1457,6 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(result, 1, "Expected the exit code 1")
 
-    def test_move(self):
-        """Test _move when copying a directory or a file.
-
-        This function simply wraps shutil.move but deletes the dest directory
-        before moving the source directory. While not strictly necesssary,
-        doing this maintains the integrity of the runtime platform's directory
-        tree defined in the mtree.txt.gz file
-        """
-        test_dir = self.test_user_share.joinpath("foo")
-        test_file = self.test_user_share.joinpath("bar")
-        test_dir.mkdir()
-        test_file.touch()
-        self.test_user_share.joinpath("qux").symlink_to(test_file)
-
-        # Directory
-        umu_runtime._move(test_dir, self.test_user_share, self.test_local_share)
-        self.assertFalse(
-            self.test_user_share.joinpath("foo").exists(),
-            "foo did not move from src",
-        )
-        self.assertTrue(
-            self.test_local_share.joinpath("foo").exists(),
-            "foo did not move to dst",
-        )
-
-        # File
-        umu_runtime._move(test_file, self.test_user_share, self.test_local_share)
-        self.assertFalse(
-            self.test_user_share.joinpath("bar").exists(),
-            "bar did not move from src",
-        )
-        self.assertTrue(
-            self.test_local_share.joinpath("bar").exists(),
-            "bar did not move to dst",
-        )
-
-        # Link
-        umu_runtime._move(
-            self.test_user_share.joinpath("qux"),
-            self.test_user_share,
-            self.test_local_share,
-        )
-        self.assertFalse(
-            self.test_user_share.joinpath("qux").is_symlink(),
-            "qux did not move from src",
-        )
-        self.assertTrue(
-            self.test_local_share.joinpath("qux").is_symlink(),
-            "qux did not move to dst",
-        )
-
     def test_fetch_releases_no_assets(self):
         """Test _fetch_releases for unexpected values.
 
@@ -1948,7 +2089,11 @@ class TestGameLauncher(unittest.TestCase):
                 err = f"Symbolic link found: {path}"
                 raise AssertionError(err)
             if path.endswith(
-                (":", "/", ".")
+                (
+                    ":",
+                    "/",
+                    ".",
+                )
             ):  # There should be no trailing colons, slashes or periods
                 err = f"Trailing character in path: {path[-1]}"
                 raise AssertionError(err)
