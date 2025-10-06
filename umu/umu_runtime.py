@@ -5,7 +5,7 @@ from hashlib import sha256
 from http import HTTPStatus
 from pathlib import Path
 from secrets import token_urlsafe
-from shutil import move, rmtree
+from shutil import move
 from subprocess import run
 from tempfile import TemporaryDirectory, mkdtemp
 
@@ -279,7 +279,6 @@ def _update_umu(
     The runtime platform will be updated to the latest public beta by
     confirming if the latest platform ID exists in the local VERSIONS.txt
     """
-    runtime: Path
     resp: BaseHTTPResponse
     _, http_pool = session_pools
     codename, variant, _ = runtime_ver
@@ -298,7 +297,7 @@ def _update_umu(
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the variant
     try:
-        runtime = max(file for file in local.glob(f"{codename}*") if file.is_dir())
+        max(file for file in local.glob(f"{codename}*") if file.is_dir())
     except ValueError:
         log.critical("*_platform_* directory missing in '%s'", local)
         log.info("Restoring Runtime Platform...")
@@ -344,7 +343,7 @@ def _update_umu(
         return
 
     # Update our runtime
-    _update_umu_platform(local, runtime, runtime_ver, session_pools, resp)
+    _update_umu_platform(local, runtime_ver, session_pools, resp)
 
     # Restore shim if missing
     if not local.joinpath("umu-shim").is_file():
@@ -417,7 +416,6 @@ def _restore_umu(
 
 def _update_umu_platform(
     local: Path,
-    runtime: Path,
     runtime_ver: RuntimeVersion,
     session_pools: SessionPools,
     resp: BaseHTTPResponse,
@@ -440,6 +438,4 @@ def _update_umu_platform(
             return
         log.info("Updating %s to latest...", variant)
         _install_umu(runtime_ver, session_pools, local)
-        log.debug("Removing: %s", runtime)
-        rmtree(str(runtime))
         log.debug("Released file lock '%s'", lock)
