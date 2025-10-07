@@ -497,7 +497,10 @@ class CompatLayer:
 
     @property
     def layer_name(self) -> str | None:  # noqa: D102
-        return str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else None
+        layer_name = str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else None
+        if layer_name == "umu-passthrough":
+            layer_name = self.runtime.tool_manifest.get("compatmanager_layer_name")
+        return layer_name
 
     @property
     def is_proton(self) -> bool:  # noqa: D102

@@ -732,6 +732,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         "STEAM_COMPAT_CLIENT_INSTALL_PATH": "",
         "STEAM_COMPAT_DATA_PATH": "",
         "STEAM_COMPAT_SHADER_PATH": "",
+        "STEAM_COMPAT_LAUNCHER_SERVICE": "",
         "FONTCONFIG_PATH": "",
         "EXE": "",
         "SteamAppId": "",
@@ -884,6 +885,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
                 setup_pfx(cdata_path)
 
         # Configure the environment
+        env["STEAM_COMPAT_LAUNCHER_SERVICE"] = layer.layer_name
         set_env(env, args)
 
         # Set all environment variables
