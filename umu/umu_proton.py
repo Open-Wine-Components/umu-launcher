@@ -141,6 +141,7 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
             "commandline": "/entry-point",
             "require_tool_appid": rt_appid,
             "use_sessions": "1",
+            # special value, see CompatLayer.layer_name()
             "compatmanager_layer_name": "umu-passthrough",
         }
     }
