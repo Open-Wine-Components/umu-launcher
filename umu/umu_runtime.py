@@ -233,13 +233,13 @@ def _install_umu(
             log.debug("Moving: '%s' -> '%s'", f"{local.parent}/{steamrt}", tmpcache)
             move(local.parent / steamrt, tmpcache)
 
-    # Validate
-    check_runtime(local, runtime_ver)
-
-    # Post-install
-    log.debug("Linking: umu -> _v2-entry-point")
-    local.joinpath("umu").symlink_to("_v2-entry-point")
-    create_shim(local / "umu-shim")
+    # Validate and post-install
+    try:
+        check_runtime(local, runtime_ver)
+    finally:
+        log.debug("Linking: umu -> _v2-entry-point")
+        local.joinpath("umu").symlink_to("_v2-entry-point")
+        create_shim(local / "umu-shim")
 
 
 def setup_umu(
