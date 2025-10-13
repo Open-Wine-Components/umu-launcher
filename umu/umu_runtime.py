@@ -209,37 +209,25 @@ def _install_umu(
             parts.parent / parts.name.removesuffix(f".{buildid}.parts")
         )
 
-    with TemporaryDirectory(dir=UMU_CACHE) as tmpcache:
-        log.debug("Created: %s", tmpcache)
-        log.debug("Moving: %s -> %s", parts, tmpcache)
-        move(parts, tmpcache)
+    local.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(dir=local.parent, prefix=".") as tempdir:
+        log.debug("Created: %s", tempdir)
+        log.debug("Moving: %s -> %s", parts, tempdir)
+        move(parts, tempdir)
 
-        local.mkdir(parents=True, exist_ok=True)
-        log.debug("Extracting: %s -> %s", f"{tmpcache}/{archive}", tmpcache)
-        extract_tarfile(Path(tmpcache, archive), Path(tmpcache))
+        extract_tarfile(Path(tempdir, archive), Path(tempdir))
 
         steamrt, *_ = archive.split(".tar.xz")
-        try:
-            log.debug("Exchanging: '%s' -> '%s'", f"{tmpcache}/{steamrt}", local)
-            exchange(Path(tmpcache, steamrt), local)
-        except OSError as e:
-            # Exchange in $XDG_DATA_HOME, when the file systems at $XDG_CACHE_HOME
-            # and $XDG_DATA_HOME are different.
-            log.error(e)
-            log.debug("Moving: '%s' -> '%s'", f"{tmpcache}/{steamrt}", local.parent)
-            move(Path(tmpcache, steamrt), local.parent)
-            log.debug("Exchanging: '%s' -> '%s'", f"{local.parent}/{steamrt}", local)
-            exchange(local.parent / steamrt, local)
-            log.debug("Moving: '%s' -> '%s'", f"{local.parent}/{steamrt}", tmpcache)
-            move(local.parent / steamrt, tmpcache)
+        log.debug("Exchanging: %s <-> %s", Path(tempdir, steamrt), local)
+        exchange(Path(tempdir, steamrt), local)
 
-    # Validate and post-install
-    try:
-        check_runtime(local, runtime_ver)
-    finally:
-        log.debug("Linking: umu -> _v2-entry-point")
-        local.joinpath("umu").symlink_to("_v2-entry-point")
-        create_shim(local / "umu-shim")
+        # Validate and post-install
+        try:
+            check_runtime(local, runtime_ver)
+        finally:
+            log.debug("Linking: umu -> _v2-entry-point")
+            local.joinpath("umu").symlink_to("_v2-entry-point")
+            create_shim(local.joinpath("umu-shim"))
 
 
 def setup_umu(
