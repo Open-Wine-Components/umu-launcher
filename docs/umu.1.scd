@@ -176,6 +176,16 @@ _UMU_NO_PROTON_
 
 	Set _1_ to run the executable natively within the SLR.
 
+_UMU_HTTP_TIMEOUT_
+	Optional. Sets the timeout, in seconds, for each HTTP request. Otherwise, defaults to _5_.
+
+	Set _0_ to disable timeouts for HTTP requests. Set a positive integer to override the default.
+
+_UMU_HTTP_RETRIES_
+	Optional. Number of times to retry possibly spurious network errors. Otherwise, defaults to _3_.
+
+	Set _0_ to disable retries for HTTP requests. Set a positive integer to override the default.
+
 # SEE ALSO
 
 _umu_(5), _winetricks_(1)
