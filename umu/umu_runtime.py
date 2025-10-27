@@ -180,8 +180,8 @@ def _install_umu(
             try:
                 log.debug("Writing: %s", parts)
                 hashsum = write_file_chunks(parts, resp, hashsum)
-            except HTTPError as e:
-                log.exception(e)
+            except HTTPError:
+                log.error("Aborting steamrt install due to network error")
                 log.info("Moving '%s' to cache for future resumption", parts.name)
                 move(parts, UMU_CACHE)
                 raise
