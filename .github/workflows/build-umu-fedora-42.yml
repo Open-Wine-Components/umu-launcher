@@ -72,7 +72,7 @@ jobs:
              ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc42.rpm
 
       - name: Fedora-42
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: umu-launcher-${{ env.VERSION }}.fc42.rpm
           path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc42.rpm

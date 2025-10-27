@@ -71,13 +71,13 @@ jobs:
              results/umu-launcher_${{ env.VERSION }}-1_all_debian-13.deb
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: python3-umu-launcher_${{ env.VERSION }}-1_amd64_debian-13.deb
           path: results/python3-umu-launcher_${{ env.VERSION }}-1_amd64_debian-13.deb
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: umu-launcher_${{ env.VERSION }}-1_all_debian-13.deb
           path: results/umu-launcher_${{ env.VERSION }}-1_all_debian-13.deb
