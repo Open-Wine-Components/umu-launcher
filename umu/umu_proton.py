@@ -14,7 +14,6 @@ from tempfile import TemporaryDirectory, mkdtemp
 from typing import Any
 
 from urllib3.exceptions import HTTPError
-from urllib3.exceptions import TimeoutError as TimeoutErrorUrllib3
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
@@ -291,7 +290,7 @@ def _fetch_proton(
             try:
                 log.debug("Writing: %s", parts)
                 hashsum = write_file_chunks(parts, resp, hashsum)
-            except TimeoutErrorUrllib3:
+            except HTTPError:
                 log.error("Aborting Proton install due to network error")
                 log.info("Moving '%s' to cache for future resumption", parts.name)
                 log.debug("Moving: %s -> %s", parts, cache.parent)
