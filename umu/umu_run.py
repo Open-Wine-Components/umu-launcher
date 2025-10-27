@@ -51,7 +51,7 @@ from umu.umu_util import (
 
 NET_TIMEOUT = 5.0
 
-NET_RETRIES = 1
+NET_RETRIES = 3
 
 RuntimeVersion = tuple[str, str, str]
 
@@ -828,16 +828,35 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
         truststore.inject_into_ssl()
 
-    # Default to retrying requests once, while using urllib's defaults
-    retries: Retry = Retry(total=NET_RETRIES, redirect=True)
-    # Default to a strict 5 second timeouts throughout
-    timeout: Timeout = Timeout(connect=NET_TIMEOUT, read=NET_TIMEOUT)
+    # Configure retry and timeout count for HTTP requests.
+    # Note, the interface for urllib3's Retry and Timeout is a bit awkward
+    # in that some parameters accept 3 types, and depending on the value
+    # creates different results. To keep the UX simple, only allow setting
+    # a value that achieves a disable effect or overriding the default value.
+    retries: bool | int
+    if os.environ.get("UMU_HTTP_RETRIES") == "0":  # Disables retries
+        retries = False
+    elif "UMU_HTTP_RETRIES" in os.environ:
+        retries = int(os.environ["UMU_HTTP_RETRIES"])
+    else:
+        retries = NET_RETRIES
 
-    with (
-        ThreadPoolExecutor() as thread_pool,
-        PoolManager(timeout=timeout, retries=retries) as http_pool,
-    ):
+    timeouts: None | float
+    if os.environ.get("UMU_HTTP_TIMEOUT") == "0":  # Disables timeouts
+        timeouts = None
+    elif "UMU_HTTP_TIMEOUT" in os.environ:
+        timeouts = float(os.environ["UMU_HTTP_TIMEOUT"])
+    else:
+        timeouts = NET_TIMEOUT
+
+    thread_pool = ThreadPoolExecutor()
+    http_pool = PoolManager(
+        timeout=Timeout(connect=timeouts, read=timeouts),
+        retries=Retry(total=retries, redirect=True),
+    )
+    with thread_pool, http_pool:
         session_pools: tuple[ThreadPoolExecutor, PoolManager] = (thread_pool, http_pool)
+
         # Setup the launcher and runtime files
         future: Future = thread_pool.submit(
             setup_umu, UMU_LOCAL / version[1], version, session_pools
