@@ -63,9 +63,9 @@ def set_env_toml(
     env["UMU_CONFIG_FILE_DIR"] = str(config_path.parent)
 
     # Perform expansion of env vars for paths
-    env["WINEPREFIX"] = Template(env["WINEPREFIX"]).substitute(env)
-    env["PROTONPATH"] = Template(env["PROTONPATH"]).substitute(env)
-    env["EXE"] = Template(env["EXE"]).substitute(env)
+    env["WINEPREFIX"] = Template(env["WINEPREFIX"]).safe_substitute(env)
+    env["PROTONPATH"] = Template(env["PROTONPATH"]).safe_substitute(env)
+    env["EXE"] = Template(env["EXE"]).safe_substitute(env)
 
     _check_env(env)
 
