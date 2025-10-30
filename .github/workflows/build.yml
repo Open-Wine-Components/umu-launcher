@@ -27,6 +27,14 @@ jobs:
       version: ${{ needs.version.outputs.version }}
       shasum: ${{ github.sha }}
 
+  fedora43-build:
+    name: Fedora 43 Build
+    uses: ./.github/workflows/build-umu-fedora-43.yml
+    needs: version
+    with:
+      version: ${{ needs.version.outputs.version }}
+      shasum: ${{ github.sha }}
+
   debian12-build:
     name: Debian 12 Build
     uses: ./.github/workflows/build-umu-debian-12.yml

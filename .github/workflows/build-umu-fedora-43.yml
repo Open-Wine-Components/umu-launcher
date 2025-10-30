@@ -1,0 +1,76 @@
+name: UMU RPM Build - Fedora/Nobara 43
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: false
+        type: string
+      shasum:
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:43
+
+    steps:
+      - name: Install Git
+        run: dnf install -y git
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install build dependencies
+        run: dnf install -y rpm-build meson ninja-build cmake g++ gcc-c++ scdoc git python3-devel python3-build python3-installer python3-urllib3 python3-hatchling python python3 cargo python3-hatch-vcs python3-wheel libzstd-devel python3-pyzstd python3-xlib wget
+
+      - name: Extract Version and SHA
+        run: |
+          # Get version from git tags (assuming semantic versioning format)
+          VERSION=$(git describe --tags --abbrev=0 || echo "unknown")
+          echo $VERSION
+
+          # Get current commit SHA
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo $COMMIT_SHA
+
+          # Store values in environment file
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+
+      - name: Build the project
+        run: |
+          # Use either provided input or extracted value
+          git submodule update --init --recursive
+          sed -i "s|^VERSION := .*$|VERSION := ${{ env.VERSION }}|g" Makefile.in
+
+          cd ..
+          mkdir -p ~/rpmbuild/SOURCES/
+          cp -R umu-launcher umu-launcher-${{ env.VERSION }}/
+          tar -cvzf umu-launcher-${{ env.VERSION }}.tar.gz umu-launcher-${{ env.VERSION }}
+          mv umu-launcher-${{ env.VERSION }}.tar.gz ~/rpmbuild/SOURCES/
+          rm -Rf umu-launcher-${{ env.VERSION }}/
+          cd umu-launcher/
+
+          sed -i "s|^%global tag .*|%global tag ${{ env.VERSION }}|g" packaging/rpm/umu-launcher.spec
+          cat packaging/rpm/umu-launcher.spec | grep tag
+
+          sed -i "s|^%global commit .*|%global commit ${{ env.COMMIT_SHA }}|g" packaging/rpm/umu-launcher.spec
+          cat packaging/rpm/umu-launcher.spec | grep commit
+
+          rpmbuild -ba packaging/rpm/umu-launcher.spec
+          mv ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}*.rpm \
+             ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc43.rpm
+
+      - name: Fedora-43
+        uses: actions/upload-artifact@v5
+        with:
+          name: umu-launcher-${{ env.VERSION }}.fc43.rpm
+          path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc43.rpm
