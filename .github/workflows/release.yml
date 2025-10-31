@@ -35,6 +35,21 @@ jobs:
       file1: umu-launcher-${{ github.ref_name }}.fc42.rpm
       name1: umu-launcher-${{ github.ref_name }}.fc42.rpm
 
+  fedora43-build:
+    name: Fedora 43 Build
+    uses: ./.github/workflows/build-umu-fedora-43.yml
+    with:
+      version: ${{ github.ref_name }}
+      shasum: ${{ github.sha }}
+  fedora43-release:
+    name: Fedora 43 Release ${{ github.ref_name }}
+    needs: fedora43-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: umu-launcher-${{ github.ref_name }}.fc43.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc43.rpm
+
   debian12-build:
     name: Debian 12 Build
     uses: ./.github/workflows/build-umu-debian-12.yml
