@@ -72,15 +72,16 @@ def _install_umu(
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    # Archive containing the runtime
-    archive: str = f"SteamLinuxRuntime_{codename}.tar.xz"
-    base_url: str = (
-        f"https://repo.steampowered.com/steamrt-images-{codename}"
-        "/snapshots/latest-container-runtime-public-beta"
-    )
+    base_url: str = f"https://repo.steampowered.com/{variant}/images/latest-public-beta"
     token: str = f"?versions={token_urlsafe(16)}"
     host: str = "repo.steampowered.com"
-    parts: Path = tmp.joinpath(f"{archive}.parts")
+
+    if codename.removeprefix("steamrt").isdigit():
+        archive = f"SteamLinuxRuntime_{codename.removeprefix('steamrt')}.tar.xz"
+    else:
+        archive = f"SteamLinuxRuntime_{codename}.tar.xz"
+    parts = tmp.joinpath(f"{archive}.parts")
+
     log.debug("Using endpoint '%s' for requests", base_url)
 
     # Download the runtime and optionally create a popup with zenity
@@ -105,9 +106,7 @@ def _install_umu(
     if not os.environ.get("UMU_ZENITY") or ret:
         digest: str = ""
         buildid: str = ""
-        endpoint: str = (
-            f"/steamrt-images-{codename}/snapshots/latest-container-runtime-public-beta"
-        )
+        endpoint: str = f"/{variant}/images/latest-public-beta"
         hashsum = sha256()
         headers: dict[str, str] | None = None
         cached_parts: Path
@@ -270,9 +269,7 @@ def _update_umu(
     resp: BaseHTTPResponse
     _, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    endpoint: str = (
-        f"/steamrt-images-{codename}/snapshots/latest-container-runtime-public-beta"
-    )
+    endpoint: str = f"/{variant}/images/latest-public-beta"
     # Create a token and append it to the URL to avoid the Cloudflare cache
     # Avoids infinite updates to the runtime each launch
     # See https://github.com/Open-Wine-Components/umu-launcher/issues/188
