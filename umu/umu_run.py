@@ -726,7 +726,7 @@ def get_umu_version_from_manifest(
     if not appid:
         return None
 
-    if appid not in appids:
+    if appid not in set(filter(None, appids)):
         return None
 
     return next(member for member in runtimes if appid in member)
