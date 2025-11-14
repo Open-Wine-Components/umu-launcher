@@ -201,6 +201,335 @@ class TestGameLauncher(unittest.TestCase):
         if self.test_umu_compat.exists():
             rmtree(self.test_umu_compat.as_posix())
 
+    def test_get_umu_version_from_manifest_unknownappid(self):
+        """Test get_umu_version_from_manifest.
+
+        Expects None when a container runtime not already known cannot be found
+        in the compatibility tool's manifest.
+        """
+        result = None
+        mock_container_runtimes = (
+            ("sniper", "steamrt3", "1628350"),
+            ("soldier", "steamrt2", "1391110"),
+        )
+        # A text file implementing the compatibility tool interface is expected
+        # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/v0.20251103.0/docs/steam-compat-tool-interface.md?ref_type=tags
+        mock_manifest = (
+            '"manifest"\n'
+            "{\n"
+            '  "version" "2"\n'
+            '  "commandline" "/proton %verb%"\n'
+            '  "require_tool_appid" "769"\n'
+            '  "use_sessions" "1"\n'
+            '  "compatmanager_layer_name" "proton"\n'
+            "}"
+        )
+
+        with TemporaryDirectory() as mock_proton:
+            Path(mock_proton, "toolmanifest.vdf").write_text(
+                mock_manifest, encoding="utf-8"
+            )
+            result = umu_run.get_umu_version_from_manifest(
+                Path(mock_proton, "toolmanifest.vdf"), mock_container_runtimes
+            )
+            self.assertIsNone(result, f"Expected None, received '{result}'")
+
+    def test_get_umu_version_from_manifest_noappid(self):
+        """Test get_umu_version_from_manifest.
+
+        Expects None when a known container runtime cannot be found in the
+        compatibility tool's manifest because the expected value does not
+        exist.
+        """
+        mock_container_runtimes = (
+            ("sniper", "steamrt3", "1628350"),
+            ("soldier", "steamrt2", "1391110"),
+        )
+        mock_manifest = (
+            '"manifest"\n'
+            "{\n"
+            '  "version" "2"\n'
+            '  "commandline" "/proton %verb%"\n'
+            '  "use_sessions" "1"\n'
+            '  "compatmanager_layer_name" "proton"\n'
+            "}"
+        )
+
+        with TemporaryDirectory() as mock_proton:
+            Path(mock_proton, "toolmanifest.vdf").write_text(
+                mock_manifest, encoding="utf-8"
+            )
+            result = umu_run.get_umu_version_from_manifest(
+                Path(mock_proton, "toolmanifest.vdf"), mock_container_runtimes
+            )
+            self.assertIsNone(result, f"Expected None, received '{result}'")
+
+    def test_get_umu_version_from_manifest(self):
+        """Test get_umu_version_from_manifest.
+
+        Expects a tuple representing a known container runtime.
+        """
+        result = None
+        mock_container_runtimes = (
+            ("sniper", "steamrt3", "1628350"),
+            ("soldier", "steamrt2", "1391110"),
+        )
+        mock_manifest = (
+            '"manifest"\n'
+            "{\n"
+            '  "version" "2"\n'
+            '  "commandline" "/proton %verb%"\n'
+            '  "require_tool_appid" "1628350"\n'
+            '  "use_sessions" "1"\n'
+            '  "compatmanager_layer_name" "proton"\n'
+            "}"
+        )
+
+        with TemporaryDirectory() as mock_proton:
+            Path(mock_proton, "toolmanifest.vdf").write_text(
+                mock_manifest, encoding="utf-8"
+            )
+            result = umu_run.get_umu_version_from_manifest(
+                Path(mock_proton, "toolmanifest.vdf"), mock_container_runtimes
+            )
+            self.assertEqual(
+                result,
+                mock_container_runtimes[0],
+                f"Expected '{mock_container_runtimes[0]}, received {result}'",
+            )
+
+    def test_resolve_umu_version_none(self):
+        """Test resolve_umu_version.
+
+        Expects None when a known, required runtime is not found in the
+        compatibility tool's manifest.
+        """
+        mock_container_runtimes = (
+            ("sniper", "steamrt3", "1628350"),
+            ("soldier", "steamrt2", "1391110"),
+        )
+        mock_manifest = (
+            '"manifest"\n'
+            "{\n"
+            '  "version" "2"\n'
+            '  "commandline" "/proton %verb%"\n'
+            '  "require_tool_appid" "769"\n'
+            '  "use_sessions" "1"\n'
+            '  "compatmanager_layer_name" "proton"\n'
+            "}"
+        )
+
+        with TemporaryDirectory() as mock_proton:
+            Path(mock_proton, "toolmanifest.vdf").write_text(
+                mock_manifest, encoding="utf-8"
+            )
+            self.assertTrue(
+                "RUNTIMEPATH" not in os.environ,
+                f"Expected None, received '{os.environ.get('RUNTIMEPATH')}",
+            )
+            self.assertTrue(
+                "UMU_NO_PROTON" not in os.environ,
+                f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
+            )
+            os.environ["PROTONPATH"] = mock_proton
+            result = umu_run.resolve_umu_version(mock_container_runtimes)
+            self.assertIsNone(result, f"Expected None, received '{result}'")
+
+    def test_resolve_umu_version_noproton(self):
+        """Test resolve_umu_version when UMU_NO_PROTON is set.
+
+        Expects a tuple representing the known latest container runtime.
+        In this case, a parsing of a manifest will not a occur.
+        """
+        result = None
+        mock_container_runtimes = (
+            ("sniper", "steamrt3", "1628350"),
+            ("soldier", "steamrt2", "1391110"),
+        )
+        mock_expected = tuple(list(mock_container_runtimes[0]))  # noqa
+
+        self.assertTrue(
+            "RUNTIMEPATH" not in os.environ,
+            f"Expected None, received '{os.environ.get('RUNTIMEPATH')}",
+        )
+        self.assertTrue(
+            "PROTONPATH" not in os.environ,
+            f"Expected None, received '{os.environ.get('PROTONPATH')}",
+        )
+        os.environ["UMU_NO_PROTON"] = "1"
+        result = umu_run.resolve_umu_version(mock_container_runtimes)
+        self.assertEqual(
+            result,
+            mock_expected,
+            f"Expected '{mock_expected}', received '{result}'",
+        )
+        self.assertTrue(
+            result is mock_container_runtimes[0],
+            f"Expected the original instance '{result}'",
+        )
+
+    def test_resolve_umu_version_token(self):
+        """Test resolve_umu_version when PROTONPATH is a known, valid token.
+
+        Expects a tuple representing the known latest container runtime.
+        Known, valid tokens include: GE-Proton. In this case, parsing of a
+        manifest will not occur and it is assumed the compatibility tool
+        associated with the token uses the latest runtime.
+        """
+        result = None
+        mock_container_runtimes = (
+            ("sniper", "steamrt3", "1628350"),
+            ("soldier", "steamrt2", "1391110"),
+        )
+        mock_expected = tuple(list(mock_container_runtimes[0]))  # noqa
+
+        self.assertTrue(
+            "RUNTIMEPATH" not in os.environ,
+            f"Expected None, received '{os.environ.get('RUNTIMEPATH')}",
+        )
+        self.assertTrue(
+            "UMU_NO_PROTON" not in os.environ,
+            f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
+        )
+        os.environ["PROTONPATH"] = "GE-Proton"
+        result = umu_run.resolve_umu_version(mock_container_runtimes)
+        self.assertEqual(
+            result,
+            mock_expected,
+            f"Expected '{mock_expected}', received '{result}'",
+        )
+        self.assertTrue(
+            result is mock_container_runtimes[0],
+            f"Expected the original instance '{result}'",
+        )
+
+    def test_resolve_umu_version(self):
+        """Test resolve_umu_version when all expected inputs are unset.
+
+        Expects a tuple representing a known container runtime that is the
+        latest version. In this case, parsing of a manifest will not occur and
+        the launcher will default to the latest known runtime.
+        """
+        result = None
+        mock_container_runtimes = (
+            ("sniper", "steamrt3", "1628350"),
+            ("soldier", "steamrt2", "1391110"),
+        )
+        mock_expected = tuple(list(mock_container_runtimes[1]))  # noqa
+
+        self.assertTrue(
+            "PROTONPATH" not in os.environ,
+            f"Expected None, received '{os.environ.get('PROTONPATH')}",
+        )
+        self.assertTrue(
+            "RUNTIMEPATH" not in os.environ,
+            f"Expected None, received '{os.environ.get('RUNTIMEPATH')}",
+        )
+        self.assertTrue(
+            "UMU_NO_PROTON" not in os.environ,
+            f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
+        )
+        result = umu_run.resolve_umu_version(mock_container_runtimes)
+        self.assertEqual(
+            result,
+            mock_container_runtimes[0],
+            f"Expected '{mock_expected}', received None",
+        )
+        self.assertTrue(
+            result is mock_container_runtimes[0],
+            f"Expected the original instance '{result}'",
+        )
+
+    def test_resolve_umu_version_runtimepath(self):
+        """Test resolve_umu_version when RUNTIMEPATH is set.
+
+        Expects a tuple representing a known container runtime that contains
+        the RUNTIMEPATH value. In this case, parsing of a manifest will not
+        occur.
+        """
+        result = None
+        mock_container_runtimes = (
+            ("sniper", "steamrt3", "1628350"),
+            ("soldier", "steamrt2", "1391110"),
+        )
+        mock_expected = tuple(list(mock_container_runtimes[1]))  # noqa
+
+        self.assertTrue(
+            "PROTONPATH" not in os.environ,
+            f"Expected None, received '{os.environ.get('PROTONPATH')}",
+        )
+        self.assertTrue(
+            "UMU_NO_PROTON" not in os.environ,
+            f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
+        )
+        os.environ["RUNTIMEPATH"] = "steamrt2"
+        result = umu_run.resolve_umu_version(mock_container_runtimes)
+        self.assertEqual(
+            result,
+            mock_expected,
+            f"Expected '{mock_expected}', received None",
+        )
+        self.assertTrue(
+            result is mock_container_runtimes[1],
+            f"Expected the original instance '{result}'",
+        )
+        self.assertTrue(
+            os.environ["RUNTIMEPATH"] in result,
+            f"Expected '{os.environ['RUNTIMEPATH']}' in '{result}'",
+        )
+
+    def test_resolve_umu_version_protonpath(self):
+        """Test resolve_umu_version when PROTONPATH is set.
+
+        Expects a tuple representing a known container runtime when the
+        compatibility tool's required runtime is found in its manifest.
+        In this case, the compatibility tool will be searched and parsing
+        of a manifest will occur.
+        """
+        result = None
+        mock_manifest = (
+            '"manifest"\n'
+            "{\n"
+            '  "version" "2"\n'
+            '  "commandline" "/proton %verb%"\n'
+            '  "require_tool_appid" "1628350"\n'
+            '  "use_sessions" "1"\n'
+            '  "compatmanager_layer_name" "proton"\n'
+            "}"
+        )
+        # The first element represents the latest, known container runtime
+        mock_container_runtimes = (
+            ("sniper", "steamrt3", "1628350"),
+            ("soldier", "steamrt2", "1391110"),
+        )
+        # Copy the first element because we want to assert immutability
+        mock_expected = tuple(list(mock_container_runtimes[0]))  # noqa
+
+        with TemporaryDirectory() as mock_proton:
+            Path(mock_proton, "toolmanifest.vdf").write_text(
+                mock_manifest, encoding="utf-8"
+            )
+            self.assertTrue(
+                "RUNTIMEPATH" not in os.environ,
+                f"Expected None, received '{os.environ.get('RUNTIMEPATH')}",
+            )
+            self.assertTrue(
+                "UMU_NO_PROTON" not in os.environ,
+                f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
+            )
+            os.environ["PROTONPATH"] = mock_proton
+            result = umu_run.resolve_umu_version(mock_container_runtimes)
+            self.assertEqual(
+                result,
+                mock_expected,
+                f"Expected '{mock_expected}', received None",
+            )
+            # Ensure the called function did not mutate the input
+            self.assertTrue(
+                result is mock_container_runtimes[0],
+                f"Expected the original instance '{result}'",
+            )
+
     def test_split_dirfd(self):
         """Test _split_dirfd."""
         with TemporaryDirectory() as file:
@@ -1116,7 +1445,7 @@ class TestGameLauncher(unittest.TestCase):
             chunk_size = 8
             mock_file = Path(file1.name)
             hasher = hashlib.blake2b()
-            file2.write(os.getrandom(chunk_size))
+            file2.write(os.urandom(chunk_size))
             # Pass a buffered reader as our fake http response
             umu_util.write_file_chunks(mock_file, file2, hasher)
             self.assertTrue(hasher.digest(), "Expected hashed data > 0, received 0")
@@ -1127,7 +1456,7 @@ class TestGameLauncher(unittest.TestCase):
             chunk_size = 8
             mock_file = Path(file1.name)
             hasher = hashlib.blake2b()
-            file2.write(os.getrandom(chunk_size))
+            file2.write(os.urandom(chunk_size))
             # Pass a buffered reader as our fake http response
             umu_util.write_file_chunks(mock_file, file2, hasher, chunk_size)
             self.assertTrue(hasher.digest(), "Expected hashed data > 0, received 0")
