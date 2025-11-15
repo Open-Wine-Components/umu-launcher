@@ -1,4 +1,5 @@
 import os
+import signal
 import sys
 import threading
 from _ctypes import CFuncPtr
@@ -15,6 +16,7 @@ from re import match
 from secrets import token_hex
 from socket import AF_INET, SOCK_DGRAM, socket
 from subprocess import Popen
+from types import FrameType
 from typing import Any
 
 from urllib3 import PoolManager, Retry
@@ -619,6 +621,13 @@ def run_in_steammode(proc: Popen) -> int:
     return proc.wait()
 
 
+def signal_handler(sig: int, frame: FrameType):  # noqa: ARG001
+    """Handle SIGINT/SIGTERM."""
+    pstree = get_pstree_from_pid(os.getpid())
+    for p in pstree:
+        os.kill(p, sig)
+
+
 def run_command(command: tuple[Path | str, ...]) -> int:
     """Run the executable using Proton within the Steam Runtime."""
     prctl: CFuncPtr
@@ -661,6 +670,9 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     ]
     prctl_ret = prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0, 0)
     log.debug("prctl exited with status: %s", prctl_ret)
+
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
 
     with Popen(command, start_new_session=True, cwd=cwd) as proc:
         ret = run_in_steammode(proc) if is_steammode else proc.wait()
