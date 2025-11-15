@@ -452,7 +452,7 @@ RUNTIME_VERSIONS = {
     "host":    UmuRuntime("host",    ""        , ""   ),
     "1391110": UmuRuntime("soldier", "steamrt2", "1391110"),
     "1628350": UmuRuntime("sniper",  "steamrt3", "1628350"),
-    # ""       : UmuRuntime("medic",   "steamrt4"),
+    "4183110": UmuRuntime("steamrt4","steamrt4", "4183110"),
 }
 
 

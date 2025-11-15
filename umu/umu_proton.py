@@ -56,6 +56,7 @@ class ProtonVersion(Enum):
     UMUScout = "umu-scout"
     UMUSoldier = "umu-soldier"
     UMUSniper = "umu-sniper"
+    UMUSteamRT4 = "umu-steamrt4"
 
 
 def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str, str]:
@@ -110,7 +111,11 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
     When 'PROTONPATH' is 'umu-soldier' or 'umu-sniper', create a shim compatibility
     tool that requires the respective runtime and launches the application in that runtime.
     """
-    if not (name and name in {ProtonVersion.UMUSoldier.value, ProtonVersion.UMUSniper.value}):
+    if not (name and name in {
+        ProtonVersion.UMUSoldier.value,
+        ProtonVersion.UMUSniper.value,
+        ProtonVersion.UMUSteamRT4.value
+    }):
         return None
 
     rt_appid = RUNTIME_VERSIONS[RUNTIME_NAMES[name.removeprefix("umu-")]].appid
