@@ -503,6 +503,15 @@ class CompatLayer:
         return layer_name
 
     @property
+    def launch_client(self) -> str | None:
+        """Expose pv's launch-client path depending on the tool's container runtime."""
+        if self.tool_manifest.get("compatmanager_layer_name") == "container-runtime":
+            return f"{self.tool_path}/pressure-vessel/bin/steam-runtime-launch-client"
+        if self.runtime:
+            return self.runtime.launch_client
+        return None
+
+    @property
     def is_proton(self) -> bool:  # noqa: D102
         return self.layer_name == "proton"
 
