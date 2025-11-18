@@ -1,3 +1,4 @@
+import hashlib
 import os
 import signal
 import sys
@@ -246,6 +247,9 @@ def set_env(
     env["WINEPREFIX"] = str(pfx)
     env["STEAM_COMPAT_DATA_PATH"] = str(pfx)
     env["STEAM_COMPAT_APP_ID"] = str(pfx).replace("/", "_")
+    prefix_md5 = hashlib.md5(str(pfx).encode("utf-8")).hexdigest()  # noqa: S324
+    proton_md5 = hashlib.md5(str(protonpath).encode("utf-8")).hexdigest()  # noqa: S324
+    env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}_{proton_md5}"
     env["STEAM_COMPAT_SHADER_PATH"] = str(pfx.joinpath("shadercache"))
     env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_TOOL_PATHS"] = ":".join(
