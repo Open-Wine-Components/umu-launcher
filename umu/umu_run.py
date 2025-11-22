@@ -250,6 +250,12 @@ def set_env(
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
     env["RUNTIMEPATH"] = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
+    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/v0.20251120.0/docs/steam-runtime-emulator.json.5.md
+    if os.environ.get("STEAM_COMPAT_EMULATOR"):
+        env["STEAM_COMPAT_EMULATOR"] = str(Path(os.environ["STEAM_COMPAT_EMULATOR"]).resolve(strict=True))
+    # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/v0.20251120.0/docs/steam-runtime-graphics-provider.json.5.md
+    if os.environ.get("STEAM_COMPAT_GRAPHICS_PROVIDER"):
+        env["STEAM_COMPAT_GRAPHICS_PROVIDER"] = str(Path(os.environ["STEAM_COMPAT_GRAPHICS_PROVIDER"]).resolve(strict=True))
 
     return env
 
