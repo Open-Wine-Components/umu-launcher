@@ -23,6 +23,7 @@ FLATPAK ?= xfalse
 # Ex. Arch and Fedora have pyzstd but ubuntu and debian don't
 USE_SYSTEM_PYZSTD ?= xfalse
 USE_SYSTEM_URLLIB ?= xfalse
+USE_SYSTEM_VDF ?= xfalse
 
 INSTALLER_ARGS := -m installer $(OBJDIR)/umu_launcher*.whl
 ifdef DESTDIR
@@ -85,11 +86,15 @@ umu-install: umu-dist-install umu-delta-install umu-docs-install
 endif
 
 
+
 $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	$(info :: Building vendored dependencies )
 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
 		sed -i 's/setuptools>=64,<74/setuptools/' subprojects/pyzstd/pyproject.toml; \
 		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn -C=--build-option=--dynamic-link-zstd --outdir=$(OBJDIR); \
+	fi
+	@if [ "$(USE_SYSTEM_VDF)" != "xtrue" ]; then \
+		cd subprojects/vdf && $(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 	fi
 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 		cd subprojects/urllib3 && \
@@ -107,6 +112,10 @@ umu-vendored-install: umu-vendored
 	@if [ "$(USE_SYSTEM_PYZSTD)" != "xtrue" ]; then \
 		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/pyzstd/$(OBJDIR)/pyzstd*.whl; \
 		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name pyzstd | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
+	fi
+	@if [ "$(USE_SYSTEM_VDF)" != "xtrue" ]; then \
+		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/vdf/$(OBJDIR)/vdf*.whl; \
+		find $(DESTDIR)$(PYTHONDIR)/umu/_vendor -type d -name vdf | xargs -I {} mv {} $(DESTDIR)$(PYTHONDIR)/umu/_vendor; \
 	fi
 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 		$(PYTHON_INTERPRETER) -m installer --destdir=$(DESTDIR)$(PYTHONDIR)/umu/_vendor subprojects/urllib3/$(OBJDIR)/urllib3*.whl; \

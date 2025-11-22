@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 from concurrent.futures import ALL_COMPLETED, FIRST_EXCEPTION, ThreadPoolExecutor
 from concurrent.futures import wait as futures_wait
@@ -13,6 +14,7 @@ from shutil import move
 from tempfile import TemporaryDirectory, mkdtemp
 from typing import Any
 
+import vdf
 from urllib3.exceptions import HTTPError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
@@ -27,6 +29,7 @@ from umu.umu_consts import (
     HTTPMethod,
 )
 from umu.umu_log import log
+from umu.umu_runtime import RUNTIME_NAMES, RUNTIME_VERSIONS
 from umu.umu_util import (
     extract_tarfile,
     file_digest,
@@ -50,6 +53,10 @@ class ProtonVersion(Enum):
     UMU = "UMU-Proton"
     GELatest = "GE-Latest"
     UMULatest = "UMU-Latest"
+    UMUScout = "umu-scout"
+    UMUSoldier = "umu-soldier"
+    UMUSniper = "umu-sniper"
+    UMUSteamRT4 = "umu-steamrt4"
 
 
 def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str, str]:
@@ -84,6 +91,8 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
     with TemporaryDirectory(dir=UMU_CACHE) as tmpcache:
         tmpdirs: SessionCaches = (get_tempdir(), Path(tmpcache))
         compatdirs = (UMU_COMPAT, STEAM_COMPAT)
+        if _get_umu_runtime_tool(env, os.environ.get("PROTONPATH", "")) is env:
+            return env
         if _get_delta(env, UMU_COMPAT, patch, assets, session_pools) is env:
             return env
         if _get_latest(env, compatdirs, tmpdirs, assets, session_pools) is env:
@@ -95,6 +104,69 @@ def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str
 
     return env
 
+
+def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | None:
+    """Create  a 'passthrough' compatibility tool for native linux applications.
+
+    When 'PROTONPATH' is 'umu-soldier' or 'umu-sniper', create a shim compatibility
+    tool that requires the respective runtime and launches the application in that runtime.
+    """
+    if not (name and name in {
+        ProtonVersion.UMUSoldier.value,
+        ProtonVersion.UMUSniper.value,
+        ProtonVersion.UMUSteamRT4.value
+    }):
+        return None
+
+    rt_appid = RUNTIME_VERSIONS[RUNTIME_NAMES[name.removeprefix("umu-")]].appid
+    tool_path: Path = UMU_COMPAT.joinpath(name)
+    entry_point_file: Path = tool_path.joinpath("entry-point")
+    compatibilitytool_file: Path = tool_path.joinpath("compatibilitytool.vdf")
+    toolmanifest_file: Path = tool_path.joinpath("toolmanifest.vdf")
+    files = (entry_point_file, compatibilitytool_file, toolmanifest_file)
+
+    if tool_path.is_dir():
+        if all(f.is_file() for f in files):
+            os.environ["PROTONPATH"] = str(tool_path)
+            env["PROTONPATH"] = os.environ["PROTONPATH"]
+            return env
+        shutil.rmtree(tool_path)
+
+    entry_point = "#!/bin/sh\nexec \"$@\"\n"
+    compatibilitytool = {
+        "compatibilitytools": {
+            "compat_tools": {
+                name: {"display_name": name, "install_path": ".", "from_oslist": "linux", "to_oslist": "linux",}
+            }
+        }
+    }
+    toolmanifest = {
+        "manifest": {
+            "version": "2",
+            "commandline": "/entry-point",
+            "require_tool_appid": rt_appid,
+            "use_sessions": "1",
+            # special value, see CompatLayer.layer_name()
+            "compatmanager_layer_name": "umu-passthrough",
+        }
+    }
+
+    if not tool_path.is_dir():
+        tool_path.mkdir(parents=True, exist_ok=True)
+
+    with entry_point_file.open("w") as fd:
+        fd.write(entry_point)
+    entry_point_file.chmod(0o700)
+
+    with compatibilitytool_file.open("w") as fd:
+        vdf.dump(compatibilitytool, fd, pretty=True)
+
+    with toolmanifest_file.open("w") as fd:
+        vdf.dump(toolmanifest, fd, pretty=True)
+
+    os.environ["PROTONPATH"] = str(tool_path)
+    env["PROTONPATH"] = str(tool_path)
+    return env
 
 def _fetch_patch(session_pools: SessionPools) -> bytes:
     resp: BaseHTTPResponse
@@ -164,6 +236,9 @@ def _fetch_releases(
     }:
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
 
+    if os.environ.get("PROTONPATH") in {ProtonVersion.UMUScout.value}:
+        repo = "/repos/loathingKernel/umu-scout/releases/latest"
+
     resp = http_pool.request(HTTPMethod.GET.value, f"{url}{repo}", headers=headers)
     if resp.status != HTTPStatus.OK:
         return ()
@@ -177,8 +252,8 @@ def _fetch_releases(
             digest_asset = (release["name"], release["browser_download_url"])
             asset_count += 1
             continue
-        if release["name"].endswith("tar.gz") and release["name"].startswith(
-            ("UMU-Proton", "GE-Proton")
+        if release["name"].endswith(("tar.gz", "tar.xz")) and release["name"].startswith(
+            ("UMU-Proton", "GE-Proton", "umu-scout")
         ):
             proton_asset = (release["name"], release["browser_download_url"])
             asset_count += 1
@@ -206,7 +281,8 @@ def _fetch_proton(
     _, http_pool = session_pools
     proton_hash, proton_hash_url = assets[0]
     tarball, tar_url = assets[1]
-    proton: str = tarball.removesuffix(".tar.gz")
+    # remove any combination of .abc.xy suffix (realistically .tar.gz|xz)
+    proton = ".".join(tarball.split(".")[:-2])
     ret: int = 0  # Exit code from zenity
     digest: str = ""  # Digest of the Proton archive
     hashsum = sha512()
@@ -384,10 +460,12 @@ def _get_latest(
         return None
 
     tarball = assets[1][0]
-    proton = tarball.removesuffix(".tar.gz")
+    # remove any combination of .abc.xy suffix (realistically .tar.gz|xz)
+    proton = ".".join(tarball.split(".")[:-2])
     latest_candidates = {
         ProtonVersion.GELatest.value,
         ProtonVersion.UMULatest.value,
+        ProtonVersion.UMUScout.value
     }
 
     if os.environ.get("PROTONPATH") in {member.value for member in ProtonVersion}:
@@ -453,6 +531,7 @@ def _install_proton(
     latest_candidates: set[str] = {
         ProtonVersion.GELatest.value,
         ProtonVersion.UMULatest.value,
+        ProtonVersion.UMUScout.value,
     }
 
     # Move our file and extract within our cache
@@ -475,19 +554,15 @@ def _install_proton(
 
     # Move decompressed archive to compatibilitytools.d or
     # $XDG_DATA_HOME/umu/compatibilitytools
+    # remove any combination of .abc.xy suffix (realistically .tar.gz|xz)
+    name = ".".join(tarball.split(".")[:-2])
+    folder = cache.joinpath(name)
     if os.environ.get("PROTONPATH") in latest_candidates:
-        log.info(
-            "%s -> %s", cache.joinpath(tarball.removesuffix(".tar.gz")), umu_compat
-        )
-        move(
-            cache.joinpath(tarball.removesuffix(".tar.gz")),
-            umu_compat / os.environ["PROTONPATH"],
-        )
+        log.info("%s -> %s", folder, umu_compat)
+        move(folder, umu_compat / os.environ["PROTONPATH"])
     else:
-        log.info(
-            "%s -> %s", cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat
-        )
-        move(cache.joinpath(tarball.removesuffix(".tar.gz")), steam_compat)
+        log.info("%s -> %s", folder, steam_compat)
+        move(folder, steam_compat)
 
 
 def _get_delta(
