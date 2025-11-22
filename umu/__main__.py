@@ -12,7 +12,7 @@ from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from umu import __version__
 from umu.umu_consts import PROTON_VERBS
 from umu.umu_log import log
-from umu.umu_run import umu_run
+from umu.umu_run import umu, umu_run
 from umu.umu_util import is_winetricks_verb
 
 
@@ -86,6 +86,13 @@ def main() -> int:  # noqa: D103
         err: str = "This script is not designed to run on musl-based systems"
         log.error(err)
         sys.exit(1)
+
+    if (
+        os.environ.get("RUNTIMEPATH")
+        and (os.environ.get("PROTONPATH") or os.environ.get("UMU_NO_PROTON") == "1")
+        and isinstance(args, tuple)
+    ):
+        return umu(args)
 
     return umu_run(args)
 

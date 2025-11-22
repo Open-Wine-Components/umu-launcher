@@ -89,7 +89,7 @@ def setup_pfx(path: str) -> None:
 
 
 def check_env(
-    env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]
+    env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager] | None
 ) -> dict[str, str] | dict[str, Any]:
     """Before executing a game, check for environment variables and set them.
 
@@ -130,6 +130,10 @@ def check_env(
     path: Path = STEAM_COMPAT.joinpath(os.environ.get("PROTONPATH", ""))
     if os.environ.get("PROTONPATH") and path.is_dir():
         os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
+
+    if not session_pools:
+        env["PROTONPATH"] = os.environ["PROTONPATH"]
+        return env
 
     # Proton Codename
     if os.environ.get("PROTONPATH") in {"GE-Proton", "GE-Latest", "UMU-Latest"}:
@@ -228,9 +232,7 @@ def set_env(
     env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_DATA_PATH"] = env["WINEPREFIX"]
     env["STEAM_COMPAT_SHADER_PATH"] = f"{env['STEAM_COMPAT_DATA_PATH']}/shadercache"
-    env["STEAM_COMPAT_TOOL_PATHS"] = (
-        f"{env['PROTONPATH']}:{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
-    )
+    env["STEAM_COMPAT_TOOL_PATHS"] = f"{env['PROTONPATH']}:{os.environ['RUNTIMEPATH']}"
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Zenity
@@ -249,7 +251,7 @@ def set_env(
     env["UMU_NO_RUNTIME"] = os.environ.get("UMU_NO_RUNTIME") or ""
     env["UMU_RUNTIME_UPDATE"] = os.environ.get("UMU_RUNTIME_UPDATE") or ""
     env["UMU_NO_PROTON"] = os.environ.get("UMU_NO_PROTON") or ""
-    env["RUNTIMEPATH"] = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}"
+    env["RUNTIMEPATH"] = os.environ["RUNTIMEPATH"]
 
     return env
 
@@ -819,7 +821,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
         )
         raise ValueError(err)
-    os.environ["RUNTIMEPATH"] = version[1]
+    os.environ["RUNTIMEPATH"] = f"{UMU_LOCAL}/{version[1]}"
 
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
@@ -904,6 +906,86 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
     # Build the command
     command: tuple[Path | str, ...] = build_command(env, UMU_LOCAL / version[1], opts)
+    log.debug("%s", command)
+
+    # Run the command
+    return run_command(command)
+
+
+def umu(args: tuple[str, list[str]]) -> int:
+    """Run an executable within the Steam Runtime.
+
+    The compatibility tools, namely the container runtime, and, optionally,
+    Proton are expected to be installed out of band. Additonally, the paths
+    to those compatibility tools must be writable, as well as the WINE prefix.
+
+    See umu(1) for details on other configuration options.
+    """
+    env: dict[str, str] = {
+        "WINEPREFIX": "",
+        "GAMEID": "",
+        "PROTON_CRASH_REPORT_DIR": "/tmp/umu_crashreports",
+        "PROTONPATH": "",
+        "STEAM_COMPAT_APP_ID": "",
+        "STEAM_COMPAT_TOOL_PATHS": "",
+        "STEAM_COMPAT_LIBRARY_PATHS": "",
+        "STEAM_COMPAT_MOUNTS": "",
+        "STEAM_COMPAT_INSTALL_PATH": "",
+        "STEAM_COMPAT_CLIENT_INSTALL_PATH": "",
+        "STEAM_COMPAT_DATA_PATH": "",
+        "STEAM_COMPAT_SHADER_PATH": "",
+        "FONTCONFIG_PATH": "",
+        "EXE": "",
+        "SteamAppId": "",
+        "SteamGameId": "",
+        "STEAM_RUNTIME_LIBRARY_PATH": "",
+        "STORE": "",
+        "PROTON_VERB": "",
+        "UMU_ID": "",
+        "UMU_ZENITY": "",
+        "UMU_NO_RUNTIME": "",
+        "UMU_RUNTIME_UPDATE": "",
+        "UMU_NO_PROTON": "",
+        "RUNTIMEPATH": "",
+    }
+    opts: list[str] = []
+
+    log.info("umu-launcher version %s (%s)", __version__, sys.version)
+
+    os.environ["RUNTIMEPATH"] = str(
+        Path(os.environ["RUNTIMEPATH"]).resolve(strict=True)
+    )
+
+    if os.environ.get("PROTONPATH"):
+        os.environ["PROTONPATH"] = str(
+            Path(os.environ["PROTONPATH"]).resolve(strict=True)
+        )
+
+    opts = args[1]
+
+    check_env(env, None)
+
+    # Prepare the prefix
+    with unix_flock(f"{os.environ['RUNTIMEPATH']}/{FileLock.Prefix.value}"):
+        setup_pfx(env["WINEPREFIX"])
+
+    # Configure the environment
+    set_env(env, args)
+
+    # Set all environment variables
+    # NOTE: `env` after this block should be read only
+    for key, val in env.items():
+        log.debug("%s=%s", key, val)
+        os.environ[key] = val
+
+    # Exit if the winetricks verb is already installed to avoid reapplying it
+    if env["EXE"].endswith("winetricks") and is_installed_verb(
+        opts, Path(env["WINEPREFIX"])
+    ):
+        sys.exit(1)
+
+    # Build the command
+    command: tuple[Path | str, ...] = build_command(env, Path(env["RUNTIMEPATH"]), opts)
     log.debug("%s", command)
 
     # Run the command
