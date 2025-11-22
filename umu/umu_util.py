@@ -1,7 +1,7 @@
 import os
 import sys
 from collections.abc import Generator
-from contextlib import contextmanager
+from contextlib import contextmanager, redirect_stdout
 from ctypes import CDLL
 from ctypes.util import find_library
 from enum import IntFlag
@@ -239,7 +239,8 @@ def xdisplay(no: str):
     d: display.Display | None = None
 
     try:
-        d = display.Display(no)
+        with redirect_stdout(sys.stderr):
+            d = display.Display(no)
         yield d
     finally:
         if d is not None:
