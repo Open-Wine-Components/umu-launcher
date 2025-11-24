@@ -449,10 +449,12 @@ class UmuRuntime:
 
 
 RUNTIME_VERSIONS = {
-    "host":    UmuRuntime("host",    ""        , ""   ),
-    "1391110": UmuRuntime("soldier", "steamrt2", "1391110"),
-    "1628350": UmuRuntime("sniper",  "steamrt3", "1628350"),
-    "4183110": UmuRuntime("steamrt4","steamrt4", "4183110"),
+    "host": UmuRuntime("host", "", ""),
+    "1391110": UmuRuntime("soldier",      "steamrt2", "1391110"),
+    "1628350": UmuRuntime("sniper",       "steamrt3", "1628350"),
+    "3810310": UmuRuntime("sniper-arm64", "steamrt3", "3810310"),
+    "4183110": UmuRuntime("steamrt4",     "steamrt4", "4183110"),
+    # "4183110": UmuRuntime("steamrt4-arm64", "steamrt4", "4183110"),
 }
 
 
