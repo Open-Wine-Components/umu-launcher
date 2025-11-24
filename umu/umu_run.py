@@ -149,7 +149,11 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
 
     # Proton Codename
     if os.environ.get("PROTONPATH") in {
-        "GE-Proton", "GE-Latest", "UMU-Latest", "umu-scout", "umu-soldier", "umu-sniper", "umu-steamrt4"
+        "GE-Proton", "GE-Latest", "UMU-Latest",
+        "umu-scout",
+        "umu-soldier",
+        "umu-sniper", "umu-sniper-arm64",
+        "umu-steamrt4"
     }:
         do_download = True
 
@@ -708,6 +712,7 @@ def resolve_runtime() -> RuntimeVersion | None:
     named_runtimes = {
         RUNTIME_NAMES["steamrt4"]: {"umu-steamrt4"},
         RUNTIME_NAMES["sniper"]: {"GE-Proton", "GE-Latest", "UMU-Latest", "umu-sniper"},
+        RUNTIME_NAMES["sniper-arm64"]: {"umu-sniper-arm64"},
         RUNTIME_NAMES["soldier"]: {"umu-scout", "umu-soldier"},
     }
 
