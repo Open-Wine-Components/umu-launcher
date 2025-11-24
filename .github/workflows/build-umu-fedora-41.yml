@@ -21,7 +21,7 @@ jobs:
         run: dnf install -y git
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
