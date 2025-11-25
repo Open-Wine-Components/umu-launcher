@@ -321,20 +321,6 @@ def build_command(
     if opts is None:
         opts = []
 
-    # if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
-    #     err: str = "The following file was not found in PROTONPATH: proton"
-    #     raise FileNotFoundError(err)
-    #
-    # # Exit if the entry point is missing
-    # # The _v2-entry-point script and container framework tools are included in
-    # # the same image, so this can happen if the image failed to download
-    # if entry_point and not entry_point[0].is_file():
-    #     err: str = (
-    #         f"_v2-entry-point (umu) cannot be found in '{local}'\n"
-    #         "Runtime Platform missing or download incomplete"
-    #     )
-    #     raise FileNotFoundError(err)
-
     # Winetricks
     if layer.is_proton and env.get("EXE", "").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
@@ -345,12 +331,6 @@ def build_command(
             "-q",
             *opts,
         )
-
-    # # Will run the game within the Steam Runtime w/o Proton
-    # # Ideally, for reliability, executables should be compiled within
-    # # the Steam Runtime
-    # if env.get("UMU_NO_PROTON") == "1":
-    #     return *entry_point, env["EXE"], *opts
 
     nsenter: tuple[str, ...] = ()
     if launch_client := layer.launch_client:
