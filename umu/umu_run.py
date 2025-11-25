@@ -365,8 +365,6 @@ def build_command(
             layer.runtime = None
             env["PROTON_VERB"] = "runinprefix"
             log.info("Re-entering container through bus '%s'", pfx_bus)
-        else:
-            env["PROTON_VERB"] = "waitforexitandrun"
 
     return (
         *nsenter,
@@ -923,7 +921,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
                 setup_pfx(cdata_path)
 
         # Configure the environment
-        env["STEAM_COMPAT_LAUNCHER_SERVICE"] = layer.layer_name
+        env["STEAM_COMPAT_LAUNCHER_SERVICE"] = layer.launcher_service
         set_env(env, args)
 
         # Set all environment variables

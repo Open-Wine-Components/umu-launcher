@@ -499,15 +499,20 @@ class CompatLayer:
 
     @property
     def layer_name(self) -> str:  # noqa: D102
-        layer_name = str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else ""
-        if layer_name == "umu-passthrough" and self.runtime is not None:
-            layer_name = self.runtime.tool_manifest.get("compatmanager_layer_name")
-        return layer_name
+        return str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else ""
+
+    @property
+    def launcher_service(self) -> str:
+        """Report the correct layer name for STEAM_COMPAT_LAUNCER_SERVICE."""
+        service = self.layer_name
+        if service == "umu-passthrough" and self.runtime is not None:
+            service = self.runtime.launcher_service
+        return service
 
     @property
     def launch_client(self) -> str | None:
         """Expose pv's launch-client path depending on the tool's container runtime."""
-        if self.tool_manifest.get("compatmanager_layer_name") == "container-runtime":
+        if self.layer_name == "container-runtime":
             return f"{self.tool_path}/pressure-vessel/bin/steam-runtime-launch-client"
         if self.runtime:
             return self.runtime.launch_client
