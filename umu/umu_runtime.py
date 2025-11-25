@@ -11,11 +11,11 @@ from shutil import move
 from subprocess import run
 from tempfile import TemporaryDirectory, mkdtemp
 
-import vdf
 from urllib3.exceptions import HTTPError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
+from umu import vdf
 from umu.umu_consts import UMU_CACHE, UMU_LOCAL, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
