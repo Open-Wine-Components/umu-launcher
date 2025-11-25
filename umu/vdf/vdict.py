@@ -2,21 +2,24 @@ import sys
 from collections import Counter
 
 if sys.version_info[0] >= 3:
-    _iter_values = 'values'
+    _iter_values = "values"
     _range = range
     _string_type = str
     import collections.abc as _c
+
     class _kView(_c.KeysView):
         def __iter__(self):
             return self._mapping.iterkeys()
+
     class _vView(_c.ValuesView):
         def __iter__(self):
             return self._mapping.itervalues()
+
     class _iView(_c.ItemsView):
         def __iter__(self):
             return self._mapping.iteritems()
 else:
-    _iter_values = 'itervalues'
+    _iter_values = "itervalues"
     _range = xrange
     _string_type = basestring
     _kView = lambda x: list(x.iterkeys())
@@ -26,8 +29,7 @@ else:
 
 class VDFDict(dict):
     def __init__(self, data=None):
-        """
-        This is a dictionary that supports duplicate keys and preserves insert order
+        """This is a dictionary that supports duplicate keys and preserves insert order
 
         ``data`` can be a ``dict``, or a sequence of key-value tuples. (e.g. ``[('key', 'value'),..]``)
         The only supported type for key is str.
@@ -42,7 +44,9 @@ class VDFDict(dict):
 
         if data is not None:
             if not isinstance(data, (list, dict)):
-                raise ValueError("Expected data to be list of pairs or dict, got %s" % type(data))
+                raise ValueError(
+                    "Expected data to be list of pairs or dict, got %s" % type(data)
+                )
             self.update(data)
 
     def __repr__(self):
@@ -125,8 +129,7 @@ class VDFDict(dict):
     def __eq__(self, other):
         if isinstance(other, VDFDict):
             return list(self.items()) == list(other.items())
-        else:
-            return False
+        return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -184,13 +187,13 @@ class VDFDict(dict):
         return _iView(self)
 
     def get_all_for(self, key):
-        """ Returns all values of the given key """
+        """Returns all values of the given key"""
         if not isinstance(key, _string_type):
             raise TypeError("Key needs to be a string.")
         return [self[(idx, key)] for idx in _range(self.__kcount[key])]
 
     def remove_all_for(self, key):
-        """ Removes all items with the given key """
+        """Removes all items with the given key"""
         if not isinstance(key, _string_type):
             raise TypeError("Key need to be a string.")
 
@@ -202,8 +205,7 @@ class VDFDict(dict):
         del self.__kcount[key]
 
     def has_duplicates(self):
-        """
-        Returns ``True`` if the dict contains keys with duplicates.
+        """Returns ``True`` if the dict contains keys with duplicates.
         Recurses through any all keys with value that is ``VDFDict``.
         """
         for n in getattr(self.__kcount, _iter_values)():
@@ -214,7 +216,7 @@ class VDFDict(dict):
             for v in getattr(obj, _iter_values)():
                 if isinstance(v, VDFDict) and v.has_duplicates():
                     return True
-                elif isinstance(v, dict):
+                if isinstance(v, dict):
                     return dict_recurse(v)
             return False
 
