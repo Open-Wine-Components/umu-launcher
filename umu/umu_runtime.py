@@ -462,16 +462,12 @@ RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}
 class CompatLayer:
     """Class to describe a Steam compatibility layer."""
 
-    def __init__(self, path: Path, shim: Path) -> None:  # noqa: D107
+    def __init__(self, path: Path, shim: Path, resolve: bool) -> None:  # noqa: D107, FBT001
         self.tool_path = path.as_posix()
         with Path(path).joinpath("toolmanifest.vdf").open(encoding="utf-8") as f:
             self.tool_manifest = vdf.load(f)["manifest"]
 
-        self.runtime: CompatLayer | None = (
-            CompatLayer(self.required_runtime.path, shim)
-            if self.required_tool_appid is not None and self.required_runtime.path is not None
-            else None
-        )
+        self.runtime: CompatLayer | None = self._resolve(shim, resolve) if resolve else None
 
         if path.joinpath("compatibilitytool.vdf").exists():
             with path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
@@ -483,6 +479,12 @@ class CompatLayer:
             self.compatibility_tool = {"display_name": path.name}
 
         self.shim = shim
+
+    def _resolve(self, shim: Path, resolve: bool) -> "CompatLayer | None":  # noqa: FBT001
+        """Construct and provide the concrete CompatLayer this layer depends on."""
+        if self.required_tool_appid is not None and self.required_runtime.path is not None:
+            return CompatLayer(self.required_runtime.path, shim, resolve)
+        return None
 
     @property
     def required_tool_appid(self) -> str | None:  # noqa: D102
