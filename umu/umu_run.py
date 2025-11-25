@@ -340,7 +340,7 @@ def build_command(
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         return (
-            *layer.command(env["PROTON_VERB"]),
+            *layer.command(env["PROTON_VERB"], unwrapped=False),
             env["EXE"],
             "-q",
             *opts,
@@ -360,15 +360,13 @@ def build_command(
         pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
         if f"--bus-name={pfx_bus}" in bus_names:
             nsenter = (launch_client, f"--bus-name={pfx_bus}", "--")
-            # Unset runtime to make the CompatLayer stack report only the command
-            # of the innermost layer instead of the whole layer chain.
-            layer.runtime = None
             env["PROTON_VERB"] = "runinprefix"
             log.info("Re-entering container through bus '%s'", pfx_bus)
 
+    is_nsenter: bool = bool(nsenter)
     return (
         *nsenter,
-        *layer.command(env["PROTON_VERB"]),
+        *layer.command(env["PROTON_VERB"], unwrapped=is_nsenter),
         env["EXE"],
         *opts,
     )

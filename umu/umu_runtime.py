@@ -462,12 +462,18 @@ RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}
 class CompatLayer:
     """Class to describe a Steam compatibility layer."""
 
-    def __init__(self, path: Path, shim: Path, resolve: bool) -> None:  # noqa: D107, FBT001
+    def __init__(self, path: Path, shim: Path, *, resolve: bool) -> None:
+        """Create a CompatLayer for a Steam compatibiltiy tool.
+
+        path: the path to the folder containing 'toolmanifest.vdf'
+        shim: the path to umu's shim
+        resolve: whether to resolve the full chain of compatibility tools required to execute this tools correctly.
+        """
         self.tool_path = path.as_posix()
         with Path(path).joinpath("toolmanifest.vdf").open(encoding="utf-8") as f:
             self.tool_manifest = vdf.load(f)["manifest"]
 
-        self.runtime: CompatLayer | None = self._resolve(shim, resolve) if resolve else None
+        self.runtime: CompatLayer | None = self._resolve(shim, resolve=resolve) if resolve else None
 
         if path.joinpath("compatibilitytool.vdf").exists():
             with path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
@@ -480,14 +486,15 @@ class CompatLayer:
 
         self.shim = shim
 
-    def _resolve(self, shim: Path, resolve: bool) -> "CompatLayer | None":  # noqa: FBT001
+    def _resolve(self, shim: Path, *, resolve: bool) -> "CompatLayer | None":
         """Construct and provide the concrete CompatLayer this layer depends on."""
         if self.required_tool_appid is not None and self.required_runtime.path is not None:
-            return CompatLayer(self.required_runtime.path, shim, resolve)
+            return CompatLayer(self.required_runtime.path, shim, resolve=resolve)
         return None
 
     @property
-    def required_tool_appid(self) -> str | None:  # noqa: D102
+    def required_tool_appid(self) -> str | None:
+        """Report the appid of the tool this CompatLayer requires."""
         return str(ret) if (ret := self.tool_manifest.get("require_tool_appid")) else None
 
     @property
@@ -519,11 +526,13 @@ class CompatLayer:
         return None
 
     @property
-    def is_proton(self) -> bool:  # noqa: D102
+    def is_proton(self) -> bool:
+        """Report if this CompatLayer is a Proton."""
         return self.layer_name == "proton"
 
     @property
-    def display_name(self) -> str | None:  # noqa: D102
+    def display_name(self) -> str | None:
+        """Report the name of this CompatLayer as set in its manifest."""
         return str(ret) if (ret := self.compatibility_tool.get("display_name")) else None
 
     @property
@@ -531,7 +540,7 @@ class CompatLayer:
         """Report if the compatibility tool has a configured runtime."""
         return self.runtime is not None
 
-    def _command(self, verb: str) -> list[str]:
+    def _unwrapped_cmd(self, verb: str) -> list[str]:
         """Return the tool specific entry point."""
         tool_path = os.path.normpath(self.tool_path)
         cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
@@ -541,14 +550,14 @@ class CompatLayer:
         cmd = cmd.replace("%verb%", verb)
         return shlex.split(cmd)
 
-    def command(self, verb: str) -> list[str]:
+    def _wrapped_cmd(self, verb: str) -> list[str]:
         """Return the fully qualified command for the runtime.
 
         If the runtime uses another runtime, its entry point is prepended to the local command.
         """
         log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
-        cmd = self.runtime.command(verb) if self.runtime is not None else []
-        target = self._command(verb)
+        cmd = self.runtime.command(verb, unwrapped=False) if self.runtime is not None else []
+        target = self._unwrapped_cmd(verb)
         if self.layer_name in {"container-runtime"}:
             cmd.extend([*target, self.shim.as_posix()])
         elif self.runtime is None:
@@ -557,6 +566,12 @@ class CompatLayer:
             cmd.extend(target)
         return cmd
 
+    def command(self, verb:str, *, unwrapped: bool) -> list[str]:
+        """Return the tool's fully qualified (wrapped) or tool specific (unwrapped) entry point."""
+        if unwrapped:
+            return self._unwrapped_cmd(verb)
+        return self._wrapped_cmd(verb)
+
     def as_str(self, verb: str):  # noqa: D102
-        return " ".join(map(shlex.quote, self.command(verb)))
+        return " ".join(map(shlex.quote, self.command(verb, unwrapped=False)))
 
