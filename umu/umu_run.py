@@ -738,7 +738,7 @@ def resolve_runtime() -> RuntimeVersion | None:
 
     toolmanifest = path.joinpath("toolmanifest.vdf")
     if toolmanifest.is_file():
-        layer = CompatLayer(toolmanifest.parent, Path())
+        layer = CompatLayer(toolmanifest.parent, Path(), resolve=False)
         runtime = layer.required_runtime
     else:
         err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
@@ -914,7 +914,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             create_shim(UMU_LOCAL / "umu-shim")
 
         protonpath: Path = Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
-        layer = CompatLayer(protonpath, UMU_LOCAL.joinpath("umu-shim"))
+        layer = CompatLayer(protonpath, UMU_LOCAL.joinpath("umu-shim"), resolve=True)
 
         # Prepare the prefix
         if layer.is_proton:
