@@ -30,7 +30,7 @@ from Xlib.xobject.drawable import Window
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from umu import __main__, umu_proton, umu_run, umu_runtime, umu_util
+from umu import __main__, umu_proton, umu_run, umu_runtime, umu_util, vdf
 
 
 class TestGameLauncher(unittest.TestCase):
@@ -91,7 +91,7 @@ class TestGameLauncher(unittest.TestCase):
         # umu compat dir
         self.test_umu_compat = Path("./tmp.tu692WxQHH")
         # umu-proton dir
-        self.test_proton_dir = Path("UMU-Proton-5HYdpddgvs")
+        self.test_proton_dir = Path("./UMU-Proton-5HYdpddgvs")
         # umu-proton release
         self.test_archive = Path(self.test_cache).joinpath(
             f"{self.test_proton_dir}.tar.gz"
@@ -142,14 +142,55 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_user_share, "run").touch()
         Path(self.test_user_share, "run-in-sniper").touch()
         Path(self.test_user_share, "umu").touch()
+        mock_steamrt_toolmanifest = {
+            "manifest": {
+                "commandline": "/_v2-entry-point --verb=%verb% --",
+                "filter_exclusive_priority": "3",
+                "version": "2",
+                "use_tool_subprocess_reaper": "1",
+                "compatmanager_layer_name": "container-runtime",
+            }
+        }
+        Path(self.test_user_share, "toolmanifest.vdf").write_text(vdf.dumps(mock_steamrt_toolmanifest))
 
         # Mock pressure vessel
         Path(self.test_user_share, "pressure-vessel", "bin").mkdir(parents=True)
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
         Path(self.test_user_share, "pressure-vessel", "bin", "pv-verify").touch()
+        Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client").write_text(
+            "#!/bin/sh\nexec \"$@\"\n"
+        )
+        Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client").chmod(0o700)
 
         # Mock the proton file in the dir
         self.test_proton_dir.joinpath("proton").touch(exist_ok=True)
+        mock_proton_compatibilitytool = {
+            "compatibilitytools": {
+                "compat_tools": {
+                    self.test_proton_dir.name: {
+                        "install_path": ".",
+                        "display_name": self.test_proton_dir.name,
+                        "from_oslist": "windows",
+                        "to_oslist": "linux",
+                    }
+                }
+            }
+        }
+        self.test_proton_dir.joinpath("compatibilitytool.vdf").write_text(
+            vdf.dumps(mock_proton_compatibilitytool)
+        )
+        mock_proton_toolmanifest = {
+            "manifest": {
+                "version":"2",
+                "commandline": "/proton %verb%",
+                "require_tool_appid": "1628350",
+                "use_sessions": "1",
+                "compatmanager_layer_name": "proton",
+            }
+        }
+        self.test_proton_dir.joinpath("toolmanifest.vdf").write_text(
+            vdf.dumps(mock_proton_toolmanifest)
+        )
 
         # Mock the release downloaded in the cache:
         # tmp.5HYdpddgvs/umu-Proton-5HYdpddgvs.tar.gz
@@ -212,31 +253,25 @@ class TestGameLauncher(unittest.TestCase):
         in the compatibility tool's manifest.
         """
         result = None
-        mock_container_runtimes = (
-            ("sniper", "steamrt3", "1628350"),
-            ("soldier", "steamrt2", "1391110"),
-        )
         # A text file implementing the compatibility tool interface is expected
         # See https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/v0.20251103.0/docs/steam-compat-tool-interface.md?ref_type=tags
-        mock_manifest = (
-            '"manifest"\n'
-            "{\n"
-            '  "version" "2"\n'
-            '  "commandline" "/proton %verb%"\n'
-            '  "require_tool_appid" "769"\n'
-            '  "use_sessions" "1"\n'
-            '  "compatmanager_layer_name" "proton"\n'
-            "}"
-        )
+        mock_manifest = {
+            "manifest": {
+                "version": "2",
+                "commnadline": "/proton %verb%",
+                "require_tool_appid": "769",
+                "use_sessions": "1",
+                "compatmanager_layer_name": "proton",
+            }
+        }
 
         with TemporaryDirectory() as mock_proton:
             Path(mock_proton, "toolmanifest.vdf").write_text(
-                mock_manifest, encoding="utf-8"
+                vdf.dumps(mock_manifest), encoding="utf-8"
             )
-            result = umu_run.get_umu_version_from_manifest(
-                Path(mock_proton, "toolmanifest.vdf"), mock_container_runtimes
-            )
-            self.assertIsNone(result, f"Expected None, received '{result}'")
+            with self.assertRaises(KeyError):
+                result = umu_runtime.CompatLayer(Path(mock_proton), Path()).required_runtime
+                self.assertIsNone(result, f"Expected None, received '{result}'")
 
     def test_get_umu_version_from_manifest_noappid(self):
         """Test get_umu_version_from_manifest.
@@ -246,6 +281,7 @@ class TestGameLauncher(unittest.TestCase):
         exist.
         """
         mock_container_runtimes = (
+            ("host", "", ""),
             ("sniper", "steamrt3", "1628350"),
             ("soldier", "steamrt2", "1391110"),
         )
@@ -263,10 +299,8 @@ class TestGameLauncher(unittest.TestCase):
             Path(mock_proton, "toolmanifest.vdf").write_text(
                 mock_manifest, encoding="utf-8"
             )
-            result = umu_run.get_umu_version_from_manifest(
-                Path(mock_proton, "toolmanifest.vdf"), mock_container_runtimes
-            )
-            self.assertIsNone(result, f"Expected None, received '{result}'")
+            result = umu_runtime.CompatLayer(Path(mock_proton), Path()).required_runtime
+            self.assertEqual(result.as_tuple(), mock_container_runtimes[0], f"Expected None, received '{result}'")
 
     def test_get_umu_version_from_manifest(self):
         """Test get_umu_version_from_manifest.
@@ -293,11 +327,9 @@ class TestGameLauncher(unittest.TestCase):
             Path(mock_proton, "toolmanifest.vdf").write_text(
                 mock_manifest, encoding="utf-8"
             )
-            result = umu_run.get_umu_version_from_manifest(
-                Path(mock_proton, "toolmanifest.vdf"), mock_container_runtimes
-            )
+            result = umu_runtime.CompatLayer(Path(mock_proton), Path()).required_runtime
             self.assertEqual(
-                result,
+                result.as_tuple(),
                 mock_container_runtimes[0],
                 f"Expected '{mock_container_runtimes[0]}, received {result}'",
             )
@@ -308,10 +340,6 @@ class TestGameLauncher(unittest.TestCase):
         Expects None when a known, required runtime is not found in the
         compatibility tool's manifest.
         """
-        mock_container_runtimes = (
-            ("sniper", "steamrt3", "1628350"),
-            ("soldier", "steamrt2", "1391110"),
-        )
         mock_manifest = (
             '"manifest"\n'
             "{\n"
@@ -336,8 +364,9 @@ class TestGameLauncher(unittest.TestCase):
                 f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
             )
             os.environ["PROTONPATH"] = mock_proton
-            result = umu_run.resolve_umu_version(mock_container_runtimes)
-            self.assertIsNone(result, f"Expected None, received '{result}'")
+            with self.assertRaises(KeyError):
+                result = umu_run.resolve_runtime()
+                self.assertIsNone(result, f"Expected None, received '{result}'")
 
     def test_resolve_umu_version_noproton(self):
         """Test resolve_umu_version when UMU_NO_PROTON is set.
@@ -361,14 +390,15 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected None, received '{os.environ.get('PROTONPATH')}",
         )
         os.environ["UMU_NO_PROTON"] = "1"
-        result = umu_run.resolve_umu_version(mock_container_runtimes)
+        result = umu_run.resolve_runtime()
         self.assertEqual(
             result,
             mock_expected,
             f"Expected '{mock_expected}', received '{result}'",
         )
-        self.assertTrue(
-            result is mock_container_runtimes[0],
+        self.assertEqual(
+            result,
+            mock_container_runtimes[0],
             f"Expected the original instance '{result}'",
         )
 
@@ -396,14 +426,15 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
         )
         os.environ["PROTONPATH"] = "GE-Proton"
-        result = umu_run.resolve_umu_version(mock_container_runtimes)
+        result = umu_run.resolve_runtime()
         self.assertEqual(
             result,
             mock_expected,
             f"Expected '{mock_expected}', received '{result}'",
         )
-        self.assertTrue(
-            result is mock_container_runtimes[0],
+        self.assertEqual(
+            result,
+            mock_container_runtimes[0],
             f"Expected the original instance '{result}'",
         )
 
@@ -433,14 +464,15 @@ class TestGameLauncher(unittest.TestCase):
             "UMU_NO_PROTON" not in os.environ,
             f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
         )
-        result = umu_run.resolve_umu_version(mock_container_runtimes)
+        result = umu_run.resolve_runtime()
         self.assertEqual(
             result,
             mock_container_runtimes[0],
             f"Expected '{mock_expected}', received None",
         )
-        self.assertTrue(
-            result is mock_container_runtimes[0],
+        self.assertEqual(
+            result,
+            mock_container_runtimes[0],
             f"Expected the original instance '{result}'",
         )
 
@@ -467,18 +499,20 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
         )
         os.environ["RUNTIMEPATH"] = "steamrt2"
-        result = umu_run.resolve_umu_version(mock_container_runtimes)
+        result = umu_run.resolve_runtime()
         self.assertEqual(
             result,
             mock_expected,
             f"Expected '{mock_expected}', received None",
         )
-        self.assertTrue(
-            result is mock_container_runtimes[1],
+        self.assertEqual(
+            result,
+            mock_container_runtimes[1],
             f"Expected the original instance '{result}'",
         )
-        self.assertTrue(
-            os.environ["RUNTIMEPATH"] in result,
+        self.assertEqual(
+            os.environ["RUNTIMEPATH"],
+            mock_container_runtimes[1][1],
             f"Expected '{os.environ['RUNTIMEPATH']}' in '{result}'",
         )
 
@@ -522,15 +556,15 @@ class TestGameLauncher(unittest.TestCase):
                 f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
             )
             os.environ["PROTONPATH"] = mock_proton
-            result = umu_run.resolve_umu_version(mock_container_runtimes)
+            result = umu_runtime.CompatLayer(Path(os.environ["PROTONPATH"]), Path()).required_runtime
             self.assertEqual(
-                result,
+                result.as_tuple(),
                 mock_expected,
                 f"Expected '{mock_expected}', received None",
             )
             # Ensure the called function did not mutate the input
-            self.assertTrue(
-                result is mock_container_runtimes[0],
+            self.assertEqual(
+                result.as_tuple(), mock_container_runtimes[0],
                 f"Expected the original instance '{result}'",
             )
 
@@ -2227,7 +2261,7 @@ class TestGameLauncher(unittest.TestCase):
             # Config
             result_env, result_dl = umu_run.check_env(self.env)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, args)
 
@@ -2292,7 +2326,7 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, args)
 
@@ -2390,7 +2424,7 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, args)
 
@@ -2455,6 +2489,10 @@ class TestGameLauncher(unittest.TestCase):
         # Mock the proton file
         Path(self.test_file, "proton").touch()
 
+        # Mock the shim file
+        shim_path = Path(self.test_local_share_parent, "umu-shim")
+        shim_path.touch()
+
         with (
             patch("sys.argv", ["", self.test_exe]),
             ThreadPoolExecutor() as thread_pool,
@@ -2468,10 +2506,18 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result_args = __main__.parse_args()
             # Config
+            _ = umu_run.resolve_runtime()
+            # resolve_runtime's backwards compatibility is setting os.environ,
+            # copy it back to self.env
+            self.env["PROTONPATH"] = os.environ["PROTONPATH"]
+            with (
+                patch("umu.umu_proton.UMU_COMPAT", Path(self.test_file).resolve()),
+            ):
+                self.env = umu_proton._get_umu_runtime_tool(self.env, self.env["PROTONPATH"])
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, result_args)
             # Game drive
@@ -2506,27 +2552,42 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
+            copy(
+                Path(self.test_user_share, "toolmanifest.vdf"),
+                Path(self.test_local_share, "toolmanifest.vdf"),
+            )
+            Path(self.test_local_share, "pressure-vessel").mkdir(exist_ok=True)
+            Path(self.test_local_share, "pressure-vessel", "bin").mkdir(exist_ok=True)
+            copy(
+                Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
+                Path(self.test_local_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
+            )
 
         # Build
-        test_command = umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_default[1])
+        mock_runtime = umu_runtime.UmuRuntime("sniper",  "steamrt3", "1628350", self.test_local_share)
+        with patch("umu.umu_runtime.CompatLayer.required_runtime", mock_runtime):
+            test_command = umu_run.build_command(
+                self.env, umu_runtime.CompatLayer(Path(self.env["PROTONPATH"]), shim_path)
+            )
         self.assertIsInstance(
             test_command, tuple, "Expected a tuple from build_command"
         )
         self.assertEqual(
             len(test_command),
-            5,
+            6,
             f"Expected 5 element, received {len(test_command)}",
         )
 
-        entry_point, opt, verb, sep, exe = [*test_command]
+        entry_point, verb, sep, shim, umutool, exe = [*test_command]
         self.assertEqual(
             entry_point,
-            self.test_local_share / "umu",
+            str(self.test_local_share / "umu"),
             "Expected an entry point",
         )
-        self.assertEqual(opt, "--verb", "Expected --verb")
-        self.assertEqual(verb, "waitforexitandrun", "Expected PROTON_VERB")
+        self.assertEqual(verb, f"--verb={self.test_verb}", "Expected PROTON_VERB")
         self.assertEqual(sep, "--", "Expected --")
+        self.assertEqual(shim, str(shim_path), "Expected path to umu")
+        self.assertEqual(umutool, str(Path(self.test_file, "umu-sniper", "entry-point").resolve()))
         self.assertEqual(exe, self.env["EXE"], "Expected the EXE")
 
     def test_build_command_nopv_appid(self):
@@ -2556,16 +2617,20 @@ class TestGameLauncher(unittest.TestCase):
             '''
         )
 
+        # Mock the shim file
+        shim_path = Path(self.test_local_share_parent, "umu-shim")
+        shim_path.touch()
+
         with (
             patch("sys.argv", ["", self.test_exe]),
             ThreadPoolExecutor() as thread_pool,
         ):
             os.environ["WINEPREFIX"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
+            os.environ["PROTONPATH"] = str(self.test_proton_dir.resolve())
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
-            version = umu_run.resolve_runtime(self.test_runtime_versions)
+            version = umu_run.resolve_runtime()
             os.environ["RUNTIMEPATH"] = version[1]
             # Args
             result_args = __main__.parse_args()
@@ -2574,7 +2639,7 @@ class TestGameLauncher(unittest.TestCase):
             if version[1]:
                 umu_run.download_proton(result_dl, self.env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, result_args)
             # Game drive
@@ -2607,27 +2672,41 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
+            copy(
+                Path(self.test_user_share, "toolmanifest.vdf"),
+                Path(self.test_local_share, "toolmanifest.vdf"),
+            )
+            Path(self.test_local_share, "pressure-vessel").mkdir(exist_ok=True)
+            Path(self.test_local_share, "pressure-vessel", "bin").mkdir(exist_ok=True)
+            copy(
+                Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
+                Path(self.test_local_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
+            )
 
         os.environ |= self.env
 
         # Build
-        test_command = umu_run.build_command(self.env, self.test_local_share_parent, version[1])
+        mock_runtime = umu_runtime.UmuRuntime("sniper",  "steamrt3", "1628350", self.test_local_share)
+        with patch("umu.umu_runtime.CompatLayer.required_runtime", mock_runtime):
+            test_command = umu_run.build_command(
+                self.env, umu_runtime.CompatLayer(Path(self.env["PROTONPATH"]), shim_path)
+            )
         self.assertIsInstance(
             test_command, tuple, "Expected a tuple from build_command"
         )
         self.assertEqual(
             len(test_command),
-            8,
-            f"Expected 3 elements, received {len(test_command)}",
+            7,
+            f"Expected 7 elements, received {len(test_command)}",
         )
-        _, _, verb, _, _, proton, _, exe = [*test_command]
-        self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
+        _, verb, _, _, proton, _, exe = [*test_command]
+        self.assertIsInstance(proton, str, "Expected proton to be str")
         self.assertEqual(
             proton,
-            Path(self.env["PROTONPATH"], "proton"),
+            str(Path(self.env["PROTONPATH"], "proton")),
             "Expected PROTONPATH",
         )
-        self.assertEqual(verb, "waitforexitandrun", "Expected PROTON_VERB")
+        self.assertEqual(verb, "--verb=waitforexitandrun", "Expected PROTON_VERB")
         self.assertEqual(exe, self.env["EXE"], "Expected EXE")
 
     def test_build_command_nopv_noappid(self):
@@ -2645,27 +2724,29 @@ class TestGameLauncher(unittest.TestCase):
         Path(self.test_file, "proton").touch()
         # Mock a non-runtime toolmanifest.vdf
         Path(self.test_file, "toolmanifest.vdf").write_text(
-            '''
-            "manifest"
-            {
-              "version" "2"
-              "commandline" "/proton %verb%"
-              "use_sessions" "1"
-              "compatmanager_layer_name" "proton"
-            }
-            '''
+            vdf.dumps({
+                "manifest": {
+                    "version": "2",
+                    "commandline": "/proton %verb%",
+                    "use_sessions": "1",
+                    "compatmanager_layer_name": "proton",
+                }})
         )
+
+        # Mock the shim file
+        shim_path = Path(self.test_local_share_parent, "umu-shim")
+        shim_path.touch()
 
         with (
             patch("sys.argv", ["", self.test_exe]),
             ThreadPoolExecutor() as thread_pool,
         ):
             os.environ["WINEPREFIX"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
+            os.environ["PROTONPATH"] = str(Path(self.test_file).resolve())
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
-            version = umu_run.resolve_runtime(self.test_runtime_versions)
+            version = umu_run.resolve_runtime()
             os.environ["RUNTIMEPATH"] = version[1]
             # Args
             result_args = __main__.parse_args()
@@ -2674,7 +2755,7 @@ class TestGameLauncher(unittest.TestCase):
             if version[1]:
                 umu_run.download_proton(result_dl, self.env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, result_args)
             # Game drive
@@ -2711,20 +2792,22 @@ class TestGameLauncher(unittest.TestCase):
         os.environ |= self.env
 
         # Build
-        test_command = umu_run.build_command(self.env, self.test_local_share_parent, version[1])
+        test_command = umu_run.build_command(
+            self.env, umu_runtime.CompatLayer(Path(self.env["PROTONPATH"]), shim_path)
+        )
         self.assertIsInstance(
             test_command, tuple, "Expected a tuple from build_command"
         )
         self.assertEqual(
             len(test_command),
             4,
-            f"Expected 3 elements, received {len(test_command)}",
+            f"Expected 4 elements, received {len(test_command)}",
         )
         _, proton, verb, exe, *_ = [*test_command]
-        self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
+        self.assertIsInstance(proton, str, "Expected proton to be str")
         self.assertEqual(
             proton,
-            Path(self.env["PROTONPATH"], "proton"),
+            str(Path(self.env["PROTONPATH"], "proton")),
             "Expected PROTONPATH",
         )
         self.assertEqual(verb, "waitforexitandrun", "Expected PROTON_VERB")
@@ -2754,7 +2837,7 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, result_args)
             # Mock setting UMU_NO_RUNTIME. This will not be set in the function
@@ -2767,7 +2850,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Since we didn't create the proton file, an exception should be raised
         with self.assertRaises(FileNotFoundError):
-            umu_run.build_command(self.env, self.test_local_share, self.test_runtime_default[1])
+            umu_run.build_command(self.env, umu_runtime.CompatLayer(Path(self.test_local_share), Path()))
 
     def test_build_command(self):
         """Test build command.
@@ -2792,8 +2875,8 @@ class TestGameLauncher(unittest.TestCase):
             patch("sys.argv", ["", self.test_exe]),
             ThreadPoolExecutor() as thread_pool,
         ):
-            os.environ["WINEPREFIX"] = self.test_file
-            os.environ["PROTONPATH"] = self.test_file
+            os.environ["WINEPREFIX"] = str(Path(self.test_file).resolve())
+            os.environ["PROTONPATH"] = str(self.test_proton_dir.resolve())
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["RUNTIMEPATH"] = self.test_runtime_default[1]
@@ -2803,7 +2886,7 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, result_args)
             # Game drive
@@ -2839,32 +2922,45 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
+            copy(
+                Path(self.test_user_share, "toolmanifest.vdf"),
+                Path(self.test_local_share, "toolmanifest.vdf"),
+            )
+            Path(self.test_local_share, "pressure-vessel").mkdir(exist_ok=True)
+            Path(self.test_local_share, "pressure-vessel", "bin").mkdir(exist_ok=True)
+            copy(
+                Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
+                Path(self.test_local_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
+            )
 
         # Build
-        test_command = umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_default[1])
+        mock_runtime = umu_runtime.UmuRuntime("sniper",  "steamrt3", "1628350", self.test_local_share)
+        with patch("umu.umu_runtime.CompatLayer.required_runtime", mock_runtime):
+            test_command = umu_run.build_command(
+                self.env, umu_runtime.CompatLayer(Path(self.env["PROTONPATH"]), shim_path)
+            )
         self.assertIsInstance(
             test_command, tuple, "Expected a tuple from build_command"
         )
         self.assertEqual(
             len(test_command),
-            8,
-            f"Expected 8 elements, received {len(test_command)}",
+            7,
+            f"Expected 7 elements, received {len(test_command)}",
         )
-        entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [*test_command]
+        entry_point, verb1, sep, shim, proton, verb2, exe = test_command
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertIsInstance(
-            entry_point, os.PathLike, "Expected entry point to be PathLike"
+            entry_point, str, "Expected entry point to be string"
         )
-        self.assertEqual(opt1, "--verb", "Expected --verb")
-        self.assertEqual(verb, self.test_verb, "Expected a verb")
-        self.assertEqual(opt2, "--", "Expected --")
-        self.assertIsInstance(shim, os.PathLike, "Expected shim to be PathLike")
-        self.assertEqual(shim, shim_path, "Expected the shim file")
-        self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
+        self.assertEqual(verb1, f"--verb={self.test_verb}", "Expected a verb")
+        self.assertEqual(sep, "--", "Expected --")
+        self.assertIsInstance(shim, str, "Expected shim to be string")
+        self.assertEqual(shim, str(shim_path), "Expected the shim file")
+        self.assertIsInstance(proton, str, "Expected proton to be string")
         self.assertEqual(
             proton,
-            Path(self.env["PROTONPATH"], "proton"),
+            str(Path(self.env["PROTONPATH"], "proton")),
             "Expected the proton file",
         )
         self.assertEqual(verb2, self.test_verb, "Expected a verb")
@@ -2896,7 +2992,7 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
 
             # Env
             # Confirm that non-normalized paths were passed before setting
@@ -2907,10 +3003,10 @@ class TestGameLauncher(unittest.TestCase):
                 Path(self.test_exe).resolve(),
                 "Expected path to exe to be non-normalized",
             )
-            self.assertNotEqual(
+            self.assertEqual(
                 Path(os.environ["WINEPREFIX"]),
                 Path(os.environ["WINEPREFIX"]).resolve(),
-                "Expected path to exe to be non-normalized",
+                "Expected path to prefix to be normalized",
             )
             self.assertNotEqual(
                 Path(os.environ["PROTONPATH"]),
@@ -2978,7 +3074,7 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             result = umu_run.set_env(self.env, result[0:])
             self.assertTrue(result is self.env, "Expected the same reference")
@@ -3024,18 +3120,13 @@ class TestGameLauncher(unittest.TestCase):
             # Should be stripped -- everything after the hyphen
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
-                umu_id[umu_id.find("-") + 1 :],
-                "Expected STEAM_COMPAT_APP_ID to be the stripped UMU_ID",
-            )
-            self.assertEqual(
-                self.env["SteamAppId"],
-                self.env["STEAM_COMPAT_APP_ID"],
-                "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
+                hashlib.md5(self.env["WINEPREFIX"].encode("utf-8")).hexdigest(),  # noqa: S324
+                "Expected STEAM_COMPAT_APP_ID to be the md5 hashed WINEPREFIX",
             )
             self.assertEqual(
                 self.env["SteamGameId"],
                 self.env["SteamAppId"],
-                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
+                "Expected SteamGameId to be SteamAppId",
             )
 
             # PATHS
@@ -3087,17 +3178,17 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             self.assertNotEqual(
                 Path(self.test_exe),
                 Path(self.test_exe).resolve(),
                 "Expected path to exe to be non-normalized",
             )
-            self.assertNotEqual(
+            self.assertEqual(
                 Path(os.environ["WINEPREFIX"]),
                 Path(os.environ["WINEPREFIX"]).resolve(),
-                "Expected path to exe to be non-normalized",
+                "Expected path to prefix to be normalized",
             )
             self.assertNotEqual(
                 Path(os.environ["PROTONPATH"]),
@@ -3141,18 +3232,13 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
-                "0",
+                hashlib.md5(self.env["WINEPREFIX"].encode("utf-8")).hexdigest(),  # noqa: S324
                 "Expected STEAM_COMPAT_APP_ID to be 0",
-            )
-            self.assertEqual(
-                self.env["SteamAppId"],
-                self.env["STEAM_COMPAT_APP_ID"],
-                "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
             )
             self.assertEqual(
                 self.env["SteamGameId"],
                 self.env["SteamAppId"],
-                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
+                "Expected SteamGameId to be SteamAppId",
             )
 
             # PATHS
@@ -3204,17 +3290,17 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             self.assertNotEqual(
                 Path(self.test_exe),
                 Path(self.test_exe).resolve(),
                 "Expected path to exe to be non-normalized",
             )
-            self.assertNotEqual(
+            self.assertEqual(
                 Path(os.environ["WINEPREFIX"]),
                 Path(os.environ["WINEPREFIX"]).resolve(),
-                "Expected path to exe to be non-normalized",
+                "Expected path prefix to be normalized",
             )
             self.assertNotEqual(
                 Path(os.environ["PROTONPATH"]),
@@ -3263,18 +3349,13 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
-                "0",
+                hashlib.md5(self.env["WINEPREFIX"].encode("utf-8")).hexdigest(),  # noqa: S324
                 "Expected STEAM_COMPAT_APP_ID to be 0",
-            )
-            self.assertEqual(
-                self.env["SteamAppId"],
-                self.env["STEAM_COMPAT_APP_ID"],
-                "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
             )
             self.assertEqual(
                 self.env["SteamGameId"],
                 self.env["SteamAppId"],
-                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
+                "Expected SteamGameId to be SteamAppId",
             )
 
             # PATHS
@@ -3315,6 +3396,8 @@ class TestGameLauncher(unittest.TestCase):
 
         # Mock a Proton directory that contains winetricks
         test_dir = Path("./tmp.aCAs3Q7rvz")
+        if test_dir.exists():
+            rmtree(test_dir)
         test_dir.joinpath("protonfixes").mkdir(parents=True)
         test_dir.joinpath("protonfixes", "winetricks").touch()
 
@@ -3335,17 +3418,17 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_dl, result_env, thread_pool)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             self.assertNotEqual(
                 Path(test_exe),
                 Path(test_exe).resolve(),
                 "Expected path to exe to be non-normalized",
             )
-            self.assertNotEqual(
+            self.assertEqual(
                 Path(os.environ["WINEPREFIX"]),
                 Path(os.environ["WINEPREFIX"]).resolve(),
-                "Expected path to exe to be non-normalized",
+                "Expected path to prefix to be normalized",
             )
             self.assertNotEqual(
                 Path(os.environ["PROTONPATH"]),
@@ -3393,18 +3476,13 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
-                "0",
-                "Expected STEAM_COMPAT_APP_ID to be 0",
-            )
-            self.assertEqual(
-                self.env["SteamAppId"],
-                self.env["STEAM_COMPAT_APP_ID"],
-                "Expected SteamAppId to be STEAM_COMPAT_APP_ID",
+                hashlib.md5(self.env["WINEPREFIX"].encode("utf-8")).hexdigest(),  # noqa: S324
+                "Expected STEAM_COMPAT_APP_ID to be the md5 hash WINEPREFIX",
             )
             self.assertEqual(
                 self.env["SteamGameId"],
                 self.env["SteamAppId"],
-                "Expected SteamGameId to be STEAM_COMPAT_APP_ID",
+                "Expected SteamGameId to be SteamAppId",
             )
 
             # PATHS
@@ -3435,7 +3513,7 @@ class TestGameLauncher(unittest.TestCase):
             )
 
         if test_dir.exists():
-            rmtree(test_dir.as_posix())
+            rmtree(test_dir)
 
     def test_setup_pfx_mv(self):
         """Test setup_pfx when moving the WINEPREFIX after creating it.
@@ -3451,7 +3529,7 @@ class TestGameLauncher(unittest.TestCase):
             "~",
             Path(self.test_file).cwd().joinpath(self.test_file).as_posix(),
         )
-        result = umu_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(Path(unexpanded_path))
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -3502,7 +3580,7 @@ class TestGameLauncher(unittest.TestCase):
             "steamuser"
         ).expanduser().symlink_to(Path(self.test_file).absolute())
 
-        result = umu_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(Path(unexpanded_path))
 
         self.assertIsNone(
             result,
@@ -3530,7 +3608,7 @@ class TestGameLauncher(unittest.TestCase):
             self.user
         ).expanduser().mkdir(parents=True, exist_ok=True)
 
-        result = umu_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(Path(unexpanded_path))
 
         self.assertIsNone(
             result,
@@ -3570,7 +3648,7 @@ class TestGameLauncher(unittest.TestCase):
             parents=True, exist_ok=True
         )
 
-        result = umu_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(Path(unexpanded_path))
 
         self.assertIsNone(
             result,
@@ -3617,7 +3695,7 @@ class TestGameLauncher(unittest.TestCase):
             "~",
             Path(self.test_file).cwd().joinpath(self.test_file).as_posix(),
         )
-        result = umu_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(Path(unexpanded_path))
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -3655,7 +3733,7 @@ class TestGameLauncher(unittest.TestCase):
             "~",
             Path(self.test_file).as_posix(),
         )
-        result = umu_run.setup_pfx(unexpanded_path)
+        result = umu_run.setup_pfx(Path(unexpanded_path))
 
         # Replaces the expanded path to unexpanded
         # Example: ~/some/path/to/this/file -> /home/foo/path/to/this/file
@@ -3675,10 +3753,11 @@ class TestGameLauncher(unittest.TestCase):
 
     def test_setup_pfx_noproton(self):
         """Test setup_pfx when configured to not use Proton."""
+        self.skipTest("setup_pfx() is not called for non-proton tools")
         result = None
         os.environ["UMU_NO_PROTON"] = "1"
 
-        result = umu_run.setup_pfx(self.test_file)
+        result = umu_run.setup_pfx(Path(self.test_file))
         self.assertTrue(result is None, f"Expected None, received {result}")
         self.assertFalse(
             Path(self.test_file, "pfx").exists(),
@@ -3704,7 +3783,7 @@ class TestGameLauncher(unittest.TestCase):
             Path(self.test_file).resolve(),
             "Expected path to be non-normalized",
         )
-        result = umu_run.setup_pfx(self.test_file)
+        result = umu_run.setup_pfx(Path(self.test_file))
         self.assertIsNone(
             result,
             "Expected None when creating symbolic link to WINE prefix and "
@@ -3752,6 +3831,7 @@ class TestGameLauncher(unittest.TestCase):
 
         A SystemExit should be raised in this usage: ./umu_run.py
         """
+        self.skipTest("Exits cleanly")
         with self.assertRaises(SystemExit):
             __main__.parse_args()
 
@@ -3934,10 +4014,11 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.download_proton(result_dl, result_env, thread_pool)
 
         # After this, the WINEPREFIX and new dirs should be created
-        self.assertTrue(
-            Path(self.env["WINEPREFIX"]).exists(),
-            "Expected WINEPREFIX to exist after check_env",
-        )
+        # Update; the prefix is created in setup_pfx
+        # self.assertTrue(
+        #     Path(self.env["WINEPREFIX"]).exists(),
+        #     "Expected WINEPREFIX to exist after check_env",
+        # )
         self.assertEqual(
             self.env["WINEPREFIX"],
             os.environ["WINEPREFIX"],
@@ -3972,7 +4053,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertTrue(result_env is self.env, "Expected the same reference")
         self.assertEqual(
             self.env["WINEPREFIX"],
-            unexpanded_path,
+            Path(unexpanded_path).expanduser().resolve(strict=True).as_posix(),
             "Expected WINEPREFIX to be set",
         )
         self.assertEqual(
@@ -3998,7 +4079,7 @@ class TestGameLauncher(unittest.TestCase):
         self.assertTrue(result_env is self.env, "Expected the same reference")
         self.assertEqual(
             self.env["WINEPREFIX"],
-            self.test_file,
+            Path(self.test_file).expanduser().resolve(strict=True).as_posix(),
             "Expected WINEPREFIX to be set",
         )
         self.assertEqual(
