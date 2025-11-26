@@ -462,7 +462,7 @@ RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}
 class CompatLayer:
     """Class to describe a Steam compatibility layer."""
 
-    def __init__(self, path: Path, shim: Path, *, resolve: bool) -> None:
+    def __init__(self, path: Path, shim: Path) -> None:
         """Create a CompatLayer for a Steam compatibiltiy tool.
 
         path: the path to the folder containing 'toolmanifest.vdf'
@@ -473,8 +473,6 @@ class CompatLayer:
         with Path(path).joinpath("toolmanifest.vdf").open(encoding="utf-8") as f:
             self.tool_manifest = vdf.load(f)["manifest"]
 
-        self.runtime: CompatLayer | None = self._resolve(shim, resolve=resolve) if resolve else None
-
         if path.joinpath("compatibilitytool.vdf").exists():
             with path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
                 # There can be multiple tools definitions in `compatibilitytools.vdf`
@@ -484,13 +482,21 @@ class CompatLayer:
         else:
             self.compatibility_tool = {"display_name": path.name}
 
-        self.shim = shim
+        self._runtime: CompatLayer | None = None
+        self._shim = shim
 
-    def _resolve(self, shim: Path, *, resolve: bool) -> "CompatLayer | None":
+    def _resolve(self, shim: Path) -> "CompatLayer | None":
         """Construct and provide the concrete CompatLayer this layer depends on."""
         if self.required_tool_appid is not None and self.required_runtime.path is not None:
-            return CompatLayer(self.required_runtime.path, shim, resolve=resolve)
+            return CompatLayer(self.required_runtime.path, shim)
         return None
+
+    @property
+    def runtime(self) -> "CompatLayer | None":
+        """Test."""
+        if not self._runtime:
+            self._runtime = self._resolve(self._shim)
+        return self._runtime
 
     @property
     def required_tool_appid(self) -> str | None:
@@ -559,9 +565,9 @@ class CompatLayer:
         cmd = self.runtime.command(verb, unwrapped=False) if self.runtime is not None else []
         target = self._unwrapped_cmd(verb)
         if self.layer_name in {"container-runtime"}:
-            cmd.extend([*target, self.shim.as_posix()])
+            cmd.extend([*target, self._shim.as_posix()])
         elif self.runtime is None:
-            cmd.extend([self.shim.as_posix(), *target])
+            cmd.extend([self._shim.as_posix(), *target])
         else:
             cmd.extend(target)
         return cmd

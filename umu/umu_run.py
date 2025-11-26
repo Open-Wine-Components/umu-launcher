@@ -313,7 +313,7 @@ def build_command(
     env: dict[str, str],
     layer: CompatLayer,
     opts: list[str] | None = None,
-) -> tuple[Path | str, ...]:
+) -> tuple[str, ...]:
     """Build the command to be executed."""
     if opts is None:
         opts = []
@@ -711,7 +711,7 @@ def resolve_runtime() -> RuntimeVersion | None:
 
     toolmanifest = path.joinpath("toolmanifest.vdf")
     if toolmanifest.is_file():
-        layer = CompatLayer(toolmanifest.parent, Path(), resolve=False)
+        layer = CompatLayer(toolmanifest.parent, Path())
         runtime = layer.required_runtime
     else:
         err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
@@ -887,7 +887,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             create_shim(UMU_LOCAL / "umu-shim")
 
         protonpath: Path = Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
-        layer = CompatLayer(protonpath, UMU_LOCAL.joinpath("umu-shim"), resolve=True)
+        layer = CompatLayer(protonpath, UMU_LOCAL.joinpath("umu-shim"))
 
         # Prepare the prefix
         if layer.is_proton:
@@ -912,7 +912,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         sys.exit(1)
 
     # Build the command
-    command: tuple[Path | str, ...] = build_command(env, layer, opts)
+    command: tuple[str, ...] = build_command(env, layer, opts)
     log.debug("%s", command)
 
     # Run the command
