@@ -64,7 +64,13 @@ RuntimeVersion = tuple[str, str, str]
 
 
 def setup_pfx(path: Path) -> None:
-    """Prepare a Proton compatible WINE prefix."""
+    """Prepare a Proton compatible WINE prefix.
+
+    `path` needs to be fully resolved before setup_pfx
+    """
+    if not path.is_absolute():
+        path = path.expanduser().resolve(strict=False)
+
     if not path.is_dir():
         path.mkdir(parents=True, exist_ok=True)
 
@@ -120,11 +126,12 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
             pfx: Path = Path.home().joinpath("Games", env["STORE"])
         else:
             pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
+        pfx = pfx.resolve(strict=False)
     else:
-        pfx: Path = Path(os.environ["WINEPREFIX"]).expanduser()
+        pfx: Path = Path(os.environ["WINEPREFIX"]).expanduser().resolve(strict=False)
 
     if not pfx.is_absolute():
-        err: str = "WINEPREFIX is set but not an absolute path."
+        err: str = f"WINEPREFIX is set but not an absolute path: {pfx}."
         raise RuntimeError(err)
 
     os.environ["WINEPREFIX"] = str(pfx)
