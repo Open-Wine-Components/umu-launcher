@@ -691,6 +691,16 @@ def run_command(command: tuple[Path | str, ...]) -> int:
 
 def resolve_runtime() -> RuntimeVersion | None:
     """Resolve the required runtime of a compatibility tool."""
+    # Backwards compatibility stuff, map RUNTIMEPATH tokens to
+    # umu's passthrough compatibility layers for runtimes.
+    runtimepath_compat = {
+        "steamrt2": "umu-soldier",
+        "steamrt3": "umu-sniper",
+        "steamrt4": "umu-steamrt4",
+    }
+    if os.environ.get("RUNTIMEPATH") and (os.environ.get("UMU_NO_PROTON") or not os.environ.get("PROTONPATH")):
+        os.environ["PROTONPATH"] = runtimepath_compat[os.environ.get("RUNTIMEPATH", "")]
+
     # default to UMU-Latest if PROTONPATH is not set
     if not os.environ.get("PROTONPATH"):
         os.environ["PROTONPATH"] = "UMU-Latest"
