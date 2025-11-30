@@ -88,6 +88,18 @@ in
       "test_env_wine_noproton"
     ];
 
+    postPatch = ''
+      ${lib.toShellVars {
+        base_version = version;
+        build_version = "${version}.dev${lib.substring 0 8 lastModifiedDate}";
+      }}
+
+      # Build using a PEP-440 "unstable" version
+      substituteInPlace umu/__init__.py \
+        --replace-fail "__version__ = \"$base_version\"" \
+                       "__version__ = \"$build_version\""
+    '';
+
     # versionCheckHook expects --version to print the entire package version
     # while the program is built using a PEP-440 version.
     # Strip the nixpkgs-format suffix during the versionCheckPhase.
