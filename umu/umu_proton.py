@@ -14,11 +14,11 @@ from shutil import move
 from tempfile import TemporaryDirectory, mkdtemp
 from typing import Any
 
-import vdf
 from urllib3.exceptions import HTTPError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
+from umu import vdf
 from umu.umu_bspatch import Content, ContentContainer, CustomPatcher
 from umu.umu_consts import (
     STEAM_COMPAT,
