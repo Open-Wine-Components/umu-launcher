@@ -87,4 +87,17 @@ in
       "test_env_nowine_noproton"
       "test_env_wine_noproton"
     ];
+
+    # versionCheckHook expects --version to print the entire package version
+    # while the program is built using a PEP-440 version.
+    # Strip the nixpkgs-format suffix during the versionCheckPhase.
+    preVersionCheck = ''
+      _version="$version"
+      version="''${version%%-*}"
+    '';
+
+    postVersionCheck = ''
+      version="$_version"
+      unset _version
+    '';
   })
