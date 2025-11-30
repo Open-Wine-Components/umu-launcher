@@ -5,6 +5,10 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
+  nixConfig = {
+    commit-lock-file-summary = "build(nix): update flake inputs";
+  };
+
   outputs = {
     self,
     nixpkgs,
