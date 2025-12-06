@@ -41,6 +41,11 @@ class Renameat2(IntFlag):
     # Requires Linux 3.18+
     RENAME_WHITEOUT = 4
 
+class Renameat2Error(OSError):
+    """Represent a renameat2 error."""
+
+    pass
+
 
 @contextmanager
 def unix_flock(path: str):
@@ -434,7 +439,7 @@ def _renameat2(
 
     err = f"{os.strerror(ret)}: renameat2 exited with error '{errorcode[get_errno()]}'"
 
-    raise OSError(ret, err, oldpath, None, newpath)
+    raise Renameat2Error(ret, err, oldpath, None, newpath)
 
 
 @contextmanager

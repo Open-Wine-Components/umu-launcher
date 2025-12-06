@@ -16,6 +16,7 @@ from urllib3.response import BaseHTTPResponse
 from umu.umu_consts import UMU_CACHE, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
+    Renameat2Error,
     exchange,
     extract_tarfile,
     file_digest,
@@ -217,8 +218,17 @@ def _install_umu(
         extract_tarfile(Path(tempdir, archive), Path(tempdir))
 
         steamrt, *_ = archive.split(".tar.xz")
-        log.debug("Exchanging: %s <-> %s", Path(tempdir, steamrt), local)
-        exchange(Path(tempdir, steamrt), local)
+
+        try:
+            log.debug("Exchanging: %s <-> %s", Path(tempdir, steamrt), local)
+            exchange(Path(tempdir, steamrt), local)
+        except Renameat2Error as e:
+            # Workaround. An OSError is reported to be raised due to an EINVAL
+            # on the exchange for users on Linux Mint 22.1+.
+            log.error(e)
+            log.warning("Falling back to non-atomic Runtime Platform installation")
+            local.rename(Path(tempdir, local.name))
+            Path(tempdir, steamrt).rename(local)
 
         # Validate and post-install
         try:
