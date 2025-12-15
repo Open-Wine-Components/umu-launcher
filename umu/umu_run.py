@@ -116,7 +116,11 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
         raise ValueError(err)
 
     if "WINEPREFIX" not in os.environ:
-        pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
+        if "STORE" in os.environ:
+            pfx: Path = Path.home().joinpath("Games", env["STORE"])
+        else:
+            pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
+
     else:
         pfx: Path = Path(os.environ["WINEPREFIX"]).expanduser()
 
