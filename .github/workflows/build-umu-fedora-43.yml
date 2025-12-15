@@ -73,7 +73,7 @@ jobs:
              ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc43.rpm
 
       - name: Fedora-43
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: umu-launcher-${{ env.VERSION }}.fc43.rpm
           path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc43.rpm

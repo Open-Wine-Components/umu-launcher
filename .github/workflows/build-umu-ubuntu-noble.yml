@@ -73,13 +73,13 @@ jobs:
            results/umu-launcher_${{ env.VERSION }}-1_all_ubuntu-noble.deb
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: python3-umu-launcher_${{ env.VERSION }}-1_amd64_ubuntu-noble.deb
         path: results/python3-umu-launcher_${{ env.VERSION }}-1_amd64_ubuntu-noble.deb
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: umu-launcher_${{ env.VERSION }}-1_all_ubuntu-noble.deb
         path: results/umu-launcher_${{ env.VERSION }}-1_all_ubuntu-noble.deb
