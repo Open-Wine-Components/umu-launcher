@@ -120,7 +120,6 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
             pfx: Path = Path.home().joinpath("Games", env["STORE"])
         else:
             pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
-
     else:
         pfx: Path = Path(os.environ["WINEPREFIX"]).expanduser()
 
