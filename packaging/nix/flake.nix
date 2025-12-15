@@ -5,6 +5,10 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
+  nixConfig = {
+    commit-lock-file-summary = "build(nix): update flake inputs";
+  };
+
   outputs = {
     self,
     nixpkgs,
@@ -17,9 +21,6 @@
     # Supported platforms & package sets
     platforms = lib.platforms.linux;
     supportedPkgs = lib.filterAttrs (system: _: builtins.elem system platforms) nixpkgs.legacyPackages;
-
-    # Use the current revision for the default version
-    version = self.dirtyShortRev or self.shortRev or self.lastModifiedDate;
   in {
     overlays.default = final: prev: {
       umu-launcher = final.callPackage ./package.nix {
@@ -27,7 +28,7 @@
       };
       umu-launcher-unwrapped = final.callPackage ./unwrapped.nix {
         inherit (prev) umu-launcher-unwrapped;
-        inherit version;
+        inherit (self) lastModifiedDate;
       };
       # Deprecated in https://github.com/Open-Wine-Components/umu-launcher/pull/345 (2025-01-31)
       umu = rename "umu" "umu-launcher" final.umu-launcher;
