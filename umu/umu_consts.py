@@ -79,7 +79,7 @@ if os.environ.get("container") == "flatpak":  # noqa: SIM112
         else Path.home().joinpath(".local", "share")
     )
 elif os.environ.get("SNAP"):
-    XDG_DATA_HOME: Path = Path(os.environ["SNAP_REAL_HOME"])
+    XDG_DATA_HOME: Path = Path(os.environ["SNAP_REAL_HOME"]).joinpath("AppsFiles", "UMU-launcher")
 else:
     XDG_DATA_HOME: Path = (
         Path(os.environ["XDG_DATA_HOME"])
