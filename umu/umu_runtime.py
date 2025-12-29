@@ -1,4 +1,5 @@
 import os
+import platform
 import shlex
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -450,12 +451,23 @@ class UmuRuntime:
 
 RUNTIME_VERSIONS = {
     "host": UmuRuntime("host", "", ""),
-    "1391110": UmuRuntime("soldier",      "steamrt2", "1391110"),
-    "1628350": UmuRuntime("sniper",       "steamrt3", "1628350"),
-    "3810310": UmuRuntime("sniper-arm64", "steamrt3", "3810310"),
-    "4183110": UmuRuntime("steamrt4",     "steamrt4", "4183110"),
-    # "4183110": UmuRuntime("steamrt4-arm64", "steamrt4", "4183110"),
 }
+
+RUNTIME_VERSIONS.update({
+    "1391110": UmuRuntime("soldier",        "steamrt2", "1391110"),
+    "1628350": UmuRuntime("sniper",         "steamrt3", "1628350"),
+    "3810310": UmuRuntime("sniper-arm64",   "steamrt3", "3810310"),
+    "4183110": UmuRuntime("steamrt4",       "steamrt4", "4183110"),
+    "4185400": UmuRuntime("steamrt4-arm64", "steamrt4", "4185400"),
+})
+
+if platform.machine() == "x86_64":  # noqa: SIM114
+    pass
+elif platform.machine() == "aarch64":
+    pass
+else:
+    err: str = f"Unsupported platform {platform.machine()}"
+    raise RuntimeError(err)
 
 
 RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}

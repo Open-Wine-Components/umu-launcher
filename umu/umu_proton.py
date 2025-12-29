@@ -58,6 +58,7 @@ class ProtonVersion(Enum):
     UMUSniper = "umu-sniper"
     UMUSniper_arm64 = "umu-sniper-arm64"
     UMUSteamRT4 = "umu-steamrt4"
+    UMUSteamRT4_arm64 = "umu-steamrt4-arm64"
 
 
 def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str, str]:
@@ -116,7 +117,8 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
         ProtonVersion.UMUSoldier.value,
         ProtonVersion.UMUSniper.value,
         ProtonVersion.UMUSniper_arm64.value,
-        ProtonVersion.UMUSteamRT4.value
+        ProtonVersion.UMUSteamRT4.value,
+        ProtonVersion.UMUSteamRT4_arm64.value,
     }):
         return None
 
