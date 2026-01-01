@@ -78,8 +78,6 @@ if os.environ.get("container") == "flatpak":  # noqa: SIM112
         if os.environ.get("HOST_XDG_DATA_HOME")
         else Path.home().joinpath(".local", "share")
     )
-elif os.environ.get("SNAP"):
-    XDG_DATA_HOME: Path = Path(os.environ["SNAP_REAL_HOME"]).joinpath("AppsFiles", "UMU-launcher")
 else:
     XDG_DATA_HOME: Path = (
         Path(os.environ["XDG_DATA_HOME"])
@@ -96,6 +94,13 @@ UMU_CACHE: Path = XDG_CACHE_HOME.joinpath("umu")
 UMU_COMPAT: Path = XDG_DATA_HOME.joinpath("umu", "compatibilitytools")
 
 STEAM_COMPAT: Path = XDG_DATA_HOME.joinpath("Steam", "compatibilitytools.d")
+
+# Variables to define folders used by UMU
+if "UMU_FOLDER" in os.environ:
+    UMU_LOCAL = Path(os.environ["UMU_FOLDER"]).joinpath("umu")
+    UMU_COMPAT = Path(os.environ["UMU_FOLDER"]).joinpath("umu", "compatibilitytools")
+if "STEAM_COMPAT_FOLDER" in os.environ:
+    STEAM_COMPAT = Path(os.environ["STEAM_COMPAT_FOLDER"]).joinpath("Steam", "compatibilitytools.d")
 
 # Constant defined in prctl.h
 # See prctl(2) for more details
