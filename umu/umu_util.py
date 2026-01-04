@@ -368,7 +368,7 @@ def extract_tarfile(path: Path, dest: Path) -> Path | None:
 def has_umu_setup(path: Path = UMU_LOCAL) -> bool:
     """Check if umu has been setup in our runtime directory."""
     return path.exists() and any(
-        file for file in path.glob("*") if not file.name.endswith("lock")
+        file for file in path.glob("**/*") if file.is_file() and not file.name.endswith("lock")
     )
 
 
