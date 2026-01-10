@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+import urllib.parse
 from concurrent.futures import ALL_COMPLETED, FIRST_EXCEPTION, ThreadPoolExecutor
 from concurrent.futures import wait as futures_wait
 from enum import Enum
@@ -288,7 +289,9 @@ def _fetch_proton(
     hashsum = sha512()
 
     # Verify the scheme from Github for resources
-    if not tar_url.startswith("https:") or not proton_hash_url.startswith("https:"):
+    parsed_proton_hash_url: urllib.parse.ParseResult = urllib.parse.urlparse(proton_hash_url)
+    parsed_tar_url: urllib.parse.ParseResult = urllib.parse.urlparse(tar_url)
+    if parsed_tar_url.scheme != "https" or parsed_proton_hash_url.scheme != "https":
         err: str = f"Scheme in URLs is not 'https:': {(tar_url, proton_hash_url)}"
         raise ValueError(err)
 
@@ -300,7 +303,7 @@ def _fetch_proton(
     if resp.status != HTTPStatus.OK:
         err: str = (
             f"Unable to download {proton_hash}\n"
-            f"{resp.getheader('Host')} returned the status: {resp.status}"
+            f"{parsed_proton_hash_url.hostname} returned the status: {resp.status}"
         )
         raise HTTPError(err)
 
@@ -358,7 +361,7 @@ def _fetch_proton(
             HTTPStatus.PARTIAL_CONTENT,
             HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE,
         }:
-            err: str = f"{resp.getheader('Host')} returned the status: {resp.status}"
+            err: str = f"{parsed_tar_url.hostname} returned the status: {resp.status}"
             raise HTTPError(err)
 
         # Only write our file if we're resuming or downloading first time
