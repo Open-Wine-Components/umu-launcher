@@ -121,7 +121,7 @@ def _install_umu(
             preload_content=False,
         )
         if resp.status != HTTPStatus.OK:
-            err: str = f"{resp.getheader('Host')} returned the status: {resp.status}"
+            err: str = f"{host} returned the status: {resp.status}"
             raise HTTPError(err)
 
         # Parse data for the archive digest
@@ -139,7 +139,7 @@ def _install_umu(
             HTTPMethod.GET.value, f"{host}{endpoint}/BUILD_ID.txt{token}"
         )
         if resp.status != HTTPStatus.OK:
-            err: str = f"{resp.getheader('Host')} returned the status: {resp.status}"
+            err: str = f"{host} returned the status: {resp.status}"
             raise HTTPError(err)
 
         buildid = resp.data.decode(encoding="utf-8").strip()
@@ -174,7 +174,7 @@ def _install_umu(
             HTTPStatus.PARTIAL_CONTENT,
             HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE,
         }:
-            err: str = f"{resp.getheader('Host')} returned the status: {resp.status}"
+            err: str = f"{host} returned the status: {resp.status}"
             raise HTTPError(err)
 
         # Download the runtime
@@ -326,7 +326,7 @@ def _update_umu(
     log.debug("Sending request to '%s' for 'VERSION.txt'...", url)
     resp = http_pool.request(HTTPMethod.GET.value, url)
     if resp.status != HTTPStatus.OK:
-        log.error("%s returned the status: %s", resp.getheader("Host"), resp.status)
+        log.error("%s returned the status: %s", host, resp.status)
         return
 
     # Update our runtime
