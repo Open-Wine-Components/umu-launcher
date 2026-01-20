@@ -53,9 +53,11 @@ function configure() {
       arg_prefix="$HOME/.local"
   fi
 
-  if [[ $arg_prefix != $(realpath "$arg_prefix") ]]; then
+  if [[ "$arg_prefix" != /* ]]; then
     die "PREFIX needs to be an absolute path"
   fi
+
+  arg_prefix="$(realpath -m "$arg_prefix")"
 
   ## Write out config
   [[ ! -e "$MAKEFILE" ]] || rm "$MAKEFILE"
