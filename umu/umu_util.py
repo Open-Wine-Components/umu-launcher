@@ -1,8 +1,9 @@
 import os
 import sys
+import errno
 from collections.abc import Generator
 from contextlib import contextmanager
-from ctypes import CDLL
+from ctypes import CDLL, get_errno
 from ctypes.util import find_library
 from enum import IntFlag
 from fcntl import LOCK_EX, LOCK_UN, flock
@@ -425,13 +426,15 @@ def _renameat2(
     newpath: str,
     flags: Renameat2,
 ) -> None:
-    libc: CDLL = CDLL(get_libc())
+    # Load libc with errno tracking enabled
+    libc: CDLL = CDLL(get_libc(), use_errno=True)
 
     ret = libc.renameat2(olddirfd, oldpath.encode(), newdirfd, newpath.encode(), flags)
     if ret == 0:
         return
 
-    raise OSError(ret, os.strerror(ret), oldpath, None, newpath)
+    err = get_errno()
+    raise OSError(err, os.strerror(err), oldpath, None, newpath)
 
 
 @contextmanager
