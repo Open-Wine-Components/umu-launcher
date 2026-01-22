@@ -436,6 +436,45 @@ def _renameat2(
     err = get_errno()
     raise OSError(err, os.strerror(err), oldpath, None, newpath)
 
+def _renameat2_fallback(src: os.PathLike, dest: os.PathLike, flags: int) -> None:
+    """
+    Fallback implementation for renameat2.
+    Supports:
+      - plain rename
+      - RENAME_EXCHANGE (best-effort, not atomic on NFS)
+    """
+    src = Path(src)
+    dest = Path(dest)
+
+    if flags == 0:
+        # Simple rename fallback
+        os.replace(src, dest)
+        return
+
+    if flags == Renameat2.RENAME_EXCHANGE:
+        # Best-effort exchange fallback
+        tmp = dest.with_name(dest.name + ".renameat2-tmp")
+
+        # dest -> tmp
+        os.replace(dest, tmp)
+        try:
+            # src -> dest
+            os.replace(src, dest)
+            # tmp -> src
+            os.replace(tmp, src)
+        except Exception:
+            # Try to restore original state
+            try:
+                if dest.exists():
+                    os.replace(dest, src)
+            finally:
+                if tmp.exists():
+                    os.replace(tmp, dest)
+            raise
+
+        return
+
+    raise OSError(errno.ENOTSUP, "renameat2 flags not supported by fallback")
 
 @contextmanager
 def _split_dirfd(path: os.PathLike) -> Generator[tuple[int, str], Any, None]:
@@ -451,12 +490,21 @@ def _split_dirfd(path: os.PathLike) -> Generator[tuple[int, str], Any, None]:
 
 
 def renameat2(src: os.PathLike, dest: os.PathLike, flags: Renameat2) -> None:
-    """Rename a file using the renameat2 system call."""
+    """Rename a file using the renameat2 system call, with fallback."""
     with _split_dirfd(src) as src_split, _split_dirfd(dest) as dst_split:
-        # Note, renameat2 requires Linux 3.15 and glibc 2.28. Our minimum target
-        # platform is latest Debian, which will have versions 3.15+ and 2.28+.
-        _renameat2(src_split[0], src_split[1], dst_split[0], dst_split[1], flags)
-
+        try:
+            # Note, renameat2 requires Linux 3.15 and glibc 2.28. Our minimum target
+            # platform is latest Debian, which will have versions 3.15+ and 2.28+.
+            # Though this might fail for filesystems without support, like NFS.
+            _renameat2(src_split[0], src_split[1], dst_split[0], dst_split[1], flags)
+            return
+        except OSError as e:
+            # ENOSYS: kernel or libc does not support renameat2
+            # EINVAL / ENOTSUP: filesystem does not support the flags (e.g. NFS)
+            if e.errno in (errno.ENOSYS, errno.EINVAL, errno.ENOTSUP):
+                _renameat2_fallback(src, dest, flags)
+                return
+            raise
 
 def exchange(src: os.PathLike, dest: os.PathLike) -> None:
     """Atomically exchange paths between two files."""
