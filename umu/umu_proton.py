@@ -14,11 +14,11 @@ from shutil import move
 from tempfile import TemporaryDirectory, mkdtemp
 from typing import Any
 
-import vdf
 from urllib3.exceptions import HTTPError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
+from umu import vdf
 from umu.umu_bspatch import Content, ContentContainer, CustomPatcher
 from umu.umu_consts import (
     STEAM_COMPAT,
@@ -56,6 +56,7 @@ class ProtonVersion(Enum):
     UMUScout = "umu-scout"
     UMUSoldier = "umu-soldier"
     UMUSniper = "umu-sniper"
+    UMUSniper_arm64 = "umu-sniper-arm64"
     UMUSteamRT4 = "umu-steamrt4"
 
 
@@ -114,6 +115,7 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
     if not (name and name in {
         ProtonVersion.UMUSoldier.value,
         ProtonVersion.UMUSniper.value,
+        ProtonVersion.UMUSniper_arm64.value,
         ProtonVersion.UMUSteamRT4.value
     }):
         return None

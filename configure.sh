@@ -75,9 +75,6 @@ function configure() {
     if [[ -n "$arg_use_system_urllib" ]]; then
       echo "USE_SYSTEM_URLLIB := xtrue"
     fi
-    if [[ -n "$arg_use_system_vdf" ]]; then
-      echo "USE_SYSTEM_VDF := xtrue"
-    fi
 
     # Prefix was specified, baking it into the Makefile
     if [[ -n $arg_prefix ]]; then
@@ -101,7 +98,6 @@ arg_user_install=""
 arg_help=""
 arg_use_system_pyzstd=""
 arg_use_system_urllib=""
-arg_use_system_vdf=""
 function parse_args() {
   local arg;
   local val;
@@ -151,8 +147,6 @@ function parse_args() {
       arg_use_system_pyzstd="1"
     elif [[ $arg = --use-system-urllib ]]; then
       arg_use_system_urllib="1"
-    elif [[ $arg = --use-system-vdf ]]; then
-      arg_use_system_vdf="1"
     else
       err "Unrecognized option $arg"
       return 1

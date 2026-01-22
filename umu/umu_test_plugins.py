@@ -13,7 +13,7 @@ from tomllib import TOMLDecodeError
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from umu import __main__, umu_plugins, umu_run, umu_runtime
+from umu import __main__, umu_plugins, umu_run, umu_runtime, vdf
 
 
 class TestGameLauncherPlugins(unittest.TestCase):
@@ -92,10 +92,26 @@ class TestGameLauncherPlugins(unittest.TestCase):
         Path(self.test_user_share, "run").touch()
         Path(self.test_user_share, "run-in-sniper").touch()
         Path(self.test_user_share, "umu").touch()
+        mock_steamrt_toolmanifest = {
+            "manifest": {
+                "commandline": "/_v2-entry-point --verb=%verb% --",
+                "filter_exclusive_priority": "3",
+                "version": "2",
+                "use_tool_subprocess_reaper": "1",
+                "compatmanager_layer_name": "container-runtime",
+            }
+        }
+        Path(self.test_user_share, "toolmanifest.vdf").write_text(vdf.dumps(mock_steamrt_toolmanifest))
 
         # Mock pressure vessel
         Path(self.test_user_share, "pressure-vessel").mkdir()
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
+        Path(self.test_user_share, "pressure-vessel", "bin").mkdir()
+        Path(self.test_user_share, "pressure-vessel", "bin", "pv-verify").touch()
+        Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client").write_text(
+            "#!/bin/sh\nexec \"$@\"\n"
+        )
+        Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client").chmod(0o700)
 
         # Mock umu-launcher
         Path(self.test_user_share, "umu-launcher").mkdir()
@@ -170,7 +186,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
         """
         toml_path = self.test_file + "/" + test_toml
         result = None
-        test_command = []
         Path(toml_path).touch()
 
         # Mock the proton file
@@ -190,7 +205,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             # Config
             umu_plugins.set_env_toml(self.env, result)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, result)
             # Game drive
@@ -225,8 +240,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
             os.environ[key] = val
 
         # Build
-        with self.assertRaisesRegex(FileNotFoundError, "_v2-entry-point"):
-            umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_version[1], test_command)
+        with self.assertRaisesRegex(FileNotFoundError, "toolmanifest.vdf"):
+            umu_run.build_command(self.env, umu_runtime.CompatLayer(Path(self.test_local_share_parent), Path()))
 
     def test_build_command_proton(self):
         """Test build_command.
@@ -248,7 +263,6 @@ class TestGameLauncherPlugins(unittest.TestCase):
         """
         toml_path = self.test_file + "/" + test_toml
         result = None
-        test_command = []
         Path(toml_path).touch()
 
         with Path(toml_path).open(mode="w", encoding="utf-8") as file:
@@ -265,7 +279,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             # Config
             umu_plugins.set_env_toml(self.env, result)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, result)
             # Game drive
@@ -303,8 +317,8 @@ class TestGameLauncherPlugins(unittest.TestCase):
             os.environ[key] = val
 
         # Build
-        with self.assertRaisesRegex(FileNotFoundError, "proton"):
-            umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_version[1], test_command)
+        with self.assertRaisesRegex(FileNotFoundError, "toolmanifest.vdf"):
+            umu_run.build_command(self.env, umu_runtime.CompatLayer(Path(self.test_local_share_parent), Path()))
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -327,6 +341,33 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         Path(self.test_file + "/proton").touch()
         Path(toml_path).touch()
+        mock_compatibilitytool = {
+            "compatibilitytools": {
+                "compat_tools": {
+                    self.test_proton_dir.name: {
+                        "install_path": ".",
+                        "display_name": self.test_proton_dir.name,
+                        "from_oslist": "windows",
+                        "to_oslist": "linux",
+                    }
+                }
+            }
+        }
+        Path(self.test_file + "/compatibilitytool.vdf").write_text(
+            vdf.dumps(mock_compatibilitytool)
+        )
+        mock_toolmanifest = {
+            "manifest": {
+                "version":"2",
+                "commandline": "/proton %verb%",
+                "require_tool_appid": "1628350",
+                "use_sessions": "1",
+                "compatmanager_layer_name": "proton",
+            }
+        }
+        Path(self.test_file + "/toolmanifest.vdf").write_text(
+            vdf.dumps(mock_toolmanifest)
+        )
 
         # Mock the shim file
         shim_path = Path(self.test_local_share_parent, "umu-shim")
@@ -346,7 +387,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             # Config
             umu_plugins.set_env_toml(self.env, result)
             # Prefix
-            umu_run.setup_pfx(self.env["WINEPREFIX"])
+            umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
             # Env
             umu_run.set_env(self.env, result)
             # Game drive
@@ -379,29 +420,42 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 Path(self.test_user_share, "umu"),
                 Path(self.test_local_share, "umu"),
             )
+            copy(
+                Path(self.test_user_share, "toolmanifest.vdf"),
+                Path(self.test_local_share, "toolmanifest.vdf"),
+            )
+            Path(self.test_local_share, "pressure-vessel").mkdir(exist_ok=True)
+            Path(self.test_local_share, "pressure-vessel", "bin").mkdir(exist_ok=True)
+            copy(
+                Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
+                Path(self.test_local_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
+            )
 
         for key, val in self.env.items():
             os.environ[key] = val
 
         # Build
-        test_command = umu_run.build_command(self.env, self.test_local_share_parent, self.test_runtime_version[1])
+        mock_runtime = umu_runtime.UmuRuntime("sniper",  "steamrt3", "1628350", self.test_local_share)
+        with patch("umu.umu_runtime.CompatLayer.required_runtime", mock_runtime):
+            test_command = umu_run.build_command(
+                self.env, umu_runtime.CompatLayer(Path(self.env["PROTONPATH"]), shim_path)
+            )
 
         # Verify contents of the command
-        entry_point, opt1, verb, opt2, shim, proton, verb2, exe = [*test_command]
+        entry_point, verb, opt2, shim, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
         self.assertIsInstance(
-            entry_point, os.PathLike, "Expected entry point to be PathLike"
+            entry_point, str, "Expected entry point to be str"
         )
-        self.assertEqual(opt1, "--verb", "Expected --verb")
-        self.assertEqual(verb, self.test_verb, "Expected a verb")
+        self.assertEqual(verb, "--verb=waitforexitandrun", "Expected a verb")
         self.assertEqual(opt2, "--", "Expected --")
-        self.assertIsInstance(shim, os.PathLike, "Expected shim to be PathLike")
-        self.assertEqual(shim, shim_path, "Expected the shim file")
-        self.assertIsInstance(proton, os.PathLike, "Expected proton to be PathLike")
+        self.assertIsInstance(shim, str, "Expected shim to be str")
+        self.assertEqual(shim, str(shim_path), "Expected the shim file")
+        self.assertIsInstance(proton, str, "Expected proton to be str")
         self.assertEqual(
             proton,
-            Path(self.env["PROTONPATH"], "proton"),
+            str(Path(self.env["PROTONPATH"], "proton")),
             "Expected the proton file",
         )
         self.assertEqual(verb2, self.test_verb, "Expected a verb")

@@ -64,7 +64,13 @@ RuntimeVersion = tuple[str, str, str]
 
 
 def setup_pfx(path: Path) -> None:
-    """Prepare a Proton compatible WINE prefix."""
+    """Prepare a Proton compatible WINE prefix.
+
+    `path` needs to be fully resolved before setup_pfx
+    """
+    if not path.is_absolute():
+        path = path.expanduser().resolve(strict=False)
+
     if not path.is_dir():
         path.mkdir(parents=True, exist_ok=True)
 
@@ -120,11 +126,12 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
             pfx: Path = Path.home().joinpath("Games", env["STORE"])
         else:
             pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
+        pfx = pfx.resolve(strict=False)
     else:
-        pfx: Path = Path(os.environ["WINEPREFIX"]).expanduser()
+        pfx: Path = Path(os.environ["WINEPREFIX"]).expanduser().resolve(strict=False)
 
     if not pfx.is_absolute():
-        err: str = "WINEPREFIX is set but not an absolute path."
+        err: str = f"WINEPREFIX is set but not an absolute path: {pfx}."
         raise RuntimeError(err)
 
     os.environ["WINEPREFIX"] = str(pfx)
@@ -142,7 +149,11 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
 
     # Proton Codename
     if os.environ.get("PROTONPATH") in {
-        "GE-Proton", "GE-Latest", "UMU-Latest", "umu-scout", "umu-soldier", "umu-sniper", "umu-steamrt4"
+        "GE-Proton", "GE-Latest", "UMU-Latest",
+        "umu-scout",
+        "umu-soldier",
+        "umu-sniper", "umu-sniper-arm64",
+        "umu-steamrt4"
     }:
         do_download = True
 
@@ -316,41 +327,21 @@ def build_command(
     env: dict[str, str],
     layer: CompatLayer,
     opts: list[str] | None = None,
-) -> tuple[Path | str, ...]:
+) -> tuple[str, ...]:
     """Build the command to be executed."""
     if opts is None:
         opts = []
-
-    # if env.get("UMU_NO_PROTON") != "1" and not proton.is_file():
-    #     err: str = "The following file was not found in PROTONPATH: proton"
-    #     raise FileNotFoundError(err)
-    #
-    # # Exit if the entry point is missing
-    # # The _v2-entry-point script and container framework tools are included in
-    # # the same image, so this can happen if the image failed to download
-    # if entry_point and not entry_point[0].is_file():
-    #     err: str = (
-    #         f"_v2-entry-point (umu) cannot be found in '{local}'\n"
-    #         "Runtime Platform missing or download incomplete"
-    #     )
-    #     raise FileNotFoundError(err)
 
     # Winetricks
     if layer.is_proton and env.get("EXE", "").endswith("winetricks") and opts:
         # The position of arguments matter for winetricks
         # Usage: ./winetricks [options] [command|verb|path-to-verb] ...
         return (
-            *layer.command(env["PROTON_VERB"]),
+            *layer.command(env["PROTON_VERB"], unwrapped=False),
             env["EXE"],
             "-q",
             *opts,
         )
-
-    # # Will run the game within the Steam Runtime w/o Proton
-    # # Ideally, for reliability, executables should be compiled within
-    # # the Steam Runtime
-    # if env.get("UMU_NO_PROTON") == "1":
-    #     return *entry_point, env["EXE"], *opts
 
     nsenter: tuple[str, ...] = ()
     if launch_client := layer.launch_client:
@@ -360,17 +351,13 @@ def build_command(
         pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
         if f"--bus-name={pfx_bus}" in bus_names:
             nsenter = (launch_client, f"--bus-name={pfx_bus}", "--")
-            # Unset runtime to make the CompatLayer stack report only the command
-            # of the innermost layer instead of the whole layer chain.
-            layer.runtime = None
             env["PROTON_VERB"] = "runinprefix"
             log.info("Re-entering container through bus '%s'", pfx_bus)
-        else:
-            env["PROTON_VERB"] = "waitforexitandrun"
 
+    is_nsenter: bool = bool(nsenter)
     return (
         *nsenter,
-        *layer.command(env["PROTON_VERB"]),
+        *layer.command(env["PROTON_VERB"], unwrapped=is_nsenter),
         env["EXE"],
         *opts,
     )
@@ -708,6 +695,16 @@ def run_command(command: tuple[Path | str, ...]) -> int:
 
 def resolve_runtime() -> RuntimeVersion | None:
     """Resolve the required runtime of a compatibility tool."""
+    # Backwards compatibility stuff, map RUNTIMEPATH tokens to
+    # umu's passthrough compatibility layers for runtimes.
+    runtimepath_compat = {
+        "steamrt2": "umu-soldier",
+        "steamrt3": "umu-sniper",
+        "steamrt4": "umu-steamrt4",
+    }
+    if os.environ.get("RUNTIMEPATH") and (os.environ.get("UMU_NO_PROTON") or not os.environ.get("PROTONPATH")):
+        os.environ["PROTONPATH"] = runtimepath_compat[os.environ.get("RUNTIMEPATH", "")]
+
     # default to UMU-Latest if PROTONPATH is not set
     if not os.environ.get("PROTONPATH"):
         os.environ["PROTONPATH"] = "UMU-Latest"
@@ -715,6 +712,7 @@ def resolve_runtime() -> RuntimeVersion | None:
     named_runtimes = {
         RUNTIME_NAMES["steamrt4"]: {"umu-steamrt4"},
         RUNTIME_NAMES["sniper"]: {"GE-Proton", "GE-Latest", "UMU-Latest", "umu-sniper"},
+        RUNTIME_NAMES["sniper-arm64"]: {"umu-sniper-arm64"},
         RUNTIME_NAMES["soldier"]: {"umu-scout", "umu-soldier"},
     }
 
@@ -923,7 +921,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
                 setup_pfx(cdata_path)
 
         # Configure the environment
-        env["STEAM_COMPAT_LAUNCHER_SERVICE"] = layer.layer_name
+        env["STEAM_COMPAT_LAUNCHER_SERVICE"] = layer.launcher_service
         set_env(env, args)
 
         # Set all environment variables
@@ -939,7 +937,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         sys.exit(1)
 
     # Build the command
-    command: tuple[Path | str, ...] = build_command(env, layer, opts)
+    command: tuple[str, ...] = build_command(env, layer, opts)
     log.debug("%s", command)
 
     # Run the command
