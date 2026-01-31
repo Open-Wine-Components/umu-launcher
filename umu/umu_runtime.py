@@ -80,7 +80,7 @@ def _install_umu(
     token: str = f"?versions={token_urlsafe(16)}"
     host: str = "repo.steampowered.com"
 
-    if codename.removeprefix("steamrt").isdigit():
+    if codename.removeprefix("steamrt").removesuffix("-arm64").isdigit():
         archive = f"SteamLinuxRuntime_{codename.removeprefix('steamrt')}.tar.xz"
     else:
         archive = f"SteamLinuxRuntime_{codename}.tar.xz"
