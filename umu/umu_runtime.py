@@ -284,6 +284,7 @@ def _update_umu(
 
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the variant
+    codename = codename.removesuffix("-arm64")
     try:
         max(file for file in local.glob(f"{codename}*") if file.is_dir())
     except ValueError:
@@ -349,6 +350,7 @@ def check_runtime(src: Path, runtime_ver: RuntimeVersion) -> int:
     ret: int = 1
 
     # Find the runtime directory
+    codename = codename.removesuffix("-arm64")
     try:
         runtime = max(file for file in src.glob(f"{codename}*") if file.is_dir())
     except ValueError:
