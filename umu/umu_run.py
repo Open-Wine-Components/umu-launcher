@@ -121,8 +121,14 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
         err: str = "Environment variable is empty: WINEPREFIX"
         raise ValueError(err)
 
+    env["STORE"] = os.environ.get("STORE", "")
     if "WINEPREFIX" not in os.environ:
-        if "STORE" in os.environ:
+        # Do not use the per-store prefix path in case STORE is either an empty string or "none"
+        # The "none" special case is here to work-around Lutris's defaults
+        # https://github.com/lutris/lutris/blob/2c3b3e0d543ec736df7dd2c313bd471ce8d77c33/lutris/game.py#L672-L678
+        # which caused the default prefix to use an unexpected path in some cases
+        # https://github.com/CachyOS/CachyOS-PKGBUILDS/issues/1124
+        if "STORE" in os.environ and env["STORE"] not in {"", "none"}:
             pfx: Path = Path.home().joinpath("Games", env["STORE"])
         else:
             pfx: Path = Path.home().joinpath("Games", "umu", env["GAMEID"])
