@@ -76,7 +76,7 @@ def _install_umu(
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    base_url: str = f"https://repo.steampowered.com/{variant}/images/latest-public-beta"
+    base_url: str = f"https://repo.steampowered.com/{variant.removesuffix('-arm64')}/images/latest-public-beta/"
     token: str = f"?versions={token_urlsafe(16)}"
     host: str = "repo.steampowered.com"
 
@@ -110,7 +110,7 @@ def _install_umu(
     if not os.environ.get("UMU_ZENITY") or ret:
         digest: str = ""
         buildid: str = ""
-        endpoint: str = f"/{variant}/images/latest-public-beta"
+        endpoint: str = f"/{variant.removesuffix('-arm64')}/images/latest-public-beta"
         hashsum = sha256()
         headers: dict[str, str] | None = None
         cached_parts: Path
@@ -272,7 +272,7 @@ def _update_umu(
     resp: BaseHTTPResponse
     _, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    endpoint: str = f"/{variant}/images/latest-public-beta"
+    endpoint: str = f"/{variant.removesuffix('-arm64')}/images/latest-public-beta"
     # Create a token and append it to the URL to avoid the Cloudflare cache
     # Avoids infinite updates to the runtime each launch
     # See https://github.com/Open-Wine-Components/umu-launcher/issues/188
@@ -456,11 +456,11 @@ RUNTIME_VERSIONS = {
 }
 
 RUNTIME_VERSIONS.update({
-    "1391110": UmuRuntime("soldier",        "steamrt2", "1391110"),
-    "1628350": UmuRuntime("sniper",         "steamrt3", "1628350"),
-    "3810310": UmuRuntime("sniper-arm64",   "steamrt3", "3810310"),
-    "4183110": UmuRuntime("steamrt4",       "steamrt4", "4183110"),
-    "4185400": UmuRuntime("steamrt4-arm64", "steamrt4", "4185400"),
+    "1391110": UmuRuntime("soldier",        "steamrt2",       "1391110"),
+    "1628350": UmuRuntime("sniper",         "steamrt3",       "1628350"),
+    "3810310": UmuRuntime("sniper-arm64",   "steamrt3-arm64", "3810310"),
+    "4183110": UmuRuntime("steamrt4",       "steamrt4",       "4183110"),
+    "4185400": UmuRuntime("steamrt4-arm64", "steamrt4-arm64", "4185400"),
 })
 
 if platform.machine() == "x86_64":  # noqa: SIM114
