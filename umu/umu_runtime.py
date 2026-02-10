@@ -567,7 +567,7 @@ class CompatLayer:
         tool_path = os.path.normpath(self.tool_path)
         cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
         # Temporary override entry point for backwards compatibility
-        if self.layer_name in {"container-runtime"}:
+        if self.layer_name == "container-runtime":
             cmd = cmd.replace("_v2-entry-point", "umu")
         cmd = cmd.replace("%verb%", verb)
         return shlex.split(cmd)
@@ -580,7 +580,7 @@ class CompatLayer:
         log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
         cmd = self.runtime.command(verb, unwrapped=False) if self.runtime is not None else []
         target = self._unwrapped_cmd(verb)
-        if self.layer_name in {"container-runtime"}:
+        if self.layer_name == "container-runtime":
             cmd.extend([*target, self._shim.as_posix()])
         elif self.runtime is None:
             cmd.extend([self._shim.as_posix(), *target])

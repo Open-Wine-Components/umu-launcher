@@ -240,7 +240,7 @@ def _fetch_releases(
     }:
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
 
-    if os.environ.get("PROTONPATH") in {ProtonVersion.UMUScout.value}:
+    if os.environ.get("PROTONPATH") == ProtonVersion.UMUScout.value:
         repo = "/repos/loathingKernel/umu-scout/releases/latest"
 
     resp = http_pool.request(HTTPMethod.GET.value, f"{url}{repo}", headers=headers)
