@@ -44,6 +44,7 @@ from umu.umu_runtime import (
     RUNTIME_NAMES,
     RUNTIME_VERSIONS,
     CompatLayer,
+    check_runtime,
     create_shim,
     setup_umu,
 )
@@ -167,7 +168,7 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
     return env, do_download
 
 
-def download_proton(download: bool, env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager]) -> None:  # noqa: FBT001
+def download_proton(env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager], *, download: bool) -> None:
     """Check if umu should download proton and check if PROTONPATH is set.
 
     I am not gonna lie about it, this only exists to satisfy the tests, because downloading
@@ -894,12 +895,15 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
                 setup_umu, UMU_LOCAL / runtime_variant, runtime_version, session_pools
             )
 
-            download_proton(do_download, env, session_pools)
+            download_proton(env, session_pools, download=do_download)
 
             try:
                 future.result()
             except HTTPError as e:
-                if not has_umu_setup():
+                if (
+                    not has_umu_setup()
+                    or check_runtime(UMU_LOCAL / runtime_variant, runtime_version) != 0
+                ):
                     err: str = (
                         "umu has not been setup for the user\n"
                         "An internet connection is required to setup umu"
@@ -918,9 +922,9 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
         # Prepare the prefix
         if layer.is_proton:
-            cdata_path: Path =  Path(env["WINEPREFIX"]).expanduser().resolve(strict=False)
+            compat_path: Path = Path(env["WINEPREFIX"]).expanduser().resolve(strict=False)
             with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
-                setup_pfx(cdata_path)
+                setup_pfx(compat_path)
 
         # Configure the environment
         env["STEAM_COMPAT_LAUNCHER_SERVICE"] = layer.launcher_service
