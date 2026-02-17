@@ -284,17 +284,17 @@ def _update_umu(
 
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the variant
-    codename = codename.removesuffix("-arm64")
+    _codename = codename.removesuffix("-arm64")
     try:
-        max(file for file in local.glob(f"{codename}*") if file.is_dir())
+        max(file for file in local.glob(f"{_codename}_platform_*") if file.is_dir())
     except ValueError:
-        log.critical("*_platform_* directory missing in '%s'", local)
+        log.critical("%s_platform_* directory missing in '%s'", _codename, local)
         log.info("Restoring Runtime Platform...")
         _restore_umu(
             local,
             runtime_ver,
             session_pools,
-            lambda: len([file for file in local.glob(f"{codename}*") if file.is_dir()])
+            lambda: len([file for file in local.glob(f"{_codename}_platform_*") if file.is_dir()])
             > 0,
         )
         return
@@ -350,12 +350,12 @@ def check_runtime(src: Path, runtime_ver: RuntimeVersion) -> int:
     ret: int = 1
 
     # Find the runtime directory
-    codename = codename.removesuffix("-arm64")
+    _codename = codename.removesuffix("-arm64")
     try:
-        runtime = max(file for file in src.glob(f"{codename}*") if file.is_dir())
+        runtime = max(file for file in src.glob(f"{_codename}_platform_*") if file.is_dir())
     except ValueError:
         log.critical("%s validation failed", variant)
-        log.critical("Could not find *_platform_* in '%s'", src)
+        log.critical("Could not find %s_platform_* in '%s'", _codename, src)
         return ret
 
     if not pv_verify.is_file():
