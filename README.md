@@ -365,9 +365,11 @@ environment.systemPackages = [
 </details>
 
 > [!NOTE]
-> If you're using our flake in an unconventional way, you may also need to provide a `version`. E.g. if you're fetching our repo manually, _without_ using nix flakes.
+> If you're using our flake in an unconventional way, you may also need to provide a `lastModifiedDate`. E.g. if you're fetching our repo manually, _without_ using nix flakes.
 >
-> By default, we set `version` to our flake's `sourceInfo.shortRev`. This is equivalent to `substring 0 7 rev`, where `rev` is the commit hash being fetched.
+> This is a date-string formatted as `"YYYYMMDDhhmmss"`, representing when umu was last modified.
+>
+> By default, we set `lastModifiedDate` to our flake's `sourceInfo.lastModifiedDate`. Typically, this should be the commit date.
 
 ## Contributing
 
