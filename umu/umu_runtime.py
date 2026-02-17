@@ -12,7 +12,7 @@ from shutil import move
 from subprocess import run
 from tempfile import TemporaryDirectory, mkdtemp
 
-from urllib3.exceptions import HTTPError
+from urllib3.exceptions import HTTPError, ProtocolError, ReadTimeoutError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
@@ -182,7 +182,26 @@ def _install_umu(
         if resp.status != HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE:
             try:
                 log.debug("Writing: %s", parts)
-                hashsum = write_file_chunks(parts, resp, hashsum)
+                attempts = 3
+                for trial in range(attempts):
+                    try:
+                        hashsum = write_file_chunks(parts, resp, hashsum)
+                    except (ProtocolError, ReadTimeoutError) as e:
+                        if trial == attempts - 1:
+                            raise e
+                        log.debug(e)
+                        log.info("Connection broken, trying to resume %s (retry %s)", parts, trial + 1)
+                        headers = {"Range": f"bytes={parts.stat().st_size}-", }
+                        resp = http_pool.request(
+                            HTTPMethod.GET.value,
+                            f"{host}{endpoint}/{archive}{token}",
+                            preload_content=False,
+                            headers=headers,
+                        )
+                        with parts.open("rb") as fp:
+                            hashsum = file_digest(fp, hashsum.name)
+                    else:
+                        break
             except HTTPError:
                 log.error("Aborting steamrt install due to network error")
                 log.info("Moving '%s' to cache for future resumption", parts.name)
