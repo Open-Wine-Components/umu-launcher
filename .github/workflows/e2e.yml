@@ -39,21 +39,20 @@ jobs:
       - name: Run shellcheck
         run: |
           shellcheck tests/*.sh
-      - name: Setup venv
-        run: |
-          uv venv --python 3.10
       - name: Test delta update
         run: |
           python3 tests/test_delta.py
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
       - name: Test steamrt install
         run: |
+          uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test steamrt install w/ tmpfs
         run: |
           sudo mount -o size=1G -t tmpfs none /tmp
+          uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
@@ -64,44 +63,50 @@ jobs:
           source .venv/bin/activate
           PYTHON_GIL=0 sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
-          uv venv --python 3.10 --clear
       - name: Test obsolete steamrt install
         run: |
+          uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_install_obsolete.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test steamrt update
         run: |
+          uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_update.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test steamrt resume
         run: |
+          uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_resume.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
       - name: Test Proton resume
         run: |
+          uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_proton_resume.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
       - name: Test Filelock
         run: |
+          uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_flock.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
       - name: Test winetricks
         run: |
+          uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_winetricks.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
       - name: Test configuration file
         run: |
-          uv venv --python 3.11
+          uv venv --python 3.11 --clear
           source .venv/bin/activate
           sh tests/test_config.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
       - name: Test offline launch
         run: |
+          uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_offline.sh
