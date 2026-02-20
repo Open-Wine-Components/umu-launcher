@@ -1,4 +1,5 @@
 import os
+import platform
 import shlex
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -11,11 +12,11 @@ from shutil import move
 from subprocess import run
 from tempfile import TemporaryDirectory, mkdtemp
 
-import vdf
-from urllib3.exceptions import HTTPError
+from urllib3.exceptions import HTTPError, ProtocolError, ReadTimeoutError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
+from umu import vdf
 from umu.umu_consts import UMU_CACHE, UMU_LOCAL, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
@@ -75,11 +76,11 @@ def _install_umu(
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    base_url: str = f"https://repo.steampowered.com/{variant}/images/latest-public-beta"
+    base_url: str = f"https://repo.steampowered.com/{variant.removesuffix('-arm64')}/images/latest-public-beta/"
     token: str = f"?versions={token_urlsafe(16)}"
     host: str = "repo.steampowered.com"
 
-    if codename.removeprefix("steamrt").isdigit():
+    if codename.removeprefix("steamrt").removesuffix("-arm64").isdigit():
         archive = f"SteamLinuxRuntime_{codename.removeprefix('steamrt')}.tar.xz"
     else:
         archive = f"SteamLinuxRuntime_{codename}.tar.xz"
@@ -109,7 +110,7 @@ def _install_umu(
     if not os.environ.get("UMU_ZENITY") or ret:
         digest: str = ""
         buildid: str = ""
-        endpoint: str = f"/{variant}/images/latest-public-beta"
+        endpoint: str = f"/{variant.removesuffix('-arm64')}/images/latest-public-beta"
         hashsum = sha256()
         headers: dict[str, str] | None = None
         cached_parts: Path
@@ -181,7 +182,26 @@ def _install_umu(
         if resp.status != HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE:
             try:
                 log.debug("Writing: %s", parts)
-                hashsum = write_file_chunks(parts, resp, hashsum)
+                attempts = 3
+                for trial in range(attempts):
+                    try:
+                        hashsum = write_file_chunks(parts, resp, hashsum)
+                    except (ProtocolError, ReadTimeoutError) as e:
+                        if trial == attempts - 1:
+                            raise e
+                        log.debug(e)
+                        log.info("Connection broken, trying to resume %s (retry %s)", parts, trial + 1)
+                        headers = {"Range": f"bytes={parts.stat().st_size}-", }
+                        resp = http_pool.request(
+                            HTTPMethod.GET.value,
+                            f"{host}{endpoint}/{archive}{token}",
+                            preload_content=False,
+                            headers=headers,
+                        )
+                        with parts.open("rb") as fp:
+                            hashsum = file_digest(fp, hashsum.name)
+                    else:
+                        break
             except HTTPError:
                 log.error("Aborting steamrt install due to network error")
                 log.info("Moving '%s' to cache for future resumption", parts.name)
@@ -271,7 +291,7 @@ def _update_umu(
     resp: BaseHTTPResponse
     _, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    endpoint: str = f"/{variant}/images/latest-public-beta"
+    endpoint: str = f"/{variant.removesuffix('-arm64')}/images/latest-public-beta"
     # Create a token and append it to the URL to avoid the Cloudflare cache
     # Avoids infinite updates to the runtime each launch
     # See https://github.com/Open-Wine-Components/umu-launcher/issues/188
@@ -283,16 +303,17 @@ def _update_umu(
 
     # Find the runtime directory (e.g., sniper_platform_0.20240530.90143)
     # Assume the directory begins with the variant
+    _codename = codename.removesuffix("-arm64")
     try:
-        max(file for file in local.glob(f"{codename}*") if file.is_dir())
+        max(file for file in local.glob(f"{_codename}_platform_*") if file.is_dir())
     except ValueError:
-        log.critical("*_platform_* directory missing in '%s'", local)
+        log.critical("%s_platform_* directory missing in '%s'", _codename, local)
         log.info("Restoring Runtime Platform...")
         _restore_umu(
             local,
             runtime_ver,
             session_pools,
-            lambda: len([file for file in local.glob(f"{codename}*") if file.is_dir()])
+            lambda: len([file for file in local.glob(f"{_codename}_platform_*") if file.is_dir()])
             > 0,
         )
         return
@@ -348,11 +369,12 @@ def check_runtime(src: Path, runtime_ver: RuntimeVersion) -> int:
     ret: int = 1
 
     # Find the runtime directory
+    _codename = codename.removesuffix("-arm64")
     try:
-        runtime = max(file for file in src.glob(f"{codename}*") if file.is_dir())
+        runtime = max(file for file in src.glob(f"{_codename}_platform_*") if file.is_dir())
     except ValueError:
         log.critical("%s validation failed", variant)
-        log.critical("Could not find *_platform_* in '%s'", src)
+        log.critical("Could not find %s_platform_* in '%s'", _codename, src)
         return ret
 
     if not pv_verify.is_file():
@@ -449,11 +471,24 @@ class UmuRuntime:
 
 
 RUNTIME_VERSIONS = {
-    "host":    UmuRuntime("host",    ""        , ""   ),
-    "1391110": UmuRuntime("soldier", "steamrt2", "1391110"),
-    "1628350": UmuRuntime("sniper",  "steamrt3", "1628350"),
-    "4183110": UmuRuntime("steamrt4","steamrt4", "4183110"),
+    "host": UmuRuntime("host", "", ""),
 }
+
+RUNTIME_VERSIONS.update({
+    "1391110": UmuRuntime("soldier",        "steamrt2",       "1391110"),
+    "1628350": UmuRuntime("sniper",         "steamrt3",       "1628350"),
+    "3810310": UmuRuntime("sniper-arm64",   "steamrt3-arm64", "3810310"),
+    "4183110": UmuRuntime("steamrt4",       "steamrt4",       "4183110"),
+    "4185400": UmuRuntime("steamrt4-arm64", "steamrt4-arm64", "4185400"),
+})
+
+if platform.machine() == "x86_64":  # noqa: SIM114
+    pass
+elif platform.machine() == "aarch64":
+    pass
+else:
+    err: str = f"Unsupported platform {platform.machine()}"
+    raise RuntimeError(err)
 
 
 RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}
@@ -462,16 +497,16 @@ RUNTIME_NAMES = {RUNTIME_VERSIONS[key].name: key for key in RUNTIME_VERSIONS}
 class CompatLayer:
     """Class to describe a Steam compatibility layer."""
 
-    def __init__(self, path: Path, shim: Path) -> None:  # noqa: D107
+    def __init__(self, path: Path, shim: Path) -> None:
+        """Create a CompatLayer for a Steam compatibiltiy tool.
+
+        path: the path to the folder containing 'toolmanifest.vdf'
+        shim: the path to umu's shim
+        resolve: whether to resolve the full chain of compatibility tools required to execute this tools correctly.
+        """
         self.tool_path = path.as_posix()
         with Path(path).joinpath("toolmanifest.vdf").open(encoding="utf-8") as f:
             self.tool_manifest = vdf.load(f)["manifest"]
-
-        self.runtime: CompatLayer | None = (
-            CompatLayer(self.required_runtime.path, shim)
-            if self.required_tool_appid is not None and self.required_runtime.path is not None
-            else None
-        )
 
         if path.joinpath("compatibilitytool.vdf").exists():
             with path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
@@ -482,10 +517,25 @@ class CompatLayer:
         else:
             self.compatibility_tool = {"display_name": path.name}
 
-        self.shim = shim
+        self._runtime: CompatLayer | None = None
+        self._shim = shim
+
+    def _resolve(self, shim: Path) -> "CompatLayer | None":
+        """Construct and provide the concrete CompatLayer this layer depends on."""
+        if self.required_tool_appid is not None and self.required_runtime.path is not None:
+            return CompatLayer(self.required_runtime.path, shim)
+        return None
 
     @property
-    def required_tool_appid(self) -> str | None:  # noqa: D102
+    def runtime(self) -> "CompatLayer | None":
+        """Test."""
+        if not self._runtime:
+            self._runtime = self._resolve(self._shim)
+        return self._runtime
+
+    @property
+    def required_tool_appid(self) -> str | None:
+        """Report the appid of the tool this CompatLayer requires."""
         return str(ret) if (ret := self.tool_manifest.get("require_tool_appid")) else None
 
     @property
@@ -497,26 +547,33 @@ class CompatLayer:
 
     @property
     def layer_name(self) -> str:  # noqa: D102
-        layer_name = str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else ""
-        if layer_name == "umu-passthrough" and self.runtime is not None:
-            layer_name = self.runtime.tool_manifest.get("compatmanager_layer_name")
-        return layer_name
+        return str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else ""
+
+    @property
+    def launcher_service(self) -> str:
+        """Report the correct layer name for STEAM_COMPAT_LAUNCER_SERVICE."""
+        service = self.layer_name
+        if service == "umu-passthrough" and self.runtime is not None:
+            service = self.runtime.launcher_service
+        return service
 
     @property
     def launch_client(self) -> str | None:
         """Expose pv's launch-client path depending on the tool's container runtime."""
-        if self.tool_manifest.get("compatmanager_layer_name") == "container-runtime":
+        if self.layer_name == "container-runtime":
             return f"{self.tool_path}/pressure-vessel/bin/steam-runtime-launch-client"
         if self.runtime:
             return self.runtime.launch_client
         return None
 
     @property
-    def is_proton(self) -> bool:  # noqa: D102
+    def is_proton(self) -> bool:
+        """Report if this CompatLayer is a Proton."""
         return self.layer_name == "proton"
 
     @property
-    def display_name(self) -> str | None:  # noqa: D102
+    def display_name(self) -> str | None:
+        """Report the name of this CompatLayer as set in its manifest."""
         return str(ret) if (ret := self.compatibility_tool.get("display_name")) else None
 
     @property
@@ -524,32 +581,38 @@ class CompatLayer:
         """Report if the compatibility tool has a configured runtime."""
         return self.runtime is not None
 
-    def _command(self, verb: str) -> list[str]:
+    def _unwrapped_cmd(self, verb: str) -> list[str]:
         """Return the tool specific entry point."""
         tool_path = os.path.normpath(self.tool_path)
         cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
         # Temporary override entry point for backwards compatibility
-        if self.layer_name in {"container-runtime"}:
+        if self.layer_name == "container-runtime":
             cmd = cmd.replace("_v2-entry-point", "umu")
         cmd = cmd.replace("%verb%", verb)
         return shlex.split(cmd)
 
-    def command(self, verb: str) -> list[str]:
+    def _wrapped_cmd(self, verb: str) -> list[str]:
         """Return the fully qualified command for the runtime.
 
         If the runtime uses another runtime, its entry point is prepended to the local command.
         """
         log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
-        cmd = self.runtime.command(verb) if self.runtime is not None else []
-        target = self._command(verb)
-        if self.layer_name in {"container-runtime"}:
-            cmd.extend([*target, self.shim.as_posix()])
+        cmd = self.runtime.command(verb, unwrapped=False) if self.runtime is not None else []
+        target = self._unwrapped_cmd(verb)
+        if self.layer_name == "container-runtime":
+            cmd.extend([*target, self._shim.as_posix()])
         elif self.runtime is None:
-            cmd.extend([self.shim.as_posix(), *target])
+            cmd.extend([self._shim.as_posix(), *target])
         else:
             cmd.extend(target)
         return cmd
 
+    def command(self, verb:str, *, unwrapped: bool) -> list[str]:
+        """Return the tool's fully qualified (wrapped) or tool specific (unwrapped) entry point."""
+        if unwrapped:
+            return self._unwrapped_cmd(verb)
+        return self._wrapped_cmd(verb)
+
     def as_str(self, verb: str):  # noqa: D102
-        return " ".join(map(shlex.quote, self.command(verb)))
+        return " ".join(map(shlex.quote, self.command(verb, unwrapped=False)))
 
