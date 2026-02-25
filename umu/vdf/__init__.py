@@ -12,7 +12,7 @@ from io import StringIO as unicodeIO
 
 try:
     from collections.abc import Mapping
-except:
+except Exception:
     from collections.abc import Mapping
 
 from .vdict import VDFDict
@@ -415,7 +415,7 @@ def binary_load(
         else:
             try:
                 result.decode("ascii")
-            except:
+            except Exception:
                 result = result.decode("utf-8", "replace")
 
         return result
@@ -520,7 +520,7 @@ def _binary_dump_gen(obj, level=0, alt_format=False):
             try:
                 value = value.encode("utf-8") + BIN_NONE
                 yield BIN_STRING
-            except:
+            except Exception:
                 value = value.encode("utf-16") + BIN_NONE * 2
                 yield BIN_WIDESTRING
             yield key + BIN_NONE + value
