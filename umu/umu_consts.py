@@ -92,8 +92,12 @@ UMU_CACHE: Path = XDG_CACHE_HOME.joinpath("umu")
 # UMU_COMPAT is a directory storing Proton and other compatibility tools built against the SLR
 if "UMU_FOLDERS_PATH" in os.environ:
     UMU_LOCAL = Path(os.environ["UMU_FOLDERS_PATH"]).joinpath("umu")
-    UMU_COMPAT = Path(os.environ["UMU_FOLDERS_PATH"]).joinpath("umu", "compatibilitytools")
-    STEAM_COMPAT = Path(os.environ["UMU_FOLDERS_PATH"]).joinpath("Steam", "compatibilitytools.d")
+    UMU_COMPAT = Path(os.environ["UMU_FOLDERS_PATH"]).joinpath(
+        "umu", "compatibilitytools"
+    )
+    STEAM_COMPAT = Path(os.environ["UMU_FOLDERS_PATH"]).joinpath(
+        "Steam", "compatibilitytools.d"
+    )
 else:
     UMU_LOCAL: Path = XDG_DATA_HOME.joinpath("umu")
     UMU_COMPAT: Path = XDG_DATA_HOME.joinpath("umu", "compatibilitytools")

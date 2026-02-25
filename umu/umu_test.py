@@ -1435,6 +1435,8 @@ class TestGameLauncher(unittest.TestCase):
             mock_subdir = Path(file, self.test_runtime_default[1])
             mock_subdir.mkdir()
             mock_subdir.joinpath("umu").touch()
+            # Marker indicates a completed install (new logic)
+            mock_subdir.joinpath(".installed.ok").touch()
             # Mock the runtime ver
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
             # Mock our thread and conn pool
