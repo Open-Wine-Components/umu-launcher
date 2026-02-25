@@ -5,21 +5,6 @@ on:
     types: [published]
 
 jobs:
-  fedora41-build:
-    name: Fedora 41 Build
-    uses: ./.github/workflows/build-umu-fedora-41.yml
-    with:
-      version: ${{ github.ref_name }}
-      shasum: ${{ github.sha }}
-  fedora41-release:
-    name: Fedora 41 Release ${{ github.ref_name }}
-    needs: fedora41-build
-    uses: ./.github/workflows/build-umu-publish-release.yml
-    with:
-      version: ${{ github.ref_name }}
-      file1: umu-launcher-${{ github.ref_name }}.fc41.rpm
-      name1: umu-launcher-${{ github.ref_name }}.fc41.rpm
-
   fedora42-build:
     name: Fedora 42 Build
     uses: ./.github/workflows/build-umu-fedora-42.yml
