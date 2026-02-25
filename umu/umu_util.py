@@ -1,5 +1,6 @@
 import errno
 import os
+import platform
 import sys
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -394,60 +395,18 @@ def write_install_marker(runtime_dir: Path) -> None:
     tmp.replace(marker)
 
 
-def looks_like_runtime_install(runtime_dir: Path) -> bool:
-    """Heuristic for backfilling markers on installs created before markers existed."""
-    try:
-        if not runtime_dir.is_dir():
-            return False
-
-        files_dir = runtime_dir / "files"
-        if not files_dir.is_dir():
-            return False
-
-        # Ensure non-empty (avoid marking empty/partial dirs)
-        try:
-            next(files_dir.iterdir())
-        except StopIteration:
-            return False
-
-        # Optional: add stricter signatures if you know the layout
-        # e.g. require usr/bin exists
-        # if not (files_dir / "usr" / "bin").exists():
-        #     return False
-
-        return True
-    except OSError:
-        return False
-
-
-def ensure_install_markers(base: Path) -> None:
-    """Backfill .installed.ok for existing installs."""
-    if not base.exists():
-        return
-
-    try:
-        for entry in base.iterdir():
-            if not entry.is_dir():
-                continue
-            if marker_path(entry).exists():
-                continue
-
-            if looks_like_runtime_install(entry):
-                # Only mark if it appears complete enough
-                write_install_marker(entry)
-    except OSError:
-        # If base is unreadable, don't treat as installed.
-        return
-
-
-def has_umu_setup(path: Path = UMU_LOCAL) -> bool:
+def has_umu_setup(runtimes: dict, path: Path = UMU_LOCAL) -> bool:
     """Check if umu has been setup in our runtime directory."""
     if not path.exists():
         return False
 
     try:
-        for entry in path.iterdir():
-            if entry.is_dir() and has_runtime_installed(entry):
+        for _, rt in runtimes.items():
+            if (
+                rt.machine == platform.machine()
+                and rt.path.is_dir()
+                and has_runtime_installed(rt.path)
+            ):
                 return True
     except OSError:
         return False

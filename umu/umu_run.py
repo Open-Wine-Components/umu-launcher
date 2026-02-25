@@ -46,12 +46,10 @@ from umu.umu_runtime import (
     RUNTIME_NAMES,
     RUNTIME_VERSIONS,
     CompatLayer,
-    check_runtime,
     create_shim,
     setup_umu,
 )
 from umu.umu_util import (
-    ensure_install_markers,
     get_libc,
     get_library_paths,
     has_runtime_installed,
@@ -381,9 +379,7 @@ def build_command(
                 raise FileNotFoundError(msg)
             exe_path = resolved
 
-        with Popen(
-            [exe_path, "--list"], stdout=PIPE, stderr=PIPE
-        ) as proc:  # nosec B603
+        with Popen([exe_path, "--list"], stdout=PIPE, stderr=PIPE) as proc:  # nosec B603
             out, err = proc.communicate()
         bus_names = out.decode("utf-8").splitlines()
         pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
@@ -781,9 +777,7 @@ def resolve_runtime() -> RuntimeVersion | None:
         layer = CompatLayer(toolmanifest.parent, Path())
         runtime = layer.required_runtime
     else:
-        err: str = (
-            f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
-        )
+        err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
         raise FileNotFoundError(err)
 
     return runtime.as_tuple()
@@ -799,11 +793,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
     See umu(1) for details on other configuration options.
     """
-    # Ensure base runtime directory exists and backfill markers for older installs
-    # BEFORE we do prereq checks that rely on has_umu_setup().
-    UMU_LOCAL.mkdir(parents=True, exist_ok=True)
-    ensure_install_markers(UMU_LOCAL)
-
     env: dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
@@ -848,7 +837,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             sock.connect(("1.1.1.1", 53))
         prereq = True
     except TimeoutError:  # Request to a server timed out
-        if not has_umu_setup():
+        if not has_umu_setup(RUNTIME_VERSIONS):
             err: str = (
                 "umu has not been setup for the user\n"
                 "An internet connection is required to setup umu"
@@ -859,7 +848,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     except OSError as e:  # No internet
         if e.errno != ENETUNREACH:
             raise
-        if not has_umu_setup():
+        if not has_umu_setup(RUNTIME_VERSIONS):
             err: str = (
                 "umu has not been setup for the user\n"
                 "An internet connection is required to setup umu"
@@ -920,6 +909,9 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     else:
         timeouts = NET_TIMEOUT
 
+    # ensure base directory exists
+    UMU_LOCAL.mkdir(parents=True, exist_ok=True)
+
     thread_pool = ThreadPoolExecutor()
     http_pool = PoolManager(
         timeout=Timeout(connect=timeouts, read=timeouts),
@@ -943,10 +935,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             try:
                 future.result()
             except HTTPError as e:
-                if (
-                    not has_runtime_installed(UMU_LOCAL / runtime_variant)
-                    or check_runtime(UMU_LOCAL / runtime_variant, runtime_version) != 0
-                ):
+                if not has_runtime_installed(UMU_LOCAL / runtime_variant):
                     err: str = (
                         "umu has not been setup for the user\n"
                         "An internet connection is required to setup umu"
