@@ -436,6 +436,7 @@ def _renameat2(
     err = get_errno()
     raise OSError(err, os.strerror(err), oldpath, None, newpath)
 
+
 def _renameat2_fallback(src: os.PathLike, dest: os.PathLike, flags: int) -> None:
     """Fallback implementation for renameat2.
 
@@ -476,6 +477,7 @@ def _renameat2_fallback(src: os.PathLike, dest: os.PathLike, flags: int) -> None
 
     raise OSError(errno.ENOTSUP, "renameat2 flags not supported by fallback")
 
+
 @contextmanager
 def _split_dirfd(path: os.PathLike) -> Generator[tuple[int, str], Any, None]:
     fd: int | None = None
@@ -505,6 +507,7 @@ def renameat2(src: os.PathLike, dest: os.PathLike, flags: Renameat2) -> None:
                 _renameat2_fallback(src, dest, flags)
                 return
             raise
+
 
 def exchange(src: os.PathLike, dest: os.PathLike) -> None:
     """Atomically exchange paths between two files."""

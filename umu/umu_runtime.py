@@ -76,7 +76,9 @@ def _install_umu(
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    base_url: str = f"https://repo.steampowered.com/{variant.removesuffix('-arm64')}/images/latest-public-beta/"
+    base_url: str = (
+        f"https://repo.steampowered.com/{variant.removesuffix('-arm64')}/images/latest-public-beta/"
+    )
     token: str = f"?versions={token_urlsafe(16)}"
     host: str = "repo.steampowered.com"
 
@@ -190,8 +192,14 @@ def _install_umu(
                         if trial == attempts - 1:
                             raise e
                         log.debug(e)
-                        log.info("Connection broken, trying to resume %s (retry %s)", parts, trial + 1)
-                        headers = {"Range": f"bytes={parts.stat().st_size}-", }
+                        log.info(
+                            "Connection broken, trying to resume %s (retry %s)",
+                            parts,
+                            trial + 1,
+                        )
+                        headers = {
+                            "Range": f"bytes={parts.stat().st_size}-",
+                        }
                         resp = http_pool.request(
                             HTTPMethod.GET.value,
                             f"{host}{endpoint}/{archive}{token}",
@@ -313,7 +321,13 @@ def _update_umu(
             local,
             runtime_ver,
             session_pools,
-            lambda: len([file for file in local.glob(f"{_codename}_platform_*") if file.is_dir()])
+            lambda: len(
+                [
+                    file
+                    for file in local.glob(f"{_codename}_platform_*")
+                    if file.is_dir()
+                ]
+            )
             > 0,
         )
         return
@@ -371,7 +385,9 @@ def check_runtime(src: Path, runtime_ver: RuntimeVersion) -> int:
     # Find the runtime directory
     _codename = codename.removesuffix("-arm64")
     try:
-        runtime = max(file for file in src.glob(f"{_codename}_platform_*") if file.is_dir())
+        runtime = max(
+            file for file in src.glob(f"{_codename}_platform_*") if file.is_dir()
+        )
     except ValueError:
         log.critical("%s validation failed", variant)
         log.critical("Could not find %s_platform_* in '%s'", _codename, src)
@@ -463,7 +479,11 @@ class UmuRuntime:
 
     def __bool__(self) -> bool:
         """Return if the runtime's path has been populated."""
-        return self.path is not None and self.path.is_dir() and self.path.joinpath("mtree.txt.gz").is_file()
+        return (
+            self.path is not None
+            and self.path.is_dir()
+            and self.path.joinpath("mtree.txt.gz").is_file()
+        )
 
     def as_tuple(self) -> RuntimeVersion:
         """Return runtime information as tuple."""
@@ -474,13 +494,15 @@ RUNTIME_VERSIONS = {
     "host": UmuRuntime("host", "", ""),
 }
 
-RUNTIME_VERSIONS.update({
-    "1391110": UmuRuntime("soldier",        "steamrt2",       "1391110"),
-    "1628350": UmuRuntime("sniper",         "steamrt3",       "1628350"),
-    "3810310": UmuRuntime("sniper-arm64",   "steamrt3-arm64", "3810310"),
-    "4183110": UmuRuntime("steamrt4",       "steamrt4",       "4183110"),
-    "4185400": UmuRuntime("steamrt4-arm64", "steamrt4-arm64", "4185400"),
-})
+RUNTIME_VERSIONS.update(
+    {
+        "1391110": UmuRuntime("soldier", "steamrt2", "1391110"),
+        "1628350": UmuRuntime("sniper", "steamrt3", "1628350"),
+        "3810310": UmuRuntime("sniper-arm64", "steamrt3-arm64", "3810310"),
+        "4183110": UmuRuntime("steamrt4", "steamrt4", "4183110"),
+        "4185400": UmuRuntime("steamrt4-arm64", "steamrt4-arm64", "4185400"),
+    }
+)
 
 if platform.machine() == "x86_64":  # noqa: SIM114
     pass
@@ -512,7 +534,9 @@ class CompatLayer:
             with path.joinpath("compatibilitytool.vdf").open(encoding="utf-8") as f:
                 # There can be multiple tools definitions in `compatibilitytools.vdf`
                 # Take the first one and hope it is the one with the correct display_name
-                compat_tools = tuple(vdf.load(f)["compatibilitytools"]["compat_tools"].values())
+                compat_tools = tuple(
+                    vdf.load(f)["compatibilitytools"]["compat_tools"].values()
+                )
                 self.compatibility_tool = compat_tools[0]
         else:
             self.compatibility_tool = {"display_name": path.name}
@@ -522,7 +546,10 @@ class CompatLayer:
 
     def _resolve(self, shim: Path) -> "CompatLayer | None":
         """Construct and provide the concrete CompatLayer this layer depends on."""
-        if self.required_tool_appid is not None and self.required_runtime.path is not None:
+        if (
+            self.required_tool_appid is not None
+            and self.required_runtime.path is not None
+        ):
             return CompatLayer(self.required_runtime.path, shim)
         return None
 
@@ -536,7 +563,9 @@ class CompatLayer:
     @property
     def required_tool_appid(self) -> str | None:
         """Report the appid of the tool this CompatLayer requires."""
-        return str(ret) if (ret := self.tool_manifest.get("require_tool_appid")) else None
+        return (
+            str(ret) if (ret := self.tool_manifest.get("require_tool_appid")) else None
+        )
 
     @property
     def required_runtime(self) -> UmuRuntime:
@@ -547,7 +576,11 @@ class CompatLayer:
 
     @property
     def layer_name(self) -> str:  # noqa: D102
-        return str(ret) if (ret := self.tool_manifest.get("compatmanager_layer_name")) else ""
+        return (
+            str(ret)
+            if (ret := self.tool_manifest.get("compatmanager_layer_name"))
+            else ""
+        )
 
     @property
     def launcher_service(self) -> str:
@@ -574,7 +607,9 @@ class CompatLayer:
     @property
     def display_name(self) -> str | None:
         """Report the name of this CompatLayer as set in its manifest."""
-        return str(ret) if (ret := self.compatibility_tool.get("display_name")) else None
+        return (
+            str(ret) if (ret := self.compatibility_tool.get("display_name")) else None
+        )
 
     @property
     def has_runtime(self) -> bool:
@@ -596,8 +631,16 @@ class CompatLayer:
 
         If the runtime uses another runtime, its entry point is prepended to the local command.
         """
-        log.info("Running '%s' using runtime '%s'", self.display_name, self.required_runtime.name)
-        cmd = self.runtime.command(verb, unwrapped=False) if self.runtime is not None else []
+        log.info(
+            "Running '%s' using runtime '%s'",
+            self.display_name,
+            self.required_runtime.name,
+        )
+        cmd = (
+            self.runtime.command(verb, unwrapped=False)
+            if self.runtime is not None
+            else []
+        )
         target = self._unwrapped_cmd(verb)
         if self.layer_name == "container-runtime":
             cmd.extend([*target, self._shim.as_posix()])
@@ -607,7 +650,7 @@ class CompatLayer:
             cmd.extend(target)
         return cmd
 
-    def command(self, verb:str, *, unwrapped: bool) -> list[str]:
+    def command(self, verb: str, *, unwrapped: bool) -> list[str]:
         """Return the tool's fully qualified (wrapped) or tool specific (unwrapped) entry point."""
         if unwrapped:
             return self._unwrapped_cmd(verb)
@@ -615,4 +658,3 @@ class CompatLayer:
 
     def as_str(self, verb: str):  # noqa: D102
         return " ".join(map(shlex.quote, self.command(verb, unwrapped=False)))
-

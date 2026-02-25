@@ -7,9 +7,8 @@ import unittest
 from argparse import Namespace
 from pathlib import Path
 from shutil import copy, copytree, rmtree
-from unittest.mock import MagicMock, patch
-
 from tomllib import TOMLDecodeError
+from unittest.mock import MagicMock, patch
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -101,17 +100,27 @@ class TestGameLauncherPlugins(unittest.TestCase):
                 "compatmanager_layer_name": "container-runtime",
             }
         }
-        Path(self.test_user_share, "toolmanifest.vdf").write_text(vdf.dumps(mock_steamrt_toolmanifest))
+        Path(self.test_user_share, "toolmanifest.vdf").write_text(
+            vdf.dumps(mock_steamrt_toolmanifest)
+        )
 
         # Mock pressure vessel
         Path(self.test_user_share, "pressure-vessel").mkdir()
         Path(self.test_user_share, "pressure-vessel", "foo").touch()
         Path(self.test_user_share, "pressure-vessel", "bin").mkdir()
         Path(self.test_user_share, "pressure-vessel", "bin", "pv-verify").touch()
-        Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client").write_text(
-            "#!/bin/sh\nexec \"$@\"\n"
-        )
-        Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client").chmod(0o700)
+        Path(
+            self.test_user_share,
+            "pressure-vessel",
+            "bin",
+            "steam-runtime-launch-client",
+        ).write_text('#!/bin/sh\nexec "$@"\n')
+        Path(
+            self.test_user_share,
+            "pressure-vessel",
+            "bin",
+            "steam-runtime-launch-client",
+        ).chmod(0o700)
 
         # Mock umu-launcher
         Path(self.test_user_share, "umu-launcher").mkdir()
@@ -213,9 +222,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Mock setting up the runtime
         # Don't copy _v2-entry-point
-        with (
-            patch.object(umu_runtime, "_install_umu", return_value=None),
-        ):
+        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_version,
@@ -241,7 +248,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "toolmanifest.vdf"):
-            umu_run.build_command(self.env, umu_runtime.CompatLayer(Path(self.test_local_share_parent), Path()))
+            umu_run.build_command(
+                self.env,
+                umu_runtime.CompatLayer(Path(self.test_local_share_parent), Path()),
+            )
 
     def test_build_command_proton(self):
         """Test build_command.
@@ -286,9 +296,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             umu_run.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
-        with (
-            patch.object(umu_runtime, "_install_umu", return_value=None),
-        ):
+        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_version,
@@ -318,7 +326,10 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         with self.assertRaisesRegex(FileNotFoundError, "toolmanifest.vdf"):
-            umu_run.build_command(self.env, umu_runtime.CompatLayer(Path(self.test_local_share_parent), Path()))
+            umu_run.build_command(
+                self.env,
+                umu_runtime.CompatLayer(Path(self.test_local_share_parent), Path()),
+            )
 
     def test_build_command_toml(self):
         """Test build_command.
@@ -358,7 +369,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         )
         mock_toolmanifest = {
             "manifest": {
-                "version":"2",
+                "version": "2",
                 "commandline": "/proton %verb%",
                 "require_tool_appid": "1628350",
                 "use_sessions": "1",
@@ -394,9 +405,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
             umu_run.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
-        with (
-            patch.object(umu_runtime, "_install_umu", return_value=None),
-        ):
+        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_version,
@@ -427,27 +436,38 @@ class TestGameLauncherPlugins(unittest.TestCase):
             Path(self.test_local_share, "pressure-vessel").mkdir(exist_ok=True)
             Path(self.test_local_share, "pressure-vessel", "bin").mkdir(exist_ok=True)
             copy(
-                Path(self.test_user_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
-                Path(self.test_local_share, "pressure-vessel", "bin", "steam-runtime-launch-client"),
+                Path(
+                    self.test_user_share,
+                    "pressure-vessel",
+                    "bin",
+                    "steam-runtime-launch-client",
+                ),
+                Path(
+                    self.test_local_share,
+                    "pressure-vessel",
+                    "bin",
+                    "steam-runtime-launch-client",
+                ),
             )
 
         for key, val in self.env.items():
             os.environ[key] = val
 
         # Build
-        mock_runtime = umu_runtime.UmuRuntime("sniper",  "steamrt3", "1628350", self.test_local_share)
+        mock_runtime = umu_runtime.UmuRuntime(
+            "sniper", "steamrt3", "1628350", self.test_local_share
+        )
         with patch("umu.umu_runtime.CompatLayer.required_runtime", mock_runtime):
             test_command = umu_run.build_command(
-                self.env, umu_runtime.CompatLayer(Path(self.env["PROTONPATH"]), shim_path)
+                self.env,
+                umu_runtime.CompatLayer(Path(self.env["PROTONPATH"]), shim_path),
             )
 
         # Verify contents of the command
         entry_point, verb, opt2, shim, proton, verb2, exe = [*test_command]
         # The entry point dest could change. Just check if there's a value
         self.assertTrue(entry_point, "Expected an entry point")
-        self.assertIsInstance(
-            entry_point, str, "Expected entry point to be str"
-        )
+        self.assertIsInstance(entry_point, str, "Expected entry point to be str")
         self.assertEqual(verb, "--verb=waitforexitandrun", "Expected a verb")
         self.assertEqual(opt2, "--", "Expected --")
         self.assertIsInstance(shim, str, "Expected shim to be str")

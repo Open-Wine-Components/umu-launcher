@@ -114,13 +114,17 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
     When 'PROTONPATH' is 'umu-soldier' or 'umu-sniper', create a shim compatibility
     tool that requires the respective runtime and launches the application in that runtime.
     """
-    if not (name and name in {
-        ProtonVersion.UMUSoldier.value,
-        ProtonVersion.UMUSniper.value,
-        ProtonVersion.UMUSniper_arm64.value,
-        ProtonVersion.UMUSteamRT4.value,
-        ProtonVersion.UMUSteamRT4_arm64.value,
-    }):
+    if not (
+        name
+        and name
+        in {
+            ProtonVersion.UMUSoldier.value,
+            ProtonVersion.UMUSniper.value,
+            ProtonVersion.UMUSniper_arm64.value,
+            ProtonVersion.UMUSteamRT4.value,
+            ProtonVersion.UMUSteamRT4_arm64.value,
+        }
+    ):
         return None
 
     rt_appid = RUNTIME_VERSIONS[RUNTIME_NAMES[name.removeprefix("umu-")]].appid
@@ -137,11 +141,16 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
             return env
         shutil.rmtree(tool_path)
 
-    entry_point = "#!/bin/sh\nexec \"$@\"\n"
+    entry_point = '#!/bin/sh\nexec "$@"\n'
     compatibilitytool = {
         "compatibilitytools": {
             "compat_tools": {
-                name: {"display_name": name, "install_path": ".", "from_oslist": "linux", "to_oslist": "linux",}
+                name: {
+                    "display_name": name,
+                    "install_path": ".",
+                    "from_oslist": "linux",
+                    "to_oslist": "linux",
+                }
             }
         }
     }
@@ -172,6 +181,7 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
     os.environ["PROTONPATH"] = str(tool_path)
     env["PROTONPATH"] = str(tool_path)
     return env
+
 
 def _fetch_patch(session_pools: SessionPools) -> bytes:
     resp: BaseHTTPResponse
@@ -259,9 +269,9 @@ def _fetch_releases(
             digest_asset = (release["name"], release["browser_download_url"])
             asset_count += 1
             continue
-        if release["name"].endswith(("tar.gz", "tar.xz")) and release["name"].startswith(
-            ("UMU-Proton", "GE-Proton", "umu-scout")
-        ):
+        if release["name"].endswith(("tar.gz", "tar.xz")) and release[
+            "name"
+        ].startswith(("UMU-Proton", "GE-Proton", "umu-scout")):
             proton_asset = (release["name"], release["browser_download_url"])
             asset_count += 1
             continue
@@ -295,7 +305,9 @@ def _fetch_proton(
     hashsum = sha512()
 
     # Verify the scheme from Github for resources
-    parsed_proton_hash_url: urllib.parse.ParseResult = urllib.parse.urlparse(proton_hash_url)
+    parsed_proton_hash_url: urllib.parse.ParseResult = urllib.parse.urlparse(
+        proton_hash_url
+    )
     parsed_tar_url: urllib.parse.ParseResult = urllib.parse.urlparse(tar_url)
     if parsed_tar_url.scheme != "https" or parsed_proton_hash_url.scheme != "https":
         err: str = f"Scheme in URLs is not 'https:': {(tar_url, proton_hash_url)}"
@@ -474,7 +486,7 @@ def _get_latest(
     latest_candidates = {
         ProtonVersion.GELatest.value,
         ProtonVersion.UMULatest.value,
-        ProtonVersion.UMUScout.value
+        ProtonVersion.UMUScout.value,
     }
 
     if os.environ.get("PROTONPATH") in {member.value for member in ProtonVersion}:

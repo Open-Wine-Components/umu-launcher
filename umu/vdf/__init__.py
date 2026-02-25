@@ -25,6 +25,7 @@ if sys.version_info[0] >= 3:
 
     def strip_bom(line):
         return line.lstrip(BOMS)
+
 else:
     from StringIO import StringIO as strIO
 

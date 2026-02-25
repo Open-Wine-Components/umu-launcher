@@ -3,7 +3,6 @@ import os
 import signal
 import sys
 import threading
-from _ctypes import CFuncPtr
 from argparse import Namespace
 from array import array
 from collections.abc import Generator, MutableMapping
@@ -20,6 +19,7 @@ from subprocess import PIPE, Popen
 from types import FrameType
 from typing import Any
 
+from _ctypes import CFuncPtr
 from urllib3 import PoolManager, Retry
 from urllib3.exceptions import HTTPError
 from urllib3.util import Timeout
@@ -151,11 +151,15 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
 
     # Proton Codename
     if os.environ.get("PROTONPATH") in {
-        "GE-Proton", "GE-Latest", "UMU-Latest",
+        "GE-Proton",
+        "GE-Latest",
+        "UMU-Latest",
         "umu-scout",
         "umu-soldier",
-        "umu-sniper", "umu-sniper-arm64",
-        "umu-steamrt4", "umu-steamrt4-arm64",
+        "umu-sniper",
+        "umu-sniper-arm64",
+        "umu-steamrt4",
+        "umu-steamrt4-arm64",
     }:
         do_download = True
 
@@ -168,7 +172,12 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
     return env, do_download
 
 
-def download_proton(env: dict[str, str], session_pools: tuple[ThreadPoolExecutor, PoolManager], *, download: bool) -> None:
+def download_proton(
+    env: dict[str, str],
+    session_pools: tuple[ThreadPoolExecutor, PoolManager],
+    *,
+    download: bool,
+) -> None:
     """Check if umu should download proton and check if PROTONPATH is set.
 
     I am not gonna lie about it, this only exists to satisfy the tests, because downloading
@@ -198,9 +207,9 @@ def set_env(
     # Command execution usage, but client wants to create a prefix. When an
     # empty string is the executable, Proton is expected to create the prefix
     # but will fail because the executable is not found
-    is_createpfx: bool = (
-        (is_cmd and not args[0]) or (is_cmd and args[0] == "createprefix")  # type: ignore
-    )
+    is_createpfx: bool = (is_cmd and not args[0]) or (
+        is_cmd and args[0] == "createprefix"
+    )  # type: ignore
     # Command execution usage, but client wants to run winetricks verbs
     is_winetricks: bool = is_cmd and args[0] == "winetricks"  # type: ignore
 
@@ -257,7 +266,9 @@ def set_env(
     env["SteamGameId"] = env["SteamAppId"]
     env["UMU_INVOCATION_ID"] = token_hex(16)
 
-    runtime_path = f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}" if os.environ['RUNTIMEPATH'] else ""
+    runtime_path = (
+        f"{UMU_LOCAL}/{os.environ['RUNTIMEPATH']}" if os.environ["RUNTIMEPATH"] else ""
+    )
 
     # PATHS
     env["WINEPREFIX"] = str(pfx)
@@ -268,9 +279,11 @@ def set_env(
     env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}"
     env["STEAM_COMPAT_SHADER_PATH"] = str(pfx.joinpath("shadercache"))
     env["PROTONPATH"] = str(protonpath)
-    env["STEAM_COMPAT_TOOL_PATHS"] = ":".join(
-        [f"{str(protonpath)}", runtime_path]
-    ) if runtime_path else f"{str(protonpath)}"
+    env["STEAM_COMPAT_TOOL_PATHS"] = (
+        ":".join([f"{str(protonpath)}", runtime_path])
+        if runtime_path
+        else f"{str(protonpath)}"
+    )
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
 
     # Zenity
@@ -704,7 +717,9 @@ def resolve_runtime() -> RuntimeVersion | None:
         "steamrt3": "umu-sniper",
         "steamrt4": "umu-steamrt4",
     }
-    if os.environ.get("RUNTIMEPATH") and (os.environ.get("UMU_NO_PROTON") or not os.environ.get("PROTONPATH")):
+    if os.environ.get("RUNTIMEPATH") and (
+        os.environ.get("UMU_NO_PROTON") or not os.environ.get("PROTONPATH")
+    ):
         os.environ["PROTONPATH"] = runtimepath_compat[os.environ.get("RUNTIMEPATH", "")]
 
     # default to UMU-Latest if PROTONPATH is not set
@@ -742,7 +757,9 @@ def resolve_runtime() -> RuntimeVersion | None:
         layer = CompatLayer(toolmanifest.parent, Path())
         runtime = layer.required_runtime
     else:
-        err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
+        err: str = (
+            f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
+        )
         raise FileNotFoundError(err)
 
     return runtime.as_tuple()
@@ -922,7 +939,9 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
         # Prepare the prefix
         if layer.is_proton:
-            compat_path: Path = Path(env["WINEPREFIX"]).expanduser().resolve(strict=False)
+            compat_path: Path = (
+                Path(env["WINEPREFIX"]).expanduser().resolve(strict=False)
+            )
             with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
                 setup_pfx(compat_path)
 

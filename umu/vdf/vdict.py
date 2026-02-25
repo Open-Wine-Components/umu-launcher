@@ -18,6 +18,7 @@ if sys.version_info[0] >= 3:
     class _iView(_c.ItemsView):
         def __iter__(self):
             return self._mapping.iteritems()
+
 else:
     _iter_values = "itervalues"
     _range = xrange
