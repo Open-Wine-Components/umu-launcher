@@ -25,6 +25,9 @@ from Xlib import display
 from umu.umu_consts import TMPFS_MIN, UMU_CACHE, UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
 from umu.umu_log import log
 
+INSTALL_MARKER = ".installed.ok"
+INSTALL_MARKER_TMP = ".installed.ok.tmp"
+
 
 class Renameat2(IntFlag):
     """Represent a supported bit mask flag for renameat2.
@@ -370,11 +373,86 @@ def extract_tarfile(path: Path, dest: Path) -> Path | None:
     return dest
 
 
+def marker_path(runtime_dir: Path) -> Path:
+    """Return install marker path."""
+    return runtime_dir / INSTALL_MARKER
+
+
+def has_runtime_installed(runtime_dir: Path) -> bool:
+    """Return True if the runtime has completed installation."""
+    try:
+        return marker_path(runtime_dir).is_file()
+    except OSError:
+        return False
+
+
+def write_install_marker(runtime_dir: Path) -> None:
+    """Write the install marker atomically-ish after successful install."""
+    marker = marker_path(runtime_dir)
+    tmp = runtime_dir / INSTALL_MARKER_TMP
+    tmp.write_text("ok\n", encoding="utf-8")
+    tmp.replace(marker)
+
+
+def looks_like_runtime_install(runtime_dir: Path) -> bool:
+    """Heuristic for backfilling markers on installs created before markers existed."""
+    try:
+        if not runtime_dir.is_dir():
+            return False
+
+        files_dir = runtime_dir / "files"
+        if not files_dir.is_dir():
+            return False
+
+        # Ensure non-empty (avoid marking empty/partial dirs)
+        try:
+            next(files_dir.iterdir())
+        except StopIteration:
+            return False
+
+        # Optional: add stricter signatures if you know the layout
+        # e.g. require usr/bin exists
+        # if not (files_dir / "usr" / "bin").exists():
+        #     return False
+
+        return True
+    except OSError:
+        return False
+
+
+def ensure_install_markers(base: Path) -> None:
+    """Backfill .installed.ok for existing installs."""
+    if not base.exists():
+        return
+
+    try:
+        for entry in base.iterdir():
+            if not entry.is_dir():
+                continue
+            if marker_path(entry).exists():
+                continue
+
+            if looks_like_runtime_install(entry):
+                # Only mark if it appears complete enough
+                write_install_marker(entry)
+    except OSError:
+        # If base is unreadable, don't treat as installed.
+        return
+
+
 def has_umu_setup(path: Path = UMU_LOCAL) -> bool:
     """Check if umu has been setup in our runtime directory."""
-    return path.exists() and any(
-        file for file in path.glob("**/*") if file.is_file() and not file.name.endswith("lock")
-    )
+    if not path.exists():
+        return False
+
+    try:
+        for entry in path.iterdir():
+            if entry.is_dir() and has_runtime_installed(entry):
+                return True
+    except OSError:
+        return False
+
+    return False
 
 
 # Copyright (C) 2005-2010   Gregory P. Smith (greg@krypto.org)

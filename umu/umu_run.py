@@ -51,8 +51,10 @@ from umu.umu_runtime import (
     setup_umu,
 )
 from umu.umu_util import (
+    ensure_install_markers,
     get_libc,
     get_library_paths,
+    has_runtime_installed,
     has_umu_setup,
     is_installed_verb,
     unix_flock,
@@ -797,6 +799,11 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
     See umu(1) for details on other configuration options.
     """
+    # Ensure base runtime directory exists and backfill markers for older installs
+    # BEFORE we do prereq checks that rely on has_umu_setup().
+    UMU_LOCAL.mkdir(parents=True, exist_ok=True)
+    ensure_install_markers(UMU_LOCAL)
+
     env: dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
@@ -913,9 +920,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     else:
         timeouts = NET_TIMEOUT
 
-    # ensure base directory exists
-    UMU_LOCAL.mkdir(parents=True, exist_ok=True)
-
     thread_pool = ThreadPoolExecutor()
     http_pool = PoolManager(
         timeout=Timeout(connect=timeouts, read=timeouts),
@@ -940,7 +944,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
                 future.result()
             except HTTPError as e:
                 if (
-                    not has_umu_setup()
+                    not has_runtime_installed(UMU_LOCAL / runtime_variant)
                     or check_runtime(UMU_LOCAL / runtime_variant, runtime_version) != 0
                 ):
                     err: str = (

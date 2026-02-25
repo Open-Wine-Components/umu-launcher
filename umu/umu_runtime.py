@@ -20,14 +20,16 @@ from umu import vdf
 from umu.umu_consts import UMU_CACHE, UMU_LOCAL, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
+    ensure_install_markers,
     exchange,
     extract_tarfile,
     file_digest,
     get_tempdir,
-    has_umu_setup,
+    has_runtime_installed,
     run_zenity,
     unix_flock,
     write_file_chunks,
+    write_install_marker,
 )
 
 RuntimeVersion = tuple[str, str, str]
@@ -252,11 +254,15 @@ def _install_umu(
         exchange(Path(tempdir, steamrt), local)
 
         # Validate and post-install
+        ok = False
         try:
             check_runtime(local, runtime_ver)
+            ok = True
         finally:
             log.debug("Linking: umu -> _v2-entry-point")
             local.joinpath("umu").symlink_to("_v2-entry-point")
+        if ok:
+            write_install_marker(local)
 
 
 def setup_umu(
@@ -265,8 +271,12 @@ def setup_umu(
     """Install or update the runtime for the current user."""
     log.debug("Local: %s", local)
 
-    # New install or umu dir is empty
-    if not has_umu_setup(local):
+    # Backfill markers for installs created before markers existed.
+    # local.parent is the base runtime install directory (e.g., UMU_LOCAL).
+    ensure_install_markers(local.parent)
+
+    # New install (or previously-installed runtime missing marker)
+    if not has_runtime_installed(local):
         log.debug("New install detected")
         log.info("Setting up Unified Launcher for Windows Games on Linux...")
         local.mkdir(parents=True, exist_ok=True)
@@ -274,7 +284,8 @@ def setup_umu(
             local,
             runtime_ver,
             session_pools,
-            lambda: local.joinpath("umu").is_file(),
+            # If marker is present, a successful install already occurred.
+            lambda: has_runtime_installed(local),
         )
         log.info("Using %s (latest)", runtime_ver[1])
         return
