@@ -61,7 +61,7 @@ jobs:
       run: cd results && ln -s umu-run umu_run.py && mkdir umu && mv umu-run umu/ && mv umu_run.py umu/ && tar cvf umu-launcher-${{ env.VERSION }}-zipapp.tar umu/
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: umu-launcher-${{ env.VERSION }}-zipapp.tar
         path: results/umu-launcher-${{ env.VERSION }}-zipapp.tar
