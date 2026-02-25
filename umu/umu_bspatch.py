@@ -173,9 +173,7 @@ class CustomPatcher:
                 continue
             if item["type"] == FileType.Dir.value:
                 # For directories, change permissions
-                os.chmod(
-                    build_file, item["mode"], follow_symlinks=False
-                )  # noqa: PTH101
+                build_file.chmod(item["mode"], follow_symlinks=False)
                 continue
             if item["type"] == FileType.Link.value:
                 # For links, replace the links

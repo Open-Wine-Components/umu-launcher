@@ -25,9 +25,11 @@ dynamic = ["version"]
 description = "Unified Linux Wine Game Launcher."
 authors = [
   {name = "GloriousEggroll", email = "gloriouseggroll@gmail.com"},
-  {name = "Mathieu Comandon", email = "strycore@gmail.com"},
+  {name = "R1kaB3rN", email = "100738684+R1kaB3rN@users.noreply.github.com"},
   {name = "Paweł Lidwin", email = "lidwinpawel@gmail.com"},
-  {name = "mirkobrombin", email = "send@mirko.pm"},
+  {name = "CommandMC", email = "kate@commandmc.de"},
+  {name = "Stelios Tsampas", email = "loathingkernel@users.noreply.github.com"},
+  {name = "Mathieu Comandon", email = "strycore@gmail.com"},
   {name = "Flavio F Lima", email = "flavioislima@users.noreply.github.com"}
 ]
 maintainers = [
@@ -122,7 +124,7 @@ format = {composite = [
   "isort --settings-path ./pyproject.toml umu/ tests/",
   "toml-sort -i ./pyproject.toml"
 ]}
-lint-fix = "ruff check --config ./pyproject.toml . --fix"
+lint-check = "ruff check --config ./pyproject.toml umu/ --fix"
 type-check = "mypy --config-file ./pyproject.toml --enable-incomplete-feature=NewGenericSyntax umu/"
 
 [tool.pdm.version]
@@ -160,7 +162,8 @@ exclude = [
   "site-packages",
   "venv",
   "builddir",
-  "subprojects"
+  "subprojects",
+  "umu/vdf"
 ]
 # Same as Black.
 line-length = 88
@@ -248,8 +251,6 @@ select = [
   # Prefer refactoring nested if-else to elif
   "PLR5501",
   # Enforce using set literal membership than other data structures
-  "PLR6201",
-  # Prefer creating constants instead of magic values
   "PLR2004",
   # Refactor long equality expressions to membership tests
   # Example:
@@ -331,7 +332,7 @@ select = [
   # print(E.A == E.B)  # True
   "RUF049",
   # Check for function definitions with boolean positonal arguments/parameters
-  "FBT"
+  "FBT",
 ]
 ignore = [
   # Format
@@ -350,7 +351,9 @@ ignore = [
   "ANN201",
   # Single line implicit concat conflicts with the formatter
   "ISC001",
-  "S404"
+  "S404",
+  # md5 warnings (if any)
+  "S324"
 ]
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]

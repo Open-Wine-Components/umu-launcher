@@ -7,8 +7,9 @@ import unittest
 from argparse import Namespace
 from pathlib import Path
 from shutil import copy, copytree, rmtree
-from tomllib import TOMLDecodeError
 from unittest.mock import MagicMock, patch
+
+from tomllib import TOMLDecodeError
 
 sys.path.append(str(Path(__file__).parent.parent))
 

@@ -3,6 +3,7 @@ import os
 import signal
 import sys
 import threading
+from _ctypes import CFuncPtr
 from argparse import Namespace
 from array import array
 from collections.abc import Generator, MutableMapping
@@ -19,7 +20,6 @@ from subprocess import PIPE, Popen
 from types import FrameType
 from typing import Any
 
-from _ctypes import CFuncPtr
 from urllib3 import PoolManager, Retry
 from urllib3.exceptions import HTTPError
 from urllib3.util import Timeout
@@ -273,7 +273,7 @@ def set_env(
     # PATHS
     env["WINEPREFIX"] = str(pfx)
     env["STEAM_COMPAT_DATA_PATH"] = str(pfx)
-    prefix_md5 = hashlib.md5(str(pfx).encode("utf-8")).hexdigest()  # noqa: S324
+    prefix_md5 = hashlib.md5(str(pfx).encode("utf-8")).hexdigest()
     # proton_md5 = hashlib.md5(str(protonpath).encode("utf-8")).hexdigest()  # noqa: RUF100,S324
     # env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}_{proton_md5}"
     env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}"
