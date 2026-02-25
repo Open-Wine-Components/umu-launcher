@@ -12,7 +12,16 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-latest
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runner }}
     container:
       image: fedora:43
 
@@ -69,11 +78,15 @@ jobs:
           cat packaging/rpm/umu-launcher.spec | grep commit
 
           rpmbuild -ba packaging/rpm/umu-launcher.spec
-          mv ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}*.rpm \
-             ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc43.rpm
 
-      - name: Fedora-43
+          RPMARCH=$(rpm --eval '%{_arch}')
+          echo "RPMARCH=$RPMARCH" >> $GITHUB_ENV
+
+          mv ~/rpmbuild/RPMS/${RPMARCH}/umu-launcher-${{ env.VERSION }}*.rpm \
+             ~/rpmbuild/RPMS/${RPMARCH}/umu-launcher-${{ env.VERSION }}.fc43.${RPMARCH}.rpm
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:
-          name: umu-launcher-${{ env.VERSION }}.fc43.rpm
-          path: ~/rpmbuild/RPMS/x86_64/umu-launcher-${{ env.VERSION }}.fc43.rpm
+          name: umu-launcher-${{ env.VERSION }}.fc43.${{ env.RPMARCH }}.rpm
+          path: ~/rpmbuild/RPMS/${{ env.RPMARCH }}/umu-launcher-${{ env.VERSION }}.fc43.${{ env.RPMARCH }}.rpm

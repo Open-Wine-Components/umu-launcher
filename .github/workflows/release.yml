@@ -11,14 +11,24 @@ jobs:
     with:
       version: ${{ github.ref_name }}
       shasum: ${{ github.sha }}
-  fedora42-release:
-    name: Fedora 42 Release ${{ github.ref_name }}
+
+  fedora42-release-x86_64:
+    name: Fedora 42 Release ${{ github.ref_name }} (x86_64)
     needs: fedora42-build
     uses: ./.github/workflows/build-umu-publish-release.yml
     with:
       version: ${{ github.ref_name }}
-      file1: umu-launcher-${{ github.ref_name }}.fc42.rpm
-      name1: umu-launcher-${{ github.ref_name }}.fc42.rpm
+      file1: umu-launcher-${{ github.ref_name }}.fc42.x86_64.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc42.x86_64.rpm
+
+  fedora42-release-aarch64:
+    name: Fedora 42 Release ${{ github.ref_name }} (aarch64)
+    needs: fedora42-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: umu-launcher-${{ github.ref_name }}.fc42.aarch64.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc42.aarch64.rpm
 
   fedora43-build:
     name: Fedora 43 Build
@@ -26,22 +36,33 @@ jobs:
     with:
       version: ${{ github.ref_name }}
       shasum: ${{ github.sha }}
-  fedora43-release:
-    name: Fedora 43 Release ${{ github.ref_name }}
+
+  fedora43-release-x86_64:
+    name: Fedora 43 Release ${{ github.ref_name }} (x86_64)
     needs: fedora43-build
     uses: ./.github/workflows/build-umu-publish-release.yml
     with:
       version: ${{ github.ref_name }}
-      file1: umu-launcher-${{ github.ref_name }}.fc43.rpm
-      name1: umu-launcher-${{ github.ref_name }}.fc43.rpm
+      file1: umu-launcher-${{ github.ref_name }}.fc43.x86_64.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc43.x86_64.rpm
+
+  fedora43-release-aarch64:
+    name: Fedora 43 Release ${{ github.ref_name }} (aarch64)
+    needs: fedora43-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: umu-launcher-${{ github.ref_name }}.fc43.aarch64.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc43.aarch64.rpm
 
   debian12-build:
     name: Debian 12 Build
     uses: ./.github/workflows/build-umu-debian-12.yml
     with:
       version: ${{ github.ref_name }}
-  debian12-release:
-    name: Debian 12 Release ${{ github.ref_name }}
+
+  debian12-release-amd64:
+    name: Debian 12 Release ${{ github.ref_name }} (amd64)
     needs: debian12-build
     uses: ./.github/workflows/build-umu-publish-release.yml
     with:
@@ -51,13 +72,23 @@ jobs:
       file2: umu-launcher_${{ github.ref_name }}-1_all_debian-12.deb
       name2: umu-launcher_${{ github.ref_name }}-1_all_debian-12.deb
 
+  debian12-release-arm64:
+    name: Debian 12 Release ${{ github.ref_name }} (arm64)
+    needs: debian12-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_debian-12.deb
+      name1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_debian-12.deb
+
   debian13-build:
     name: Debian 13 Build
     uses: ./.github/workflows/build-umu-debian-13.yml
     with:
       version: ${{ github.ref_name }}
-  debian13-release:
-    name: Debian 13 Release ${{ github.ref_name }}
+
+  debian13-release-amd64:
+    name: Debian 13 Release ${{ github.ref_name }} (amd64)
     needs: debian13-build
     uses: ./.github/workflows/build-umu-publish-release.yml
     with:
@@ -67,13 +98,23 @@ jobs:
       file2: umu-launcher_${{ github.ref_name }}-1_all_debian-13.deb
       name2: umu-launcher_${{ github.ref_name }}-1_all_debian-13.deb
 
+  debian13-release-arm64:
+    name: Debian 13 Release ${{ github.ref_name }} (arm64)
+    needs: debian13-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_debian-13.deb
+      name1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_debian-13.deb
+
   ubuntu-noble-build:
     name: Ubuntu 24.04 Build
     uses: ./.github/workflows/build-umu-ubuntu-noble.yml
     with:
       version: ${{ github.ref_name }}
-  ubuntu-noble-release:
-    name: Ubuntu 24.04 Release ${{ github.ref_name }}
+
+  ubuntu-noble-release-amd64:
+    name: Ubuntu 24.04 Release ${{ github.ref_name }} (amd64)
     needs: ubuntu-noble-build
     uses: ./.github/workflows/build-umu-publish-release.yml
     with:
@@ -83,13 +124,23 @@ jobs:
       file2: umu-launcher_${{ github.ref_name }}-1_all_ubuntu-noble.deb
       name2: umu-launcher_${{ github.ref_name }}-1_all_ubuntu-noble.deb
 
+  ubuntu-noble-release-arm64:
+    name: Ubuntu 24.04 Release ${{ github.ref_name }} (arm64)
+    needs: ubuntu-noble-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_ubuntu-noble.deb
+      name1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_ubuntu-noble.deb
+
   zipapp-build:
     name: Zipapp Build
     uses: ./.github/workflows/build-umu-zipapp.yml
     with:
       version: ${{ github.ref_name }}
+
   zipapp-release:
-    name: Zippapp Release ${{ github.ref_name }}
+    name: Zipapp Release ${{ github.ref_name }}
     needs: zipapp-build
     uses: ./.github/workflows/build-umu-publish-release.yml
     with:

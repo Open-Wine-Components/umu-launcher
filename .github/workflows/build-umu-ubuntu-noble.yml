@@ -9,7 +9,16 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runner }}
     container:
       image: ubuntu:noble
       volumes:
@@ -17,69 +26,75 @@ jobs:
       options: --privileged -it
 
     steps:
-    - name: Update APT Cache
-      run: apt update -y
+      - name: Update APT Cache
+        run: apt update -y
 
-    - name: Install build dependencies
-      run: apt install -y dh-make dpkg-dev git
+      - name: Install build dependencies
+        run: apt install -y dh-make dpkg-dev git
 
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-    - name: Configure Git safe directory
-      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-    - name: Extract Version and SHA
-      run: |
-        # Get version from git tags (assuming semantic versioning format)
-        VERSION=$(git describe --tags --abbrev=0 || echo "unknown")
-        echo $VERSION
+      - name: Extract Version and SHA
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 || echo "unknown")
+          echo $VERSION
 
-        # Get current commit SHA
-        COMMIT_SHA=$(git rev-parse HEAD)
-        echo $COMMIT_SHA
+          # Get current commit SHA
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo $COMMIT_SHA
 
-        # Store values in environment file
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+          # Store values in environment file
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+          sed -i "s|^VERSION := .*$|VERSION := ${VERSION}|g" Makefile.in
 
-        # Always insert latest version into Makefile.in
-        sed -i "s|^VERSION := .*$|VERSION := ${VERSION}|g" Makefile.in
+          # Always insert latest version into Makefile.in
+          sed -i "s|^VERSION := .*$|VERSION := ${VERSION}|g" Makefile.in
 
-    - name: Initialize submodules
-      run: git submodule update --init --recursive
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
 
-    - name: Copy debian packaging folder to the repository root
-      run: cp -rvf ./packaging/deb/ubuntu ./debian
+      - name: Copy debian packaging folder to the repository root
+        run: cp -rvf ./packaging/deb/ubuntu ./debian
 
-    - name: Setup dh_make quilt files
-      run: |
-        sed -re 's|(umu-launcher \()[1-9.]+(-1\).*$)|\1${{ env.VERSION }}\2|' -i ./debian/changelog
-        LOGNAME=root dh_make --createorig -y -l -p umu-launcher_${{ env.VERSION }} || true
+      - name: Setup dh_make quilt files
+        run: |
+          sed -re 's|(umu-launcher \()[1-9.]+(-1\).*$)|\1${{ env.VERSION }}\2|' -i ./debian/changelog
+          LOGNAME=root dh_make --createorig -y -l -p umu-launcher_${{ env.VERSION }} || true
 
-    - name: Install apt build dependencies
-      run: apt build-dep -y ./
+      - name: Install apt build dependencies
+        run: apt build-dep -y ./
 
-    - name: Build
-      run: dpkg-buildpackage --no-sign
+      - name: Build
+        run: dpkg-buildpackage --no-sign
 
-    - name: Move and rename DEB files to upload artifact path
-      run: |
-        mkdir -p results
-        mv ../python3-umu-launcher_${{ env.VERSION }}-1_amd64.deb \
-           results/python3-umu-launcher_${{ env.VERSION }}-1_amd64_ubuntu-noble.deb
-        mv ../umu-launcher_${{ env.VERSION }}-1_all.deb \
-           results/umu-launcher_${{ env.VERSION }}-1_all_ubuntu-noble.deb
+      - name: Move and rename DEB files to upload artifact path
+        run: |
+          mkdir -p results
+          ARCH=$(dpkg --print-architecture)
+          mv ../python3-umu-launcher_${{ env.VERSION }}-1_${ARCH}.deb \
+             results/python3-umu-launcher_${{ env.VERSION }}-1_${ARCH}_ubuntu-noble.deb
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v6
-      with:
-        name: python3-umu-launcher_${{ env.VERSION }}-1_amd64_ubuntu-noble.deb
-        path: results/python3-umu-launcher_${{ env.VERSION }}-1_amd64_ubuntu-noble.deb
+          # The _all package is architecture-independent; upload from one leg only.
+          if [ "${ARCH}" = "amd64" ]; then
+            mv ../umu-launcher_${{ env.VERSION }}-1_all.deb \
+               results/umu-launcher_${{ env.VERSION }}-1_all_ubuntu-noble.deb
+          fi
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v6
-      with:
-        name: umu-launcher_${{ env.VERSION }}-1_all_ubuntu-noble.deb
-        path: results/umu-launcher_${{ env.VERSION }}-1_all_ubuntu-noble.deb
+      - name: Upload python3 package
+        uses: actions/upload-artifact@v6
+        with:
+          name: python3-umu-launcher_${{ env.VERSION }}-1_${{ matrix.arch }}_ubuntu-noble.deb
+          path: results/python3-umu-launcher_${{ env.VERSION }}-1_*_ubuntu-noble.deb
+
+      - name: Upload _all package
+        if: ${{ matrix.arch == 'amd64' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: umu-launcher_${{ env.VERSION }}-1_all_ubuntu-noble.deb
+          path: results/umu-launcher_${{ env.VERSION }}-1_all_ubuntu-noble.deb
