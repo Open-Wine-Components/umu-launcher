@@ -330,13 +330,11 @@ def _update_umu(
             runtime_ver,
             session_pools,
             lambda: bool(
-                len(
-                    [
-                        file
-                        for file in local.glob(f"{_codename}_platform_*")
-                        if file.is_dir()
-                    ]
-                )
+                [
+                    file
+                    for file in local.glob(f"{_codename}_platform_*")
+                    if file.is_dir()
+                ]
             ),
         )
         return
