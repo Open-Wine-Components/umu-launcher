@@ -9,7 +9,7 @@ from http import HTTPStatus
 from pathlib import Path
 from secrets import token_urlsafe
 from shutil import move
-from subprocess import run
+from subprocess import run  # nosec B404
 from tempfile import TemporaryDirectory, mkdtemp
 
 from urllib3.exceptions import HTTPError, ProtocolError, ReadTimeoutError
@@ -399,14 +399,9 @@ def check_runtime(src: Path, runtime_ver: RuntimeVersion) -> int:
         return ret
 
     log.info("Verifying integrity of %s...", runtime.name)
-    ret = run(
-        [
-            pv_verify,
-            "--quiet",
-            "--minimized-runtime",
-            runtime.joinpath("files"),
-        ],
-        check=False,
+    pv = Path(pv_verify).expanduser().resolve(strict=True)
+    ret = run(  # nosec B603
+        [str(pv), "--quiet", "--minimized-runtime", str(runtime / "files")], check=False
     ).returncode
 
     if ret:

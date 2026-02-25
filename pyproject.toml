@@ -16,7 +16,8 @@ dev = [
   "mypy>=1.10.0",
   "ruff>=0.15.2",
   "toml-sort>=0.23.1",
-  "types-PyYAML>=6.0.12.20240311"
+  "types-PyYAML>=6.0.12.20240311",
+  "bandit>=1.9.3"
 ]
 
 [project]
@@ -69,6 +70,14 @@ delta-updates = [
 
 [project.scripts]
 umu-run = "umu.__main__:main"
+
+[tool.bandit]
+exclude_dirs = [".*_cache", ".gitlab", ".pdm-build", ".venv", "docs", "htmlcov"]
+skips = ["B303", "B324"]
+
+# B101: Test for use of assert
+[tool.bandit.assert_used]
+skips = ["*_test.py", "*test_*.py"]
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -126,6 +135,7 @@ format = {composite = [
 ]}
 lint-check = "ruff check --config ./pyproject.toml umu/ --fix"
 type-check = "mypy --config-file ./pyproject.toml --enable-incomplete-feature=NewGenericSyntax umu/"
+security-scan = "bandit -rc pyproject.toml umu/"
 
 [tool.pdm.version]
 fallback_version = "0.0.0"

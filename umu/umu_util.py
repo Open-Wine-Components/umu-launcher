@@ -14,7 +14,7 @@ from pathlib import Path
 from re import Pattern
 from re import compile as re_compile
 from shutil import which
-from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+from subprocess import PIPE, STDOUT, Popen, TimeoutExpired  # nosec B404
 from tarfile import open as taropen
 from tempfile import gettempdir, mkdtemp
 from typing import Any
@@ -88,7 +88,8 @@ def get_library_paths() -> set[str]:
     ldconfig: str = which("ldconfig", path=ldconfig_paths) or ""
     root = "/"
 
-    if not ldconfig:
+    ldconfig_path = which(ldconfig)
+    if ldconfig_path is None:
         log.warning("ldconfig not found in $PATH, cannot find library paths")
         return library_paths
 
@@ -99,8 +100,8 @@ def get_library_paths() -> set[str]:
     try:
         # Here, opt to using the ld.so cache similar to the stdlib
         # implementation of _findSoname_ldconfig.
-        with Popen(
-            (ldconfig, "-p"),
+        with Popen(  # nosec B603
+            (ldconfig_path, "-p"),
             text=True,
             encoding="utf-8",
             stdout=PIPE,
@@ -129,27 +130,30 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
 
     Intended to be used for long running operations (e.g. large file downloads)
     """
-    zenity: str = which("zenity") or ""
-    cmd: str = which(command) or ""
     ret: int = 0  # Exit code returned from zenity
 
-    if not zenity:
+    zenity_path: str | None = which("zenity")
+    if zenity_path is None:
         log.warning("zenity was not found in system")
         return -1
 
-    if not cmd:
+    cmd_path: str | None = which(command)
+    if cmd_path is None:
         log.warning("%s was not found in system", command)
         return -1
 
+    zenity: str = zenity_path
+    cmd: str = cmd_path
+
     # Communicate a process with zenity
     with (  # noqa: SIM117
-        Popen(
+        Popen(  # nosec B603
             [cmd, *opts],
             stdout=PIPE,
             stderr=STDOUT,
         ) as proc,
     ):
-        with Popen(
+        with Popen(  # nosec B603
             [
                 f"{zenity}",
                 "--progress",

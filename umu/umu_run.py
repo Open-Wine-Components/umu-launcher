@@ -14,8 +14,10 @@ from pathlib import Path
 from pwd import getpwuid
 from re import match
 from secrets import token_hex
+from shutil import which
 from socket import AF_INET, SOCK_DGRAM, socket
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen  # nosec B404
+from tempfile import gettempdir
 from types import FrameType
 from typing import Any
 
@@ -365,12 +367,26 @@ def build_command(
 
     nsenter: tuple[str, ...] = ()
     if launch_client := layer.launch_client:
-        with Popen([launch_client, "--list"], stdout=PIPE, stderr=PIPE) as proc:
+        # launch_client is provided by the runtime layer (not arbitrary user input).
+        # Resolve via PATH when needed so we execute a concrete binary.
+        exe_path: str
+        if Path(launch_client).is_absolute():
+            exe_path = str(Path(launch_client).expanduser().resolve(strict=True))
+        else:
+            resolved = which(launch_client)
+            if resolved is None:
+                msg = f"Command not found: {launch_client}"
+                raise FileNotFoundError(msg)
+            exe_path = resolved
+
+        with Popen(
+            [exe_path, "--list"], stdout=PIPE, stderr=PIPE
+        ) as proc:  # nosec B603
             out, err = proc.communicate()
         bus_names = out.decode("utf-8").splitlines()
         pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
         if f"--bus-name={pfx_bus}" in bus_names:
-            nsenter = (launch_client, f"--bus-name={pfx_bus}", "--")
+            nsenter = (exe_path, f"--bus-name={pfx_bus}", "--")
             env["PROTON_VERB"] = "runinprefix"
             log.info("Re-entering container through bus '%s'", pfx_bus)
 
@@ -706,7 +722,8 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
 
-    with Popen(command, start_new_session=True, cwd=cwd) as proc:
+    # command is constructed by the launcher logic; shell is not used.
+    with Popen(command, start_new_session=True, cwd=cwd) as proc:  # nosec B603
         ret = run_in_steammode(proc) if is_steammode else proc.wait()
         log.debug("Child %s exited with wait status: %s", proc.pid, ret)
 
@@ -783,7 +800,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     env: dict[str, str] = {
         "WINEPREFIX": "",
         "GAMEID": "",
-        "PROTON_CRASH_REPORT_DIR": "/tmp/umu_crashreports",
+        "PROTON_CRASH_REPORT_DIR": str(Path(gettempdir()) / "umu_crashreports"),
         "PROTONPATH": "",
         "STEAM_COMPAT_APP_ID": "",
         "STEAM_COMPAT_TOOL_PATHS": "",

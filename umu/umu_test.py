@@ -13,7 +13,7 @@ from importlib.util import find_spec
 from pathlib import Path
 from pwd import getpwuid
 from shutil import copy, copytree, move, rmtree
-from subprocess import CompletedProcess
+from subprocess import CompletedProcess  # nosec B404
 from tempfile import NamedTemporaryFile, TemporaryDirectory, TemporaryFile, gettempdir
 from unittest.mock import MagicMock, Mock, patch
 
@@ -36,7 +36,7 @@ class TestGameLauncher(unittest.TestCase):
         self.env = {
             "WINEPREFIX": "",
             "GAMEID": "",
-            "PROTON_CRASH_REPORT_DIR": "/tmp/umu_crashreports",
+            "PROTON_CRASH_REPORT_DIR": str(Path(gettempdir()) / "umu_crashreports"),
             "PROTONPATH": "",
             "STEAM_COMPAT_APP_ID": "",
             "STEAM_COMPAT_TOOL_PATHS": "",

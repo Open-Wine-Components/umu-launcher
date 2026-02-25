@@ -7,6 +7,7 @@ import unittest
 from argparse import Namespace
 from pathlib import Path
 from shutil import copy, copytree, rmtree
+from tempfile import gettempdir
 from tomllib import TOMLDecodeError
 from unittest.mock import MagicMock, patch
 
@@ -23,7 +24,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
         self.env = {
             "WINEPREFIX": "",
             "GAMEID": "",
-            "PROTON_CRASH_REPORT_DIR": "/tmp/umu_crashreports",
+            "PROTON_CRASH_REPORT_DIR": str(Path(gettempdir()) / "umu_crashreports"),
             "PROTONPATH": "",
             "STEAM_COMPAT_APP_ID": "",
             "STEAM_COMPAT_TOOL_PATHS": "",
