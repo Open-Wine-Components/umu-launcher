@@ -3,6 +3,7 @@ import os
 import signal
 import sys
 import threading
+from _ctypes import CFuncPtr
 from argparse import Namespace
 from array import array
 from collections.abc import Generator, MutableMapping
@@ -21,7 +22,6 @@ from tempfile import gettempdir
 from types import FrameType
 from typing import Any
 
-from _ctypes import CFuncPtr
 from urllib3 import PoolManager, Retry
 from urllib3.exceptions import HTTPError
 from urllib3.util import Timeout

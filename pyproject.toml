@@ -133,7 +133,7 @@ format = {composite = [
   "isort --settings-path ./pyproject.toml umu/ tests/",
   "toml-sort -i ./pyproject.toml"
 ]}
-lint-check = "ruff check --config ./pyproject.toml umu/ --fix"
+lint-check = "ruff check --config ./pyproject.toml --output-format github umu/ --fix"
 type-check = "mypy --config-file ./pyproject.toml --enable-incomplete-feature=NewGenericSyntax umu/"
 security-scan = "bandit -rc pyproject.toml umu/"
 
