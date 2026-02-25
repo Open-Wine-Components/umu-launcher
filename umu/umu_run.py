@@ -41,7 +41,7 @@ from umu.umu_consts import (
 )
 from umu.umu_log import log
 from umu.umu_plugins import set_env_toml
-from umu.umu_proton import get_umu_proton
+from umu.umu_proton import get_umu_proton, ProtonVersion
 from umu.umu_runtime import (
     RUNTIME_NAMES,
     RUNTIME_VERSIONS,
@@ -152,17 +152,7 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
         os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
 
     # Proton Codename
-    if os.environ.get("PROTONPATH") in {
-        "GE-Proton",
-        "GE-Latest",
-        "UMU-Latest",
-        "umu-scout",
-        "umu-soldier",
-        "umu-sniper",
-        "umu-sniper-arm64",
-        "umu-steamrt4",
-        "umu-steamrt4-arm64",
-    }:
+    if os.environ.get("PROTONPATH") in { pver.value for pver in ProtonVersion }:
         do_download = True
 
     if "PROTONPATH" not in os.environ:
