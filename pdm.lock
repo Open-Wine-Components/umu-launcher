@@ -614,17 +614,6 @@ files = [
 ]
 
 [[package]]
-name = "isort"
-version = "5.13.2"
-requires_python = ">=3.8.0"
-summary = "A Python utility / library to sort Python imports."
-groups = ["dev"]
-files = [
-    {file = "isort-5.13.2-py3-none-any.whl", hash = "sha256:8ca5e72a8d85860d5a3fa69b8745237f2939afe12dbf656afbcb47fe72d947a6"},
-    {file = "isort-5.13.2.tar.gz", hash = "sha256:48fdfcb9face5d58a4f6dde2e72a1fb8dcaf8ab26f95ab49fab84c2ddefb0109"},
-]
-
-[[package]]
 name = "jaraco-classes"
 version = "3.4.0"
 requires_python = ">=3.8"
