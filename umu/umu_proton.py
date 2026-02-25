@@ -235,10 +235,12 @@ def _fetch_releases(
         "User-Agent": "",
     }
 
-    if os.environ.get("PROTONPATH") in {
+    protonpath = os.environ.get("PROTONPATH")
+
+    if protonpath in (
         ProtonVersion.GE.value,
         ProtonVersion.GELatest.value,
-    }:
+    ):
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
 
     if os.environ.get("PROTONPATH") == ProtonVersion.UMUScout.value:

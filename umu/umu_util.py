@@ -1,6 +1,6 @@
+import errno
 import os
 import sys
-import errno
 from collections.abc import Generator
 from contextlib import contextmanager
 from ctypes import CDLL, get_errno
@@ -437,18 +437,18 @@ def _renameat2(
     raise OSError(err, os.strerror(err), oldpath, None, newpath)
 
 def _renameat2_fallback(src: os.PathLike, dest: os.PathLike, flags: int) -> None:
-    """
-    Fallback implementation for renameat2.
+    """Fallback implementation for renameat2.
+
     Supports:
-      - plain rename
-      - RENAME_EXCHANGE (best-effort, not atomic on NFS)
+        - plain rename
+        - RENAME_EXCHANGE (best-effort, not atomic on NFS)
     """
     src = Path(src)
     dest = Path(dest)
 
     if flags == 0:
         # Simple rename fallback
-        os.replace(src, dest)
+        src.replace(dest)
         return
 
     if flags == Renameat2.RENAME_EXCHANGE:
@@ -456,20 +456,20 @@ def _renameat2_fallback(src: os.PathLike, dest: os.PathLike, flags: int) -> None
         tmp = dest.with_name(dest.name + ".renameat2-tmp")
 
         # dest -> tmp
-        os.replace(dest, tmp)
+        dest.replace(tmp)
         try:
             # src -> dest
-            os.replace(src, dest)
+            src.replace(dest)
             # tmp -> src
-            os.replace(tmp, src)
+            tmp.replace(src)
         except Exception:
             # Try to restore original state
             try:
                 if dest.exists():
-                    os.replace(dest, src)
+                    dest.replace(src)
             finally:
                 if tmp.exists():
-                    os.replace(tmp, dest)
+                    tmp.replace(dest)
             raise
 
         return
