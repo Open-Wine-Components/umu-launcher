@@ -23,7 +23,7 @@ from typing import Any
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
-from umu.umu_consts import TMPFS_MIN, UMU_CACHE, UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
+from umu.umu_consts import TMPFS_MIN, UMU_CACHE, WINETRICKS_SETTINGS_VERBS
 from umu.umu_log import log
 
 INSTALL_MARKER = ".installed.ok"
@@ -395,19 +395,18 @@ def write_install_marker(runtime_dir: Path) -> None:
     tmp.replace(marker)
 
 
-def has_umu_setup(runtimes: dict, path: Path = UMU_LOCAL) -> bool:
+def has_umu_setup(path: Path, machine: str) -> bool:
     """Check if umu has been setup in our runtime directory."""
     if not path.exists():
         return False
 
     try:
-        for _, rt in runtimes.items():
-            if (
-                rt.machine == platform.machine()
-                and rt.path.is_dir()
-                and has_runtime_installed(rt.path)
-            ):
-                return True
+        if (
+            machine == platform.machine()
+            and path.is_dir()
+            and has_runtime_installed(path)
+        ):
+            return True
     except OSError:
         return False
 

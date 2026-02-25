@@ -46,6 +46,8 @@ from umu.umu_runtime import (
     RUNTIME_NAMES,
     RUNTIME_VERSIONS,
     CompatLayer,
+    UmuRuntime,
+    check_runtime,
     create_shim,
     setup_umu,
 )
@@ -56,6 +58,7 @@ from umu.umu_util import (
     has_umu_setup,
     is_installed_verb,
     unix_flock,
+    write_install_marker,
     xdisplay,
 )
 
@@ -718,7 +721,7 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     return ret
 
 
-def resolve_runtime() -> RuntimeVersion | None:
+def resolve_runtime() -> UmuRuntime:
     """Resolve the required runtime of a compatibility tool."""
     # Backwards compatibility stuff, map RUNTIMEPATH tokens to
     # umu's passthrough compatibility layers for runtimes.
@@ -752,7 +755,7 @@ def resolve_runtime() -> RuntimeVersion | None:
                 protonpath,
                 runtime.name,
             )
-            return runtime.as_tuple()
+            return runtime
 
     # Solve the required runtime for PROTONPATH
     log.debug("PROTONPATH set, resolving its required runtime")
@@ -770,7 +773,7 @@ def resolve_runtime() -> RuntimeVersion | None:
         err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
         raise FileNotFoundError(err)
 
-    return runtime.as_tuple()
+    return runtime
 
 
 def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
@@ -817,42 +820,8 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
     log.info("umu-launcher version %s (%s)", __version__, sys.version)
 
-    # Test the network environment and fail early if the user is trying
-    # to run umu-run offline because an internet connection is required
-    # for new setups
-    try:
-        log.debug("Connecting to '1.1.1.1'...")
-        with socket(AF_INET, SOCK_DGRAM) as sock:
-            sock.settimeout(5)
-            sock.connect(("1.1.1.1", 53))
-        prereq = True
-    except TimeoutError:  # Request to a server timed out
-        if not has_umu_setup(RUNTIME_VERSIONS):
-            err: str = (
-                "umu has not been setup for the user\n"
-                "An internet connection is required to setup umu"
-            )
-            raise RuntimeError(err)
-        log.debug("Request timed out")
-        prereq = True
-    except OSError as e:  # No internet
-        if e.errno != ENETUNREACH:
-            raise
-        if not has_umu_setup(RUNTIME_VERSIONS):
-            err: str = (
-                "umu has not been setup for the user\n"
-                "An internet connection is required to setup umu"
-            )
-            raise RuntimeError(err)
-        log.debug("Network is unreachable")
-        prereq = True
-
-    if not prereq:
-        err: str = (
-            "umu has not been setup for the user\n"
-            "An internet connection is required to setup umu"
-        )
-        raise RuntimeError(err)
+    # Ensure base runtime directory exists.
+    UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
     if isinstance(args, Namespace):
         env, opts = set_env_toml(env, args)
@@ -861,7 +830,8 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         opts = args[1]  # Reference the executable options
 
     # Resolve the runtime version for PROTONPATH
-    runtime_version = resolve_runtime()
+    runtime: UmuRuntime = resolve_runtime()
+    runtime_version: RuntimeVersion = runtime.as_tuple()
     if not runtime_version:
         err: str = (
             f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
@@ -870,6 +840,41 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     # runtime_name, runtime_variant, runtime_appid
     _, runtime_variant, _ = runtime_version
     os.environ["RUNTIMEPATH"] = runtime_variant
+
+    # Test the network environment and fail early if the user is trying
+    # to run umu-run offline because an internet connection is required
+    # for new setups
+    def _check_offline_runtime(_rt: UmuRuntime) -> bool:
+        if _rt.name == "host" or not _rt.path:
+            return True
+        if not has_umu_setup(_rt.path, _rt.machine) and check_runtime(
+            _rt.path, _rt.as_tuple()
+        ):
+            return False
+        write_install_marker(_rt.path)
+        return True
+
+    try:
+        log.debug("Connecting to '1.1.1.1'...")
+        with socket(AF_INET, SOCK_DGRAM) as sock:
+            sock.settimeout(5)
+            sock.connect(("1.1.1.1", 53))
+        prereq = True
+    except TimeoutError:  # Request to a server timed out
+        log.debug("Request timed out")
+        prereq = _check_offline_runtime(runtime)
+    except OSError as e:  # No internet
+        if e.errno != ENETUNREACH:
+            raise
+        log.debug("Network is unreachable")
+        prereq = _check_offline_runtime(runtime)
+
+    if not prereq:
+        err: str = (
+            "umu has not been setup for the user\n"
+            "An internet connection is required to setup umu"
+        )
+        raise RuntimeError(err)
 
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
@@ -898,9 +903,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         timeouts = float(os.environ["UMU_HTTP_TIMEOUT"])
     else:
         timeouts = NET_TIMEOUT
-
-    # ensure base directory exists
-    UMU_LOCAL.mkdir(parents=True, exist_ok=True)
 
     thread_pool = ThreadPoolExecutor()
     http_pool = PoolManager(
