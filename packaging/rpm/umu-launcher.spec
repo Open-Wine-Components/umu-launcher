@@ -100,6 +100,9 @@ make
 %install
 make DESTDIR=%{buildroot} PYTHONDIR=%{python3_sitelib} install
 
+# Fix Python shebangs in installed scripts (ensures /usr/bin/python3 is used)
+%py3_shebang_fix %{buildroot}%{_bindir}/umu-run
+
 %files
 %{_bindir}/umu-run
 %{_datadir}/man/*
