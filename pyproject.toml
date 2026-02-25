@@ -332,7 +332,7 @@ select = [
   # print(E.A == E.B)  # True
   "RUF049",
   # Check for function definitions with boolean positonal arguments/parameters
-  "FBT",
+  "FBT"
 ]
 ignore = [
   # Format

@@ -3,7 +3,6 @@ import os
 import signal
 import sys
 import threading
-from _ctypes import CFuncPtr
 from argparse import Namespace
 from array import array
 from collections.abc import Generator, MutableMapping
@@ -20,6 +19,7 @@ from subprocess import PIPE, Popen
 from types import FrameType
 from typing import Any
 
+from _ctypes import CFuncPtr
 from urllib3 import PoolManager, Retry
 from urllib3.exceptions import HTTPError
 from urllib3.util import Timeout
@@ -203,15 +203,20 @@ def set_env(
     pfx: Path = Path(env["WINEPREFIX"]).expanduser().resolve(strict=False)
     protonpath: Path = Path(env["PROTONPATH"]).expanduser().resolve(strict=True)
     # Command execution usage
-    is_cmd: bool = isinstance(args, tuple)
+    cmd: str = ""
+    cmd_argv: list[str] = []
+    is_cmd = False
+
+    if isinstance(args, tuple):
+        is_cmd = True
+        cmd, cmd_argv = args
+
     # Command execution usage, but client wants to create a prefix. When an
     # empty string is the executable, Proton is expected to create the prefix
     # but will fail because the executable is not found
-    is_createpfx: bool = (is_cmd and not args[0]) or (
-        is_cmd and args[0] == "createprefix"
-    )  # type: ignore
+    is_createpfx: bool = is_cmd and (not cmd or cmd == "createprefix")
     # Command execution usage, but client wants to run winetricks verbs
-    is_winetricks: bool = is_cmd and args[0] == "winetricks"  # type: ignore
+    is_winetricks: bool = is_cmd and cmd == "winetricks"
 
     # PROTON_VERB
     # For invalid Proton verbs, just assign the waitforexitandrun
@@ -233,19 +238,19 @@ def set_env(
         exe: Path = Path(protonpath, "protonfixes", "winetricks")
         # Handle older protons before winetricks was added to the PATH
         env["EXE"] = str(exe.resolve(strict=True)) if exe.is_file() else "winetricks"
-        args = (env["EXE"], args[1])  # type: ignore
+        args = (env["EXE"], cmd_argv)
     elif is_cmd:
         try:
             # Ensure executable path is absolute, otherwise Proton will fail
             # when creating the subprocess.
             # e.g., Games/umu/umu-0 -> $HOME/Games/umu/umu-0
-            exe: Path = Path(args[0]).expanduser().resolve(strict=True)  # type: ignore
+            exe: Path = Path(cmd).expanduser().resolve(strict=True)
             env["EXE"] = str(exe)
             if not env["STEAM_COMPAT_INSTALL_PATH"]:
                 env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
         except FileNotFoundError:
             # Assume that the executable will be inside prefix or container
-            env["EXE"] = args[0]  # type: ignore
+            env["EXE"] = cmd
             log.warning("Executable not found: %s", env["EXE"])
         env["STORE"] = os.environ.get("STORE", "")
     else:  # Configuration file usage

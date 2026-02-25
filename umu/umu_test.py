@@ -3171,9 +3171,7 @@ class TestGameLauncher(unittest.TestCase):
             # Should be stripped -- everything after the hyphen
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
-                hashlib.md5(
-                    self.env["WINEPREFIX"].encode("utf-8")
-                ).hexdigest(),
+                hashlib.md5(self.env["WINEPREFIX"].encode("utf-8")).hexdigest(),
                 "Expected STEAM_COMPAT_APP_ID to be the md5 hashed WINEPREFIX",
             )
             self.assertEqual(
@@ -3285,9 +3283,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
-                hashlib.md5(
-                    self.env["WINEPREFIX"].encode("utf-8")
-                ).hexdigest(),
+                hashlib.md5(self.env["WINEPREFIX"].encode("utf-8")).hexdigest(),
                 "Expected STEAM_COMPAT_APP_ID to be 0",
             )
             self.assertEqual(
@@ -3404,9 +3400,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
-                hashlib.md5(
-                    self.env["WINEPREFIX"].encode("utf-8")
-                ).hexdigest(),
+                hashlib.md5(self.env["WINEPREFIX"].encode("utf-8")).hexdigest(),
                 "Expected STEAM_COMPAT_APP_ID to be 0",
             )
             self.assertEqual(
@@ -3533,9 +3527,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             self.assertEqual(
                 self.env["STEAM_COMPAT_APP_ID"],
-                hashlib.md5(
-                    self.env["WINEPREFIX"].encode("utf-8")
-                ).hexdigest(),
+                hashlib.md5(self.env["WINEPREFIX"].encode("utf-8")).hexdigest(),
                 "Expected STEAM_COMPAT_APP_ID to be the md5 hash WINEPREFIX",
             )
             self.assertEqual(
