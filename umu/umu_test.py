@@ -376,7 +376,7 @@ class TestGameLauncher(unittest.TestCase):
             )
             os.environ["PROTONPATH"] = mock_proton
             with self.assertRaises(KeyError):
-                result = umu_run.resolve_runtime()
+                result = umu_run.resolve_runtime().as_tuple()
                 self.assertIsNone(result, f"Expected None, received '{result}'")
 
     def test_resolve_umu_version_noproton(self):
@@ -401,7 +401,7 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected None, received '{os.environ.get('PROTONPATH')}",
         )
         os.environ["UMU_NO_PROTON"] = "1"
-        result = umu_run.resolve_runtime()
+        result = umu_run.resolve_runtime().as_tuple()
         self.assertEqual(
             result,
             mock_expected,
@@ -437,7 +437,7 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
         )
         os.environ["PROTONPATH"] = "GE-Proton"
-        result = umu_run.resolve_runtime()
+        result = umu_run.resolve_runtime().as_tuple()
         self.assertEqual(
             result,
             mock_expected,
@@ -475,7 +475,7 @@ class TestGameLauncher(unittest.TestCase):
             "UMU_NO_PROTON" not in os.environ,
             f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
         )
-        result = umu_run.resolve_runtime()
+        result = umu_run.resolve_runtime().as_tuple()
         self.assertEqual(
             result,
             mock_container_runtimes[0],
@@ -510,7 +510,7 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
         )
         os.environ["RUNTIMEPATH"] = "steamrt2"
-        result = umu_run.resolve_runtime()
+        result = umu_run.resolve_runtime().as_tuple()
         self.assertEqual(
             result,
             mock_expected,
@@ -2524,11 +2524,13 @@ class TestGameLauncher(unittest.TestCase):
             # Args
             result_args = __main__.parse_args()
             # Config
-            _ = umu_run.resolve_runtime()
+            _ = umu_run.resolve_runtime().as_tuple()
             # resolve_runtime's backwards compatibility is setting os.environ,
             # copy it back to self.env
             self.env["PROTONPATH"] = os.environ["PROTONPATH"]
-            with (patch("umu.umu_proton.UMU_COMPAT", Path(self.test_file).resolve()),):
+            with (
+                patch("umu.umu_proton.UMU_COMPAT", Path(self.test_file).resolve()),
+            ):
                 self.env = umu_proton._get_umu_runtime_tool(
                     self.env, self.env["PROTONPATH"]
                 )
@@ -2544,7 +2546,9 @@ class TestGameLauncher(unittest.TestCase):
         os.environ |= self.env
 
         # Mock setting up the runtime
-        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_default,
@@ -2591,7 +2595,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Build
         mock_runtime = umu_runtime.UmuRuntime(
-            "sniper", "steamrt3", "1628350", self.test_local_share
+            "sniper", "steamrt3", "1628350", "x86_64", self.test_local_share
         )
         with patch("umu.umu_runtime.CompatLayer.required_runtime", mock_runtime):
             test_command = umu_run.build_command(
@@ -2610,7 +2614,7 @@ class TestGameLauncher(unittest.TestCase):
         entry_point, verb, sep, shim, umutool, exe = [*test_command]
         self.assertEqual(
             entry_point,
-            str(self.test_local_share / "umu"),
+            str(self.test_local_share / "_v2-entry-point"),
             "Expected an entry point",
         )
         self.assertEqual(verb, f"--verb={self.test_verb}", "Expected PROTON_VERB")
@@ -2661,7 +2665,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
-            version = umu_run.resolve_runtime()
+            version = umu_run.resolve_runtime().as_tuple()
             os.environ["RUNTIMEPATH"] = version[1]
             # Args
             result_args = __main__.parse_args()
@@ -2677,7 +2681,9 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
-        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_default,
@@ -2726,7 +2732,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Build
         mock_runtime = umu_runtime.UmuRuntime(
-            "sniper", "steamrt3", "1628350", self.test_local_share
+            "sniper", "steamrt3", "1628350", "x86_64", self.test_local_share
         )
         with patch("umu.umu_runtime.CompatLayer.required_runtime", mock_runtime):
             test_command = umu_run.build_command(
@@ -2791,7 +2797,7 @@ class TestGameLauncher(unittest.TestCase):
             os.environ["GAMEID"] = self.test_file
             os.environ["STORE"] = self.test_file
             os.environ["UMU_NO_RUNTIME"] = "1"
-            version = umu_run.resolve_runtime()
+            version = umu_run.resolve_runtime().as_tuple()
             os.environ["RUNTIMEPATH"] = version[1]
             # Args
             result_args = __main__.parse_args()
@@ -2807,7 +2813,9 @@ class TestGameLauncher(unittest.TestCase):
             umu_run.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
-        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_default,
@@ -2940,7 +2948,9 @@ class TestGameLauncher(unittest.TestCase):
             os.environ[key] = val
 
         # Mock setting up the runtime
-        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_default,
@@ -2987,7 +2997,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Build
         mock_runtime = umu_runtime.UmuRuntime(
-            "sniper", "steamrt3", "1628350", self.test_local_share
+            "sniper", "steamrt3", "1628350", "x86_64", self.test_local_share
         )
         with patch("umu.umu_runtime.CompatLayer.required_runtime", mock_runtime):
             test_command = umu_run.build_command(

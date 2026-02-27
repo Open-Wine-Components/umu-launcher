@@ -224,7 +224,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Mock setting up the runtime
         # Don't copy _v2-entry-point
-        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_version,
@@ -298,7 +300,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
             umu_run.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
-        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_version,
@@ -407,7 +411,9 @@ class TestGameLauncherPlugins(unittest.TestCase):
             umu_run.enable_steam_game_drive(self.env)
 
         # Mock setting up the runtime
-        with (patch.object(umu_runtime, "_install_umu", return_value=None),):
+        with (
+            patch.object(umu_runtime, "_install_umu", return_value=None),
+        ):
             umu_runtime.setup_umu(
                 self.test_local_share,
                 self.test_runtime_version,
@@ -457,7 +463,7 @@ class TestGameLauncherPlugins(unittest.TestCase):
 
         # Build
         mock_runtime = umu_runtime.UmuRuntime(
-            "sniper", "steamrt3", "1628350", self.test_local_share
+            "sniper", "steamrt3", "1628350", "x86_64", self.test_local_share
         )
         with patch("umu.umu_runtime.CompatLayer.required_runtime", mock_runtime):
             test_command = umu_run.build_command(

@@ -20,7 +20,6 @@ from umu import vdf
 from umu.umu_consts import UMU_CACHE, UMU_LOCAL, FileLock, HTTPMethod
 from umu.umu_log import log
 from umu.umu_util import (
-    ensure_install_markers,
     exchange,
     extract_tarfile,
     file_digest,
@@ -78,9 +77,7 @@ def _install_umu(
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    base_url: str = (
-        f"https://repo.steampowered.com/{variant.removesuffix('-arm64')}/images/latest-public-beta/"
-    )
+    base_url: str = f"https://repo.steampowered.com/{variant.removesuffix('-arm64')}/images/latest-public-beta/"
     token: str = f"?versions={token_urlsafe(16)}"
     host: str = "repo.steampowered.com"
 
@@ -254,15 +251,13 @@ def _install_umu(
         exchange(Path(tempdir, steamrt), local)
 
         # Validate and post-install
-        ok = False
         try:
-            check_runtime(local, runtime_ver)
-            ok = True
+            ret = check_runtime(local, runtime_ver)
+            if not ret:
+                write_install_marker(local)
         finally:
             log.debug("Linking: umu -> _v2-entry-point")
             local.joinpath("umu").symlink_to("_v2-entry-point")
-        if ok:
-            write_install_marker(local)
 
 
 def setup_umu(
@@ -271,11 +266,13 @@ def setup_umu(
     """Install or update the runtime for the current user."""
     log.debug("Local: %s", local)
 
-    # Backfill markers for installs created before markers existed.
-    # local.parent is the base runtime install directory (e.g., UMU_LOCAL).
-    ensure_install_markers(local.parent)
+    # Backfill markers for installs created before markers existed after verifying.
+    if not has_runtime_installed(local) and local.is_dir():
+        ret = check_runtime(local, runtime_ver)
+        if not ret:
+            write_install_marker(local)
 
-    # New install (or previously-installed runtime missing marker)
+    # New install
     if not has_runtime_installed(local):
         log.debug("New install detected")
         log.info("Setting up Unified Launcher for Windows Games on Linux...")
@@ -332,14 +329,13 @@ def _update_umu(
             local,
             runtime_ver,
             session_pools,
-            lambda: len(
+            lambda: bool(
                 [
                     file
                     for file in local.glob(f"{_codename}_platform_*")
                     if file.is_dir()
                 ]
-            )
-            > 0,
+            ),
         )
         return
 
@@ -475,6 +471,7 @@ class UmuRuntime:
     name: str
     variant: str
     appid: str
+    machine: str
     path: Path | None = None
 
     def __post_init__(self) -> None:  # noqa: D105
@@ -497,18 +494,18 @@ class UmuRuntime:
 
 
 RUNTIME_VERSIONS = {
-    "host": UmuRuntime("host", "", ""),
+    "host": UmuRuntime("host", "", "", platform.machine()),
 }
 
-RUNTIME_VERSIONS.update(
-    {
-        "1391110": UmuRuntime("soldier", "steamrt2", "1391110"),
-        "1628350": UmuRuntime("sniper", "steamrt3", "1628350"),
-        "3810310": UmuRuntime("sniper-arm64", "steamrt3-arm64", "3810310"),
-        "4183110": UmuRuntime("steamrt4", "steamrt4", "4183110"),
-        "4185400": UmuRuntime("steamrt4-arm64", "steamrt4-arm64", "4185400"),
-    }
-)
+# fmt: off
+RUNTIME_VERSIONS.update({
+    "1391110": UmuRuntime("soldier",        "steamrt2",       "1391110", "x86_64"),
+    "1628350": UmuRuntime("sniper",         "steamrt3",       "1628350", "x86_64"),
+    "3810310": UmuRuntime("sniper-arm64",   "steamrt3-arm64", "3810310", "aarch64"),
+    "4183110": UmuRuntime("steamrt4",       "steamrt4",       "4183110", "x86_64"),
+    "4185400": UmuRuntime("steamrt4-arm64", "steamrt4-arm64", "4185400", "aarch64"),
+})
+# fmt: on
 
 if platform.machine() == "x86_64":  # noqa: SIM114
     pass
@@ -626,9 +623,6 @@ class CompatLayer:
         """Return the tool specific entry point."""
         tool_path = os.path.normpath(self.tool_path)
         cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
-        # Temporary override entry point for backwards compatibility
-        if self.layer_name == "container-runtime":
-            cmd = cmd.replace("_v2-entry-point", "umu")
         cmd = cmd.replace("%verb%", verb)
         return shlex.split(cmd)
 
