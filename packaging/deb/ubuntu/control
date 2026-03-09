@@ -42,7 +42,7 @@ Depends:
  python3,
  python3-xlib (>= 0.33),
  apparmor-profiles,
- libgl1-mesa-dri:i386,
- libglx-mesa0:i386,
+ libgl1-mesa-dri:i386 [amd64],
+ libglx-mesa0:i386 [amd64],
  libzstd1
 Description: A tool for launching non-steam games with proton.
