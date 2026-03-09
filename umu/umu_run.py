@@ -79,12 +79,9 @@ def setup_pfx(path: Path) -> None:
 
     if not path.is_dir():
         path.mkdir(parents=True, exist_ok=True)
+    path = path.resolve(strict=True)
 
     pfx: Path = path.joinpath("pfx")
-    steamuser: Path = path.joinpath("drive_c", "users", "steamuser")
-    # Login name of the user as determined by the password database (pwd)
-    unixuser: str = getpwuid(os.getuid()).pw_name
-    wineuser: Path = path.joinpath("drive_c", "users", unixuser)
 
     path.joinpath("shadercache").mkdir(parents=True, exist_ok=True)
     path.joinpath("gstreamer-1.0").mkdir(parents=True, exist_ok=True)
@@ -93,9 +90,15 @@ def setup_pfx(path: Path) -> None:
         pfx.unlink()
 
     if not pfx.is_dir():
-        pfx.symlink_to(path.resolve(strict=True))
+        # this is a round-trip way to say "."
+        pfx.symlink_to(path.relative_to(path))
 
     path.joinpath("tracked_files").touch()
+
+    steamuser: Path = pfx.joinpath("drive_c", "users", "steamuser")
+    # Login name of the user as determined by the password database (pwd)
+    unixuser: str = getpwuid(os.getuid()).pw_name
+    wineuser: Path = pfx.joinpath("drive_c", "users", unixuser)
 
     # Create a symlink of the current user to the steamuser dir or vice versa
     # Default for a new prefix is: unixuser -> steamuser

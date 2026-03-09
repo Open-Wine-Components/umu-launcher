@@ -3778,7 +3778,7 @@ class TestGameLauncher(unittest.TestCase):
 
         # Check if the symlink is in its unexpanded form
         self.assertEqual(
-            Path(self.test_file + "/pfx").readlink().as_posix(),
+            Path(self.test_file + "/pfx").resolve().as_posix(),
             Path(unexpanded_path).expanduser().as_posix(),
         )
 
@@ -3858,7 +3858,7 @@ class TestGameLauncher(unittest.TestCase):
         )
         # Check if the symlink is normalized when passed a relative path
         self.assertEqual(
-            Path(self.test_file + "/pfx").readlink().as_posix(),
+            Path(self.test_file + "/pfx").resolve().as_posix(),
             Path(self.test_file).resolve().as_posix(),
         )
         self.assertTrue(
