@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload artifact
         if: ${{ matrix.arch == 'amd64' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: umu-launcher-${{ env.VERSION }}-zipapp.tar
           path: results/umu-launcher-${{ env.VERSION }}-zipapp.tar

@@ -87,14 +87,14 @@ jobs:
           fi
 
       - name: Upload python3 package
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: python3-umu-launcher_${{ env.VERSION }}-1_${{ matrix.arch }}_debian-12.deb
           path: results/python3-umu-launcher_${{ env.VERSION }}-1_*_debian-12.deb
 
       - name: Upload _all package
         if: ${{ matrix.arch == 'amd64' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: umu-launcher_${{ env.VERSION }}-1_all_debian-12.deb
           path: results/umu-launcher_${{ env.VERSION }}-1_all_debian-12.deb

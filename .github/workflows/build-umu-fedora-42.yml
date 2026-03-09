@@ -85,7 +85,7 @@ jobs:
              ~/rpmbuild/RPMS/${RPMARCH}/umu-launcher-${{ env.VERSION }}.fc42.${RPMARCH}.rpm
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: umu-launcher-${{ env.VERSION }}.fc42.${{ env.RPMARCH }}.rpm
           path: ~/rpmbuild/RPMS/${{ env.RPMARCH }}/umu-launcher-${{ env.VERSION }}.fc42.${{ env.RPMARCH }}.rpm
