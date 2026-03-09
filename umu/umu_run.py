@@ -963,7 +963,8 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             compat_path: Path = (
                 Path(env["WINEPREFIX"]).expanduser().resolve(strict=False)
             )
-            with unix_flock(f"{UMU_LOCAL}/{FileLock.Prefix.value}"):
+            compat_path.mkdir(parents=True, exist_ok=True)
+            with unix_flock(f"{compat_path}/{FileLock.Prefix.value}"):
                 setup_pfx(compat_path)
 
         # Configure the environment
