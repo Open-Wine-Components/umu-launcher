@@ -114,8 +114,15 @@ def setup_pfx(path: Path) -> None:
 
 
 def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], bool]:
-    """Before executing a game, check for environment variables and set them.
+    """Before executing a game, check for environment variables and set them."""
+    """We need to clear LD_PRELOAD in order for umu to work properly inside gamescope session """
+    """https://github.com/Open-Wine-Components/umu-launcher/pull/497"""
+    """https://github.com/Open-Wine-Components/umu-launcher/pull/497#issuecomment-3969442101"""
+    """https://github.com/Open-Wine-Components/umu-launcher/pull/579"""
+    if os.environ.get("LD_PRELOAD"):
+        os.environ["LD_PRELOAD"] = ""
 
+    """
     GAMEID is strictly required and the client is responsible for setting this.
     When the client only sets the GAMEID, the WINE prefix directory will be
     created as $HOME/Games/umu/$GAMEID.
@@ -375,7 +382,9 @@ def build_command(
                 raise FileNotFoundError(msg)
             exe_path = resolved
 
-        with Popen([exe_path, "--list"], stdout=PIPE, stderr=PIPE) as proc:  # nosec B603
+        with Popen(
+            [exe_path, "--list"], stdout=PIPE, stderr=PIPE
+        ) as proc:  # nosec B603
             out, err = proc.communicate()
         bus_names = out.decode("utf-8").splitlines()
         pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
@@ -773,7 +782,9 @@ def resolve_runtime() -> UmuRuntime:
         layer = CompatLayer(toolmanifest.parent, Path())
         runtime = layer.required_runtime
     else:
-        err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
+        err: str = (
+            f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
+        )
         raise FileNotFoundError(err)
 
     return runtime
