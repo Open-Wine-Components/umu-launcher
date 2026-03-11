@@ -71,3 +71,4 @@ in
     # reports the Python __version__ string (e.g. "1.3.0"). Skip this check.
     doInstallCheck = false;
   }
+)
