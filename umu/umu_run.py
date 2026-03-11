@@ -737,9 +737,9 @@ def resolve_runtime() -> UmuRuntime:
     # Backwards compatibility stuff, map RUNTIMEPATH tokens to
     # umu's passthrough compatibility layers for runtimes.
     runtimepath_compat = {
-        "steamrt2": "umu-soldier",
-        "steamrt3": "umu-sniper",
-        "steamrt4": "umu-steamrt4",
+        "steamrt2": ProtonVersion.UMUSoldier.value,
+        "steamrt3": ProtonVersion.UMUSniper.value,
+        "steamrt4": ProtonVersion.UMUSteamRT4.value,
     }
     if os.environ.get("RUNTIMEPATH") and (
         os.environ.get("UMU_NO_PROTON") or not os.environ.get("PROTONPATH")
@@ -748,14 +748,17 @@ def resolve_runtime() -> UmuRuntime:
 
     # default to UMU-Latest if PROTONPATH is not set
     if not os.environ.get("PROTONPATH"):
-        os.environ["PROTONPATH"] = "UMU-Latest"
+        os.environ["PROTONPATH"] = ProtonVersion.UMULatest.value
 
     named_runtimes = {
-        RUNTIME_NAMES["steamrt4"]: {"umu-steamrt4"},
-        RUNTIME_NAMES["steamrt4-arm64"]: {"umu-steamrt4-arm64"},
-        RUNTIME_NAMES["sniper"]: {"GE-Proton", "GE-Latest", "UMU-Latest", "umu-sniper"},
-        RUNTIME_NAMES["sniper-arm64"]: {"umu-sniper-arm64"},
-        RUNTIME_NAMES["soldier"]: {"umu-scout", "umu-soldier"},
+        RUNTIME_NAMES["steamrt4"]: { ProtonVersion.UMUSteamRT4.value },
+        RUNTIME_NAMES["steamrt4-arm64"]: { ProtonVersion.UMUSteamRT4_arm64.value },
+        RUNTIME_NAMES["sniper"]: {
+            ProtonVersion.UMUSniper.value, ProtonVersion.UMULatest.value,
+            ProtonVersion.GEProton.value, ProtonVersion.GELatest.value,
+        },
+        RUNTIME_NAMES["sniper-arm64"]: { ProtonVersion.UMUSniper_arm64.value },
+        RUNTIME_NAMES["soldier"]: { ProtonVersion.UMUScout.value, ProtonVersion.UMUSoldier.value },
     }
 
     for name in named_runtimes:
