@@ -35,9 +35,9 @@ jobs:
     - name: Make release
       run: |
         # TODO: Figure out release without requiring root
-        sudo make release
+        sudo env PATH=$PATH make release
     - name: Make user install
       run: |
         ./configure.sh --user-install
         # TODO: Figure out user install without requiring root
-        sudo make install
+        sudo env PATH=$PATH make install

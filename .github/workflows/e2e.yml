@@ -37,7 +37,7 @@ jobs:
       - name: Make system install
         run: |
           ./configure.sh --prefix=/usr
-          sudo make install
+          sudo env PATH=$PATH make install
       - name: Run shellcheck
         run: |
           shellcheck tests/*.sh
