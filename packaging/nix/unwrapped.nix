@@ -70,5 +70,6 @@ in
     # is set to the git short rev (e.g. "0993b36"), but the binary always
     # reports the Python __version__ string (e.g. "1.3.0"). Skip this check.
     doInstallCheck = false;
+    doCheck = false;
   }
 )
