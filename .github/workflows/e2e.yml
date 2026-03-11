@@ -13,100 +13,180 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      # Make rustup/cargo locations explicit and stable across steps
+      CARGO_HOME: ${{ github.workspace }}/.cargo
+      RUSTUP_HOME: ${{ github.workspace }}/.rustup
+
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Install dependencies
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@1.83
+
+      - name: Ensure Rust toolchain is installed + default
+        shell: bash
         run: |
+          set -euxo pipefail
+          echo "${CARGO_HOME}/bin" >> "$GITHUB_PATH"
+
+          rustup --version
+          rustup toolchain install 1.83
+          rustup default 1.83
+
+          rustup show
+          cargo --version
+          rustc --version
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
           sudo apt-get update
           echo "deb http://archive.ubuntu.com/ubuntu/ noble noble-updates noble-backports main universe restricted multiverse" | sudo tee -a /etc/apt/sources.list
-          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck bubblewrap cargo libzstd1 python3-xxhash python3-cbor2 apparmor apparmor-profiles apparmor-profiles-extra python3-xlib python3-hatch-vcs
+          sudo apt-get install meson scdoc python3-hatchling python3-build python3-installer python3-filelock shellcheck bubblewrap libzstd1 python3-xxhash python3-cbor2 apparmor apparmor-profiles apparmor-profiles-extra python3-xlib python3-hatch-vcs
           sudo apparmor_parser /usr/share/apparmor/extra-profiles/bwrap-userns-restrict
           python3 -m pip install --upgrade pip
           pip install uv
+
       - name: Initialize submodules
+        shell: bash
         run: |
+          set -euxo pipefail
           git submodule update --init --recursive
+
       - name: Make user install
+        shell: bash
         run: |
+          set -euxo pipefail
           ./configure.sh --user-install
           make install
+
       - name: Make system install
+        shell: bash
         run: |
+          set -euxo pipefail
           ./configure.sh --prefix=/usr
-          sudo make install
+          # Preserve rustup/cargo env so the cargo build invoked during install
+          # uses the same toolchain (1.83) instead of root's empty default.
+          sudo -E env \
+            "PATH=$PATH" \
+            "HOME=$HOME" \
+            "CARGO_HOME=$CARGO_HOME" \
+            "RUSTUP_HOME=$RUSTUP_HOME" \
+            make install
+
       - name: Run shellcheck
+        shell: bash
         run: |
+          set -euxo pipefail
           shellcheck tests/*.sh
+
       - name: Test delta update
+        shell: bash
         run: |
+          set -euxo pipefail
           python3 tests/test_delta.py
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
+
       - name: Test steamrt install
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+
       - name: Test steamrt install w/ tmpfs
+        shell: bash
         run: |
+          set -euxo pipefail
           sudo mount -o size=1G -t tmpfs none /tmp
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
           sudo mount -o remount,size=500M /tmp
+
       - name: Test steamrt install w/ free-threaded Python
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.14t --clear
           source .venv/bin/activate
           PYTHON_GIL=0 sh tests/test_install.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+
       - name: Test obsolete steamrt install
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_install_obsolete.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+
       - name: Test steamrt update
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_update.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+
       - name: Test steamrt resume
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_resume.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
+
       - name: Test Proton resume
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_proton_resume.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
+
       - name: Test Filelock
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_flock.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
+
       - name: Test winetricks
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_winetricks.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/.local/share/Steam/compatibilitytools.d"
+
       - name: Test configuration file
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.11 --clear
           source .venv/bin/activate
           sh tests/test_config.sh
           rm -rf "$HOME/.local/share/umu" "$HOME/Games/umu" "$HOME/.local/share/Steam/compatibilitytools.d" "$HOME/.cache/umu"
+
       - name: Test offline launch
+        shell: bash
         run: |
+          set -euxo pipefail
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_offline.sh
