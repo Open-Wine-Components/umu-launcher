@@ -155,9 +155,6 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
     env["WINEPREFIX"] = str(pfx)
 
     do_download = False
-    # Skip Proton if running a native Linux executable
-    if os.environ.get("UMU_NO_PROTON") == "1":
-        return env, do_download
 
     # Proton Version
     path: Path = STEAM_COMPAT.joinpath(os.environ.get("PROTONPATH", ""))
@@ -852,8 +849,13 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         )
         raise ValueError(err)
     # runtime_name, runtime_variant, runtime_appid
-    _, runtime_variant, _ = runtime_version
+    runtime_name, runtime_variant, _ = runtime_version
     os.environ["RUNTIMEPATH"] = runtime_variant
+    # FIXME: When UMU_NO_PROTON is set, but a compatibility tools has also been set,
+    # either manually or automatically, run the required runtime tool of the requested tool.
+    # I.e. if set proton needs steamrt4-arm64, with UMU_NO_PROTON=1 run its required runtime.
+    if os.environ.get("UMU_NO_PROTON") == "1":
+        os.environ["PROTONPATH"] = f"umu-{runtime_name}"
 
     # Test the network environment and fail early if the user is trying
     # to run umu-run offline because an internet connection is required
