@@ -15,7 +15,9 @@
     rename = old: new: lib.warn "`${old}` has been renamed to `${new}`";
 
     # Supported platforms & package sets
-    platforms = lib.platforms.linux;
+    # umu-launcher requires x86_64-linux due to the Steam FHS environment needing
+    # 32-bit (i686) multilib libraries for running Windows games via Proton.
+    platforms = [ "x86_64-linux" ];
     supportedPkgs = lib.filterAttrs (system: _: builtins.elem system platforms) nixpkgs.legacyPackages;
 
     # Use the current revision for the default version

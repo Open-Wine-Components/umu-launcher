@@ -48,4 +48,10 @@ in
       # Fails with AssertionError: SystemExit not raised
       "test_parse_args_noopts"
     ];
+
+    # The versionCheckHook checks that the derivation's version attribute
+    # appears in `umu-run --version`. When building from the flake, the version
+    # is set to the git short rev (e.g. "0993b36"), but the binary always
+    # reports the Python __version__ string (e.g. "1.3.0"). Skip this check.
+    doInstallCheck = false;
   }
