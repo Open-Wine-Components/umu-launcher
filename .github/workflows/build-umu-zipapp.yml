@@ -36,7 +36,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@1.83
+        uses: dtolnay/rust-toolchain@1.85
 
       - name: Configure Git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"

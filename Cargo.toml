@@ -2,7 +2,7 @@
 name = "umu"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.83"
+rust-version = "1.85"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
@@ -16,4 +16,4 @@ ssh-key = { version = "0.6.7", default-features = false, features = [
     "alloc",
 ] }
 sha2 = "0.10.9"
-base16ct = { version = "0.2.0", features = ["alloc"] }
+base16ct = { version = "1.0.0", features = ["alloc"] }

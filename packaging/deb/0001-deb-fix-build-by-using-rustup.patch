@@ -62,7 +62,7 @@ index 1ad390ff..e4088650 100644
 +	curl -LJO --tlsv1.3 $(RUSTUP_URL)
 +	chmod u+x ./rustup-init.sh
 +	$(SHELL_INTERPRETER) rustup-init.sh --default-toolchain none -y
-+	$(RUSTUP_BIN) toolchain install 1.83
++	$(RUSTUP_BIN) toolchain install 1.85
 +	$(CARGO_BIN) build -r --target-dir $(OBJDIR)
  	touch $(@)
  

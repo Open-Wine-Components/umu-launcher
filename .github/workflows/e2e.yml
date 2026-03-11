@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@1.83
+        uses: dtolnay/rust-toolchain@1.85
 
       - name: Ensure Rust toolchain is installed + default
         shell: bash
@@ -33,8 +33,8 @@ jobs:
           echo "${CARGO_HOME}/bin" >> "$GITHUB_PATH"
 
           rustup --version
-          rustup toolchain install 1.83
-          rustup default 1.83
+          rustup toolchain install 1.85
+          rustup default 1.85
 
           rustup show
           cargo --version
@@ -70,7 +70,7 @@ jobs:
           set -euxo pipefail
           ./configure.sh --prefix=/usr
           # Preserve rustup/cargo env so the cargo build invoked during install
-          # uses the same toolchain (1.83) instead of root's empty default.
+          # uses the same toolchain (1.85) instead of root's empty default.
           sudo -E env \
             "PATH=$PATH" \
             "HOME=$HOME" \
