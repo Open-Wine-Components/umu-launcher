@@ -19,6 +19,8 @@ jobs:
           fetch-depth: 0
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@1.83
+      - name: Set default Rust toolchain
+        run: rustup default 1.83
       - name: Install dependencies
         run: |
           sudo apt-get update
