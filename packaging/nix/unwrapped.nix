@@ -67,9 +67,9 @@ in
 
     # The versionCheckHook checks that the derivation's version attribute
     # appears in `umu-run --version`. When building from the flake, the version
-    # is set to the git short rev (e.g. "0993b36"), but the binary always
-    # reports the Python __version__ string (e.g. "1.3.0"). Skip this check.
-    doInstallCheck = false;
-    doCheck = false;
+    # is suffixed with the last modified date (e.g. "1.3.0-unstable-2026-03-11"),
+    # but the binary always reports the Python __version__ string (e.g. "1.3.0").
+    # Skip this check.
+    dontVersionCheck = true;
   }
 )
