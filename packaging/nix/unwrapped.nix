@@ -3,7 +3,7 @@
   lib,
   rustPlatform,
   umu-launcher-unwrapped,
-  version,
+  lastModifiedDate,
   # Freeform overrides
   ...
 } @ args:
@@ -20,7 +20,23 @@ assert lib.assertMsg (lib.versionAtLeast umu-launcher-unwrapped.version "1.2.0")
     "lib"
     "rustPlatform"
     "umu-launcher-unwrapped"
-    "version"
+    "lastModifiedDate"
+  ];
+
+  # Use the in-tree version
+  version = lib.pipe ../../umu/__init__.py [
+    builtins.readFile
+    (lib.splitString "\n")
+    (map (lib.match ''^__version__ = "([^"]+)".*$''))
+    (lib.findFirst lib.isList (throw "No version found in __init__.py"))
+    builtins.head
+  ];
+
+  # Format date as YYYY-MM-DD
+  date = lib.pipe lastModifiedDate [
+    (lib.match "^([0-9]{4})([0-9]{2})([0-9]{2}).*$")
+    (result: lib.throwIf (result == null) "umu-launcher-unwrapped: Invalid lastModifiedDate format: ${lastModifiedDate}" result)
+    (lib.concatStringsSep "-")
   ];
 
   # Use the unwrapped package as-is or override it,
@@ -30,8 +46,8 @@ assert lib.assertMsg (lib.versionAtLeast umu-launcher-unwrapped.version "1.2.0")
     then umu-launcher-unwrapped
     else umu-launcher-unwrapped.override overrideArgs;
 in
-  package.overridePythonAttrs {
-    inherit version;
+  package.overridePythonAttrs (old: {
+    version = "${version}-unstable-${date}";
     src = ../../.;
     cargoDeps = rustPlatform.importCargoLock {
       lockFile = ../../Cargo.lock;
