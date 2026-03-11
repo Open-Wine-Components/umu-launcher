@@ -2614,7 +2614,7 @@ class TestGameLauncher(unittest.TestCase):
         entry_point, verb, sep, shim, umutool, exe = [*test_command]
         self.assertEqual(
             entry_point,
-            str(self.test_local_share / "_v2-entry-point"),
+            str(self.test_local_share / "umu"),
             "Expected an entry point",
         )
         self.assertEqual(verb, f"--verb={self.test_verb}", "Expected PROTON_VERB")
