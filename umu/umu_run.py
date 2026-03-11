@@ -933,7 +933,9 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         # Setup the launcher and runtime files
         _, do_download = check_env(env)
 
-        if runtime_variant:
+        if runtime_name == "host":
+            download_proton(env, session_pools, download=do_download)
+        elif runtime_variant:
             UMU_LOCAL.joinpath(runtime_variant).mkdir(parents=True, exist_ok=True)
 
             future: Future = thread_pool.submit(
