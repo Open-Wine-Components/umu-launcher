@@ -161,8 +161,10 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
     if os.environ.get("PROTONPATH") and path.is_dir():
         os.environ["PROTONPATH"] = str(STEAM_COMPAT.joinpath(os.environ["PROTONPATH"]))
 
-    # Proton Codename
-    if os.environ.get("PROTONPATH") in {pver.value for pver in ProtonVersion}:
+    # Proton
+    tool_tokens = {pver.value for pver in ProtonVersion}
+    tool_tokens.remove(ProtonVersion.UMUProton.value)
+    if os.environ.get("PROTONPATH") in tool_tokens:
         do_download = True
 
     if "PROTONPATH" not in os.environ:
