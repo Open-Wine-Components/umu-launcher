@@ -51,8 +51,8 @@ SessionCaches = tuple[Path, Path]
 class ProtonVersion(Enum):
     """Represent valid version keywords for Proton."""
 
-    GE = "GE-Proton"
-    UMU = "UMU-Proton"
+    GEProton = "GE-Proton"
+    UMUProton = "UMU-Proton"
     GELatest = "GE-Latest"
     UMULatest = "UMU-Latest"
     UMUScout = "umu-scout"
@@ -271,7 +271,7 @@ def _fetch_releases(
     protonpath = os.environ.get("PROTONPATH")
 
     if protonpath in (
-        ProtonVersion.GE.value,
+        ProtonVersion.GEProton.value,
         ProtonVersion.GELatest.value,
     ):
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
@@ -453,7 +453,7 @@ def _get_from_compat(
     from a digest mismatch, request failure or unreachable network, the latest
     existing Proton build of that same version will be used
     """
-    version: str = os.environ.get("PROTONPATH", ProtonVersion.UMU.value)
+    version: str = os.environ.get("PROTONPATH", ProtonVersion.UMUProton.value)
 
     for compat in compats:
         try:
@@ -502,7 +502,7 @@ def _get_latest(
     # Name of the Proton directory (e.g., GE-Proton9-7)
     proton: str
     # Name of the Proton version, which is either UMU-Proton or GE-Proton
-    version: str = ProtonVersion.UMU.value
+    version: str = ProtonVersion.UMUProton.value
     lock: str = f"{UMU_LOCAL}/{FileLock.Compat.value}"
     latest_candidates: set[str]
 
@@ -710,7 +710,7 @@ def _get_delta(
         # Apply the patch
         for content in cbor["contents"]:
             src: str = content["source"]
-            if src.startswith((ProtonVersion.GE.value, ProtonVersion.UMU.value)):
+            if src.startswith((ProtonVersion.GEProton.value, ProtonVersion.UMUProton.value)):
                 patchers.append(_apply_delta(proton, content, thread_pool))
                 continue
             subdir: Path | None = next(umu_compat.joinpath(version).rglob(src), None)
