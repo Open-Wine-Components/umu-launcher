@@ -29,11 +29,14 @@ jobs:
         run: apt update -y
 
       - name: Install build dependencies
-        run: apt install -y python3-venv python3-all bash make scdoc python3-hatchling python3-installer python3-build cargo git
+        run: apt install -y python3-venv python3-all bash make scdoc python3-hatchling python3-installer python3-build git curl
 
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@1.83
 
       - name: Configure Git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
