@@ -1,6 +1,8 @@
+import json
 import os
 import shutil
 import time
+import urllib.parse
 from concurrent.futures import ALL_COMPLETED, FIRST_EXCEPTION, ThreadPoolExecutor
 from concurrent.futures import wait as futures_wait
 from enum import Enum
@@ -10,15 +12,15 @@ from importlib.util import find_spec
 from itertools import chain
 from pathlib import Path
 from re import split as resplit
-from shutil import move
+from shutil import move, rmtree
 from tempfile import TemporaryDirectory, mkdtemp
 from typing import Any
 
-import vdf
 from urllib3.exceptions import HTTPError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
+from umu import vdf
 from umu.umu_bspatch import Content, ContentContainer, CustomPatcher
 from umu.umu_consts import (
     STEAM_COMPAT,
@@ -56,7 +58,9 @@ class ProtonVersion(Enum):
     UMUScout = "umu-scout"
     UMUSoldier = "umu-soldier"
     UMUSniper = "umu-sniper"
+    UMUSniper_arm64 = "umu-sniper-arm64"
     UMUSteamRT4 = "umu-steamrt4"
+    UMUSteamRT4_arm64 = "umu-steamrt4-arm64"
 
 
 def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str, str]:
@@ -111,11 +115,17 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
     When 'PROTONPATH' is 'umu-soldier' or 'umu-sniper', create a shim compatibility
     tool that requires the respective runtime and launches the application in that runtime.
     """
-    if not (name and name in {
-        ProtonVersion.UMUSoldier.value,
-        ProtonVersion.UMUSniper.value,
-        ProtonVersion.UMUSteamRT4.value
-    }):
+    if not (
+        name
+        and name
+        in {
+            ProtonVersion.UMUSoldier.value,
+            ProtonVersion.UMUSniper.value,
+            ProtonVersion.UMUSniper_arm64.value,
+            ProtonVersion.UMUSteamRT4.value,
+            ProtonVersion.UMUSteamRT4_arm64.value,
+        }
+    ):
         return None
 
     rt_appid = RUNTIME_VERSIONS[RUNTIME_NAMES[name.removeprefix("umu-")]].appid
@@ -132,11 +142,16 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
             return env
         shutil.rmtree(tool_path)
 
-    entry_point = "#!/bin/sh\nexec \"$@\"\n"
+    entry_point = '#!/bin/sh\nexec "$@"\n'
     compatibilitytool = {
         "compatibilitytools": {
             "compat_tools": {
-                name: {"display_name": name, "install_path": ".", "from_oslist": "linux", "to_oslist": "linux",}
+                name: {
+                    "display_name": name,
+                    "install_path": ".",
+                    "from_oslist": "linux",
+                    "to_oslist": "linux",
+                }
             }
         }
     }
@@ -167,6 +182,7 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
     os.environ["PROTONPATH"] = str(tool_path)
     env["PROTONPATH"] = str(tool_path)
     return env
+
 
 def _fetch_patch(session_pools: SessionPools) -> bytes:
     resp: BaseHTTPResponse
@@ -213,6 +229,28 @@ def _fetch_patch(session_pools: SessionPools) -> bytes:
     return resp.data  # type: ignore
 
 
+def _umu_scout_update(
+    http_pool: PoolManager, headers: dict, protonpath: str, assets: list
+) -> bool:
+    """Check for updates to the umu-scout tool against the version manifest in the repo's releases."""
+    umu_scout_versions = UMU_COMPAT.joinpath(protonpath, "VERSIONS.txt")
+    if not umu_scout_versions.exists():
+        return True
+    for asset in assets:
+        if asset["name"].endswith("version.json"):
+            resp = http_pool.request(
+                HTTPMethod.GET.value, asset["browser_download_url"], headers=headers
+            )
+            if resp.status != HTTPStatus.OK:
+                return False
+            version_json = json.loads(resp.data)
+            with UMU_COMPAT.joinpath(protonpath, "VERSIONS.txt").open("r") as ver_fd:
+                version_txt = ver_fd.read()
+            if version_json["app1070560"] in version_txt:
+                return False
+    return True
+
+
 def _fetch_releases(
     session_pools: SessionPools,
 ) -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
@@ -220,7 +258,7 @@ def _fetch_releases(
     resp: BaseHTTPResponse
     digest_asset: tuple[str, str]
     proton_asset: tuple[str, str]
-    releases: list[dict[str, Any]]
+    assets: list[dict[str, Any]]
     _, http_pool = session_pools
     url: str = "https://api.github.com"
     repo: str = "/repos/Open-Wine-Components/umu-proton/releases/latest"
@@ -230,32 +268,40 @@ def _fetch_releases(
         "User-Agent": "",
     }
 
-    if os.environ.get("PROTONPATH") in {
+    protonpath = os.environ.get("PROTONPATH")
+
+    if protonpath in (
         ProtonVersion.GE.value,
         ProtonVersion.GELatest.value,
-    }:
+    ):
         repo = "/repos/GloriousEggroll/proton-ge-custom/releases/latest"
 
-    if os.environ.get("PROTONPATH") in {ProtonVersion.UMUScout.value}:
+    if protonpath == ProtonVersion.UMUScout.value:
         repo = "/repos/loathingKernel/umu-scout/releases/latest"
 
     resp = http_pool.request(HTTPMethod.GET.value, f"{url}{repo}", headers=headers)
     if resp.status != HTTPStatus.OK:
         return ()
 
-    releases = resp.json()["assets"]
+    assets = resp.json()["assets"]
+
+    # Special case version check for umu-scout, because why the hell not...
+    if protonpath == ProtonVersion.UMUScout.value and not _umu_scout_update(
+        http_pool, headers, protonpath, assets
+    ):
+        return ()
 
     asset_count: int = 0
     asset_max: int = 2
-    for release in releases:
-        if release["name"].endswith("sum"):
-            digest_asset = (release["name"], release["browser_download_url"])
+    for asset in assets:
+        if asset["name"].endswith("sum"):
+            digest_asset = (asset["name"], asset["browser_download_url"])
             asset_count += 1
             continue
-        if release["name"].endswith(("tar.gz", "tar.xz")) and release["name"].startswith(
+        if asset["name"].endswith(("tar.gz", "tar.xz")) and asset["name"].startswith(
             ("UMU-Proton", "GE-Proton", "umu-scout")
         ):
-            proton_asset = (release["name"], release["browser_download_url"])
+            proton_asset = (asset["name"], asset["browser_download_url"])
             asset_count += 1
             continue
         if asset_count == asset_max:
@@ -263,7 +309,7 @@ def _fetch_releases(
 
     if asset_count != asset_max:
         log.warning("Failed to acquire release assets from '%s'", url)
-        log.debug("'%' returned: %s", url, releases)
+        log.debug("'%' returned: %s", url, assets)
         return ()
 
     return digest_asset, proton_asset
@@ -288,7 +334,11 @@ def _fetch_proton(
     hashsum = sha512()
 
     # Verify the scheme from Github for resources
-    if not tar_url.startswith("https:") or not proton_hash_url.startswith("https:"):
+    parsed_proton_hash_url: urllib.parse.ParseResult = urllib.parse.urlparse(
+        proton_hash_url
+    )
+    parsed_tar_url: urllib.parse.ParseResult = urllib.parse.urlparse(tar_url)
+    if parsed_tar_url.scheme != "https" or parsed_proton_hash_url.scheme != "https":
         err: str = f"Scheme in URLs is not 'https:': {(tar_url, proton_hash_url)}"
         raise ValueError(err)
 
@@ -300,7 +350,7 @@ def _fetch_proton(
     if resp.status != HTTPStatus.OK:
         err: str = (
             f"Unable to download {proton_hash}\n"
-            f"{resp.getheader('Host')} returned the status: {resp.status}"
+            f"{parsed_proton_hash_url.hostname} returned the status: {resp.status}"
         )
         raise HTTPError(err)
 
@@ -358,7 +408,7 @@ def _fetch_proton(
             HTTPStatus.PARTIAL_CONTENT,
             HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE,
         }:
-            err: str = f"{resp.getheader('Host')} returned the status: {resp.status}"
+            err: str = f"{parsed_tar_url.hostname} returned the status: {resp.status}"
             raise HTTPError(err)
 
         # Only write our file if we're resuming or downloading first time
@@ -465,7 +515,7 @@ def _get_latest(
     latest_candidates = {
         ProtonVersion.GELatest.value,
         ProtonVersion.UMULatest.value,
-        ProtonVersion.UMUScout.value
+        ProtonVersion.UMUScout.value,
     }
 
     if os.environ.get("PROTONPATH") in {member.value for member in ProtonVersion}:
@@ -485,7 +535,7 @@ def _get_latest(
             # Once acquiring the lock check if Proton hasn't been installed
             if steam_compat.joinpath(proton).is_dir():
                 raise FileExistsError
-            if umu_compat.joinpath(version).is_dir():
+            if version != "umu-scout" and umu_compat.joinpath(version).is_dir():
                 raise FileExistsError
             # Download the archive to a temporary directory
             _fetch_proton(env, session_caches, assets, session_pools)
@@ -559,7 +609,10 @@ def _install_proton(
     folder = cache.joinpath(name)
     if os.environ.get("PROTONPATH") in latest_candidates:
         log.info("%s -> %s", folder, umu_compat)
-        move(folder, umu_compat / os.environ["PROTONPATH"])
+        target = umu_compat / os.environ["PROTONPATH"]
+        if target.exists():
+            rmtree(target)
+        move(folder, target)
     else:
         log.info("%s -> %s", folder, steam_compat)
         move(folder, steam_compat)

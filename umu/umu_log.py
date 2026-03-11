@@ -1,11 +1,6 @@
 import os
 import sys
-from logging import (
-    Formatter,
-    Logger,
-    LogRecord,
-    StreamHandler,
-)
+from logging import Formatter, Logger, LogRecord, StreamHandler
 
 
 class Color:  # noqa: D101

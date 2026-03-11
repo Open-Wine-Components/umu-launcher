@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        version: ["3.10"]
+        version: ["3.10", "3.11", "3.12", "3.13", "3.14.0-rc.3"]
 
     runs-on: ubuntu-latest
 
@@ -34,4 +34,4 @@ jobs:
       - name: Check types with mypy
         run: |
           source .venv/bin/activate
-          mypy .
+          mypy --enable-incomplete-feature=NewGenericSyntax .

@@ -33,15 +33,15 @@ Suggests: libudev0, nvidia-driver-libs, nvidia-vulkan-icd, pipewire
 Description: A tool for launching non-steam games with proton.
 
 Package: python3-umu-launcher
-Architecture: amd64
+Architecture: any
 Depends:
  ${shlibs:Depends},
  ${misc:Depends},
  python3,
  python3-xlib (>= 0.33),
  apparmor-profiles,
- libgl1-mesa-dri:i386,
- libglx-mesa0:i386,
+ libgl1-mesa-dri:i386 [amd64],
+ libglx-mesa0:i386 [amd64],
  python3-pyzstd,
  python3-xxhash,
  python3-truststore,

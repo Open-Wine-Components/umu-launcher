@@ -1,8 +1,10 @@
+import errno
 import os
+import platform
 import sys
 from collections.abc import Generator
 from contextlib import contextmanager
-from ctypes import CDLL
+from ctypes import CDLL, get_errno
 from ctypes.util import find_library
 from enum import IntFlag
 from fcntl import LOCK_EX, LOCK_UN, flock
@@ -13,7 +15,7 @@ from pathlib import Path
 from re import Pattern
 from re import compile as re_compile
 from shutil import which
-from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+from subprocess import PIPE, STDOUT, Popen, TimeoutExpired  # nosec B404
 from tarfile import open as taropen
 from tempfile import gettempdir, mkdtemp
 from typing import Any
@@ -21,8 +23,11 @@ from typing import Any
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
-from umu.umu_consts import TMPFS_MIN, UMU_CACHE, UMU_LOCAL, WINETRICKS_SETTINGS_VERBS
+from umu.umu_consts import TMPFS_MIN, UMU_CACHE, WINETRICKS_SETTINGS_VERBS
 from umu.umu_log import log
+
+INSTALL_MARKER = ".installed.ok"
+INSTALL_MARKER_TMP = ".installed.ok.tmp"
 
 
 class Renameat2(IntFlag):
@@ -87,7 +92,8 @@ def get_library_paths() -> set[str]:
     ldconfig: str = which("ldconfig", path=ldconfig_paths) or ""
     root = "/"
 
-    if not ldconfig:
+    ldconfig_path = which(ldconfig)
+    if ldconfig_path is None:
         log.warning("ldconfig not found in $PATH, cannot find library paths")
         return library_paths
 
@@ -98,8 +104,8 @@ def get_library_paths() -> set[str]:
     try:
         # Here, opt to using the ld.so cache similar to the stdlib
         # implementation of _findSoname_ldconfig.
-        with Popen(
-            (ldconfig, "-p"),
+        with Popen(  # nosec B603
+            (ldconfig_path, "-p"),
             text=True,
             encoding="utf-8",
             stdout=PIPE,
@@ -128,27 +134,30 @@ def run_zenity(command: str, opts: list[str], msg: str) -> int:
 
     Intended to be used for long running operations (e.g. large file downloads)
     """
-    zenity: str = which("zenity") or ""
-    cmd: str = which(command) or ""
     ret: int = 0  # Exit code returned from zenity
 
-    if not zenity:
+    zenity_path: str | None = which("zenity")
+    if zenity_path is None:
         log.warning("zenity was not found in system")
         return -1
 
-    if not cmd:
+    cmd_path: str | None = which(command)
+    if cmd_path is None:
         log.warning("%s was not found in system", command)
         return -1
 
+    zenity: str = zenity_path
+    cmd: str = cmd_path
+
     # Communicate a process with zenity
     with (  # noqa: SIM117
-        Popen(
+        Popen(  # nosec B603
             [cmd, *opts],
             stdout=PIPE,
             stderr=STDOUT,
         ) as proc,
     ):
-        with Popen(
+        with Popen(  # nosec B603
             [
                 f"{zenity}",
                 "--progress",
@@ -365,11 +374,43 @@ def extract_tarfile(path: Path, dest: Path) -> Path | None:
     return dest
 
 
-def has_umu_setup(path: Path = UMU_LOCAL) -> bool:
+def marker_path(runtime_dir: Path) -> Path:
+    """Return install marker path."""
+    return runtime_dir / INSTALL_MARKER
+
+
+def has_runtime_installed(runtime_dir: Path) -> bool:
+    """Return True if the runtime has completed installation."""
+    try:
+        return marker_path(runtime_dir).is_file()
+    except OSError:
+        return False
+
+
+def write_install_marker(runtime_dir: Path) -> None:
+    """Write the install marker atomically-ish after successful install."""
+    marker = marker_path(runtime_dir)
+    tmp = runtime_dir / INSTALL_MARKER_TMP
+    tmp.write_text("ok\n", encoding="utf-8")
+    tmp.replace(marker)
+
+
+def has_umu_setup(path: Path, machine: str) -> bool:
     """Check if umu has been setup in our runtime directory."""
-    return path.exists() and any(
-        file for file in path.glob("*") if not file.name.endswith("lock")
-    )
+    if not path.exists():
+        return False
+
+    try:
+        if (
+            machine == platform.machine()
+            and path.is_dir()
+            and has_runtime_installed(path)
+        ):
+            return True
+    except OSError:
+        return False
+
+    return False
 
 
 # Copyright (C) 2005-2010   Gregory P. Smith (greg@krypto.org)
@@ -425,13 +466,56 @@ def _renameat2(
     newpath: str,
     flags: Renameat2,
 ) -> None:
-    libc: CDLL = CDLL(get_libc())
+    # Load libc with errno tracking enabled
+    libc: CDLL = CDLL(get_libc(), use_errno=True)
 
     ret = libc.renameat2(olddirfd, oldpath.encode(), newdirfd, newpath.encode(), flags)
     if ret == 0:
         return
 
-    raise OSError(ret, os.strerror(ret), oldpath, None, newpath)
+    err = get_errno()
+    raise OSError(err, os.strerror(err), oldpath, None, newpath)
+
+
+def _renameat2_fallback(src: os.PathLike, dest: os.PathLike, flags: int) -> None:
+    """Fallback implementation for renameat2.
+
+    Supports:
+        - plain rename
+        - RENAME_EXCHANGE (best-effort, not atomic on NFS)
+    """
+    src = Path(src)
+    dest = Path(dest)
+
+    if flags == 0:
+        # Simple rename fallback
+        src.replace(dest)
+        return
+
+    if flags == Renameat2.RENAME_EXCHANGE:
+        # Best-effort exchange fallback
+        tmp = dest.with_name(dest.name + ".renameat2-tmp")
+
+        # dest -> tmp
+        dest.replace(tmp)
+        try:
+            # src -> dest
+            src.replace(dest)
+            # tmp -> src
+            tmp.replace(src)
+        except Exception:
+            # Try to restore original state
+            try:
+                if dest.exists():
+                    dest.replace(src)
+            finally:
+                if tmp.exists():
+                    tmp.replace(dest)
+            raise
+
+        return
+
+    raise OSError(errno.ENOTSUP, "renameat2 flags not supported by fallback")
 
 
 @contextmanager
@@ -448,11 +532,21 @@ def _split_dirfd(path: os.PathLike) -> Generator[tuple[int, str], Any, None]:
 
 
 def renameat2(src: os.PathLike, dest: os.PathLike, flags: Renameat2) -> None:
-    """Rename a file using the renameat2 system call."""
+    """Rename a file using the renameat2 system call, with fallback."""
     with _split_dirfd(src) as src_split, _split_dirfd(dest) as dst_split:
-        # Note, renameat2 requires Linux 3.15 and glibc 2.28. Our minimum target
-        # platform is latest Debian, which will have versions 3.15+ and 2.28+.
-        _renameat2(src_split[0], src_split[1], dst_split[0], dst_split[1], flags)
+        try:
+            # Note, renameat2 requires Linux 3.15 and glibc 2.28. Our minimum target
+            # platform is latest Debian, which will have versions 3.15+ and 2.28+.
+            # Though this might fail for filesystems without support, like NFS.
+            _renameat2(src_split[0], src_split[1], dst_split[0], dst_split[1], flags)
+            return
+        except OSError as e:
+            # ENOSYS: kernel or libc does not support renameat2
+            # EINVAL / ENOTSUP: filesystem does not support the flags (e.g. NFS)
+            if e.errno in (errno.ENOSYS, errno.EINVAL, errno.ENOTSUP):
+                _renameat2_fallback(src, dest, flags)
+                return
+            raise
 
 
 def exchange(src: os.PathLike, dest: os.PathLike) -> None:

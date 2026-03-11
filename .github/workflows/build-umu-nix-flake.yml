@@ -9,9 +9,17 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
 
-    # TODO: setup binary cache
+    runs-on: ${{ matrix.runner }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -27,4 +35,3 @@ jobs:
         run: nix flake check ./packaging/nix
       - name: Build
         run: nix build ./packaging/nix
-

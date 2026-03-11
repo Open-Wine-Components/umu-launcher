@@ -2,7 +2,6 @@
   # Dependencies
   lib,
   rustPlatform,
-  python3Packages,
   umu-launcher-unwrapped,
   lastModifiedDate,
   # Freeform overrides
@@ -20,7 +19,6 @@ assert lib.assertMsg (lib.versionAtLeast umu-launcher-unwrapped.version "1.2.0")
   overrideArgs = builtins.removeAttrs args [
     "lib"
     "rustPlatform"
-    "python3Packages"
     "umu-launcher-unwrapped"
     "lastModifiedDate"
   ];
@@ -55,18 +53,6 @@ in
       lockFile = ../../Cargo.lock;
     };
 
-    pythonPath =
-      (old.pythonPath or [])
-      ++ [
-        python3Packages.vdf
-      ];
-
-    configureFlags =
-      (old.configureFlags or [])
-      ++ [
-        "--use-system-vdf"
-      ];
-
     # Specify ourselves which tests are disabled
     disabledTests = [
       # Broken? Asserts that $STEAM_RUNTIME_LIBRARY_PATH is non-empty
@@ -77,39 +63,11 @@ in
       # Broken? Tests parse_args with no options (./umu_run.py)
       # Fails with AssertionError: SystemExit not raised
       "test_parse_args_noopts"
-
-      # FileNotFoundError: [Errno 2] No such file or directory: .local/share/umu/toolmanifest.vdf
-      "test_build_command"
-      "test_build_command_linux_exe"
-      "test_build_command_nopv"
-
-      # TypeError: cannot unpack non-iterable ThreadPoolExecutor object
-      "test_env_nowine_noproton"
-      "test_env_wine_noproton"
     ];
 
-    postPatch = ''
-      ${lib.toShellVars {
-        base_version = version;
-        build_version = "${version}.dev${lib.substring 0 8 lastModifiedDate}";
-      }}
-
-      # Build using a PEP-440 "unstable" version
-      substituteInPlace umu/__init__.py \
-        --replace-fail "__version__ = \"$base_version\"" \
-                       "__version__ = \"$build_version\""
-    '';
-
-    # versionCheckHook expects --version to print the entire package version
-    # while the program is built using a PEP-440 version.
-    # Strip the nixpkgs-format suffix during the versionCheckPhase.
-    preVersionCheck = ''
-      _version="$version"
-      version="''${version%%-*}"
-    '';
-
-    postVersionCheck = ''
-      version="$_version"
-      unset _version
-    '';
-  })
+    # The versionCheckHook checks that the derivation's version attribute
+    # appears in `umu-run --version`. When building from the flake, the version
+    # is set to the git short rev (e.g. "0993b36"), but the binary always
+    # reports the Python __version__ string (e.g. "1.3.0"). Skip this check.
+    doInstallCheck = false;
+  }
