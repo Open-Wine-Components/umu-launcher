@@ -3,6 +3,7 @@ import os
 import signal
 import sys
 import threading
+import time
 from _ctypes import CFuncPtr
 from argparse import Namespace
 from array import array
@@ -282,10 +283,6 @@ def set_env(
     # PATHS
     env["WINEPREFIX"] = str(pfx)
     env["STEAM_COMPAT_DATA_PATH"] = str(pfx)
-    prefix_md5 = hashlib.md5(str(pfx).encode("utf-8")).hexdigest()
-    # proton_md5 = hashlib.md5(str(protonpath).encode("utf-8")).hexdigest()  # noqa: RUF100,S324
-    # env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}_{proton_md5}"
-    env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}"
     env["STEAM_COMPAT_SHADER_PATH"] = str(pfx.joinpath("shadercache"))
     env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_TOOL_PATHS"] = (
@@ -294,6 +291,13 @@ def set_env(
         else f"{str(protonpath)}"
     )
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
+
+    # Launcher service
+    prefix_md5 = hashlib.md5(str(pfx).encode("utf-8")).hexdigest()
+    # proton_md5 = hashlib.md5(str(protonpath).encode("utf-8")).hexdigest()  # noqa: RUF100,S324
+    # env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}_{proton_md5}"
+    env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}"
+    env["UMU_CONTAINER_NSENTER"] = os.environ.get("UMU_CONTAINER_NSENTER") or ""
 
     # Zenity
     env["UMU_ZENITY"] = os.environ.get("UMU_ZENITY") or ""
@@ -368,7 +372,7 @@ def build_command(
         )
 
     nsenter: tuple[str, ...] = ()
-    if launch_client := layer.launch_client:
+    if (launch_client := layer.launch_client) and env.get("UMU_CONTAINER_NSENTER") == "1":
         # launch_client is provided by the runtime layer (not arbitrary user input).
         # Resolve via PATH when needed so we execute a concrete binary.
         exe_path: str
@@ -381,16 +385,21 @@ def build_command(
                 raise FileNotFoundError(msg)
             exe_path = resolved
 
-        with Popen(
-            [exe_path, "--list"], stdout=PIPE, stderr=PIPE
-        ) as proc:  # nosec B603
-            out, err = proc.communicate()
-        bus_names = out.decode("utf-8").splitlines()
-        pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
-        if f"--bus-name={pfx_bus}" in bus_names:
-            nsenter = (exe_path, f"--bus-name={pfx_bus}", "--")
-            env["PROTON_VERB"] = "runinprefix"
-            log.info("Re-entering container through bus '%s'", pfx_bus)
+        attempts: int = 5
+        for trial in range(attempts):
+            with Popen(
+                [exe_path, "--list"], stdout=PIPE, stderr=PIPE
+            ) as proc:  # nosec B603
+                out, err = proc.communicate()
+            bus_names = out.decode("utf-8").splitlines()
+            pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
+            if f"--bus-name={pfx_bus}" in bus_names:
+                nsenter = (exe_path, f"--bus-name={pfx_bus}", "--")
+                env["PROTON_VERB"] = "runinprefix"
+                log.info("Re-entering container through bus '%s'", pfx_bus)
+                break
+            log.info("Failed to find bus name %s (retry %s)", pfx_bus, trial + 1)
+            time.sleep(2)
 
     is_nsenter: bool = bool(nsenter)
     return (
@@ -737,9 +746,9 @@ def resolve_runtime() -> UmuRuntime:
     # Backwards compatibility stuff, map RUNTIMEPATH tokens to
     # umu's passthrough compatibility layers for runtimes.
     runtimepath_compat = {
-        "steamrt2": "umu-soldier",
-        "steamrt3": "umu-sniper",
-        "steamrt4": "umu-steamrt4",
+        "steamrt2": ProtonVersion.UMUSoldier.value,
+        "steamrt3": ProtonVersion.UMUSniper.value,
+        "steamrt4": ProtonVersion.UMUSteamRT4.value,
     }
     if os.environ.get("RUNTIMEPATH") and (
         os.environ.get("UMU_NO_PROTON") or not os.environ.get("PROTONPATH")
@@ -748,14 +757,17 @@ def resolve_runtime() -> UmuRuntime:
 
     # default to UMU-Latest if PROTONPATH is not set
     if not os.environ.get("PROTONPATH"):
-        os.environ["PROTONPATH"] = "UMU-Latest"
+        os.environ["PROTONPATH"] = ProtonVersion.UMULatest.value
 
     named_runtimes = {
-        RUNTIME_NAMES["steamrt4"]: {"umu-steamrt4"},
-        RUNTIME_NAMES["steamrt4-arm64"]: {"umu-steamrt4-arm64"},
-        RUNTIME_NAMES["sniper"]: {"GE-Proton", "GE-Latest", "UMU-Latest", "umu-sniper"},
-        RUNTIME_NAMES["sniper-arm64"]: {"umu-sniper-arm64"},
-        RUNTIME_NAMES["soldier"]: {"umu-scout", "umu-soldier"},
+        RUNTIME_NAMES["steamrt4"]: { ProtonVersion.UMUSteamRT4.value },
+        RUNTIME_NAMES["steamrt4-arm64"]: { ProtonVersion.UMUSteamRT4_arm64.value },
+        RUNTIME_NAMES["sniper"]: {
+            ProtonVersion.UMUSniper.value, ProtonVersion.UMULatest.value,
+            ProtonVersion.GEProton.value, ProtonVersion.GELatest.value,
+        },
+        RUNTIME_NAMES["sniper-arm64"]: { ProtonVersion.UMUSniper_arm64.value },
+        RUNTIME_NAMES["soldier"]: { ProtonVersion.UMUScout.value, ProtonVersion.UMUSoldier.value },
     }
 
     for name in named_runtimes:
@@ -825,6 +837,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
         "UMU_NO_PROTON": "",
+        "UMU_CONTAINER_NSENTER": "",
         "RUNTIMEPATH": "",
     }
     opts: list[str] = []
@@ -933,7 +946,9 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         # Setup the launcher and runtime files
         _, do_download = check_env(env)
 
-        if runtime_variant:
+        if runtime_name == "host":
+            download_proton(env, session_pools, download=do_download)
+        elif runtime_variant:
             UMU_LOCAL.joinpath(runtime_variant).mkdir(parents=True, exist_ok=True)
 
             future: Future = thread_pool.submit(
