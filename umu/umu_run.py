@@ -3,6 +3,7 @@ import os
 import signal
 import sys
 import threading
+import time
 from _ctypes import CFuncPtr
 from argparse import Namespace
 from array import array
@@ -282,10 +283,6 @@ def set_env(
     # PATHS
     env["WINEPREFIX"] = str(pfx)
     env["STEAM_COMPAT_DATA_PATH"] = str(pfx)
-    prefix_md5 = hashlib.md5(str(pfx).encode("utf-8")).hexdigest()
-    # proton_md5 = hashlib.md5(str(protonpath).encode("utf-8")).hexdigest()  # noqa: RUF100,S324
-    # env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}_{proton_md5}"
-    env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}"
     env["STEAM_COMPAT_SHADER_PATH"] = str(pfx.joinpath("shadercache"))
     env["PROTONPATH"] = str(protonpath)
     env["STEAM_COMPAT_TOOL_PATHS"] = (
@@ -294,6 +291,13 @@ def set_env(
         else f"{str(protonpath)}"
     )
     env["STEAM_COMPAT_MOUNTS"] = env["STEAM_COMPAT_TOOL_PATHS"]
+
+    # Launcher service
+    prefix_md5 = hashlib.md5(str(pfx).encode("utf-8")).hexdigest()
+    # proton_md5 = hashlib.md5(str(protonpath).encode("utf-8")).hexdigest()  # noqa: RUF100,S324
+    # env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}_{proton_md5}"
+    env["STEAM_COMPAT_APP_ID"] = f"{prefix_md5}"
+    env["UMU_CONTAINER_NSENTER"] = os.environ.get("UMU_CONTAINER_NSENTER") or ""
 
     # Zenity
     env["UMU_ZENITY"] = os.environ.get("UMU_ZENITY") or ""
@@ -368,7 +372,7 @@ def build_command(
         )
 
     nsenter: tuple[str, ...] = ()
-    if launch_client := layer.launch_client:
+    if (launch_client := layer.launch_client) and env.get("UMU_CONTAINER_NSENTER") == "1":
         # launch_client is provided by the runtime layer (not arbitrary user input).
         # Resolve via PATH when needed so we execute a concrete binary.
         exe_path: str
@@ -381,16 +385,21 @@ def build_command(
                 raise FileNotFoundError(msg)
             exe_path = resolved
 
-        with Popen(
-            [exe_path, "--list"], stdout=PIPE, stderr=PIPE
-        ) as proc:  # nosec B603
-            out, err = proc.communicate()
-        bus_names = out.decode("utf-8").splitlines()
-        pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
-        if f"--bus-name={pfx_bus}" in bus_names:
-            nsenter = (exe_path, f"--bus-name={pfx_bus}", "--")
-            env["PROTON_VERB"] = "runinprefix"
-            log.info("Re-entering container through bus '%s'", pfx_bus)
+        attempts: int = 5
+        for trial in range(attempts):
+            with Popen(
+                [exe_path, "--list"], stdout=PIPE, stderr=PIPE
+            ) as proc:  # nosec B603
+                out, err = proc.communicate()
+            bus_names = out.decode("utf-8").splitlines()
+            pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
+            if f"--bus-name={pfx_bus}" in bus_names:
+                nsenter = (exe_path, f"--bus-name={pfx_bus}", "--")
+                env["PROTON_VERB"] = "runinprefix"
+                log.info("Re-entering container through bus '%s'", pfx_bus)
+                break
+            log.info("Failed to find bus name %s (retry %s)", pfx_bus, trial + 1)
+            time.sleep(2)
 
     is_nsenter: bool = bool(nsenter)
     return (
@@ -828,6 +837,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
         "UMU_NO_RUNTIME": "",
         "UMU_RUNTIME_UPDATE": "",
         "UMU_NO_PROTON": "",
+        "UMU_CONTAINER_NSENTER": "",
         "RUNTIMEPATH": "",
     }
     opts: list[str] = []
