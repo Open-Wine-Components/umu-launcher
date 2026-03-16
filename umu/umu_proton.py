@@ -61,6 +61,8 @@ class ProtonVersion(Enum):
     UMUSniper_arm64 = "umu-sniper-arm64"
     UMUSteamRT4 = "umu-steamrt4"
     UMUSteamRT4_arm64 = "umu-steamrt4-arm64"
+    # Special case, non-invokable
+    UMUHost = "umu-host"
 
 
 def get_umu_proton(env: dict[str, str], session_pools: SessionPools) -> dict[str, str]:
@@ -124,6 +126,7 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
             ProtonVersion.UMUSniper_arm64.value,
             ProtonVersion.UMUSteamRT4.value,
             ProtonVersion.UMUSteamRT4_arm64.value,
+            ProtonVersion.UMUHost.value,
         }
     ):
         return None
@@ -155,16 +158,16 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
             }
         }
     }
-    toolmanifest = {
-        "manifest": {
-            "version": "2",
-            "commandline": "/entry-point",
-            "require_tool_appid": rt_appid,
-            "use_sessions": "1",
-            # special value, see CompatLayer.layer_name()
-            "compatmanager_layer_name": "umu-passthrough",
-        }
+    manifest = {
+        "version": "2",
+        "commandline": "/entry-point",
+        "use_sessions": "1",
+        # special value, see CompatLayer.layer_name()
+        "compatmanager_layer_name": "umu-passthrough",
     }
+    if rt_appid:
+        manifest["require_tool_appid"] = rt_appid
+    toolmanifest = { "manifest": manifest }
 
     if not tool_path.is_dir():
         tool_path.mkdir(parents=True, exist_ok=True)
