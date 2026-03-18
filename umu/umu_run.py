@@ -69,6 +69,11 @@ NET_RETRIES = 3
 
 RuntimeVersion = tuple[str, str, str]
 
+is_gamescope_session: bool = (
+    os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
+    or os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
+)
+
 
 def setup_pfx(path: Path) -> None:
     """Prepare a Proton compatible WINE prefix.
@@ -116,11 +121,11 @@ def setup_pfx(path: Path) -> None:
 
 def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], bool]:
     """Before executing a game, check for environment variables and set them."""
-    """We need to clear LD_PRELOAD in order for umu to work properly inside gamescope session """
+    """FIXME: We need to clear LD_PRELOAD in order for umu to work properly inside gamescope session """
     """https://github.com/Open-Wine-Components/umu-launcher/pull/497"""
     """https://github.com/Open-Wine-Components/umu-launcher/pull/497#issuecomment-3969442101"""
     """https://github.com/Open-Wine-Components/umu-launcher/pull/579"""
-    if os.environ.get("LD_PRELOAD"):
+    if os.environ.get("LD_PRELOAD") and is_gamescope_session:
         os.environ["LD_PRELOAD"] = ""
 
     """
@@ -695,10 +700,6 @@ def run_command(command: tuple[Path | str, ...]) -> int:
     ret: int = 0
     prctl_ret: int = 0
     libc: str = get_libc()
-    is_gamescope_session: bool = (
-        os.environ.get("XDG_CURRENT_DESKTOP") == "gamescope"
-        or os.environ.get("XDG_SESSION_DESKTOP") == "gamescope"
-    )
     is_flatpak: bool = os.environ.get("container") == "flatpak"  # noqa: SIM112
     # Note: STEAM_MULTIPLE_XWAYLANDS is steam mode specific and is
     # documented to be a legacy env var.
