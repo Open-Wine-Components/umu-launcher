@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@1.100
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Ensure Rust toolchain is installed + default
         shell: bash
