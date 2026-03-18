@@ -33,9 +33,6 @@ jobs:
           echo "${CARGO_HOME}/bin" >> "$GITHUB_PATH"
 
           rustup --version
-          rustup toolchain install 1.100
-          rustup default 1.100
-
           rustup show
           cargo --version
           rustc --version
@@ -70,7 +67,7 @@ jobs:
           set -euxo pipefail
           ./configure.sh --prefix=/usr
           # Preserve rustup/cargo env so the cargo build invoked during install
-          # uses the same toolchain (1.100) instead of root's empty default.
+          # uses the same toolchain instead of root's empty default.
           sudo -E env \
             "PATH=$PATH" \
             "HOME=$HOME" \
