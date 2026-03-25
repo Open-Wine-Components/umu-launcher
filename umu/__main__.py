@@ -33,10 +33,10 @@ def parse_args() -> Namespace | tuple[str, list[str]]:  # noqa: D103
         version=f"umu-launcher version {__version__} ({sys.version})",
         help="show this version and exit",
     )
-    parser.add_argument("--config", help=("path to TOML file (requires Python 3.11+)"))
+    parser.add_argument("--config", help="path to TOML file (requires Python 3.11+)")
     parser.add_argument(
         "winetricks",
-        help=("run winetricks verbs (requires UMU-Proton or GE-Proton)"),
+        help="run winetricks verbs (requires UMU-Proton or GE-Proton)",
         nargs="?",
         default=None,
     )
