@@ -377,7 +377,9 @@ def build_command(
         )
 
     nsenter: tuple[str, ...] = ()
-    if (launch_client := layer.launch_client) and env.get("UMU_CONTAINER_NSENTER") == "1":
+    if (launch_client := layer.launch_client) and env.get(
+        "UMU_CONTAINER_NSENTER"
+    ) == "1":
         # launch_client is provided by the runtime layer (not arbitrary user input).
         # Resolve via PATH when needed so we execute a concrete binary.
         exe_path: str
@@ -392,9 +394,7 @@ def build_command(
 
         attempts: int = 5
         for trial in range(attempts):
-            with Popen(
-                [exe_path, "--list"], stdout=PIPE, stderr=PIPE
-            ) as proc:  # nosec B603
+            with Popen([exe_path, "--list"], stdout=PIPE, stderr=PIPE) as proc:  # nosec B603
                 out, err = proc.communicate()
             bus_names = out.decode("utf-8").splitlines()
             pfx_bus = "com.steampowered.App" + env["STEAM_COMPAT_APP_ID"]
@@ -761,14 +761,19 @@ def resolve_runtime() -> UmuRuntime:
         os.environ["PROTONPATH"] = ProtonVersion.UMULatest.value
 
     named_runtimes = {
-        RUNTIME_NAMES["steamrt4"]: { ProtonVersion.UMUSteamRT4.value },
-        RUNTIME_NAMES["steamrt4-arm64"]: { ProtonVersion.UMUSteamRT4_arm64.value },
+        RUNTIME_NAMES["steamrt4"]: {ProtonVersion.UMUSteamRT4.value},
+        RUNTIME_NAMES["steamrt4-arm64"]: {ProtonVersion.UMUSteamRT4_arm64.value},
         RUNTIME_NAMES["sniper"]: {
-            ProtonVersion.UMUSniper.value, ProtonVersion.UMULatest.value,
-            ProtonVersion.GEProton.value, ProtonVersion.GELatest.value,
+            ProtonVersion.UMUSniper.value,
+            ProtonVersion.UMULatest.value,
+            ProtonVersion.GEProton.value,
+            ProtonVersion.GELatest.value,
         },
-        RUNTIME_NAMES["sniper-arm64"]: { ProtonVersion.UMUSniper_arm64.value },
-        RUNTIME_NAMES["soldier"]: { ProtonVersion.UMUScout.value, ProtonVersion.UMUSoldier.value },
+        RUNTIME_NAMES["sniper-arm64"]: {ProtonVersion.UMUSniper_arm64.value},
+        RUNTIME_NAMES["soldier"]: {
+            ProtonVersion.UMUScout.value,
+            ProtonVersion.UMUSoldier.value,
+        },
     }
 
     for name in named_runtimes:
@@ -794,9 +799,7 @@ def resolve_runtime() -> UmuRuntime:
         layer = CompatLayer(toolmanifest.parent, Path())
         runtime = layer.required_runtime
     else:
-        err: str = (
-            f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
-        )
+        err: str = f"PROTONPATH '{os.environ['PROTONPATH']}' is not valid, toolmanifest.vdf not found"
         raise FileNotFoundError(err)
 
     return runtime
