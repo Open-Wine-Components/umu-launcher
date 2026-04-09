@@ -23,7 +23,7 @@ from tempfile import gettempdir
 from types import FrameType
 from typing import Any
 
-from urllib3 import PoolManager, Retry
+from urllib3 import PoolManager, Retry, ProxyManager
 from urllib3.exceptions import HTTPError
 from urllib3.util import Timeout
 from Xlib import X, Xatom, display
@@ -939,11 +939,20 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     else:
         timeouts = NET_TIMEOUT
 
+    http_pool: PoolManager
+    if "https_proxy" in os.environ:
+        http_pool = ProxyManager(
+            proxy_url=os.environ["https_proxy"],
+            timeout=Timeout(connect=timeouts, read=timeouts),
+            retries=Retry(total=retries, redirect=True),
+        )
+    else:
+        http_pool = PoolManager(
+            timeout=Timeout(connect=timeouts, read=timeouts),
+            retries=Retry(total=retries, redirect=True),
+        )
     thread_pool = ThreadPoolExecutor()
-    http_pool = PoolManager(
-        timeout=Timeout(connect=timeouts, read=timeouts),
-        retries=Retry(total=retries, redirect=True),
-    )
+
     with thread_pool, http_pool:
         session_pools: tuple[ThreadPoolExecutor, PoolManager] = (thread_pool, http_pool)
 
