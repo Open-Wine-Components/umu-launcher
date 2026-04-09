@@ -119,7 +119,7 @@ def _install_umu(
         # Get the digest for the runtime archive
         resp = http_pool.request(
             HTTPMethod.GET.value,
-            f"{host}{endpoint}/SHA256SUMS{token}",
+            f"https://{host}{endpoint}/SHA256SUMS{token}",
             preload_content=False,
         )
         if resp.status != HTTPStatus.OK:
@@ -138,7 +138,7 @@ def _install_umu(
         # Get BUILD_ID.txt. We'll use the value to identify the file when cached.
         # This will guarantee we'll be picking up the correct file when resuming
         resp = http_pool.request(
-            HTTPMethod.GET.value, f"{host}{endpoint}/BUILD_ID.txt{token}"
+            HTTPMethod.GET.value, f"https://{host}{endpoint}/BUILD_ID.txt{token}"
         )
         if resp.status != HTTPStatus.OK:
             err: str = f"{host} returned the status: {resp.status}"
@@ -165,7 +165,7 @@ def _install_umu(
 
         resp = http_pool.request(
             HTTPMethod.GET.value,
-            f"{host}{endpoint}/{archive}{token}",
+            f"https://{host}{endpoint}/{archive}{token}",
             preload_content=False,
             headers=headers,
         )
@@ -201,7 +201,7 @@ def _install_umu(
                         }
                         resp = http_pool.request(
                             HTTPMethod.GET.value,
-                            f"{host}{endpoint}/{archive}{token}",
+                            f"https://{host}{endpoint}/{archive}{token}",
                             preload_content=False,
                             headers=headers,
                         )
@@ -364,7 +364,7 @@ def _update_umu(
         return
 
     # Fetch the VERSION.txt data
-    url: str = f"{host}{endpoint}/VERSION.txt{token}"
+    url: str = f"https://{host}{endpoint}/VERSION.txt{token}"
     log.debug("Sending request to '%s' for 'VERSION.txt'...", url)
     resp = http_pool.request(HTTPMethod.GET.value, url)
     if resp.status != HTTPStatus.OK:
