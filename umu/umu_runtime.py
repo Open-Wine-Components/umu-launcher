@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from hashlib import sha256
 from http import HTTPStatus
 from pathlib import Path
-from secrets import token_urlsafe
 from shutil import move
 from subprocess import run  # nosec B404
 from tempfile import TemporaryDirectory, mkdtemp
@@ -67,9 +66,10 @@ def create_shim(file_path: Path):
 
 
 def _install_umu(
-    runtime_ver: RuntimeVersion,
-    session_pools: SessionPools,
     local: Path,
+    runtime_ver: RuntimeVersion,
+    version: str,
+    session_pools: SessionPools
 ) -> None:
     resp: BaseHTTPResponse
     UMU_CACHE.mkdir(parents=True, exist_ok=True)
@@ -77,9 +77,8 @@ def _install_umu(
     ret: int = 0  # Exit code from zenity
     thread_pool, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    base_url: str = f"https://repo.steampowered.com/{variant.removesuffix('-arm64')}/images/latest-public-beta/"
-    token: str = f"?versions={token_urlsafe(16)}"
     host: str = "repo.steampowered.com"
+    base_url: str = f"https://{host}/{variant.removesuffix('-arm64')}/images/{version}/"
 
     if codename.removeprefix("steamrt").removesuffix("-arm64").isdigit():
         archive = f"SteamLinuxRuntime_{codename.removeprefix('steamrt')}.tar.xz"
@@ -111,7 +110,7 @@ def _install_umu(
     if not os.environ.get("UMU_ZENITY") or ret:
         digest: str = ""
         buildid: str = ""
-        endpoint: str = f"/{variant.removesuffix('-arm64')}/images/latest-public-beta"
+        endpoint: str = f"/{variant.removesuffix('-arm64')}/images/{version}"
         hashsum = sha256()
         headers: dict[str, str] | None = None
         cached_parts: Path
@@ -119,7 +118,7 @@ def _install_umu(
         # Get the digest for the runtime archive
         resp = http_pool.request(
             HTTPMethod.GET.value,
-            f"{host}{endpoint}/SHA256SUMS{token}",
+            f"{host}{endpoint}/SHA256SUMS",
             preload_content=False,
         )
         if resp.status != HTTPStatus.OK:
@@ -138,7 +137,7 @@ def _install_umu(
         # Get BUILD_ID.txt. We'll use the value to identify the file when cached.
         # This will guarantee we'll be picking up the correct file when resuming
         resp = http_pool.request(
-            HTTPMethod.GET.value, f"{host}{endpoint}/BUILD_ID.txt{token}"
+            HTTPMethod.GET.value, f"{host}{endpoint}/BUILD_ID.txt"
         )
         if resp.status != HTTPStatus.OK:
             err: str = f"{host} returned the status: {resp.status}"
@@ -161,11 +160,11 @@ def _install_umu(
             with parts.open("rb") as fp:
                 hashsum = file_digest(fp, hashsum.name)
         else:
-            log.info("Downloading %s (latest), please wait...", variant)
+            log.info("Downloading %s (%s), please wait...", variant, version)
 
         resp = http_pool.request(
             HTTPMethod.GET.value,
-            f"{host}{endpoint}/{archive}{token}",
+            f"{host}{endpoint}/{archive}",
             preload_content=False,
             headers=headers,
         )
@@ -201,7 +200,7 @@ def _install_umu(
                         }
                         resp = http_pool.request(
                             HTTPMethod.GET.value,
-                            f"{host}{endpoint}/{archive}{token}",
+                            f"{host}{endpoint}/{archive}",
                             preload_content=False,
                             headers=headers,
                         )
@@ -272,6 +271,18 @@ def setup_umu(
         if not ret:
             write_install_marker(local)
 
+    _, http_pool = session_pools
+    codename, variant, _ = runtime_ver
+    host: str = "repo.steampowered.com"
+    endpoint: str = f"/{variant.removesuffix('-arm64')}/images/latest-public-beta"
+    url: str = f"{host}{endpoint}/VERSION.txt"
+    log.debug("Sending request to '%s' for 'VERSION.txt'...", url)
+    resp = http_pool.request(HTTPMethod.GET.value, url)
+    if resp.status != HTTPStatus.OK:
+        log.error("%s returned the status: %s", host, resp.status)
+        return
+    version: str = resp.data.strip().decode("utf-8")
+
     # New install
     if not has_runtime_installed(local):
         log.debug("New install detected")
@@ -280,6 +291,7 @@ def setup_umu(
         _restore_umu(
             local,
             runtime_ver,
+            version,
             session_pools,
             # If marker is present, a successful install already occurred.
             lambda: has_runtime_installed(local),
@@ -291,12 +303,13 @@ def setup_umu(
         log.info("%s updates disabled, skipping", runtime_ver[1])
         return
 
-    _update_umu(local, runtime_ver, session_pools)
+    _update_umu(local, runtime_ver, version, session_pools)
 
 
 def _update_umu(
     local: Path,
     runtime_ver: RuntimeVersion,
+    version: str,
     session_pools: SessionPools,
 ) -> None:
     """For existing installations, check for updates to the runtime.
@@ -304,15 +317,8 @@ def _update_umu(
     The runtime platform will be updated to the latest public beta by
     confirming if the latest platform ID exists in the local VERSIONS.txt
     """
-    resp: BaseHTTPResponse
     _, http_pool = session_pools
     codename, variant, _ = runtime_ver
-    endpoint: str = f"/{variant.removesuffix('-arm64')}/images/latest-public-beta"
-    # Create a token and append it to the URL to avoid the Cloudflare cache
-    # Avoids infinite updates to the runtime each launch
-    # See https://github.com/Open-Wine-Components/umu-launcher/issues/188
-    token: str = f"?version={token_urlsafe(16)}"
-    host: str = "repo.steampowered.com"
     log.debug("Existing install detected")
     log.debug("Using container runtime '%s' aka '%s'", variant, codename)
     log.debug("Checking updates for '%s'...", variant)
@@ -328,6 +334,7 @@ def _update_umu(
         _restore_umu(
             local,
             runtime_ver,
+            version,
             session_pools,
             lambda: bool(
                 [
@@ -346,6 +353,7 @@ def _update_umu(
         _restore_umu(
             local,
             runtime_ver,
+            version,
             session_pools,
             lambda: local.joinpath("pressure-vessel").is_dir(),
         )
@@ -358,21 +366,14 @@ def _update_umu(
         _restore_umu(
             local,
             runtime_ver,
+            version,
             session_pools,
             lambda: local.joinpath("VERSIONS.txt").is_file(),
         )
         return
 
-    # Fetch the VERSION.txt data
-    url: str = f"{host}{endpoint}/VERSION.txt{token}"
-    log.debug("Sending request to '%s' for 'VERSION.txt'...", url)
-    resp = http_pool.request(HTTPMethod.GET.value, url)
-    if resp.status != HTTPStatus.OK:
-        log.error("%s returned the status: %s", host, resp.status)
-        return
-
     # Update our runtime
-    _update_umu_platform(local, runtime_ver, session_pools, resp)
+    _update_umu_platform(local, runtime_ver, version, session_pools)
 
     log.info("%s is up to date", variant)
 
@@ -423,6 +424,7 @@ def check_runtime(src: Path, runtime_ver: RuntimeVersion) -> int:
 def _restore_umu(
     local: Path,
     runtime_ver: RuntimeVersion,
+    version: str,
     session_pools: SessionPools,
     callback_fn: Callable[[], bool],
 ) -> None:
@@ -433,20 +435,19 @@ def _restore_umu(
             log.debug("Released file lock '%s'", lock)
             log.info("%s was restored", runtime_ver[1])
             return
-        _install_umu(runtime_ver, session_pools, local)
+        _install_umu(local, runtime_ver, version, session_pools)
         log.debug("Released file lock '%s'", lock)
 
 
 def _update_umu_platform(
     local: Path,
     runtime_ver: RuntimeVersion,
+    version: str,
     session_pools: SessionPools,
-    resp: BaseHTTPResponse,
 ) -> None:
     _, variant, _ = runtime_ver
-    version: bytes = resp.data.strip()  # VERSION.txt
     lock: str = f"{local.parent}/{FileLock.Runtime.value}"
-    versions: bytes  # VERSIONS.txt
+    versions: str  # VERSIONS.txt
 
     # Update to the latest platform by checking if the VERSION.txt value
     # exists in VERSIONS.txt
@@ -455,12 +456,13 @@ def _update_umu_platform(
         log.debug("Acquired file lock '%s'", lock)
         # Once another process acquires the lock, check if the latest
         # runtime has already been downloaded
-        versions = local.joinpath("VERSIONS.txt").read_bytes()
+        with local.joinpath("VERSIONS.txt").open() as fd:
+            versions = fd.read()
         if version in versions:
             log.debug("Released file lock '%s'", lock)
             return
-        log.info("Updating %s to latest...", variant)
-        _install_umu(runtime_ver, session_pools, local)
+        log.info("Updating %s to %s...", variant, version)
+        _install_umu(local, runtime_ver, version, session_pools)
         log.debug("Released file lock '%s'", lock)
 
 
