@@ -439,15 +439,32 @@ def _restore_umu(
         log.debug("Released file lock '%s'", lock)
 
 
+def _versions_dict(lines: list[str]) -> dict:
+    versions = {}
+    for line in lines:
+        if line.startswith("#"):
+            continue
+        segments = line.split("\t")
+        # We care about the first two fields, name and version
+        if len(segments) < 2: # noqa: PLR2004
+            continue
+        versions[segments[0].strip()] = segments[1].strip()
+    return versions
+
+
+def _version_tuple(version: str) -> tuple:
+    return tuple(int(s) for s in version.split("."))
+
+
 def _update_umu_platform(
     local: Path,
     runtime_ver: RuntimeVersion,
-    version: str,
+    remote_ver: str,
     session_pools: SessionPools,
 ) -> None:
-    _, variant, _ = runtime_ver
+    name, variant, _ = runtime_ver
     lock: str = f"{local.parent}/{FileLock.Runtime.value}"
-    versions: str  # VERSIONS.txt
+    text: list[str]  # VERSIONS.txt
 
     # Update to the latest platform by checking if the VERSION.txt value
     # exists in VERSIONS.txt
@@ -457,12 +474,14 @@ def _update_umu_platform(
         # Once another process acquires the lock, check if the latest
         # runtime has already been downloaded
         with local.joinpath("VERSIONS.txt").open() as fd:
-            versions = fd.read()
-        if version in versions:
+            text = fd.readlines()
+        versions = _versions_dict(text)
+        local_ver = versions[name]
+        if _version_tuple(remote_ver) <= _version_tuple(local_ver):
             log.debug("Released file lock '%s'", lock)
             return
-        log.info("Updating %s to %s...", variant, version)
-        _install_umu(local, runtime_ver, version, session_pools)
+        log.info("Updating %s to %s...", variant, remote_ver)
+        _install_umu(local, runtime_ver, remote_ver, session_pools)
         log.debug("Released file lock '%s'", lock)
 
 
