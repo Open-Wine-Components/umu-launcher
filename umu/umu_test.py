@@ -1396,9 +1396,10 @@ class TestGameLauncher(unittest.TestCase):
             mock_subdir = Path(file).joinpath("steamrt3")
             mock_subdir.mkdir(parents=True, exist_ok=True)
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
+            mock_version = "3.0.20260415.224995"
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
-                mock_subdir, mock_runtime_ver, mock_session_pools, mock_cb
+                mock_subdir, mock_runtime_ver, mock_version, mock_session_pools, mock_cb
             )
             self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
@@ -1415,9 +1416,10 @@ class TestGameLauncher(unittest.TestCase):
             mock_subdir = Path(file).joinpath("steamrt3")
             mock_subdir.mkdir(parents=True, exist_ok=True)
             mock_runtime_ver = ("sniper", "steamrt3", "1628350")
+            mock_version = "3.0.20260415.224995"
             mock_session_pools = (MagicMock(), MagicMock())
             result = umu_runtime._restore_umu(
-                mock_subdir, mock_runtime_ver, mock_session_pools, mock_cb
+                mock_subdir, mock_runtime_ver, mock_version, mock_session_pools, mock_cb
             )
             self.assertTrue(result is None, f"Expected None, received {result}")
             self.assertTrue(
