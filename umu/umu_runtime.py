@@ -645,7 +645,10 @@ class CompatLayer:
         tool_path = os.path.normpath(self.tool_path)
         cmd = "".join([shlex.quote(tool_path), self.tool_manifest["commandline"]])
         # Temporary override entry point for backwards compatibility
-        if self.layer_name == "container-runtime" and Path(tool_path).joinpath("umu").is_file():
+        if (
+            self.layer_name == "container-runtime"
+            and Path(tool_path).joinpath("umu").is_file()
+        ):
             cmd = cmd.replace("_v2-entry-point", "umu")
         cmd = cmd.replace("%verb%", verb)
         return shlex.split(cmd)

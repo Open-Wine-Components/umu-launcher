@@ -49,12 +49,33 @@ Optionally, with `WINEPREFIX`, `GAMEID`, `STORE`, and `PROTONPATH`:
 WINEPREFIX=$HOME/Games/epic-games-store GAMEID=umu-dauntless STORE=egs PROTONPATH="$HOME/.steam/steam/compatibilitytools.d/GE-Proton8-28" umu-run "$HOME/Games/epic-games-store/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe" -opengl -SkipBuildPatchPrereq
 ```
 
-Notes:
+#### Environemnt configuration
 
-- `WINEPREFIX` designates where to create the wine prefix. If not specified it will default to /home/username/Games/umu/GAMEID
-- `GAMEID` designates a corresponding umu-id from the [umu-database](https://umu.openwinecomponents.org/) for games that have fixes that need to be applied. Defaults to umu-default
-- `PROTONPATH` designates the full path to a specific proton version. Alternatively you can use value "GE-Proton" to auto-download and use the latest GE-Proton build. Defaults to UMU-Proton. (UMU-Proton is the latest stable version of Valve's proton tool with UMU compatibility added)
-- `STORE` designates what storefront to use. UMU uses GAMEID and STORE to search the [umu-database](https://umu.openwinecomponents.org/) for fixes to apply to a game. Defaults to "none".
+| Variable                | Description                                                                                                                                                                                                                                                                                                                                                                        |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `GAMEID`                | Designates a corresponding umu-id from the [umu-database](https://umu.openwinecomponents.org/) for games that have fixes that need to be applied. Defaults to `umu-default`.                                                                                                                                                                                                       |
+| `STORE`                 | Designates what storefront to use. UMU uses GAMEID and STORE to search the [umu-database](https://umu.openwinecomponents.org/) for fixes to apply to a game. Defaults to "none".                                                                                                                                                                                                   |
+| `WINEPREFIX`            | Designates where to create the wine prefix. If not specified it will default to `/home/<username>/Games/umu/<GAMEID>/`.                                                                                                                                                                                                                                                            |
+| `PROTONPATH`            | Designates the full path to a specific proton version. Alternatively it can be any of the tokens mentioned below. Defaults to `UMU-Latest`.                                                                                                                                                                                                                                        |
+| `UMU_NO_PROTON`         | When set to `1`, it will run the target **Linux-native** application in the Steam Linux Runtime required by the compatibility tool specified in `PROTONPATH`. This is functionally similar to setting `PROTONPATH` to one of the tokens that use SteamRT for Linux-native applications. If `PROTONPATH` is not set, the runtime used depends on the default value of `PROTONPATH`. |
+| `UMU_CONTAINER_NSENTER` | When set to `1`, `umu-launcher` will attempt to re-enter an active Steam Linux Runtime container. The container `umu-launcher` will try to enter depends on the value of `WINEPREFIX`, to facilitate running additional applications in the same prefix with access to the application that initiated the container.                                                               |
+| `UMU_LOG`               | When set to `1`  it enables logging for `umu-launcher`                                                                                                                                                                                                                                                                                                                             |
+
+##### `PROTONPATH` tokens
+| Token                | Description                                                                                                                                                                                                                                                              |
+|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `UMU-Latest`         | Downloads, updates and uses UMU-Proton, which is a compatibility tool based on the latest stable version of Valve's Proton with additional UMU compatibility. This is default when `PROTONPATH` is not specified.                                                        |
+| `GE-Latest`          | Downloads, updates and uses GE-Proton. This option will download GE-Proton and place it in `~/.local/share/umu/compatibilitytools/` for umu-launcher's own use, and keep it updated.                                                                                     |
+| `GE-Proton`          | Downloads, updates and uses GE-Proton. This option will download GE-Proton and place it in `~/.local/share/Steam/compatibilitytools.d/`.                                                                                                                                 |
+| `umu-scout`          | Downloads, updates and uses `umu-scout`, which is a compatibility tool to run Linux native applications in first Steam Linux Runtime named [Scout](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/scout/README.md). This tool requires the Soldier SteamRT. |
+| `umu-soldier`        | Thin compatibility layer to run Linux native applications in the second Steam Linux Runtime named [Soldier](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/soldier/README.md)                                                                               |
+| `umu-sniper`         | Thin compatibility layer to run Linux native applications in the third Steam Linux Runtime named [Sniper](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md)                                                                                  |
+| `umu-steamrt4`       | Thin compatibility layer to run Linux native applications in the forth Steam Linux Runtime named [SteanRT4](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/steamrt4/README.md) <details> I am still sad this wasn't named `Medic` </details>                |
+| `umu-sniper-arm64`   | Thin compatibility layer to run Linux native applications in the third Steam Linux Runtime on `aarch64` platforms named [Sniper](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/sniper/README.md)                                                           |
+| `umu-steamrt4-arm64` | Thin compatibility layer to run Linux native applications in the forth Steam Linux Runtime on `aarch64` platforms named [SteanRT4](https://gitlab.steamos.cloud/steamrt/steamrt/-/blob/steamrt/steamrt4/README.md)                                                       |
+
+##### `UMU_CONTAINER_NSENTER` behavior
+While `PROTONPATH` is not validated, it is very important to be equal between the initial invokation and any subsequent attempts to re-enter the container. If the container/prefix are already active and this option is not used, the behaviour depends on the value of `PROTON_VERB`, with the subsequent invokations either waiting for the original one to exit, in case of `waitforexitandrun`, or running their target application without access to the original process in case of `runinprefix`
 
 See the [documentation](https://github.com/Open-Wine-Components/umu-launcher/blob/main/docs/umu.1.scd) for more examples and the [project's wiki](https://github.com/Open-Wine-Components/umu-launcher/wiki/Frequently-asked-questions-(FAQ)) for Frequently Asked Questions.
 
@@ -90,6 +111,7 @@ When reporting issues for games that fail to run, be sure to attach a log with y
 
 Do **NOT** report issues here when using compatibility tools that are **NOT** explictly supported, report them to their maintainers first. This includes non-Proton compatibility tools, as well as third-party Proton compatibility tools that are not provided through `umu-launcher`.
 
+
 ## Building
 
 Building umu-launcher currently requires `bash`, `make`, and `scdoc` for distribution, as well as the following Python build tools: [build](https://github.com/pypa/build), [hatchling](https://github.com/pypa/hatch), [installer](https://github.com/pypa/installer), and [pip](https://github.com/pypa/pip).
@@ -108,6 +130,15 @@ To configure the installation `PREFIX` (this is not related to wine's `WINEPREFI
 Change the `--prefix` as fit for your distribution, for example `/usr/local`, or `/app` for packaging through Flatpak.
 
 Then run `make` to build. After a successful build the resulting files should be available in the `./builddir` directory
+
+### Building as a zipapp
+To build umu-launcher as a [zipapp](https://docs.python.org/3/library/zipapp.html)
+```shell
+./configure.sh --prefix=/usr
+```
+```shell
+make zipapp
+```
 
 
 ## Installing
