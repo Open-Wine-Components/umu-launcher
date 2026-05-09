@@ -447,11 +447,15 @@ def get_pstree_from_pid(root_pid: int) -> set[int]:
     return descendants
 
 
-def get_window_ids(d: display.Display) -> set[int] | None:
+def get_window_ids(d: display.Display, tracked_window_ids: set[int] | None = None) -> set[int] | None:
     """Get the list of window ids under the root window for a display."""
     try:
-        if d.next_event().type == X.CreateNotify:
+        event = d.next_event()
+        if event.type == X.CreateNotify:
             return {child.id for child in d.screen().root.query_tree().children}
+        if event.type == X.DestroyNotify and tracked_window_ids is not None:
+            tracked_window_ids.discard(event.window.id)
+            log.debug("Removed destroyed window ID from tracked IDs: %s", event.window.id)
     except Exception as e:
         log.exception(e)
 
@@ -628,7 +632,7 @@ def monitor_windows(d_secondary: display.Display, pid: int) -> None:
     # Check if the window sequence has changed
     while True:
         current_window_ids: set[int] | None = get_pstree_window_ids(
-            d_secondary, get_pstree_from_pid(pid), get_window_ids(d_secondary)
+            d_secondary, get_pstree_from_pid(pid), get_window_ids(d_secondary, window_ids)
         )
         if not current_window_ids:
             continue
