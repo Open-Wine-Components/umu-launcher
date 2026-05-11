@@ -118,7 +118,7 @@ def _install_umu(
         # Get the digest for the runtime archive
         resp = http_pool.request(
             HTTPMethod.GET.value,
-            f"{host}{endpoint}/SHA256SUMS",
+            f"https://{host}{endpoint}/SHA256SUMS",
             preload_content=False,
         )
         if resp.status != HTTPStatus.OK:
@@ -137,7 +137,7 @@ def _install_umu(
         # Get BUILD_ID.txt. We'll use the value to identify the file when cached.
         # This will guarantee we'll be picking up the correct file when resuming
         resp = http_pool.request(
-            HTTPMethod.GET.value, f"{host}{endpoint}/BUILD_ID.txt"
+            HTTPMethod.GET.value, f"https://{host}{endpoint}/BUILD_ID.txt"
         )
         if resp.status != HTTPStatus.OK:
             err: str = f"{host} returned the status: {resp.status}"
@@ -164,7 +164,7 @@ def _install_umu(
 
         resp = http_pool.request(
             HTTPMethod.GET.value,
-            f"{host}{endpoint}/{archive}",
+            f"https://{host}{endpoint}/{archive}",
             preload_content=False,
             headers=headers,
         )
@@ -200,7 +200,7 @@ def _install_umu(
                         }
                         resp = http_pool.request(
                             HTTPMethod.GET.value,
-                            f"{host}{endpoint}/{archive}",
+                            f"https://{host}{endpoint}/{archive}",
                             preload_content=False,
                             headers=headers,
                         )
@@ -275,7 +275,7 @@ def setup_umu(
     codename, variant, _ = runtime_ver
     host: str = "repo.steampowered.com"
     endpoint: str = f"/{variant.removesuffix('-arm64')}/images/latest-public-beta"
-    url: str = f"{host}{endpoint}/VERSION.txt"
+    url: str = f"https://{host}{endpoint}/VERSION.txt"
     log.debug("Sending request to '%s' for 'VERSION.txt'...", url)
     resp = http_pool.request(HTTPMethod.GET.value, url)
     if resp.status != HTTPStatus.OK:
