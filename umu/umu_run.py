@@ -767,7 +767,6 @@ def resolve_runtime() -> UmuRuntime:
             ProtonVersion.UMUSniper.value, ProtonVersion.UMULatest.value,
             ProtonVersion.GEProton.value, ProtonVersion.GELatest.value,
         },
-        RUNTIME_NAMES["sniper-arm64"]: { ProtonVersion.UMUSniper_arm64.value },
         RUNTIME_NAMES["soldier"]: { ProtonVersion.UMUScout.value, ProtonVersion.UMUSoldier.value },
     }
 
