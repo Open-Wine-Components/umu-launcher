@@ -23,7 +23,7 @@ from tempfile import gettempdir
 from types import FrameType
 from typing import Any
 
-from urllib3 import PoolManager, Retry, ProxyManager
+from urllib3 import PoolManager, ProxyManager, Retry
 from urllib3.exceptions import HTTPError
 from urllib3.util import Timeout
 from Xlib import X, Xatom, display
