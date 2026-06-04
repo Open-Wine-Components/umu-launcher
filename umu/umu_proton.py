@@ -58,7 +58,6 @@ class ProtonVersion(Enum):
     UMUScout = "umu-scout"
     UMUSoldier = "umu-soldier"
     UMUSniper = "umu-sniper"
-    UMUSniper_arm64 = "umu-sniper-arm64"
     UMUSteamRT4 = "umu-steamrt4"
     UMUSteamRT4_arm64 = "umu-steamrt4-arm64"
     # Special case, non-invokable
@@ -123,7 +122,6 @@ def _get_umu_runtime_tool(env: dict[str, str], name: str) -> dict[str, str] | No
         in {
             ProtonVersion.UMUSoldier.value,
             ProtonVersion.UMUSniper.value,
-            ProtonVersion.UMUSniper_arm64.value,
             ProtonVersion.UMUSteamRT4.value,
             ProtonVersion.UMUSteamRT4_arm64.value,
             ProtonVersion.UMUHost.value,

@@ -522,7 +522,6 @@ RUNTIME_VERSIONS = {
 RUNTIME_VERSIONS.update({
     "1391110": UmuRuntime("soldier",        "steamrt2",       "1391110", "x86_64"),
     "1628350": UmuRuntime("sniper",         "steamrt3",       "1628350", "x86_64"),
-    "3810310": UmuRuntime("sniper-arm64",   "steamrt3-arm64", "3810310", "aarch64"),
     "4183110": UmuRuntime("steamrt4",       "steamrt4",       "4183110", "x86_64"),
     "4185400": UmuRuntime("steamrt4-arm64", "steamrt4-arm64", "4185400", "aarch64"),
 })
