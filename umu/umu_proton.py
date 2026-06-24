@@ -310,7 +310,7 @@ def _fetch_releases(
 
     if asset_count != asset_max:
         log.warning("Failed to acquire release assets from '%s'", url)
-        log.debug("'%' returned: %s", url, assets)
+        log.debug("'%s' returned: %s", url, assets)
         return ()
 
     return digest_asset, proton_asset
