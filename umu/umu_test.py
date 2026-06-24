@@ -1931,6 +1931,94 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected tuple with len, received len {result_len}",
         )
 
+    def test_fetch_releases_x86_64_assets(self):
+        """Test _fetch_releases selects non-arch Proton assets for x86_64."""
+        mock_gh_release = {
+            "assets": [
+                {
+                    "name": "GE-Proton11-1-aarch64.sha256sum",
+                    "browser_download_url": "aarch64-sum",
+                },
+                {
+                    "name": "GE-Proton11-1-aarch64.tar.gz",
+                    "browser_download_url": "aarch64-tar",
+                },
+                {
+                    "name": "GE-Proton11-1.sha256sum",
+                    "browser_download_url": "x86_64-sum",
+                },
+                {
+                    "name": "GE-Proton11-1.tar.gz",
+                    "browser_download_url": "x86_64-tar",
+                },
+            ]
+        }
+
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json.return_value = mock_gh_release
+
+        mock_tp = MagicMock()
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        os.environ["PROTONPATH"] = "GE-Proton"
+
+        with patch.object(umu_proton.platform, "machine", return_value="x86_64"):
+            result = umu_proton._fetch_releases((mock_tp, mock_hp))
+
+        self.assertEqual(
+            result,
+            (
+                ("GE-Proton11-1.sha256sum", "x86_64-sum"),
+                ("GE-Proton11-1.tar.gz", "x86_64-tar"),
+            ),
+        )
+
+    def test_fetch_releases_aarch64_assets(self):
+        """Test _fetch_releases selects aarch64 Proton assets for aarch64."""
+        mock_gh_release = {
+            "assets": [
+                {
+                    "name": "UMU-Proton-11.0-1.sha256sum",
+                    "browser_download_url": "x86_64-sum",
+                },
+                {
+                    "name": "UMU-Proton-11.0-1.tar.gz",
+                    "browser_download_url": "x86_64-tar",
+                },
+                {
+                    "name": "UMU-Proton-11.0-1-aarch64.sha256sum",
+                    "browser_download_url": "aarch64-sum",
+                },
+                {
+                    "name": "UMU-Proton-11.0-1-aarch64.tar.gz",
+                    "browser_download_url": "aarch64-tar",
+                },
+            ]
+        }
+
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json.return_value = mock_gh_release
+
+        mock_tp = MagicMock()
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        os.environ["PROTONPATH"] = ""
+
+        with patch.object(umu_proton.platform, "machine", return_value="aarch64"):
+            result = umu_proton._fetch_releases((mock_tp, mock_hp))
+
+        self.assertEqual(
+            result,
+            (
+                ("UMU-Proton-11.0-1-aarch64.sha256sum", "aarch64-sum"),
+                ("UMU-Proton-11.0-1-aarch64.tar.gz", "aarch64-tar"),
+            ),
+        )
+
     def test_ge_proton(self):
         """Test check_env when the code name GE-Proton is set for PROTONPATH.
 
@@ -2207,6 +2295,40 @@ class TestGameLauncher(unittest.TestCase):
                 self.test_archive.name[: self.test_archive.name.find(".tar.gz")]
             ).as_posix(),
             "Expected PROTONPATH to be proton dir in compat",
+        )
+
+    def test_steamcompat_x86_64_ignores_aarch64(self):
+        """Test _get_from_compat ignores installed aarch64 builds on x86_64."""
+        self.test_compat.joinpath("UMU-Proton-11.0-1-aarch64").mkdir()
+        self.test_compat.joinpath("UMU-Proton-11.0-1").mkdir()
+
+        with patch.object(umu_proton.platform, "machine", return_value="x86_64"):
+            result = umu_proton._get_from_compat(
+                self.env, (self.test_umu_compat, self.test_compat)
+            )
+
+        self.assertTrue(result is self.env, "Expected the same reference")
+        self.assertEqual(
+            self.env["PROTONPATH"],
+            self.test_compat.joinpath("UMU-Proton-11.0-1").as_posix(),
+            "Expected PROTONPATH to be non-aarch64 proton dir in compat",
+        )
+
+    def test_steamcompat_aarch64_ignores_x86_64(self):
+        """Test _get_from_compat ignores installed x86_64 builds on aarch64."""
+        self.test_compat.joinpath("UMU-Proton-11.0-1").mkdir()
+        self.test_compat.joinpath("UMU-Proton-11.0-1-aarch64").mkdir()
+
+        with patch.object(umu_proton.platform, "machine", return_value="aarch64"):
+            result = umu_proton._get_from_compat(
+                self.env, (self.test_umu_compat, self.test_compat)
+            )
+
+        self.assertTrue(result is self.env, "Expected the same reference")
+        self.assertEqual(
+            self.env["PROTONPATH"],
+            self.test_compat.joinpath("UMU-Proton-11.0-1-aarch64").as_posix(),
+            "Expected PROTONPATH to be aarch64 proton dir in compat",
         )
 
     def test_extract_tarfile_err(self):

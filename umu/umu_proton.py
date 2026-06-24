@@ -1,5 +1,6 @@
 import json
 import os
+import platform
 import shutil
 import time
 import urllib.parse
@@ -46,6 +47,8 @@ SessionPools = tuple[ThreadPoolExecutor, PoolManager]
 # umu will download and extract fetched resources in separate directories
 # First element is a subdir in /tmp which is to download, while second in $XDG_CACHE_HOME
 SessionCaches = tuple[Path, Path]
+
+_PROTON_ARCH_SUFFIXES = ("-aarch64",)
 
 
 class ProtonVersion(Enum):
@@ -257,8 +260,6 @@ def _fetch_releases(
 ) -> tuple[tuple[str, str], tuple[str, str]] | tuple[()]:
     """Fetch the latest releases from the Github API."""
     resp: BaseHTTPResponse
-    digest_asset: tuple[str, str]
-    proton_asset: tuple[str, str]
     assets: list[dict[str, Any]]
     _, http_pool = session_pools
     url: str = "https://api.github.com"
@@ -292,28 +293,88 @@ def _fetch_releases(
     ):
         return ()
 
-    asset_count: int = 0
-    asset_max: int = 2
-    for asset in assets:
-        if asset["name"].endswith("sum"):
-            digest_asset = (asset["name"], asset["browser_download_url"])
-            asset_count += 1
-            continue
-        if asset["name"].endswith(("tar.gz", "tar.xz")) and asset["name"].startswith(
-            ("UMU-Proton", "GE-Proton", "umu-scout")
-        ):
-            proton_asset = (asset["name"], asset["browser_download_url"])
-            asset_count += 1
-            continue
-        if asset_count == asset_max:
-            break
-
-    if asset_count != asset_max:
+    digest_asset, proton_asset = _select_release_assets(assets)
+    if not digest_asset or not proton_asset:
         log.warning("Failed to acquire release assets from '%s'", url)
         log.debug("'%' returned: %s", url, assets)
         return ()
 
     return digest_asset, proton_asset
+
+
+def _select_release_assets(
+    assets: list[dict[str, Any]],
+) -> tuple[tuple[str, str] | None, tuple[str, str] | None]:
+    """Select matching digest and Proton assets for the host architecture."""
+    proton_assets: list[dict[str, Any]] = []
+    digest_assets: list[dict[str, Any]] = []
+
+    for asset in assets:
+        name = asset["name"]
+        if name.endswith("sum"):
+            digest_assets.append(asset)
+            continue
+        if name.endswith(("tar.gz", "tar.xz")) and name.startswith(
+            ("UMU-Proton", "GE-Proton", "umu-scout")
+        ):
+            proton_assets.append(asset)
+
+    proton_asset = next(
+        (asset for asset in proton_assets if _matches_host_arch(asset["name"])),
+        None,
+    )
+    if not proton_asset:
+        return None, None
+
+    proton = _proton_archive_name(proton_asset["name"])
+    digest_asset = next(
+        (
+            asset
+            for asset in digest_assets
+            if _proton_digest_name(asset["name"]) == proton
+        ),
+        None,
+    )
+    if not digest_asset and len(digest_assets) == 1:
+        digest_asset = digest_assets[0]
+    if not digest_asset:
+        return None, None
+
+    return (
+        (digest_asset["name"], digest_asset["browser_download_url"]),
+        (proton_asset["name"], proton_asset["browser_download_url"]),
+    )
+
+
+def _matches_host_arch(name: str) -> bool:
+    """Return whether an asset or install directory matches the host architecture."""
+    arch_suffix = (
+        "-aarch64" if platform.machine().lower() in {"aarch64", "arm64"} else ""
+    )
+    proton = _proton_archive_name(name)
+
+    if arch_suffix:
+        return proton.endswith(arch_suffix)
+
+    return not proton.endswith(_PROTON_ARCH_SUFFIXES)
+
+
+def _proton_archive_name(name: str) -> str:
+    """Return a Proton directory-style name from an archive or existing directory."""
+    if not name.endswith(("tar.gz", "tar.xz")):
+        return name
+
+    # remove any combination of .abc.xy suffix (realistically .tar.gz|xz)
+    return ".".join(name.split(".")[:-2])
+
+
+def _proton_digest_name(name: str) -> str:
+    """Return the Proton directory-style name covered by a digest asset."""
+    for suffix in (".sha256sum", ".sha512sum", ".sum"):
+        if name.endswith(suffix):
+            return name.removesuffix(suffix)
+
+    return name.removesuffix("sum")
 
 
 def _fetch_proton(
@@ -460,7 +521,9 @@ def _get_from_compat(
         try:
             latest: Path = max(
                 filter(
-                    lambda proton: proton.name.startswith(version), compat.glob("*")
+                    lambda proton: proton.name.startswith(version)
+                    and _matches_host_arch(proton.name),
+                    compat.glob("*"),
                 ),
                 key=lambda proton: [
                     int(text) if text.isdigit() else text.lower()
