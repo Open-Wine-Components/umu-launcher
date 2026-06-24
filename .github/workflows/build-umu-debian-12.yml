@@ -32,7 +32,7 @@ jobs:
       - name: Install build dependencies
         run: apt install -y dh-make dpkg-dev git
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 

@@ -31,7 +31,7 @@ jobs:
       - name: Install build dependencies
         run: apt install -y python3-venv python3-all bash make scdoc python3-hatchling python3-installer python3-build git curl
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
