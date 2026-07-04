@@ -96,7 +96,13 @@ Building umu-launcher currently requires `bash`, `make`, and `scdoc` for distrib
 
 Additionally, [cargo](https://github.com/rust-lang/cargo) will be required with the minimum MSRV being the latest stable versions of it's direct dependencies.
 
-To build umu-launcher, after downloading and extracting the source code from this repository, change into the newly extracted directory
+To build umu-launcher, clone the repository including the submodules
+```shell
+git clone --recurse-submodules https://github.com/Open-Wine-Components/umu-launcher
+
+```
+Then change current directory to the cloned directory
+
 ```shell
 cd umu-launcher
 ```
