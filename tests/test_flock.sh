@@ -7,6 +7,8 @@
 
 tmp1=$(mktemp)
 tmp2=$(mktemp)
+downloads=$(mktemp)
+trap 'rm -f "$tmp1" "$tmp2" "$downloads"' EXIT
 
 UMU_LOG=debug GAMEID=umu-0 "$HOME/.local/bin/umu-run" wineboot -u 2> "$tmp1" &
 sleep 1
@@ -15,16 +17,9 @@ wait
 
 grep "exited with wait status" "$tmp1" && grep -E "exited with wait status" "$tmp2"
 
-# Ensure the 2nd proc didn't download the runtime
-grep -E "\(latest\), please wait..." "$tmp2"
-exit_code=$?
-if [ "$exit_code" -eq 0 ]; then
-	exit 1
-fi
-
-# Ensure the 2nd proc didn't download Proton
-grep "Downloading" "$tmp2"
-exit_code=$?
-if [ "$exit_code" -eq 0 ]; then
+# Either process can win the install lock. Ensure no fetched resource was
+# downloaded more than once across both processes.
+grep "Downloading" "$tmp1" "$tmp2" | sed 's/^[^:]*://' > "$downloads"
+if sort "$downloads" | uniq -d | grep .; then
 	exit 1
 fi
