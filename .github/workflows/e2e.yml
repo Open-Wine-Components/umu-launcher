@@ -17,6 +17,7 @@ jobs:
       # Make rustup/cargo locations explicit and stable across steps
       CARGO_HOME: ${{ github.workspace }}/.cargo
       RUSTUP_HOME: ${{ github.workspace }}/.rustup
+      UMU_CONTAINER_NSENTER: "1"
 
     steps:
       - uses: actions/checkout@v7
@@ -187,3 +188,18 @@ jobs:
           uv venv --python 3.10 --clear
           source .venv/bin/activate
           sh tests/test_offline.sh
+
+      - name: Preflight runtime sanity
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Host-level fallback (helps CI robustness)
+          sudo apt-get update
+          sudo apt-get install -y wine64
+
+          # Verify expected runtime dirs if previously installed
+          ls -la "$HOME/.local/share/umu" || true
+          find "$HOME/.local/share/umu" -maxdepth 3 -type d -name 'sniper_platform_*' -o -name 'soldier_platform_*' || true
+
+          # Ensure wineboot is resolvable at least on host
+          command -v wineboot
