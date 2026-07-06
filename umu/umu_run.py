@@ -404,7 +404,7 @@ def build_command(
                 log.info("Re-entering container through bus '%s'", pfx_bus)
                 break
             log.info("Failed to find bus name %s (retry %s)", pfx_bus, trial + 1)
-            time.sleep(2)
+            time.sleep(1)
 
     is_nsenter: bool = bool(nsenter)
     return (
@@ -999,8 +999,9 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
                 setup_pfx(compat_path)
 
         # Configure the environment
-        env["STEAM_COMPAT_LAUNCHER_SERVICE"] = layer.launcher_service
         set_env(env, args)
+        if env.get("UMU_CONTAINER_NSENTER") == "1":
+            env["STEAM_COMPAT_LAUNCHER_SERVICE"] = layer.launcher_service
 
         # Set all environment variables
         # NOTE: `env` after this block should be read only
