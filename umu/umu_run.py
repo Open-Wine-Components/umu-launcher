@@ -169,7 +169,6 @@ def check_env(env: dict[str, str]) -> tuple[dict[str, str] | dict[str, Any], boo
 
     # Proton
     tool_tokens = {pver.value for pver in ProtonVersion}
-    tool_tokens.remove(ProtonVersion.UMUProton.value)
     if os.environ.get("PROTONPATH") in tool_tokens:
         do_download = True
 
@@ -765,12 +764,15 @@ def resolve_runtime() -> UmuRuntime:
         os.environ["PROTONPATH"] = ProtonVersion.UMULatest.value
 
     named_runtimes = {
-        RUNTIME_NAMES["steamrt4"]: { ProtonVersion.UMUSteamRT4.value },
-        RUNTIME_NAMES["steamrt4-arm64"]: { ProtonVersion.UMUSteamRT4_arm64.value },
-        RUNTIME_NAMES["sniper"]: {
-            ProtonVersion.UMUSniper.value, ProtonVersion.UMULatest.value,
-            ProtonVersion.GEProton.value, ProtonVersion.GELatest.value,
+        RUNTIME_NAMES["steamrt4"]: {
+            ProtonVersion.UMUSteamRT4.value,
+            ProtonVersion.UMULatest.value,
+            ProtonVersion.UMUProton.value,
+            ProtonVersion.GEProton.value,
+            ProtonVersion.GELatest.value,
         },
+        RUNTIME_NAMES["steamrt4-arm64"]: { ProtonVersion.UMUSteamRT4_arm64.value },
+        RUNTIME_NAMES["sniper"]: { ProtonVersion.UMUSniper.value },
         RUNTIME_NAMES["soldier"]: { ProtonVersion.UMUScout.value, ProtonVersion.UMUSoldier.value },
     }
 
@@ -803,6 +805,17 @@ def resolve_runtime() -> UmuRuntime:
         raise FileNotFoundError(err)
 
     return runtime
+
+
+def _prepare_passthrough_runtime() -> None:
+    """Preserve legacy RUNTIMEPATH/UMU_NO_PROTON runtime tool behavior."""
+    if os.environ.get("UMU_NO_PROTON") != "1" and not (
+        os.environ.get("RUNTIMEPATH") and not os.environ.get("PROTONPATH")
+    ):
+        return
+
+    runtime = resolve_runtime()
+    os.environ["PROTONPATH"] = f"umu-{runtime.name}"
 
 
 def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
@@ -846,7 +859,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     }
     opts: list[str] = []
     prereq: bool = False
-    runtime_version: RuntimeVersion | None = None
 
     log.info("umu-launcher version %s (%s)", __version__, sys.version)
 
@@ -859,22 +871,7 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
     else:
         opts = args[1]  # Reference the executable options
 
-    # Resolve the runtime version for PROTONPATH
-    runtime: UmuRuntime = resolve_runtime()
-    runtime_version: RuntimeVersion = runtime.as_tuple()
-    if not runtime_version:
-        err: str = (
-            f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
-        )
-        raise ValueError(err)
-    # runtime_name, runtime_variant, runtime_appid
-    runtime_name, runtime_variant, _ = runtime_version
-    os.environ["RUNTIMEPATH"] = runtime_variant
-    # FIXME: When UMU_NO_PROTON is set, but a compatibility tools has also been set,
-    # either manually or automatically, run the required runtime tool of the requested tool.
-    # I.e. if set proton needs steamrt4-arm64, with UMU_NO_PROTON=1 run its required runtime.
-    if os.environ.get("UMU_NO_PROTON") == "1":
-        os.environ["PROTONPATH"] = f"umu-{runtime_name}"
+    _prepare_passthrough_runtime()
 
     # Test the network environment and fail early if the user is trying
     # to run umu-run offline because an internet connection is required
@@ -888,28 +885,6 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             return False
         write_install_marker(_rt.path)
         return True
-
-    try:
-        log.debug("Connecting to '1.1.1.1'...")
-        with socket(AF_INET, SOCK_DGRAM) as sock:
-            sock.settimeout(5)
-            sock.connect(("1.1.1.1", 53))
-        prereq = True
-    except TimeoutError:  # Request to a server timed out
-        log.debug("Request timed out")
-        prereq = _check_offline_runtime(runtime)
-    except OSError as e:  # No internet
-        if e.errno != ENETUNREACH:
-            raise
-        log.debug("Network is unreachable")
-        prereq = _check_offline_runtime(runtime)
-
-    if not prereq:
-        err: str = (
-            "umu has not been setup for the user\n"
-            "An internet connection is required to setup umu"
-        )
-        raise RuntimeError(err)
 
     # Opt to use the system's native CA bundle rather than certifi's
     with suppress(ModuleNotFoundError):
@@ -957,17 +932,68 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
 
         # Setup the launcher and runtime files
         _, do_download = check_env(env)
+        download_proton(env, session_pools, download=do_download)
+
+        # Resolve the runtime from the concrete compatibility tool. This must
+        # happen after Proton download/selection so tokens like GE-Proton use
+        # the runtime required by the selected build's toolmanifest.vdf.
+        runtime: UmuRuntime = resolve_runtime()
+        runtime_version: RuntimeVersion = runtime.as_tuple()
+        if not runtime_version:
+            err: str = (
+                f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
+            )
+            raise ValueError(err)
+
+        # runtime_name, runtime_variant, runtime_appid
+        runtime_name, runtime_variant, _ = runtime_version
+        os.environ["RUNTIMEPATH"] = runtime_variant
+
+        # FIXME: When UMU_NO_PROTON is set, but a compatibility tools has also been set,
+        # either manually or automatically, run the required runtime tool of the requested tool.
+        # I.e. if set proton needs steamrt4-arm64, with UMU_NO_PROTON=1 run its required runtime.
+        if (
+            os.environ.get("UMU_NO_PROTON") == "1"
+            and Path(env["PROTONPATH"]).name != f"umu-{runtime_name}"
+        ):
+            os.environ["PROTONPATH"] = f"umu-{runtime_name}"
+            env["PROTONPATH"] = os.environ["PROTONPATH"]
+            get_umu_proton(env, session_pools)
+            runtime = resolve_runtime()
+            runtime_version = runtime.as_tuple()
+            runtime_name, runtime_variant, _ = runtime_version
+            os.environ["RUNTIMEPATH"] = runtime_variant
+
+        try:
+            log.debug("Connecting to '1.1.1.1'...")
+            with socket(AF_INET, SOCK_DGRAM) as sock:
+                sock.settimeout(5)
+                sock.connect(("1.1.1.1", 53))
+            prereq = True
+        except TimeoutError:  # Request to a server timed out
+            log.debug("Request timed out")
+            prereq = _check_offline_runtime(runtime)
+        except OSError as e:  # No internet
+            if e.errno != ENETUNREACH:
+                raise
+            log.debug("Network is unreachable")
+            prereq = _check_offline_runtime(runtime)
+
+        if not prereq:
+            err: str = (
+                "umu has not been setup for the user\n"
+                "An internet connection is required to setup umu"
+            )
+            raise RuntimeError(err)
 
         if runtime_name == "host":
-            download_proton(env, session_pools, download=do_download)
+            pass
         elif runtime_variant:
             UMU_LOCAL.joinpath(runtime_variant).mkdir(parents=True, exist_ok=True)
 
             future: Future = thread_pool.submit(
                 setup_umu, UMU_LOCAL / runtime_variant, runtime_version, session_pools
             )
-
-            download_proton(env, session_pools, download=do_download)
 
             try:
                 future.result()

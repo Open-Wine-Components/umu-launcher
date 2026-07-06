@@ -387,6 +387,7 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         mock_container_runtimes = (
+            ("steamrt4", "steamrt4", "4183110"),
             ("sniper", "steamrt3", "1628350"),
             ("soldier", "steamrt2", "1391110"),
         )
@@ -417,12 +418,13 @@ class TestGameLauncher(unittest.TestCase):
         """Test resolve_umu_version when PROTONPATH is a known, valid token.
 
         Expects a tuple representing the known latest container runtime.
-        Known, valid tokens include: GE-Proton. In this case, parsing of a
-        manifest will not occur and it is assumed the compatibility tool
+        Known, valid tokens include UMU-Proton and GE-Proton. In this case,
+        parsing of a manifest will not occur and it is assumed the compatibility tool
         associated with the token uses the latest runtime.
         """
         result = None
         mock_container_runtimes = (
+            ("steamrt4", "steamrt4", "4183110"),
             ("sniper", "steamrt3", "1628350"),
             ("soldier", "steamrt2", "1391110"),
         )
@@ -436,18 +438,103 @@ class TestGameLauncher(unittest.TestCase):
             "UMU_NO_PROTON" not in os.environ,
             f"Expected None, received '{os.environ.get('UMU_NO_PROTON')}",
         )
-        os.environ["PROTONPATH"] = "GE-Proton"
-        result = umu_run.resolve_runtime().as_tuple()
-        self.assertEqual(
-            result,
-            mock_expected,
-            f"Expected '{mock_expected}', received '{result}'",
-        )
-        self.assertEqual(
-            result,
-            mock_container_runtimes[0],
-            f"Expected the original instance '{result}'",
-        )
+        for protonpath in ("GE-Proton", "UMU-Proton"):
+            with self.subTest(protonpath=protonpath):
+                os.environ["PROTONPATH"] = protonpath
+                result = umu_run.resolve_runtime().as_tuple()
+                self.assertEqual(
+                    result,
+                    mock_expected,
+                    f"Expected '{mock_expected}', received '{result}'",
+                )
+                self.assertEqual(
+                    result,
+                    mock_container_runtimes[0],
+                    f"Expected the original instance '{result}'",
+                )
+
+    def test_umu_run_proton_tokens_use_resolved_runtime(self):
+        """Test umu_run resolves runtime after Proton token selection."""
+        for token, name in (
+            ("GE-Proton", "GE-Proton11-1"),
+            ("UMU-Proton", "UMU-Proton-9.0-beta16"),
+        ):
+            with self.subTest(token=token):
+                result = None
+                setup_calls = []
+                proton = self.test_compat.joinpath(name).resolve()
+                proton.mkdir()
+                proton.joinpath("proton").touch()
+                proton.joinpath("compatibilitytool.vdf").write_text(
+                    vdf.dumps(
+                        {
+                            "compatibilitytools": {
+                                "compat_tools": {
+                                    proton.name: {
+                                        "install_path": ".",
+                                        "display_name": proton.name,
+                                        "from_oslist": "windows",
+                                        "to_oslist": "linux",
+                                    }
+                                }
+                            }
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                proton.joinpath("toolmanifest.vdf").write_text(
+                    vdf.dumps(
+                        {
+                            "manifest": {
+                                "version": "2",
+                                "commandline": "/proton %verb%",
+                                "require_tool_appid": "4183110",
+                                "use_sessions": "1",
+                                "compatmanager_layer_name": "proton",
+                            }
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+                def mock_download(env, session_pools, *, download):  # noqa: ARG001
+                    os.environ["PROTONPATH"] = proton.as_posix()
+                    env["PROTONPATH"] = proton.as_posix()
+
+                def mock_setup(local, runtime_version, session_pools):  # noqa: ARG001
+                    setup_calls.append((local, runtime_version))
+
+                mock_sock = MagicMock()
+                mock_sock.__enter__.return_value = mock_sock
+                mock_sock.__exit__.return_value = None
+
+                os.environ["WINEPREFIX"] = self.test_winepfx.as_posix()
+                os.environ["GAMEID"] = self.test_file
+                os.environ["PROTONPATH"] = token
+
+                with (
+                    patch.object(umu_run, "UMU_LOCAL", self.test_local_share_parent),
+                    patch.object(umu_run, "download_proton", side_effect=mock_download),
+                    patch.object(umu_run, "setup_umu", side_effect=mock_setup),
+                    patch.object(umu_run, "build_command", return_value=("true",)),
+                    patch.object(umu_run, "run_command", return_value=0),
+                    patch.object(umu_run, "socket", return_value=mock_sock),
+                ):
+                    result = umu_run.umu_run((self.test_exe, []))
+
+                self.assertEqual(
+                    result, 0, "Expected umu_run to return the command status"
+                )
+                self.assertEqual(
+                    setup_calls,
+                    [
+                        (
+                            self.test_local_share_parent / "steamrt4",
+                            ("steamrt4", "steamrt4", "4183110"),
+                        )
+                    ],
+                    f"Expected {name} to set up steamrt4 from toolmanifest.vdf",
+                )
 
     def test_resolve_umu_version(self):
         """Test resolve_umu_version when all expected inputs are unset.
@@ -458,10 +545,11 @@ class TestGameLauncher(unittest.TestCase):
         """
         result = None
         mock_container_runtimes = (
+            ("steamrt4", "steamrt4", "4183110"),
             ("sniper", "steamrt3", "1628350"),
             ("soldier", "steamrt2", "1391110"),
         )
-        mock_expected = tuple(list(mock_container_runtimes[1]))  # noqa
+        mock_expected = tuple(list(mock_container_runtimes[0]))  # noqa
 
         self.assertTrue(
             "PROTONPATH" not in os.environ,
@@ -2041,6 +2129,24 @@ class TestGameLauncher(unittest.TestCase):
             result_env, result_dl = umu_run.check_env(self.env)
             umu_run.download_proton(result_env, mock_session_pools, download=result_dl)
             self.assertFalse(os.environ.get("PROTONPATH"), "Expected empty string")
+
+    def test_umu_proton_token_downloads(self):
+        """Test check_env when the code name UMU-Proton is set for PROTONPATH."""
+        result_env = None
+        result_dl = None
+
+        os.environ["WINEPREFIX"] = self.test_file
+        os.environ["GAMEID"] = self.test_file
+        os.environ["PROTONPATH"] = "UMU-Proton"
+
+        result_env, result_dl = umu_run.check_env(self.env)
+        self.assertTrue(result_env is self.env, "Expected the same reference")
+        self.assertTrue(result_dl, "Expected UMU-Proton to trigger download")
+        self.assertEqual(
+            self.env["PROTONPATH"],
+            "UMU-Proton",
+            "Expected UMU-Proton token to be preserved for download resolution",
+        )
 
     def test_latest_interrupt(self):
         """Test _get_latest when the user interrupts the download/extraction.
