@@ -1,8 +1,8 @@
 # Tag is auto-inserted by workflow
-%global tag 1.4.0
+%global tag 1.4.1
 
 # Manual commit is auto-inserted by workflow
-%global commit 24cdc86a1565764655c9de12404b2c5d12dec6e7
+%global commit b5abff33ee4e13a424421a6fbddf7994c5586918
 
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
