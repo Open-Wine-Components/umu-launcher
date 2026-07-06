@@ -1,5 +1,6 @@
 import json
 import os
+import platform
 import shutil
 import time
 import urllib.parse
@@ -292,25 +293,38 @@ def _fetch_releases(
     ):
         return ()
 
+    # Releases can ship builds for multiple architectures side by side (e.g.
+    # GE-Proton11-1.tar.gz and GE-Proton11-1-aarch64.tar.gz). Restrict the
+    # search to assets matching the host architecture so the count below
+    # isn't inflated by a build we can't use anyway. umu_runtime.py only
+    # supports these architectures as a host today (anything else raises
+    # at import time), so the default (x86_64) build carries no suffix
+    # and every other supported architecture is called out explicitly here.
+    # Add an entry here if umu-launcher ever supports another host arch.
+    _NON_DEFAULT_ARCH_MARKERS = {"aarch64": "-aarch64"}
+    machine = platform.machine()
+    foreign_markers = tuple(
+        marker for arch, marker in _NON_DEFAULT_ARCH_MARKERS.items() if arch != machine
+    )
     asset_count: int = 0
     asset_max: int = 2
     for asset in assets:
+        if any(marker in asset["name"] for marker in foreign_markers):
+            continue
         if asset["name"].endswith("sum"):
             digest_asset = (asset["name"], asset["browser_download_url"])
             asset_count += 1
-            continue
-        if asset["name"].endswith(("tar.gz", "tar.xz")) and asset["name"].startswith(
+        elif asset["name"].endswith(("tar.gz", "tar.xz")) and asset["name"].startswith(
             ("UMU-Proton", "GE-Proton", "umu-scout")
         ):
             proton_asset = (asset["name"], asset["browser_download_url"])
             asset_count += 1
-            continue
         if asset_count == asset_max:
             break
 
     if asset_count != asset_max:
         log.warning("Failed to acquire release assets from '%s'", url)
-        log.debug("'%' returned: %s", url, assets)
+        log.debug("'%s' returned: %s", url, assets)
         return ()
 
     return digest_asset, proton_asset
