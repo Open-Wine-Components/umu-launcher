@@ -235,11 +235,13 @@ def is_winetricks_verb(
     regex = re_compile(pattern)
     for verb in verbs:
         if not regex.match(verb):
-            if not "." in verb:
+            if "." not in verb:
                 err: str = f"Value is not a winetricks verb: '{verb}'"
                 log.error(err)
                 return False
-            elif not (os.path.exists(verb) and os.path.isfile(verb)):
+
+            verb_path = Path(verb)
+            if not (verb_path.exists() and verb_path.is_file()):
                 err = f"Error finding custom winetricks verb: '{verb}'"
                 log.error(err)
                 return False
