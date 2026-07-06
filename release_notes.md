@@ -1,6 +1,12 @@
 # 🎁 Release notes (`1.4.1`)
 
 ## Changes
+- bump rpm spec sheet commit again
+- bump release notes again
+- bump runtime
+- bump rpm spec sheet
+- Bump version to 1.4.1
+- bump release notes
 - enable UMU_CONTAINER_NSENTER for e2e workflow
 - Merge pull request #683 from loathingKernel/launcher-service
 - Merge pull request #690 from GitXpresso/main
@@ -60,5 +66,5 @@
 ```
 This version -------- 1.4.1
 Previous version ---- 1.4.0.rc3
-Total commits ------- 54
+Total commits ------- 60
 ```
