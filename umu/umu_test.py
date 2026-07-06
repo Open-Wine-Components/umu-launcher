@@ -1931,6 +1931,65 @@ class TestGameLauncher(unittest.TestCase):
             f"Expected tuple with len, received len {result_len}",
         )
 
+    def test_fetch_releases_multi_arch(self):
+        """Test _fetch_releases when a release ships multiple architectures.
+
+        GE-Proton releases can include both x86_64 and aarch64 builds in the
+        same release (e.g. GE-Proton11-1.tar.gz and
+        GE-Proton11-1-aarch64.tar.gz, each with their own .sha512sum). The
+        asset count must not be inflated by assets for a foreign
+        architecture, and the returned assets must match the host arch.
+        """
+        result = None
+        mock_gh_release = {
+            "assets": [
+                {
+                    "name": "GE-Proton11-1-aarch64.sha512sum",
+                    "browser_download_url": "aarch64-sum-url",
+                },
+                {
+                    "name": "GE-Proton11-1-aarch64.tar.gz",
+                    "browser_download_url": "aarch64-tar-url",
+                },
+                {
+                    "name": "GE-Proton11-1.sha512sum",
+                    "browser_download_url": "x86_64-sum-url",
+                },
+                {
+                    "name": "GE-Proton11-1.tar.gz",
+                    "browser_download_url": "x86_64-tar-url",
+                },
+            ]
+        }
+
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json.return_value = mock_gh_release
+
+        mock_tp = MagicMock()
+        mock_hp = MagicMock()
+        mock_hp.request.return_value = mock_resp
+
+        os.environ["PROTONPATH"] = "GE-Proton"
+
+        with patch.object(umu_proton.platform, "machine", return_value="x86_64"):
+            result = umu_proton._fetch_releases((mock_tp, mock_hp))
+
+        self.assertTrue(result is not None, "Expected a value, received None")
+        self.assertTrue(isinstance(result, tuple), f"Expected tuple, received {result}")
+        self.assertEqual(len(result), 2, f"Expected a 2-tuple, received {result}")
+        digest_asset, proton_asset = result
+        self.assertNotIn(
+            "aarch64",
+            digest_asset[0],
+            "Expected the x86_64 digest asset, received the aarch64 one",
+        )
+        self.assertNotIn(
+            "aarch64",
+            proton_asset[0],
+            "Expected the x86_64 proton asset, received the aarch64 one",
+        )
+
     def test_ge_proton(self):
         """Test check_env when the code name GE-Proton is set for PROTONPATH.
 
