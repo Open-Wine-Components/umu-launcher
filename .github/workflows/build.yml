@@ -48,6 +48,13 @@ jobs:
     with:
       version: ${{ needs.version.outputs.version }}
 
+  ubuntu-resolute-build:
+    name: Ubuntu 26.04 Build
+    uses: ./.github/workflows/build-umu-ubuntu-resolute.yml
+    needs: version
+    with:
+      version: ${{ needs.version.outputs.version }}
+
   zipapp-build:
     name: Zipapp Build
     uses: ./.github/workflows/build-umu-zipapp.yml

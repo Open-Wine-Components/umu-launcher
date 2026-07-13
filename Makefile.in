@@ -93,6 +93,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
 	fi
 	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 		cd subprojects/urllib3 && \
+		sed -i 's/"setuptools-scm>=8,<9"/"setuptools-scm>=8,<10"/g' pyproject.toml && \
 		sed -i 's/license-files = \["LICENSE.txt"\]//g' pyproject.toml && \
 		$(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 	fi
