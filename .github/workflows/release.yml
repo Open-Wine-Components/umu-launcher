@@ -133,6 +133,32 @@ jobs:
       file1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_ubuntu-noble.deb
       name1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_ubuntu-noble.deb
 
+  ubuntu-resolute-build:
+    name: Ubuntu 26.04 Build
+    uses: ./.github/workflows/build-umu-ubuntu-resolute.yml
+    with:
+      version: ${{ github.ref_name }}
+
+  ubuntu-resolute-release-amd64:
+    name: Ubuntu 26.04 Release ${{ github.ref_name }} (amd64)
+    needs: ubuntu-resolute-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: python3-umu-launcher_${{ github.ref_name }}-1_amd64_ubuntu-resolute.deb
+      name1: python3-umu-launcher_${{ github.ref_name }}-1_amd64_ubuntu-resolute.deb
+      file2: umu-launcher_${{ github.ref_name }}-1_all_ubuntu-resolute.deb
+      name2: umu-launcher_${{ github.ref_name }}-1_all_ubuntu-resolute.deb
+
+  ubuntu-resolute-release-arm64:
+    name: Ubuntu 26.04 Release ${{ github.ref_name }} (arm64)
+    needs: ubuntu-resolute-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_ubuntu-resolute.deb
+      name1: python3-umu-launcher_${{ github.ref_name }}-1_arm64_ubuntu-resolute.deb
+
   zipapp-build:
     name: Zipapp Build
     uses: ./.github/workflows/build-umu-zipapp.yml

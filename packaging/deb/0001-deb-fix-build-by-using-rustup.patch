@@ -4,9 +4,9 @@ Date: Sun, 10 Aug 2025 20:45:09 -0700
 Subject: [PATCH] deb: update rustup patch
 
 ---
- Makefile.in                           | 17 ++++++++++++-----
+ Makefile.in                           | 18 ++++++++++++------
  packaging/deb/debian/bookworm/control |  1 +
- 2 files changed, 13 insertions(+), 5 deletions(-)
+ 2 files changed, 13 insertions(+), 6 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
 index 1ad390ff..e4088650 100644
@@ -28,11 +28,12 @@ index 1ad390ff..e4088650 100644
  
  $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  	$(info :: Building vendored dependencies )
-@@ -92,9 +94,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
+@@ -92,10 +94,7 @@ $(OBJDIR)/.build-umu-vendored: | $(OBJDIR)
  		cd subprojects/pyzstd && $(PYTHON_INTERPRETER) -m build -wn -C=--build-option=--dynamic-link-zstd --outdir=$(OBJDIR); \
  	fi
  	@if [ "$(USE_SYSTEM_URLLIB)" != "xtrue" ]; then \
 -		cd subprojects/urllib3 && \
+-		sed -i 's/"setuptools-scm>=8,<9"/"setuptools-scm>=8,<10"/g' pyproject.toml && \
 -		sed -i 's/license-files = \["LICENSE.txt"\]//g' pyproject.toml && \
 -		$(PYTHON_INTERPRETER) -m build -wn --outdir=$(OBJDIR); \
 +		curl -LJO --tlsv1.3 $(URLLIB3_URL) --output-dir $(OBJDIR); \
@@ -81,4 +82,3 @@ index adfd8025..b725d9f5 100644
  Vcs-Browser: https://github.com/Open-Wine-Components/umu-launcher
 -- 
 2.50.1
-

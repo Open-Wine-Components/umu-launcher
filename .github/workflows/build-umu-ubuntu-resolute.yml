@@ -1,0 +1,103 @@
+name: UMU Deb Build - Resolute (Ubuntu 26.04 LTS)
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: ubuntu:resolute
+      volumes:
+        - /proc:/proc
+      options: --privileged -it
+
+    steps:
+      - name: Update APT Cache
+        run: apt update -y
+
+      - name: Install build dependencies
+        run: apt install -y dh-make dpkg-dev git
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Extract Version and SHA
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 || echo "unknown")
+          echo $VERSION
+
+          # Get current commit SHA
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo $COMMIT_SHA
+
+          # Store values in environment file
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+          sed -i "s|^VERSION := .*$|VERSION := ${VERSION}|g" Makefile.in
+
+          # Always insert latest version into Makefile.in
+          sed -i "s|^VERSION := .*$|VERSION := ${VERSION}|g" Makefile.in
+
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
+
+      - name: Copy debian packaging folder to the repository root
+        run: cp -rvf ./packaging/deb/ubuntu ./debian
+
+      - name: Setup dh_make quilt files
+        run: |
+          sed -re 's|(umu-launcher \()[1-9.]+(-1\).*$)|\1${{ env.VERSION }}\2|' -i ./debian/changelog
+          LOGNAME=root dh_make --createorig -y -l -p umu-launcher_${{ env.VERSION }} || true
+
+      - name: Install apt build dependencies
+        run: apt build-dep -y ./
+
+      - name: Build
+        run: dpkg-buildpackage --no-sign
+
+      - name: Move and rename DEB files to upload artifact path
+        run: |
+          mkdir -p results
+          ARCH=$(dpkg --print-architecture)
+          mv ../python3-umu-launcher_${{ env.VERSION }}-1_${ARCH}.deb \
+             results/python3-umu-launcher_${{ env.VERSION }}-1_${ARCH}_ubuntu-resolute.deb
+
+          # The _all package is architecture-independent; upload from one leg only.
+          if [ "${ARCH}" = "amd64" ]; then
+            mv ../umu-launcher_${{ env.VERSION }}-1_all.deb \
+               results/umu-launcher_${{ env.VERSION }}-1_all_ubuntu-resolute.deb
+          fi
+
+      - name: Upload python3 package
+        uses: actions/upload-artifact@v7
+        with:
+          name: python3-umu-launcher_${{ env.VERSION }}-1_${{ matrix.arch }}_ubuntu-resolute.deb
+          path: results/python3-umu-launcher_${{ env.VERSION }}-1_*_ubuntu-resolute.deb
+
+      - name: Upload _all package
+        if: ${{ matrix.arch == 'amd64' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: umu-launcher_${{ env.VERSION }}-1_all_ubuntu-resolute.deb
+          path: results/umu-launcher_${{ env.VERSION }}-1_all_ubuntu-resolute.deb
