@@ -253,7 +253,8 @@ def set_env(
             # Ensure executable path is absolute, otherwise Proton will fail
             # when creating the subprocess.
             # e.g., Games/umu/umu-0 -> $HOME/Games/umu/umu-0
-            exe: Path = Path(cmd).expanduser().resolve(strict=True)
+            exe: Path = Path(cmd).expanduser().absolute()
+            _ = exe.resolve(strict=True)
             env["EXE"] = str(exe)
             if not env["STEAM_COMPAT_INSTALL_PATH"]:
                 env["STEAM_COMPAT_INSTALL_PATH"] = str(exe.parent)
