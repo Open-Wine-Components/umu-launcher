@@ -7,7 +7,8 @@ name=$(curl -L "https://api.github.com/repos/Open-Wine-Components/umu-proton/rel
 rm "$name"
 
 # Download runtime
-curl -LJO "https://repo.steampowered.com/steamrt3/images/latest-container-runtime-public-beta/SteamLinuxRuntime_sniper.tar.xz"
+version=$(curl -L "https://repo.steampowered.com/steamrt3/images/latest-container-runtime-public-beta.txt" | tr -d "\n")
+curl -LJO "https://repo.steampowered.com/steamrt3/images/$version/SteamLinuxRuntime_sniper.tar.xz"
 url=$(curl -L "https://api.github.com/repos/Open-Wine-Components/umu-proton/releases/latest" | jq .assets[1].browser_download_url | tr -d '"')
 
 # Download Proton
