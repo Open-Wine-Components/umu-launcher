@@ -28,7 +28,7 @@ jobs:
         with:
           github_access_token: ${{ github.token }}
       - name: Check flake inputs
-        uses: DeterminateSystems/flake-checker-action@v12
+        uses: DeterminateSystems/flake-checker-action@v13
         with:
           flake-lock-path: packaging/nix/flake.lock
       - name: Check flake outputs
