@@ -1,5 +1,5 @@
 # Tag is auto-inserted by workflow
-%global tag 1.4.1
+%global tag 1.4.3
 
 # Manual commit is auto-inserted by workflow
 %global commit a3c34234a73217a3590f498c87218cfd414d775a

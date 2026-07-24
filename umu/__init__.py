@@ -1,4 +1,4 @@
-__version__ = "1.4.1"  # noqa: D104
+__version__ = "1.4.3"  # noqa: D104
 __runtime_versions__ = (
     ("steamrt4", "steamrt4", "4183110"),
     ("sniper", "steamrt3", "1628350"),
