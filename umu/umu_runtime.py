@@ -274,9 +274,9 @@ def setup_umu(
     _, http_pool = session_pools
     codename, variant, _ = runtime_ver
     host: str = "repo.steampowered.com"
-    endpoint: str = f"/{variant.removesuffix('-arm64')}/images/latest-public-beta"
-    url: str = f"https://{host}{endpoint}/VERSION.txt"
-    log.debug("Sending request to '%s' for 'VERSION.txt'...", url)
+    endpoint: str = f"/{variant.removesuffix('-arm64')}/images"
+    url: str = f"https://{host}{endpoint}/latest-public-beta.txt"
+    log.debug("Sending request to '%s' for 'latest-public-beta.txt'...", url)
     resp = http_pool.request(HTTPMethod.GET.value, url)
     if resp.status != HTTPStatus.OK:
         log.error("%s returned the status: %s", host, resp.status)
