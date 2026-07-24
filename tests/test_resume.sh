@@ -1,10 +1,12 @@
 #!/usr/bin/env sh
 
 tmp=$(mktemp)
+# Get the latest version
+version=$(curl -L "https://repo.steampowered.com/steamrt3/images/latest-container-runtime-public-beta.txt" | tr -d "\n")
 # Request the BUILD_ID.txt value. We append this to the working file to ID it
-id=$(curl -L "https://repo.steampowered.com/steamrt3/images/latest-container-runtime-public-beta/BUILD_ID.txt" | tr -d "\n")
+id=$(curl -L "https://repo.steampowered.com/steamrt3/images/$version/BUILD_ID.txt" | tr -d "\n")
 # Request the first 100MB of the runtime archive
-curl -LJO --range 0-104857599 "https://repo.steampowered.com/steamrt3/images/latest-container-runtime-public-beta/SteamLinuxRuntime_sniper.tar.xz"
+curl -LJO --range 0-104857599 "https://repo.steampowered.com/steamrt3/images/$version/SteamLinuxRuntime_sniper.tar.xz"
 mkdir -p "$HOME"/.cache/umu
 # Move to our cache so it can be picked up then resumed.
 # Note: Must include the *.parts extension
