@@ -5,31 +5,6 @@ on:
     types: [published]
 
 jobs:
-  fedora42-build:
-    name: Fedora 42 Build
-    uses: ./.github/workflows/build-umu-fedora-42.yml
-    with:
-      version: ${{ github.ref_name }}
-      shasum: ${{ github.sha }}
-
-  fedora42-release-x86_64:
-    name: Fedora 42 Release ${{ github.ref_name }} (x86_64)
-    needs: fedora42-build
-    uses: ./.github/workflows/build-umu-publish-release.yml
-    with:
-      version: ${{ github.ref_name }}
-      file1: umu-launcher-${{ github.ref_name }}.fc42.x86_64.rpm
-      name1: umu-launcher-${{ github.ref_name }}.fc42.x86_64.rpm
-
-  fedora42-release-aarch64:
-    name: Fedora 42 Release ${{ github.ref_name }} (aarch64)
-    needs: fedora42-build
-    uses: ./.github/workflows/build-umu-publish-release.yml
-    with:
-      version: ${{ github.ref_name }}
-      file1: umu-launcher-${{ github.ref_name }}.fc42.aarch64.rpm
-      name1: umu-launcher-${{ github.ref_name }}.fc42.aarch64.rpm
-
   fedora43-build:
     name: Fedora 43 Build
     uses: ./.github/workflows/build-umu-fedora-43.yml
@@ -54,6 +29,31 @@ jobs:
       version: ${{ github.ref_name }}
       file1: umu-launcher-${{ github.ref_name }}.fc43.aarch64.rpm
       name1: umu-launcher-${{ github.ref_name }}.fc43.aarch64.rpm
+
+  fedora44-build:
+    name: Fedora 44 Build
+    uses: ./.github/workflows/build-umu-fedora-44.yml
+    with:
+      version: ${{ github.ref_name }}
+      shasum: ${{ github.sha }}
+
+  fedora44-release-x86_64:
+    name: Fedora 44 Release ${{ github.ref_name }} (x86_64)
+    needs: fedora44-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: umu-launcher-${{ github.ref_name }}.fc44.x86_64.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc44.x86_64.rpm
+
+  fedora44-release-aarch64:
+    name: Fedora 44 Release ${{ github.ref_name }} (aarch64)
+    needs: fedora44-build
+    uses: ./.github/workflows/build-umu-publish-release.yml
+    with:
+      version: ${{ github.ref_name }}
+      file1: umu-launcher-${{ github.ref_name }}.fc44.aarch64.rpm
+      name1: umu-launcher-${{ github.ref_name }}.fc44.aarch64.rpm
 
   debian12-build:
     name: Debian 12 Build

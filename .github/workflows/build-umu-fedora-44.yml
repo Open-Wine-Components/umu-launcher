@@ -1,4 +1,4 @@
-name: UMU RPM Build - Fedora/Nobara 42
+name: UMU RPM Build - Fedora/Nobara 44
 
 on:
   workflow_call:
@@ -23,7 +23,7 @@ jobs:
 
     runs-on: ${{ matrix.runner }}
     container:
-      image: fedora:42
+      image: fedora:44
 
     steps:
       - name: Install Git
@@ -41,7 +41,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install build dependencies
-        run: dnf install -y rpm-build meson ninja-build cmake g++ gcc-c++ scdoc git python3-devel python3-build python3-installer python3-hatchling python python3 cargo python3-hatch-vcs python3-wheel libzstd-devel python3-pyzstd python3-xlib wget
+        run: dnf install -y rpm-build meson ninja-build cmake g++ gcc-c++ scdoc git python3-devel python3-build python3-installer python3-hatchling python python3 cargo python3-hatch-vcs python3-wheel libzstd-devel python3-pyzstd python3-xlib python3-urllib3 wget
 
       - name: Extract Version and SHA
         run: |
@@ -69,10 +69,11 @@ jobs:
           tar -cvzf umu-launcher-${{ env.VERSION }}.tar.gz umu-launcher-${{ env.VERSION }}
           mv umu-launcher-${{ env.VERSION }}.tar.gz ~/rpmbuild/SOURCES/
           rm -Rf umu-launcher-${{ env.VERSION }}/
-          wget https://github.com/urllib3/urllib3/releases/download/2.3.0/urllib3-2.3.0.tar.gz
-          mv urllib3-2.3.0.tar.gz ~/rpmbuild/SOURCES/
+          wget https://github.com/urllib3/urllib3/releases/download/2.5.0/urllib3-2.5.0.tar.gz
+          mv urllib3-2.5.0.tar.gz ~/rpmbuild/SOURCES/
           cd umu-launcher/
 
+          sed -i 's|%global urllib3 2\.3\.0|%global urllib3 2\.5\.0|g' packaging/rpm/umu-launcher.spec
           sed -i "s|^%global tag .*|%global tag ${{ env.VERSION }}|g" packaging/rpm/umu-launcher.spec
           cat packaging/rpm/umu-launcher.spec | grep tag
 
@@ -85,10 +86,10 @@ jobs:
           echo "RPMARCH=$RPMARCH" >> $GITHUB_ENV
 
           mv ~/rpmbuild/RPMS/${RPMARCH}/umu-launcher-${{ env.VERSION }}*.rpm \
-             ~/rpmbuild/RPMS/${RPMARCH}/umu-launcher-${{ env.VERSION }}.fc42.${RPMARCH}.rpm
+             ~/rpmbuild/RPMS/${RPMARCH}/umu-launcher-${{ env.VERSION }}.fc44.${RPMARCH}.rpm
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: umu-launcher-${{ env.VERSION }}.fc42.${{ env.RPMARCH }}.rpm
-          path: ~/rpmbuild/RPMS/${{ env.RPMARCH }}/umu-launcher-${{ env.VERSION }}.fc42.${{ env.RPMARCH }}.rpm
+          name: umu-launcher-${{ env.VERSION }}.fc44.${{ env.RPMARCH }}.rpm
+          path: ~/rpmbuild/RPMS/${{ env.RPMARCH }}/umu-launcher-${{ env.VERSION }}.fc44.${{ env.RPMARCH }}.rpm
