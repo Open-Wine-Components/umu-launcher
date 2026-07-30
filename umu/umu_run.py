@@ -235,6 +235,9 @@ def set_env(
         env["PROTON_VERB"] = "waitforexitandrun"
 
     env["STEAM_COMPAT_INSTALL_PATH"] = os.environ.get("STEAM_COMPAT_INSTALL_PATH", "")
+    env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = os.environ.get(
+        "STEAM_COMPAT_CLIENT_INSTALL_PATH", ""
+    )
 
     # EXE
     if is_createpfx:
