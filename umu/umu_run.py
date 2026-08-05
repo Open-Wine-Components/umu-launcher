@@ -1,5 +1,6 @@
 import hashlib
 import os
+import platform
 import signal
 import sys
 import threading
@@ -944,6 +945,9 @@ def umu_run(args: Namespace | tuple[str, list[str]]) -> int:
             err: str = (
                 f"Failed to match '{os.environ.get('PROTONPATH')}' with a container runtime"
             )
+            raise ValueError(err)
+        if runtime.machine == 'aarch64' and platform.machine() == 'x86_64':
+            err: str = 'Refusing to use aarch64 runtime on x86_64. Did you download the wrong Proton variant?'
             raise ValueError(err)
 
         # runtime_name, runtime_variant, runtime_appid
