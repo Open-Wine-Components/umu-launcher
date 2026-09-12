@@ -694,7 +694,13 @@ def signal_handler(sig: int, frame: FrameType | None):  # noqa: ARG001
     """Handle SIGINT/SIGTERM."""
     pstree = get_pstree_from_pid(os.getpid())
     for p in pstree:
-        os.kill(p, sig)
+        try:
+            os.kill(p, sig)
+        except ProcessLookupError:
+            # The child already exited between the pstree snapshot and the
+            # signal. This is a benign race, not an error — continue killing
+            # the remaining descendents instead of aborting the handler.
+            continue
 
 
 def run_command(command: tuple[Path | str, ...]) -> int:
