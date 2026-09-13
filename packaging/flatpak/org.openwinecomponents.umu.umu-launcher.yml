@@ -1,9 +1,10 @@
 id: org.openwinecomponents.umu.umu-launcher
 runtime: org.freedesktop.Platform
-runtime-version: &runtime-version '23.08'
+runtime-version: &runtime-version '25.08'
+x-runtime-version-extra: &runtime-version-extra '25.08-extra'
 x-gl-version: &gl-version '1.4'
-x-gl-versions: &gl-versions 23.08;23.08-extra;1.4
-x-gl-merge-dirs: &gl-merge-dirs vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors;lib/dri;lib/d3d;vulkan/explicit_layer.d;vulkan/implicit_layer.d
+x-gl-versions: &gl-versions 25.08;25.08-extra;1.4
+x-gl-merge-dirs: &gl-merge-dirs vulkan/icd.d;glvnd/egl_vendor.d;egl/egl_external_platform.d;OpenCL/vendors;lib/dri;lib/d3d;lib/gbm;vulkan/explicit_layer.d;vulkan/implicit_layer.d;vdpau
 sdk: org.freedesktop.Sdk
 command: umu-run
 separate-locales: false
@@ -11,6 +12,7 @@ separate-locales: false
 sdk-extensions:
   - org.freedesktop.Sdk.Compat.i386
   - org.freedesktop.Sdk.Extension.toolchain-i386
+  - org.freedesktop.Sdk.Extension.rust-stable
 
 finish-args:
   - --allow=devel
@@ -64,6 +66,8 @@ finish-args:
   # Pressure Vessel
   # See https://github.com/flathub/com.valvesoftware.Steam/commit/0538256facdb0837c33232bc65a9195a8a5bc750
   - --env=XDG_DATA_DIRS=/app/share:/usr/lib/extensions/vulkan/share:/usr/share:/usr/share/runtime/share:/run/host/user-share:/run/host/share:/usr/lib/pressure-vessel/overrides/share
+  - --env=GST_PLUGIN_SYSTEM_PATH=/app/lib/gstreamer-1.0:/app/lib32/gstreamer-1.0:/usr/lib/extensions/gstreamer-1.0:/usr/lib/x86_64-linux-gnu/codecs-extra/lib/gstreamer-1.0:/usr/lib/i386-linux-gnu/codecs-extra/lib/gstreamer-1.0:/usr/lib/x86_64-linux-gnu/gstreamer-1.0:/usr/lib/i386-linux-gnu/gstreamer-1.0
+  - --env=PYTHONPATH=/app/utils/lib/python3.13/site-packages
 
 add-extensions:
   org.freedesktop.Platform.Compat.i386:
@@ -108,19 +112,11 @@ add-extensions:
     download-if: have-intel-gpu
     autoprune-unless: have-intel-gpu
 
-  org.freedesktop.Platform.ffmpeg-full:
-    directory: lib/ffmpeg
-    add-ld-path: .
-    version: *runtime-version
-    no-autodownload: true
+  org.freedesktop.Platform.codecs_extra.i386:
+    directory: lib/i386-linux-gnu/codecs-extra
+    version: *runtime-version-extra
     autodelete: false
-
-  org.freedesktop.Platform.ffmpeg_full.i386:
-    directory: lib32/ffmpeg
-    add-ld-path: .
-    version: *runtime-version
-    no-autodownload: true
-    autodelete: false
+    add-ld-path: lib
 
   com.valvesoftware.Steam.CompatibilityTool:
     subdirectories: true
@@ -136,7 +132,7 @@ add-extensions:
     version: stable
     versions: stable;beta;test
     add-ld-path: lib
-    merge-dirs: bin;lib/python3.10/site-packages;share/vulkan/explicit_layer.d;share/vulkan/implicit_layer.d;share/steam/compatibilitytools.d;
+    merge-dirs: bin;lib/python3.13/site-packages;share/vulkan/explicit_layer.d;share/vulkan/implicit_layer.d;share/steam/compatibilitytools.d;
     no-autodownload: true
     autodelete: true
 
@@ -150,10 +146,10 @@ modules:
         mkdir -p /app/lib/i386-linux-gnu
         mkdir -p /app/lib/i386-linux-gnu/GL
         mkdir -p /app/lib/i386-linux-gnu/dri/intel-vaapi-driver
+        mkdir -p /app/lib/i386-linux-gnu/codecs-extra
         mkdir -p /app/lib/debug/lib/i386-linux-gnu
         mkdir -p /app/lib/debug/lib/i386-linux-gnu/GL
         install -Dm644 -t /app/etc ld.so.conf
-        mkdir -p /app/lib{,32}/ffmpeg
         mkdir -p /app/share/steam/compatibilitytools.d
         mkdir -p /app/utils /app/share/vulkan
         ln -srv /app/{utils/,}share/vulkan/explicit_layer.d
@@ -172,96 +168,24 @@ modules:
           /lib64
 
   # These are needed for window management inside gamescope
-  - name: python-flit-core  # needed by idna
+  - name: python-flit-core # needed by idna
     buildsystem: simple
     build-commands:
       - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
     cleanup: ['*']
     sources:
       - type: archive
-        url: https://files.pythonhosted.org/packages/c4/e6/c1ac50fe3eebb38a155155711e6e864e254ce4b6e17fe2429b4c4d5b9e80/flit_core-3.9.0.tar.gz
-        sha256: 72ad266176c4a3fcfab5f2930d76896059851240570ce9a98733b658cb786eba
+        url: https://files.pythonhosted.org/packages/69/59/b6fc2188dfc7ea4f936cd12b49d707f66a1cb7a1d2c16172963534db741b/flit_core-3.12.0.tar.gz
+        sha256: 18f63100d6f94385c6ed57a72073443e1a71a4acb4339491615d0f16d6ff01b2
 
-  - name: python-ninja  # needed by dbus-python
+  - name: python-six
     buildsystem: simple
     build-commands:
-      - python3 setup.py build -j${FLATPAK_BUILDER_N_JOBS} -DARCHIVE_DOWNLOAD_DIR="${FLATPAK_BUILDER_BUILDDIR}"
       - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-    cleanup: ['*']
     sources:
       - type: archive
-        url: https://files.pythonhosted.org/packages/00/99/5beedbf09e3ec6b617606df42d04c4251959caddbd98397cce21da4c52d1/ninja-1.10.2.3.tar.gz
-        sha256: e1b86ad50d4e681a7dbdff05fc23bb52cb773edb90bc428efba33fa027738408
-      - type: file
-        url: https://github.com/Kitware/ninja/archive/v1.10.2.g51db2.kitware.jobserver-1.tar.gz
-        sha256: 549c31ee596566b952c600e23eb9b8d39a4112cd5fdeb2e5a83370669176da40
-    modules:
-      - name: python-skbuild
-        buildsystem: simple
-        build-commands:
-          - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-        cleanup: ['*']
-        sources:
-          - type: archive
-            url: https://files.pythonhosted.org/packages/9e/e2/2e440c30e93fc5b505ee56169a4396b05e797a1daadb721aba429adbfd51/scikit-build-0.15.0.tar.gz
-            sha256: e723cd0f3489a042370b9ea988bbb9cfd7725e8b25b20ca1c7981821fcf65fb9
-        modules:
-          - name: python-distro  # also needed by Lutris, do not add a cleanup property here!
-            buildsystem: simple
-            build-commands:
-              - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-            cleanup: ['*']
-            sources:
-              - type: archive
-                url: https://files.pythonhosted.org/packages/b5/7e/ddfbd640ac9a82e60718558a3de7d5988a7d4648385cf00318f60a8b073a/distro-1.7.0.tar.gz
-                sha256: 151aeccf60c216402932b52e40ee477a939f8d58898927378a02abbe852c1c39
-          - name: python-setuptools-scm
-            buildsystem: simple
-            build-commands:
-              - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-            cleanup: ['*']
-            sources:
-              - type: archive
-                url: https://files.pythonhosted.org/packages/d0/43/f038b5009f93bcd77b1b8da9e6d424b739ab17aec9726f3a99eba23d53ca/setuptools_scm-7.0.5.tar.gz
-                sha256: 031e13af771d6f892b941adb6ea04545bbf91ebc5ce68c78aaf3fff6e1fb4844
-            modules:
-              - name: python-packaging
-                buildsystem: simple
-                build-commands:
-                  - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-                cleanup: ['*']
-                sources:
-                  - type: archive
-                    url: https://files.pythonhosted.org/packages/51/65/50db4dda066951078f0a96cf12f4b9ada6e4b811516bf0262c0f4f7064d4/packaging-24.1.tar.gz
-                    sha256: 026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002
-                modules:
-                  - name: python-pyparsing
-                    buildsystem: simple
-                    build-commands:
-                      - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-                    cleanup: ['*']
-                    sources:
-                      - type: archive
-                        url: https://files.pythonhosted.org/packages/71/22/207523d16464c40a0310d2d4d8926daffa00ac1f5b1576170a32db749636/pyparsing-3.0.9.tar.gz
-                        sha256: 2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb
-              - name: python-typing-extensions
-                buildsystem: simple
-                build-commands:
-                  - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-                cleanup: ['*']
-                sources:
-                  - type: archive
-                    url: https://files.pythonhosted.org/packages/9e/1d/d128169ff58c501059330f1ad96ed62b79114a2eb30b8238af63a2e27f70/typing_extensions-4.3.0.tar.gz
-                    sha256: e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6
-              - name: python-tomli
-                buildsystem: simple
-                build-commands:
-                  - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-                cleanup: ['*']
-                sources:
-                  - type: archive
-                    url: https://files.pythonhosted.org/packages/c0/3f/d7af728f075fb08564c5949a9c95e44352e23dee646869fa104a3b2060a3/tomli-2.0.1.tar.gz
-                    sha256: de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
+        url: https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz
+        sha256: ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
 
   # --- python-xlib ---
   - name: python-xlib
@@ -283,7 +207,16 @@ modules:
         url: https://files.pythonhosted.org/packages/08/dd/49e06f09b6645156550fb9aee9cc1e59aba7efbc972d665a1bd6ae0435d4/filelock-3.15.4.tar.gz
         sha256: 2207938cbc1844345cb01a5a95524dae30f0ce089eba5b00378295a17e3e90cb
     modules:
-      # --- python-hatchling ---
+      - name: python-setuptools-scm
+        buildsystem: simple
+        build-commands:
+          - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
+        cleanup: ['*']
+        sources:
+          - type: archive
+            url: https://files.pythonhosted.org/packages/7b/b1/19587742aad604f1988a8a362e660e8c3ac03adccdb71c96d86526e5eb62/setuptools_scm-9.2.2.tar.gz
+            sha256: 1c674ab4665686a0887d7e24c03ab25f24201c213e82ea689d2f3e169ef7ef57
+
       - name: python-hatchling
         buildsystem: simple
         build-commands:
@@ -344,31 +277,26 @@ modules:
   # the symlinks are corrected.
   - name: umu-run
     buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/umu-run/cargo
+        CARGO_NET_OFFLINE: 'true'
     build-commands:
       - |
-        git submodule update --init --recursive
-        ./configure.sh --prefix=/app
+        set -e
+        ./configure.sh --prefix=/usr
         make FLATPAK=xtrue install DESTDIR=/app
-        cp -R /app/app/share/* /app/share/
-        cp -R /app/usr/* /app/
-        rm -Rf /app/app/
-        pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
+        cp -a /app/usr/. /app/
+        rm -Rf /app/usr
+        pip3 install --no-index --no-build-isolation --no-deps --prefix="${FLATPAK_DEST}" .
     sources:
       - type: git
         url: https://github.com/Open-Wine-Components/umu-launcher.git
-        tag: 1.1.4
+        tag: 1.4.4
+        commit: cf3d1b107147480c447ffbfb3f789dc74335074c
+      - cargo-sources.json
     modules:
-      # --- packaging ---
-      - name: packaging
-        buildsystem: simple
-        build-commands:
-          - pip3 install --no-index --no-build-isolation --prefix="${FLATPAK_DEST}" .
-        cleanup: ['*']
-        sources:
-          - type: archive
-            url: https://files.pythonhosted.org/packages/51/65/50db4dda066951078f0a96cf12f4b9ada6e4b811516bf0262c0f4f7064d4/packaging-24.1.tar.gz
-            sha256: 026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002
-
       # --- pyproject_hooks ---
       - name: pyproject_hooks
         buildsystem: simple
@@ -377,8 +305,8 @@ modules:
         cleanup: ['*']
         sources:
           - type: archive
-            url: https://files.pythonhosted.org/packages/c7/07/6f63dda440d4abb191b91dc383b472dae3dd9f37e4c1e4a5c3db150531c6/pyproject_hooks-1.1.0.tar.gz
-            sha256: 4b37730834edbd6bd37f26ece6b44802fb1c1ee2ece0e54ddff8bfc06db86965
+            url: https://files.pythonhosted.org/packages/e7/82/28175b2414effca1cdac8dc99f76d660e7a4fb0ceefa4b4ab8f5f6742925/pyproject_hooks-1.2.0.tar.gz
+            sha256: 1e859bd5c40fae9448642dd871adf459e5e2084186e8d2c2a79a824c970da1f8
 
       # --- python-build ---
       - name: python-build
@@ -388,8 +316,8 @@ modules:
         cleanup: ['*']
         sources:
           - type: archive
-            url: https://files.pythonhosted.org/packages/ce/9e/2d725d2f7729c6e79ca62aeb926492abbc06e25910dd30139d60a68bcb19/build-1.2.1.tar.gz
-            sha256: 526263f4870c26f26c433545579475377b2b7588b6f1eac76a001e873ae3e19d
+            url: https://files.pythonhosted.org/packages/bd/67/4898a44ea4f3f8e213b0954ec0aa0a16971d62a6212d6ea3931e97115b99/build-1.6.1.tar.gz
+            sha256: 51cc11666391ab6f092070437ac747002ff46f3e4113a3622177ee6b488bfc53
 
       # --- python-installer ---
       - name: python-installer
