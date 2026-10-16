@@ -1,0 +1,90 @@
+# Maintainer: Peter Jung <ptr1337@archlinux.org>
+# Contributor: loathingkernel <loathingkernel _a_ gmail _d_ com>
+
+pkgname=umu-launcher
+pkgver=1.4.4
+pkgrel=1
+pkgdesc="The Unified Launcher for Windows Games on Linux, to run Proton with fixes outside of Steam"
+arch=('x86_64')
+url="https://github.com/Open-Wine-Components/umu-launcher"
+license=('GPL-3.0-only')
+depends=(
+  bash
+  desktop-file-utils
+  diffutils
+  hicolor-icon-theme
+  curl
+  dbus
+  freetype2
+  gdk-pixbuf2
+  ttf-font
+  zenity
+  lsb-release
+  nss
+  usbutils
+  xorg-xrandr
+  vulkan-driver
+  vulkan-icd-loader
+  lsof
+  python
+  xdg-user-dirs
+  glibc
+  libxcrypt
+  libxcrypt-compat
+  libgcc
+  python-xlib
+  python-xxhash
+  python-pyzstd
+  python-cbor2
+  python-urllib3
+)
+depends_x86_64=(
+  lib32-glibc
+  lib32-libxcrypt
+  lib32-libxcrypt-compat
+  lib32-libgl
+  lib32-gcc-libs
+  lib32-libx11
+  lib32-libxss
+  lib32-alsa-plugins
+  lib32-libgpg-error
+  lib32-nss
+  lib32-vulkan-driver
+  lib32-vulkan-icd-loader
+)
+makedepends=(
+  cargo
+  git
+  scdoc
+  python-build
+  python-installer
+  python-hatchling
+  python-maturin
+  python-pip
+)
+optdepends=(
+  'ntsync-autoload: for NTSync support'
+  'python-truststore: verify certificates using OS trust stores'
+)
+source=("git+https://github.com/Open-Wine-Components/umu-launcher.git#tag=$pkgver")
+sha256sums=('995eee17b6265c068b8c36605c4cff6b43a009364c41bab6dbe1ec28e5dac131')
+
+prepare() {
+  cd "$srcdir"/umu-launcher
+  export CARGO_HOME="${srcdir}"/umu-cargo
+  cargo update
+  cargo fetch --locked --target "$(rustc --print host-tuple)"
+}
+
+build() {
+  cd "$srcdir"/umu-launcher
+  export CARGO_HOME="${srcdir}"/umu-cargo
+  ./configure.sh --prefix=/usr --use-system-pyzstd --use-system-urllib
+  make
+}
+
+package() {
+  cd "$srcdir"/umu-launcher
+  make DESTDIR="$pkgdir" install
+}
+
