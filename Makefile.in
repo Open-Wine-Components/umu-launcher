@@ -83,8 +83,8 @@ umu-icons:
 umu-icons-install: umu-icons
 	$(info :: Installing umu icons )
 	@for size in $(ICON_SIZES); do \
-		install -d $(DESTDIR)$(ICONDIR)/$$size; \
-		install -m644 packaging/icons/$$size/$(APPICON).png $(DESTDIR)$(ICONDIR)/$$size/$(APPICON).png; \
+		install -d $(DESTDIR)$(ICONDIR)/$$size/apps; \
+		install -m644 packaging/icons/$$size/$(APPICON).png $(DESTDIR)$(ICONDIR)/$$size/apps/$(APPICON).png; \
 	done
 
 
