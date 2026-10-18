@@ -4044,6 +4044,67 @@ class TestGameLauncher(unittest.TestCase):
             "Expected symlink of username -> steamuser",
         )
 
+    def test_setup_pfx_symlink_valid(self):
+        """Test setup_pfx when pfx is already a valid relative symlink.
+
+        Ensure that an existing pfx -> . symlink is not modified, unlinked, or
+        replaced on subsequent setup_pfx calls.
+        """
+        prefix = Path(self.test_file)
+        pfx = prefix.joinpath("pfx")
+
+        umu_run.setup_pfx(prefix)
+        self.assertTrue(pfx.is_symlink(), "Expected pfx to be a symlink")
+        self.assertEqual(pfx.readlink(), Path("."), "Expected pfx -> .")
+
+        with (
+            patch.object(Path, "unlink") as mock_unlink,
+            patch.object(Path, "symlink_to") as mock_symlink,
+            patch.object(Path, "replace") as mock_replace,
+        ):
+            umu_run.setup_pfx(prefix)
+            mock_unlink.assert_not_called()
+            mock_symlink.assert_not_called()
+            mock_replace.assert_not_called()
+
+        self.assertTrue(pfx.is_symlink(), "Expected pfx to remain a symlink")
+        self.assertEqual(pfx.readlink(), Path("."), "Expected pfx -> .")
+
+    def test_setup_pfx_symlink_replace(self):
+        """Test setup_pfx when pfx is an absolute symlink.
+
+        Ensure that a legacy or external absolute symlink (pfx -> /abs/path)
+        is atomically replaced with a relative symlink (pfx -> .).
+        """
+        prefix = Path(self.test_file)
+        pfx = prefix.joinpath("pfx")
+
+        resolved_prefix = prefix.resolve(strict=True)
+        pfx.symlink_to(resolved_prefix)
+        self.assertEqual(
+            pfx.readlink(),
+            resolved_prefix,
+            "Expected initial pfx symlink to be absolute",
+        )
+
+        umu_run.setup_pfx(prefix)
+
+        self.assertFalse(
+            pfx.with_suffix(".tmp").exists(),
+            "Expected temporary symlink pfx.tmp to not exist",
+        )
+        self.assertTrue(pfx.is_symlink(), "Expected pfx to be a symlink")
+        self.assertEqual(
+            pfx.readlink(),
+            Path("."),
+            "Expected pfx symlink to be replaced with '.'",
+        )
+        self.assertEqual(
+            pfx.resolve(),
+            resolved_prefix,
+            "Expected pfx to resolve to the prefix directory",
+        )
+
     def test_parse_args_winetricks(self):
         """Test parse_args when winetricks is the argument.
 

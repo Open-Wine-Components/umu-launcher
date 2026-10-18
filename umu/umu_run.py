@@ -89,16 +89,21 @@ def setup_pfx(path: Path) -> None:
     path = path.resolve(strict=True)
 
     pfx: Path = path.joinpath("pfx")
+    # This is a round-trip way to say "."
+    pfx_target: Path = path.relative_to(path)
 
     path.joinpath("shadercache").mkdir(parents=True, exist_ok=True)
     path.joinpath("gstreamer-1.0").mkdir(parents=True, exist_ok=True)
 
-    if pfx.is_symlink():
-        pfx.unlink()
-
-    if not pfx.is_dir():
-        # this is a round-trip way to say "."
-        pfx.symlink_to(path.relative_to(path))
+    # Avoid unlinking pfx directly, so concurrent processes
+    # never see a missing directory during path resolution
+    if pfx.is_symlink() and pfx.readlink() != pfx_target:
+        tmp_pfx: Path = pfx.with_suffix(".tmp")
+        tmp_pfx.unlink(missing_ok=True)
+        tmp_pfx.symlink_to(pfx_target)
+        tmp_pfx.replace(pfx)
+    elif not pfx.is_dir():
+        pfx.symlink_to(pfx_target)
 
     path.joinpath("tracked_files").touch()
 
