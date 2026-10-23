@@ -6,4 +6,4 @@ Exec=umu-run %f
 Icon=org.openwinecomponents.umu.umu-launcher
 NoDisplay=true
 Categories=Game;Utility;
-MimeType=application/x-ms-dos-executable;application/vnd.microsoft.portable-executable;application/x-msi;application/x-bat;
+MimeType=application/x-ms-dos-executable;application/vnd.microsoft.portable-executable;application/x-msi;application/x-bat;text/x-ms-regedit;
