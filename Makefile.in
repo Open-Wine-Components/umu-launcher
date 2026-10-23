@@ -75,6 +75,7 @@ umu-desktop-install: umu-desktop
 	$(info :: Installing umu desktop entry )
 	install -d $(DESTDIR)$(DATADIR)/applications
 	install -m644 packaging/umu-launcher.desktop $(DESTDIR)$(DATADIR)/applications/umu-launcher.desktop
+	install -m644 packaging/umu-winetricks.desktop $(DESTDIR)$(DATADIR)/applications/umu-winetricks.desktop
 
 
 .PHONY: umu-icons
