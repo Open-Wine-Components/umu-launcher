@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=UMU - Winetricks
+Comment=Configure proton prefixes with Winetricks
+Exec=umu-run winetricks --gui
+Icon=org.openwinecomponents.umu.umu-launcher
+Terminal=false
+Categories=Game;Utility;
