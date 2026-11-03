@@ -11,17 +11,17 @@ jobs:
     name: Describe
     uses: ./.github/workflows/build-umu-version.yml
 
-  fedora43-build:
-    name: Fedora 43 Build
-    uses: ./.github/workflows/build-umu-fedora-43.yml
+  fedora44-build:
+    name: Fedora 44 Build
+    uses: ./.github/workflows/build-umu-fedora-44.yml
     needs: version
     with:
       version: ${{ needs.version.outputs.version }}
       shasum: ${{ github.sha }}
 
-  fedora44-build:
-    name: Fedora 44 Build
-    uses: ./.github/workflows/build-umu-fedora-44.yml
+  fedora45-build:
+    name: Fedora 45 Build
+    uses: ./.github/workflows/build-umu-fedora-45.yml
     needs: version
     with:
       version: ${{ needs.version.outputs.version }}
