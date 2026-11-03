@@ -1,4 +1,4 @@
-name: UMU RPM Build - Fedora/Nobara 43
+name: UMU RPM Build - Fedora/Nobara 45
 
 on:
   workflow_call:
@@ -23,7 +23,7 @@ jobs:
 
     runs-on: ${{ matrix.runner }}
     container:
-      image: fedora:43
+      image: fedora:45
 
     steps:
       - name: Install Git
@@ -69,11 +69,11 @@ jobs:
           tar -cvzf umu-launcher-${{ env.VERSION }}.tar.gz umu-launcher-${{ env.VERSION }}
           mv umu-launcher-${{ env.VERSION }}.tar.gz ~/rpmbuild/SOURCES/
           rm -Rf umu-launcher-${{ env.VERSION }}/
-          wget https://github.com/urllib3/urllib3/releases/download/2.5.0/urllib3-2.5.0.tar.gz
-          mv urllib3-2.5.0.tar.gz ~/rpmbuild/SOURCES/
+          wget https://github.com/3/urlliburllib3/releases/download/2.8.0/urllib3-2.8.0.tar.gz
+          mv urllib3-2.8.0.tar.gz ~/rpmbuild/SOURCES/
           cd umu-launcher/
 
-          sed -i 's|%global urllib3 2\.3\.0|%global urllib3 2\.5\.0|g' packaging/rpm/umu-launcher.spec
+          sed -i 's|%global urllib3 2\.3\.0|%global urllib3 2\.8\.0|g' packaging/rpm/umu-launcher.spec
           sed -i "s|^%global tag .*|%global tag ${{ env.VERSION }}|g" packaging/rpm/umu-launcher.spec
           cat packaging/rpm/umu-launcher.spec | grep tag
 
@@ -86,10 +86,10 @@ jobs:
           echo "RPMARCH=$RPMARCH" >> $GITHUB_ENV
 
           mv ~/rpmbuild/RPMS/${RPMARCH}/umu-launcher-${{ env.VERSION }}*.rpm \
-             ~/rpmbuild/RPMS/${RPMARCH}/umu-launcher-${{ env.VERSION }}.fc43.${RPMARCH}.rpm
+             ~/rpmbuild/RPMS/${RPMARCH}/umu-launcher-${{ env.VERSION }}.fc45.${RPMARCH}.rpm
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: umu-launcher-${{ env.VERSION }}.fc43.${{ env.RPMARCH }}.rpm
-          path: ~/rpmbuild/RPMS/${{ env.RPMARCH }}/umu-launcher-${{ env.VERSION }}.fc43.${{ env.RPMARCH }}.rpm
+          name: umu-launcher-${{ env.VERSION }}.fc45.${{ env.RPMARCH }}.rpm
+          path: ~/rpmbuild/RPMS/${{ env.RPMARCH }}/umu-launcher-${{ env.VERSION }}.fc45.${{ env.RPMARCH }}.rpm
