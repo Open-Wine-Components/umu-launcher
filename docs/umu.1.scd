@@ -142,6 +142,17 @@ _GAMEID_
 	Optional. Can be an arbitrary value or a valid id in the *umu-database*[4].
 	If unset, defaults to _umu-default_ (does not apply any fixes automatically).
 
+	When the value has the form _umu-<id>_, where _<id>_ contains only letters,
+	digits and underscores, _<id>_ is passed to Proton as _SteamAppId_ and
+	_SteamGameId_. Proton names windows _steam\_app\_<id>_ and writes the
+	_PROTON_LOG_ file as _steam-<id>.log_. Any other value uses _0_, so every
+	such application gets the window class _steam_app_0_ and desktops may group
+	them together. Applications without _GAMEID_ share _steam\_app\_default_
+	the same way. Give each application its own _umu-<id>_ value to keep them
+	apart, e.g., _GAMEID=umu-vnyan_. The id also selects the protonfixes that
+	are applied, so pick one that isn't an id in the *umu-database*[4] unless
+	that game's fixes are wanted.
+
 _PROTONPATH_
 	Optional. Path to a Proton directory, version name (e.g., GE-Proton9-5) or
 	codename (e.g., GE-Proton).

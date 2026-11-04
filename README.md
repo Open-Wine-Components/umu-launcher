@@ -86,7 +86,7 @@ Borderlands 3 from EGS store.
 
 ## Reporting issues
 
-When reporting issues for games that fail to run, be sure to attach a log with your issue report. To acquire a log from umu, add `UMU_LOG=1` to your environment variables for verbose logging. Furthermore, you can use `PROTON_LOG=1` for proton to create a verbose log in your `$HOME` directory. The log will be named `steam-<appid>.log`, where `<appid>` will be `default` if you haven't set a `GAMEID` or a number, depending on what you have set for `GAMEID`.
+When reporting issues for games that fail to run, be sure to attach a log with your issue report. To acquire a log from umu, add `UMU_LOG=1` to your environment variables for verbose logging. Furthermore, you can use `PROTON_LOG=1` for proton to create a verbose log in your `$HOME` directory. The log will be named `steam-<appid>.log`, where `<appid>` is `<id>` when `GAMEID` is `umu-<id>` and `<id>` has only letters, digits and underscores, `default` if you haven't set a `GAMEID`, and `0` otherwise.
 
 Do **NOT** report issues here when using compatibility tools that are **NOT** explictly supported, report them to their maintainers first. This includes non-Proton compatibility tools, as well as third-party Proton compatibility tools that are not provided through `umu-launcher`.
 

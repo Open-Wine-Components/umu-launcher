@@ -3380,6 +3380,51 @@ class TestGameLauncher(unittest.TestCase):
                 "Expected STEAM_COMPAT_MOUNTS to be set",
             )
 
+    def test_set_env_steam_appid(self):
+        """Test set_env.
+
+        Verify that SteamAppId and SteamGameId, which Proton uses for the
+        steam_app_<id> window class and the steam-<id>.log file name, are the
+        part after "umu-" in GAMEID, 0 for any other GAMEID and default when it
+        is unset
+        """
+        cases = {
+            "umu-271590": "271590",
+            "umu-vnyan": "vnyan",
+            "umu-my_app": "my_app",
+            "umu-my-app": "0",
+            "vnyan": "0",
+            "0": "0",
+            None: "default",  # unset GAMEID defaults to umu-default
+        }
+
+        for game_id, app_id in cases.items():
+            with (
+                self.subTest(game_id=game_id),
+                patch("sys.argv", ["", self.test_exe]),
+                ThreadPoolExecutor() as thread_pool,
+            ):
+                os.environ["WINEPREFIX"] = self.test_file
+                os.environ["PROTONPATH"] = self.test_file
+                if game_id is None:
+                    os.environ.pop("GAMEID", None)
+                else:
+                    os.environ["GAMEID"] = game_id
+                os.environ["PROTON_VERB"] = self.test_verb
+                os.environ["RUNTIMEPATH"] = self.test_runtime_default[1]
+                result = __main__.parse_args()
+                result_env, result_dl = umu_run.check_env(self.env)
+                umu_run.download_proton(result_env, thread_pool, download=result_dl)
+                umu_run.setup_pfx(Path(self.env["WINEPREFIX"]))
+                umu_run.set_env(self.env, result[0:])
+
+                self.assertEqual(self.env["SteamAppId"], app_id, "Expected SteamAppId")
+                self.assertEqual(
+                    self.env["SteamGameId"],
+                    app_id,
+                    "Expected SteamGameId to be SteamAppId",
+                )
+
     def test_set_env_exe(self):
         """Test set_env when the executable fails to be resolved.
 
