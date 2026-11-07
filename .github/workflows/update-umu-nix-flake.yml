@@ -1,9 +1,6 @@
 name: UMU Update flake.lock
 on:
   workflow_dispatch:
-  schedule:
-    # Every Saturday at noon
-    - cron: '0 12 * * sat'
 
 permissions:
   contents: write
