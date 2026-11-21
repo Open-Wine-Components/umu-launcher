@@ -2,7 +2,7 @@ import errno
 import os
 import platform
 import sys
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager, redirect_stdout
 from ctypes import CDLL, get_errno
 from ctypes.util import find_library
@@ -10,6 +10,7 @@ from enum import IntFlag
 from fcntl import LOCK_EX, LOCK_UN, flock
 from functools import cache
 from hashlib import new as hashnew
+from http import HTTPStatus
 from io import BufferedIOBase, BufferedRandom
 from pathlib import Path
 from re import Pattern
@@ -18,8 +19,11 @@ from shutil import which
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired  # nosec B404
 from tarfile import open as taropen
 from tempfile import gettempdir, mkdtemp
+from time import sleep
 from typing import Any
 
+from urllib3.exceptions import HTTPError, MaxRetryError, ProtocolError, ReadTimeoutError
+from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 from Xlib import display
 
@@ -292,6 +296,87 @@ def write_file_chunks(
         while size := resp.readinto(buffer):
             file.write(view[:size])
             hasher.update(view[:size])
+
+    return hasher
+
+
+def get_http_retries(http_pool: PoolManager, default: int = 3) -> int:
+    """Get the number of retries configured for a pool (UMU_HTTP_RETRIES)."""
+    retries = http_pool.connection_pool_kw.get("retries")
+    total = getattr(retries, "total", retries)
+    if total is False:  # Retries are disabled
+        return 0
+    return total if isinstance(total, int) else default
+
+
+def write_file_chunks_resumable(
+    path: Path,
+    resp: BaseHTTPResponse,
+    # Note: hashlib._Hash is internal and an exception will be raised when imported
+    hasher,  # noqa: ANN001
+    reopen: Callable[[dict[str, str]], BaseHTTPResponse],
+    retries: int = 3,
+):
+    """Write a file from a streamed response, resuming when the connection breaks.
+
+    A read timeout or dropped connection part way through a download is retried
+    by requesting the rest of the file with a Range header. The hash is rebuilt
+    from what is already on disk before each resumed attempt.
+
+    Args:
+        path: file path
+        resp: urllib3 streamed response
+        hasher: hashlib object
+        reopen: function that sends the same request again with the given headers
+        retries: number of times to resume after the first attempt fails
+    Returns:
+        hashlib._Hash instance
+
+    Raises:
+        urllib3.exceptions.HTTPError: when the last attempt fails or the server
+        answers a resumed request with an unexpected status
+
+    """
+    resumed: BaseHTTPResponse | None = resp
+
+    for trial in range(retries + 1):
+        try:
+            if resumed is None:
+                resumed = reopen({"Range": f"bytes={path.stat().st_size}-"})
+                if resumed.status == HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE:
+                    # Everything was written before the connection broke
+                    resumed.release_conn()
+                    with path.open("rb") as fp:
+                        return file_digest(fp, hasher.name)
+                if resumed.status == HTTPStatus.OK:
+                    # The server ignored the Range header and sent it all again
+                    path.write_bytes(b"")
+                    hasher = hashnew(hasher.name)
+                elif resumed.status == HTTPStatus.PARTIAL_CONTENT:
+                    with path.open("rb") as fp:
+                        hasher = file_digest(fp, hasher.name)
+                else:
+                    err: str = f"Server returned the status: {resumed.status}"
+                    resumed.release_conn()
+                    raise HTTPError(err)
+            hasher = write_file_chunks(path, resumed, hasher)
+            resumed.release_conn()
+            return hasher
+        except (ProtocolError, ReadTimeoutError, MaxRetryError) as e:
+            if trial == retries:
+                raise
+            log.debug(e)
+            log.info(
+                "Connection broken, trying to resume %s (retry %s of %s)",
+                path,
+                trial + 1,
+                retries,
+            )
+            if resumed is not None:
+                resumed.release_conn()
+                resumed = None
+            # Back off a little so a short outage does not use up every retry
+            sleep(min(trial + 1, 5))
 
     return hasher
 

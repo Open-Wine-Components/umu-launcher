@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import io
 import os
 import re
 import sys
@@ -9,6 +10,7 @@ from argparse import Namespace
 from array import array
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
+from http import HTTPStatus
 from importlib.util import find_spec
 from pathlib import Path
 from pwd import getpwuid
@@ -17,6 +19,8 @@ from subprocess import CompletedProcess  # nosec B404
 from tempfile import NamedTemporaryFile, TemporaryDirectory, TemporaryFile, gettempdir
 from unittest.mock import MagicMock, Mock, patch
 
+from urllib3 import PoolManager, Retry
+from urllib3.exceptions import HTTPError, MaxRetryError, ReadTimeoutError
 from Xlib.display import Display
 from Xlib.error import DisplayConnectionError
 from Xlib.protocol.rq import Event
@@ -1604,6 +1608,198 @@ class TestGameLauncher(unittest.TestCase):
             # Pass a buffered reader as our fake http response
             umu_util.write_file_chunks(mock_file, file2, hasher, chunk_size)
             self.assertTrue(hasher.digest(), "Expected hashed data > 0, received 0")
+
+    def _make_resp(self, data, status=200, fail_after=None):
+        """Create a fake streamed response that can break part way through."""
+        stream = io.BytesIO(data)
+        resp = MagicMock()
+        resp.status = status
+
+        def readinto(buffer):
+            if fail_after is not None and stream.tell() >= fail_after:
+                raise ReadTimeoutError(None, None, "Read timed out.")
+            if fail_after is not None:
+                return stream.readinto(memoryview(buffer)[: fail_after - stream.tell()])
+            return stream.readinto(buffer)
+
+        resp.readinto = readinto
+        return resp
+
+    @patch.object(umu_util, "sleep")
+    def test_write_file_chunks_resumable(self, _):
+        """Test write_file_chunks_resumable resuming after a read timeout."""
+        data = os.urandom(1000)
+        requests = []
+
+        def reopen(headers):
+            requests.append(headers)
+            start = int(headers["Range"].removeprefix("bytes=").removesuffix("-"))
+            return self._make_resp(data[start:], HTTPStatus.PARTIAL_CONTENT)
+
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp, "file.parts")
+            first = self._make_resp(data, fail_after=300)
+            hasher = umu_util.write_file_chunks_resumable(
+                path, first, hashlib.sha256(), reopen
+            )
+            self.assertEqual(path.read_bytes(), data, "Expected the whole file")
+            self.assertEqual(hasher.digest(), hashlib.sha256(data).digest())
+            self.assertEqual(requests, [{"Range": "bytes=300-"}])
+
+    @patch.object(umu_util, "sleep")
+    def test_write_file_chunks_resumable_range_ignored(self, _):
+        """Test write_file_chunks_resumable when the server ignores Range."""
+        data = os.urandom(1000)
+
+        def reopen(_):
+            return self._make_resp(data, HTTPStatus.OK)
+
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp, "file.parts")
+            first = self._make_resp(data, fail_after=300)
+            hasher = umu_util.write_file_chunks_resumable(
+                path, first, hashlib.sha256(), reopen
+            )
+            self.assertEqual(path.read_bytes(), data, "Expected no duplicated bytes")
+            self.assertEqual(hasher.digest(), hashlib.sha256(data).digest())
+
+    @patch.object(umu_util, "sleep")
+    def test_write_file_chunks_resumable_complete(self, _):
+        """Test write_file_chunks_resumable when the file was already complete."""
+        data = os.urandom(1000)
+
+        def reopen(_):
+            return self._make_resp(b"", HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp, "file.parts")
+            # The connection breaks after the last byte was written
+            first = self._make_resp(data, fail_after=len(data))
+            hasher = umu_util.write_file_chunks_resumable(
+                path, first, hashlib.sha256(), reopen
+            )
+            self.assertEqual(path.read_bytes(), data)
+            self.assertEqual(hasher.digest(), hashlib.sha256(data).digest())
+
+    @patch.object(umu_util, "sleep")
+    def test_write_file_chunks_resumable_reopen_fails(self, _):
+        """Test write_file_chunks_resumable retrying a failed reconnect."""
+        data = os.urandom(1000)
+        calls = []
+
+        def reopen(headers):
+            calls.append(headers)
+            if len(calls) == 1:
+                raise MaxRetryError(None, "https://example.com")
+            start = int(headers["Range"].removeprefix("bytes=").removesuffix("-"))
+            return self._make_resp(data[start:], HTTPStatus.PARTIAL_CONTENT)
+
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp, "file.parts")
+            first = self._make_resp(data, fail_after=300)
+            hasher = umu_util.write_file_chunks_resumable(
+                path, first, hashlib.sha256(), reopen
+            )
+            self.assertEqual(len(calls), 2)
+            self.assertEqual(path.read_bytes(), data)
+            self.assertEqual(hasher.digest(), hashlib.sha256(data).digest())
+
+    @patch.object(umu_util, "sleep")
+    def test_write_file_chunks_resumable_gives_up(self, _):
+        """Test write_file_chunks_resumable raising after the last attempt."""
+        data = os.urandom(1000)
+        calls = []
+
+        def reopen(headers):
+            calls.append(headers)
+            start = int(headers["Range"].removeprefix("bytes=").removesuffix("-"))
+            return self._make_resp(
+                data[start:], HTTPStatus.PARTIAL_CONTENT, fail_after=0
+            )
+
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp, "file.parts")
+            first = self._make_resp(data, fail_after=300)
+            with self.assertRaises(ReadTimeoutError):
+                umu_util.write_file_chunks_resumable(
+                    path, first, hashlib.sha256(), reopen, retries=2
+                )
+            self.assertEqual(len(calls), 2, "Expected one request per retry")
+            self.assertEqual(path.read_bytes(), data[:300], "Expected a resumable file")
+
+    @patch.object(umu_util, "sleep")
+    def test_write_file_chunks_resumable_bad_status(self, _):
+        """Test write_file_chunks_resumable not retrying an unexpected status."""
+        data = os.urandom(1000)
+        calls = []
+
+        def reopen(headers):
+            calls.append(headers)
+            return self._make_resp(b"", HTTPStatus.NOT_FOUND)
+
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp, "file.parts")
+            first = self._make_resp(data, fail_after=300)
+            with self.assertRaises(HTTPError):
+                umu_util.write_file_chunks_resumable(
+                    path, first, hashlib.sha256(), reopen
+                )
+            self.assertEqual(len(calls), 1, "Expected no retry for a 404")
+
+    @patch.object(umu_util, "sleep")
+    def test_write_file_chunks_resumable_no_retries(self, _):
+        """Test write_file_chunks_resumable with retries disabled."""
+        reopen = MagicMock()
+
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp, "file.parts")
+            first = self._make_resp(os.urandom(1000), fail_after=300)
+            with self.assertRaises(ReadTimeoutError):
+                umu_util.write_file_chunks_resumable(
+                    path, first, hashlib.sha256(), reopen, retries=0
+                )
+            reopen.assert_not_called()
+
+    def test_get_http_retries(self):
+        """Test get_http_retries with the pool settings from UMU_HTTP_RETRIES."""
+        self.assertEqual(umu_util.get_http_retries(PoolManager()), 3)
+        self.assertEqual(
+            umu_util.get_http_retries(PoolManager(retries=Retry(total=7))), 7
+        )
+        self.assertEqual(
+            umu_util.get_http_retries(PoolManager(retries=Retry(total=False))), 0
+        )
+
+    @patch.object(umu_util, "sleep")
+    def test_fetch_proton_resumes(self, _):
+        """Test _fetch_proton resuming a download that times out."""
+        data = os.urandom(1000)
+        digest = hashlib.sha512(data).hexdigest()
+        tarball = "UMU-Proton-9.0-1.tar.gz"
+        tar_url = f"https://example.com/{tarball}"
+        hash_url = f"https://example.com/{tarball}.sha512sum"
+        hash_resp = MagicMock()
+        hash_resp.status = HTTPStatus.OK
+        hash_resp.readline.side_effect = [f"{digest}  {tarball}\n".encode(), b""]
+        resp_first = self._make_resp(data, HTTPStatus.OK, fail_after=300)
+        resp_rest = self._make_resp(data[300:], HTTPStatus.PARTIAL_CONTENT)
+        http_pool = MagicMock()
+        http_pool.request.side_effect = [hash_resp, resp_first, resp_rest]
+        assets = ((f"{tarball}.sha512sum", hash_url), (tarball, tar_url))
+
+        with TemporaryDirectory() as tmp:
+            tmpfs, cache = Path(tmp, "tmpfs"), Path(tmp, "cache", "compat")
+            tmpfs.mkdir()
+            cache.mkdir(parents=True)
+            with patch.object(umu_proton, "UMU_CACHE", Path(tmp, "umu-cache")):
+                umu_proton._fetch_proton(
+                    {}, (tmpfs, cache), assets, (MagicMock(), http_pool)
+                )
+            self.assertEqual(tmpfs.joinpath(f"{tarball}.parts").read_bytes(), data)
+
+        resumed = http_pool.request.call_args_list[-1]
+        self.assertEqual(resumed.args[1], tar_url)
+        self.assertEqual(resumed.kwargs["headers"], {"Range": "bytes=300-"})
 
     def test_get_gamescope_baselayer_appid_err(self):
         """Test get_gamescope_baselayer_appid on error.
