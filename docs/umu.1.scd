@@ -182,7 +182,7 @@ _UMU_HTTP_TIMEOUT_
 	Set _0_ to disable timeouts for HTTP requests. Set a positive integer to override the default.
 
 _UMU_HTTP_RETRIES_
-	Optional. Number of times to retry possibly spurious network errors. Otherwise, defaults to _3_.
+	Optional. Number of times to retry possibly spurious network errors, including resuming a Proton or runtime download that was interrupted. Otherwise, defaults to _3_.
 
 	Set _0_ to disable retries for HTTP requests. Set a positive integer to override the default.
 

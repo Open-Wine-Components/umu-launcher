@@ -11,7 +11,7 @@ from shutil import move
 from subprocess import run  # nosec B404
 from tempfile import TemporaryDirectory, mkdtemp
 
-from urllib3.exceptions import HTTPError, ProtocolError, ReadTimeoutError
+from urllib3.exceptions import HTTPError
 from urllib3.poolmanager import PoolManager
 from urllib3.response import BaseHTTPResponse
 
@@ -22,11 +22,12 @@ from umu.umu_util import (
     exchange,
     extract_tarfile,
     file_digest,
+    get_http_retries,
     get_tempdir,
     has_runtime_installed,
     run_zenity,
     unix_flock,
-    write_file_chunks,
+    write_file_chunks_resumable,
     write_install_marker,
 )
 
@@ -182,32 +183,18 @@ def _install_umu(
         if resp.status != HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE:
             try:
                 log.debug("Writing: %s", parts)
-                attempts = 3
-                for trial in range(attempts):
-                    try:
-                        hashsum = write_file_chunks(parts, resp, hashsum)
-                    except (ProtocolError, ReadTimeoutError) as e:
-                        if trial == attempts - 1:
-                            raise e
-                        log.debug(e)
-                        log.info(
-                            "Connection broken, trying to resume %s (retry %s)",
-                            parts,
-                            trial + 1,
-                        )
-                        headers = {
-                            "Range": f"bytes={parts.stat().st_size}-",
-                        }
-                        resp = http_pool.request(
-                            HTTPMethod.GET.value,
-                            f"https://{host}{endpoint}/{archive}",
-                            preload_content=False,
-                            headers=headers,
-                        )
-                        with parts.open("rb") as fp:
-                            hashsum = file_digest(fp, hashsum.name)
-                    else:
-                        break
+                hashsum = write_file_chunks_resumable(
+                    parts,
+                    resp,
+                    hashsum,
+                    lambda headers: http_pool.request(
+                        HTTPMethod.GET.value,
+                        f"https://{host}{endpoint}/{archive}",
+                        preload_content=False,
+                        headers=headers,
+                    ),
+                    retries=get_http_retries(http_pool),
+                )
             except HTTPError:
                 log.error("Aborting steamrt install due to network error")
                 log.info("Moving '%s' to cache for future resumption", parts.name)

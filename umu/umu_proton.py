@@ -36,10 +36,11 @@ from umu.umu_runtime import RUNTIME_NAMES, RUNTIME_VERSIONS
 from umu.umu_util import (
     extract_tarfile,
     file_digest,
+    get_http_retries,
     get_tempdir,
     run_zenity,
     unix_flock,
-    write_file_chunks,
+    write_file_chunks_resumable,
 )
 
 SessionPools = tuple[ThreadPoolExecutor, PoolManager]
@@ -430,7 +431,18 @@ def _fetch_proton(
         if resp.status != HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE:
             try:
                 log.debug("Writing: %s", parts)
-                hashsum = write_file_chunks(parts, resp, hashsum)
+                hashsum = write_file_chunks_resumable(
+                    parts,
+                    resp,
+                    hashsum,
+                    lambda headers: http_pool.request(
+                        HTTPMethod.GET.value,
+                        tar_url,
+                        preload_content=False,
+                        headers=headers,
+                    ),
+                    retries=get_http_retries(http_pool),
+                )
             except HTTPError:
                 log.error("Aborting Proton install due to network error")
                 log.info("Moving '%s' to cache for future resumption", parts.name)
