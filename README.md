@@ -55,6 +55,7 @@ Notes:
 - `GAMEID` designates a corresponding umu-id from the [umu-database](https://umu.openwinecomponents.org/) for games that have fixes that need to be applied. Defaults to umu-default
 - `PROTONPATH` designates the full path to a specific proton version. Alternatively you can use value "GE-Proton" to auto-download and use the latest GE-Proton build. Defaults to UMU-Proton. (UMU-Proton is the latest stable version of Valve's proton tool with UMU compatibility added)
 - `STORE` designates what storefront to use. UMU uses GAMEID and STORE to search the [umu-database](https://umu.openwinecomponents.org/) for fixes to apply to a game. Defaults to "none".
+- `UMU_WINDOW_ID` sets the Steam game id used by Wine to name the window class (`steam_app_<id>`) without changing `GAMEID`, so launchers can give each game its own taskbar icon while fixes are still resolved from `GAMEID`. Accepts letters, digits and underscores.
 
 See the [documentation](https://github.com/Open-Wine-Components/umu-launcher/blob/main/docs/umu.1.scd) for more examples and the [project's wiki](https://github.com/Open-Wine-Components/umu-launcher/wiki/Frequently-asked-questions-(FAQ)) for Frequently Asked Questions.
 

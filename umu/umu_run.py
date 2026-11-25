@@ -280,6 +280,8 @@ def set_env(
         env["STEAM_COMPAT_APP_ID"] = env["UMU_ID"][env["UMU_ID"].find("-") + 1 :]
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
+    if match(r"^\w+$", os.environ.get("UMU_WINDOW_ID", "")):
+        env["SteamGameId"] = os.environ["UMU_WINDOW_ID"]
     env["UMU_INVOCATION_ID"] = token_hex(16)
 
     runtime_path = (
