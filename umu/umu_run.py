@@ -281,6 +281,7 @@ def set_env(
     env["SteamAppId"] = env["STEAM_COMPAT_APP_ID"]
     env["SteamGameId"] = env["SteamAppId"]
     if match(r"^\w+$", os.environ.get("UMU_WINDOW_ID", "")):
+        env["SteamAppId"] = os.environ["UMU_WINDOW_ID"]
         env["SteamGameId"] = os.environ["UMU_WINDOW_ID"]
     env["UMU_INVOCATION_ID"] = token_hex(16)
 
