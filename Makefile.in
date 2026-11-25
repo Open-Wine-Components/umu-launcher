@@ -13,6 +13,9 @@ BINDIR      := $(PREFIX)/bin
 LIBDIR      := $(PREFIX)/lib
 DATADIR     := $(PREFIX)/share
 MANDIR      := $(DATADIR)/man
+ICONDIR     := $(DATADIR)/icons/hicolor
+APPICON     := org.openwinecomponents.umu.umu-launcher
+ICON_SIZES  := 64x64 128x128 256x256
 PYTHONDIR   := $(shell $(PYTHON_INTERPRETER) -c "import site; print(site.getsitepackages()[0])")
 
 DESTDIR ?=
@@ -65,6 +68,27 @@ umu-docs-install: umu-docs
 	install -m644 $(OBJDIR)/umu.5 $(DESTDIR)$(MANDIR)/man5/umu.5
 
 
+.PHONY: umu-desktop
+umu-desktop:
+
+umu-desktop-install: umu-desktop
+	$(info :: Installing umu desktop entry )
+	install -d $(DESTDIR)$(DATADIR)/applications
+	install -m644 packaging/umu-launcher.desktop $(DESTDIR)$(DATADIR)/applications/umu-launcher.desktop
+	install -m644 packaging/umu-winetricks.desktop $(DESTDIR)$(DATADIR)/applications/umu-winetricks.desktop
+
+
+.PHONY: umu-icons
+umu-icons:
+
+umu-icons-install: umu-icons
+	$(info :: Installing umu icons )
+	@for size in $(ICON_SIZES); do \
+		install -d $(DESTDIR)$(ICONDIR)/$$size/apps; \
+		install -m644 packaging/icons/$$size/$(APPICON).png $(DESTDIR)$(ICONDIR)/$$size/apps/$(APPICON).png; \
+	done
+
+
 $(OBJDIR)/.build-umu-dist: | $(OBJDIR)
 	$(info :: Building umu )
 	$(PYTHON_INTERPRETER) -m build --wheel --skip-dependency-check --no-isolation --outdir=$(OBJDIR)
@@ -81,7 +105,7 @@ umu-dist-install: umu-dist
 ifeq ($(FLATPAK), xtrue)
 umu-install: umu-dist-install umu-delta-install
 else
-umu-install: umu-dist-install umu-delta-install umu-docs-install
+umu-install: umu-dist-install umu-delta-install umu-docs-install umu-desktop-install umu-icons-install
 endif
 
 
